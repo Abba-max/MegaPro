@@ -1,0 +1,16 @@
+{
+	"folders": [
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../../Atelier Dev web/Projects with HTML, CSS and Java Script"
+		},
+		{
+			"path": "../../../../Computer Engineering Project"
+		}
+	],
+	"settings": {
+		"liveServer.settings.multiRootWorkspaceName": "Projects with HTML, CSS and Java Script"
+	}
+}

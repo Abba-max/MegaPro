@@ -67,7 +67,7 @@
     
     <!-- Hero Section -->
     <section id="hero" class="hero section dark-background">
-    
+      
       <img src="{% static 'assets/img/DJI_0078.jpg' %}" alt="" data-aos="fade-in">
 
       <div class="container">
@@ -108,7 +108,7 @@
           <div class="col-lg- " data-aos="fade-up" data-aos-delay="600">
             <div  style=justify-content:space-evenly class="service-item d-flex">
               <!-- <img src="{% static '' %}" class="img-fluid" alt=""> -->
-              <img class="image1" src="{% static '{estate.PIC}' %}" alt=""> 
+              <img class="image1" src="{% static '{{estate.PIC}}' %}" alt=""> 
               <div class="icon flex-shrink-0"><i class="bi bi-buildings"></i></div>
               <div >
                 <h2 class="title"><a href="post/{{estate.id}} " class="stretched-link">{{estate.name}}</a></h2>

@@ -5,8 +5,8 @@ from django.contrib import messages
 from .models import Feature
 from .models import Estate
 from .models import Recentposts
-from django.core.files.storage import default_storage
-# from .forms import CommentForm
+# from django.core.files.storage import default_storage
+from .forms import CommentForm
 
 # Create your view
 def index(request):
@@ -30,7 +30,7 @@ def registration(request):
             return redirect('/registration')
           else:
             user = User.objects.create_user(username=username, email=email, password=password)
-            user.save();
+            user.save()
             return redirect('/login')
         else:
             messages.info(request, 'Password not the same')
@@ -59,16 +59,17 @@ def logout(request):
   
 def post(request, pk):
     estates = Estate.objects.get(id=pk)
-    return render(request, 'post.html', {'estates': estates})
+    commentform=CommentForm.objects.get(all)
+    return render(request, 'post.html', {'estates': estates, 'commentform':commentform})
 
 # from django.core.files.storage import default_storage
 
 def post(request, pk):
     if request.method == 'POST':
         estate = Estate.objects.get(id=pk)
-        if 'pic' in request.FILES:
-            estate.pic = request.FILES['pic']
-            estate.save()
+        # if 'pic' in request.FILES:
+        #     estate.pic = request.FILES['pic']
+        #     estate.save()
     estate = Estate.objects.get(id=pk)
     return render(request, 'post.html', {'estates': estate})
   

@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
-# from PIL import image
-# Create your models here.z
+from PIL import Image
+# from django import pillow
 class Feature(models.Model):
     name = models.CharField(max_length=100)
     details = models.CharField(max_length=500)
@@ -12,8 +12,7 @@ class Estate(models.Model):
     capacity = models.IntegerField()
     free = models.IntegerField()
     rating = models.CharField(max_length=10)
-    # pic = models.ImageField(upload_to='estates/', blank=True, null=False)
-    image=ArrayField(models.CharField(max_length=500))
+    pic = models.ImageField(upload_to='estates/', blank=True, null=False)
     
 class Recentposts(models.Model):
     name=models.CharField( max_length=50)
@@ -25,15 +24,15 @@ class Recentposts(models.Model):
 
 
 
-# class Comment(models.Model):
-#     name = models.CharField(max_length=100)
-#     email = models.EmailField()
-#     subject = models.CharField(max_length=100)
-#     message = models.TextField()
-#     created_at = models.DateTimeField(auto_now_add=True)
+class Comment(models.Model):
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    subject = models.CharField(max_length=100)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
 
-#     def __str__(self):
-#         return self.name
+    def __str__(self):
+        return self.name
          
 
 

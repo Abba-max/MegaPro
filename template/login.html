@@ -15,6 +15,25 @@ body{
   background-color: burlywood;
 }
 
+.login-holder{
+  border-radius:50px;
+  height:40px;
+}
+
+.login-holder:hover{
+  background-color:rgb(192, 176, 140);
+  transition: 1s;
+}
+
+.btn-login{
+  border-radius: 20px;
+  background-color:antiquewhite;
+}
+
+.btn-login:hover{
+  background-color: blanchedalmond;
+}
+
 </style> 
 
 
@@ -26,11 +45,11 @@ body{
 <h4> {{message}}</h5>
 {% endfor %}
     <h1> Login Page</h1>
-    <h3>Username: <input type="text" name="username" /></h3>
-    <h3>Password: <input type="Password" name="password" /></h3>
-    <input type="submit"/>
+    <h3>Username: <input class="login-holder" type="text" name="username" /></h3>
+    <h3>Password: <input class="login-holder" type="Password" name="password" /></h3>
+    <input class="btn-login" type="submit"/>
 
-    <h5> If you don't have an account,  <a class="btn-getstarted" href="registration">Sign up</a></h5>
+    <h5> If you don't have an account,  <a class="btn-login" href="registration">Sign up</a></h5>
   </center>
 </form>
 
