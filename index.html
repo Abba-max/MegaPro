@@ -1,0 +1,321 @@
+<!--{% load static%}-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+
+  <meta charset="UTF-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Eyang village</title>
+  <meta name="description" content="">
+  <meta name="keywords" content="">
+
+  <!-- Favicons -->
+  <link href="{% static 'assets/img/stats-bg.jpg' %}" rel="icon">
+  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800=;1,300;1,400;1,500;1,600;1,700;1,800&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+
+  <!-- Vendor CSS Files 
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">--->
+
+  <!-- Main CSS File 
+  <link href="{% Static 'assets/css/main.css'%}" rel="stylesheet">-->
+  <link rel="stylesheet" href="/Static/assets/css/New_main.css">
+  <link rel="stylesheet" href="/Static/assets/css/Components.css">
+   <a href="/template/Estates.html"></a>
+  
+
+
+</head>
+   <div class="preloader" id="preloader">
+        <div class="spinner"></div>
+        <p>Loading Eyang Estate...</p>
+    </div>
+<body class="index-page">
+
+  <header id="header" class="header d-flex align-items-center fixed-top">
+    <div class="container-fluid position-relative d-flex align-items-center justify-content-between">
+
+      <a class="logo d-flex align-items-center me-auto me-xl-0">
+        <!-- Uncomment the line below if you also wish to use an image logo -->
+         <img src="{% static 'assets/img/stats-bg.jpg' %}" alt="" > 
+        <h1 text="title" class="sitename">Eyang Estate </h1><span> </span>
+      </a>
+
+      <nav id="navmenu" class="navmenu" >
+       <!-----<ul>
+          <li><a href="index.html" class="active">Home</a></li>
+          <li class="dropdown"><a href="#"><span></span>Estate <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+        <ul>--->
+          <!--{% for estate in estates %}
+              <li><a href="post/{{estate.id}} ">{{estate.name}}</a></li>
+              {% endfor%}
+            </ul>
+          </li>
+          <li><a href="index.html">Contact</a></li>
+        </ul>
+        <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
+      </nav>
+    {% if user.is_authenticated %}
+      <a class="btn-getstarted" href="logout">Logout</a>
+    {% else %}  
+    <a class="btn-getstarted" href="login">Login or Sign up</a>
+    {% endif%}--->
+    </div>
+  </header>
+
+  <main class="main">
+    
+    <!-- Hero Section -->
+     <div class="hero-background"> </div>
+    <section id="home" class="hero">
+    <div class="hero-content">
+            <div class="hero-text">
+                <h1>Eyang Estate</h1>
+                <p>Discover, reserve,place order and enjoy the best experiences. Enjoyacademic revolution!</p>
+            </div>
+      <!--<img src="{% static 'assets/img/DJI_0078.jpg' %}" alt="" data-aos="fade-in">
+
+      <div class="container">
+        <div class="row">
+          <div class="col-lg-10">
+            {% if user.is_authenticated %}
+            <h2 data-aos="fade-up" data-aos-delay="100">Welcome, {{ user.username}}</h2>
+            <p data-aos="fade-up" data-aos-delay="200">You're at the  right place to solve all your housing issues.</p>
+            {% else %}
+            <h2 data-aos="fade-up" data-aos-delay="100">Welcome to our website</h2>
+            <p data-aos="fade-up" data-aos-delay="200">You're at the  right place to solve all your housing issues.</p>
+            {% endif %}
+         
+      </div>-->
+              <div class="search-container">
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" placeholder="Search for estates in Eyang">
+                    <button onclick="searchEstates()">Search </button>
+                </div>
+            </div>
+            </div>
+            <div class="hero-stats">
+  <div class="stat-item">
+    <h3 id="totalEstates">0+</h3>
+    <p>Estates</p>
+  </div>
+  <div class="stat-item">
+    <h3 id="totalStudents">0+</h3>
+    <p>Students</p>
+  </div>
+</div>
+    </section><!-- /Hero Section -->
+<!--{% if user.is_authenticated%}-->
+    <!-- Stats Section 
+    </section> /Stats Section -->
+
+    <!-- Services Section -->
+    <section id="services" class="services section">
+
+      <!-- Section Title 
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Estates</h2>
+        <p>Make a choice and get in as soon as possible.</p>
+      </div>End Section Title -->
+
+      <div class="container">
+<!--{% for estate in estates %}
+        <div style=" flex-direction:column; align-items:center; justify-content:space-evenly"class="col gy-4">
+
+          <div class="col-lg- " data-aos="fade-up" data-aos-delay="600">
+            <div  style=justify-content:space-evenly class="service-item d-flex">-->
+              <!-- <img src="{% static '' %}" class="img-fluid" alt=""> 
+              <img class="image1" src="{% static '{estate.PIC}' %}" alt=""> 
+              <div class="icon flex-shrink-0"><i class="bi bi-buildings"></i></div>
+              <div >
+                <h2 class="title"><a href="post/{{estate.id}} " class="stretched-link">{{estate.name}}</a></h2>
+                <p>Capacity: {{estate.capacity}}</p>
+                <p>Free rooms: {{estate.free}}</p>
+                <p>Distance: {{estate.distance}} metres away from campus</p>
+                <p>Rating: {{estate.rating}}</p>
+              </div>
+            </div>
+           
+          </div>--->
+          <!-- End Service Item -->
+
+
+     <!---- </div>
+ {% endfor%}
+      </div>-->
+
+    </section><!-- /Services Section -->
+
+    <!-- Features Section -->
+    <section id="features" class="features section">
+
+      <!-- Section Title -->
+       <main id="mainContent">
+        <!-- Estates Section -->
+        <section class="Estates" id="Estates">
+            <div class="container">
+                <!-- Filter Tabs -->
+                <div class="filter-container">
+                    <button class="filter-btn active" onclick="filterEstates('all')">All</button>
+                    <button class="filter-btn" onclick="filterEstates('Budget Friendly')">Budget Friendly</button>
+                    <button class="filter-btn" onclick="filterEstates('Large_Space')">Large_Space</button>
+                    <button class="filter-btn" onclick="filterEstates('TV_Fridge')">TV_Fridge</button>
+                    <button class="filter-btn" onclick="filterEstates('WIFI')">WIFI</button>
+                    <button class="filter-btn" onclick="filterEstates('Generator')">Generator</button>
+                    <button class="filter-btn" onclick="filterEstates('Distance')">Distance</button>
+                    <button class="filter-btn" onclick="filterEstates('Security')">Security</button>
+                    <button class="filter-btn" onclick="filterEstates('Restaurant')">Restaurant</button>
+                    <!-- Add more as needed -->
+                </div>
+              
+
+                <div id="EstateGrid" class="Estate-grid"></div>
+            </div>
+        </section>
+   <!-- Scroll to Top Button -->
+    <button class="scroll-to-top" id="scrollToTop" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+  <!----
+      <div class="container">
+
+        <div class="row gy-4 align-items-center features-item">
+          <div class="col-lg-5 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="200">
+            <h3>// To modify</h3>
+            <p> // </p>
+          
+          </div>
+          <div class="col-lg-7 order-1 order-lg-2 d-flex align-items-center" data-aos="zoom-out" data-aos-delay="100">
+            <div class="image-stack">
+              <img src="{% static 'assets/img/Estate Images/DJI_0075.jpg' %}" alt="" class="stack-front">
+              <img src="{% static 'assets/img/Estate Images/DJI_0071.jpg' %}" alt="" class="stack-back">
+            </div>
+          </div>
+        </div>--><!-- Features Item -->
+<!---
+        <div class="row gy-4 align-items-center features-item">
+          <div class="col-lg-5 order-2 order-lg-1" data-aos="fade-up" data-aos-delay="200">
+            <h3>// To modify</h3>
+            <p> // </p>
+          
+          </div>
+          <div class="col-lg-7 order-1 order-lg-2 d-flex align-items-center" data-aos="zoom-out" data-aos-delay="100">
+            <div class="image-stack">
+              <img src="{% static 'assets/img/Estate Images/DJI_0076.jpg' %}" alt="" class="stack-front">
+              <img src="{% static 'assets/img/Estate Images/DJI_0078 copy.jpg' %}" alt="" class="stack-back">
+            </div>
+          </div>
+        </div>--><!-- Features Item 
+
+        <div class="row gy-4 align-items-stretch justify-content-between features-item ">
+          <div class="col-lg-6 d-flex align-items-center features-img-bg" data-aos="zoom-out">
+            <img src="{% static 'assets/img/Estate Images/DJI_0081.jpg' %}" class="img-fluid" alt="">
+          </div>
+          <div class="col-lg-5 d-flex justify-content-center flex-column" data-aos="fade-up">
+            <h3>// To modify</h3>
+            <p>// To modify</p>
+            <ul>
+              <li><i class="bi bi-check"></i> <span>// To modify</span></li>
+              <li><i class="bi bi-check"></i><span> // To modify</span></li>
+              <li><i class="bi bi-check"></i> <span>// To modify</span>.</li>
+            </ul>
+            <a href="#" class="btn btn-get-started align-self-start">GGG</a>
+          </div>
+        </div>--><!-- Features Item -->
+
+      <!--</div>
+
+    </section>--><!-- /Features Section -->
+
+    
+
+    <!-- Recent Posts Section 
+    <section id="recent-posts" class="recent-posts section">-->
+
+      <!-- Section Title 
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Recent Posts</h2>
+        <p>Be informed about the latest rooms deployed and information about the area.</p>-->
+     <!---- </div>
+     
+ 
+      <div class="container">
+
+         <div class="row gy-4">
+              {% for recent in recent %}
+          <div class="col-xl-4 col-md-6" data-aos="fade-up" data-aos-delay="{{recent.data_aos}}">
+            <article>
+
+              <div class="post-img">
+                <img src="assets/img/blog/blog-1.jpg" alt="" class="img-fluid">
+              </div>
+
+              <h2 class="post-category">{{recent.name}}</h2>
+
+              <h1 class="title">
+                <a href="rpost/{{recent.id}}">{{recent.info}}</a>
+              </h1>
+
+              <div class="d-flex align-items-center">
+                <img src="assets/img/blog/blog-author.jpg" alt="" class="img-fluid post-author-img flex-shrink-0">
+                <div class="post-meta">
+                  <p class="post-author">{{recent.author}}</p>
+                  <p class="post-date">
+                    <time datetime="2022-01-01">{{recent.date}}</time>
+                  </p>
+                </div>
+              </div>
+
+            </article>
+          
+          </div>--><!-- End post list item -->
+ <!--{% endfor %}-->
+      
+    </section><!-- /Recent Posts Section -->
+  </main>
+  
+  <footer><center>
+  <h5>Under a safe shelter knowlege comes best.</h5>
+</center>  
+</footer>
+  <!--{% endif%}-->
+  <!-- Scroll Top 
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">FFFF<i class="bi bi-arrow-up-short"></i></a>
+--->
+  <!-- Preloader -->
+  <div id="preloader"></div>
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
+  <script src="{% static 'assets/vendor/imagesloaded/imagesloaded.pkgd.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/isotope-layout/isotope.pkgd.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+
+  <!-- Main JS File -->
+  <script src="{% static 'assets/js/main.js' %}"></script>
+   <script src="/Static/assets/js/Data.js"></script>
+    <script src="/Static/assets/js/New_main.js"></script>
+  <script src="/Static/assets/js/Estates.js"></script>
+ 
+
+
+</body>
+
+</html>
