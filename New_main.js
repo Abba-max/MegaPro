@@ -1,15 +1,4 @@
 // Main application controller
-
-// --- Dummy Data (replace with real data or import as needed) ---
-window.ordersData = window.ordersData || [];
-window.userData = window.userData || { Residents: [] };
-
-// --- EstateData assumed to be loaded globally from Data.js ---
-window.EstateData = EstateData;
-
-// --- Global for PWA install prompt ---
-let deferredPrompt = null;
-
 // Initialize application
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
@@ -19,55 +8,61 @@ function initializeApp() {
     // Hide preloader
     setTimeout(() => {
         const preloader = document.getElementById('preloader');
-        if (preloader) {
-            preloader.classList.add('hide');
-            setTimeout(() => { preloader.style.display = 'none'; }, 500);
-        }
+        preloader.classList.add('hide');
+        setTimeout(() => {
+            preloader.style.display = 'none';
+        }, 500);
     }, 1500);
-
+    
     // Initialize components
     initNavigation();
     initScrollEffects();
     setupModalHandlers();
-
+    
     // Initialize other modules
     initAuth();
 
-    console.log('Eyang Estate initialized successfully!');
+    console.log('Eyang Village initialized successfully!');
 }
 
 // Navigation functionality
 function initNavigation() {
     const navbar = document.getElementById('navbar');
     const navLinks = document.querySelectorAll('.nav-link');
-
+    
     // Navbar scroll effect
     window.addEventListener('scroll', () => {
-        if (navbar) {
-            if (window.scrollY > 50) {
-                navbar.classList.add('scrolled');
-            } else {
-                navbar.classList.remove('scrolled');
-            }
+        if (window.scrollY > 50) {
+            navbar.classList.add('scrolled');
+        } else {
+            navbar.classList.remove('scrolled');
         }
+        
+        // Update scroll to top button
         updateScrollToTopButton();
     });
-
+    
     // Smooth scroll for navigation links
     navLinks.forEach(link => {
         link.addEventListener('click', (e) => {
+            e.preventDefault();
             const targetId = link.getAttribute('href');
-            if (targetId && targetId.startsWith('#')) {
-                e.preventDefault();
+            
+            if (targetId.startsWith('#')) {
                 const targetElement = document.querySelector(targetId);
                 if (targetElement) {
-                    targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    targetElement.scrollIntoView({ 
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                    
+                    // Update active nav link
                     updateActiveNavLink(link);
                 }
             }
         });
     });
-
+    
     // Update active navigation based on scroll position
     window.addEventListener('scroll', updateActiveNavigation);
 }
@@ -103,16 +98,17 @@ function updateActiveNavigation() {
 // Mobile menu toggle
 function toggleMobileMenu() {
     const navMenu = document.getElementById('navMenu');
-    if (navMenu) navMenu.classList.toggle('active');
+    navMenu.classList.toggle('active');
 }
 
 // Scroll effects
 function initScrollEffects() {
+    // Intersection Observer for animations
     const observerOptions = {
         threshold: 0.1,
         rootMargin: '0px 0px -50px 0px'
     };
-
+    
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -120,7 +116,8 @@ function initScrollEffects() {
             }
         });
     }, observerOptions);
-
+    
+    // Observe elements for animation
     document.querySelectorAll('.Estate-card, .stat-card, .content-card').forEach(el => {
         observer.observe(el);
     });
@@ -144,8 +141,8 @@ function scrollToTop() {
 // Modal management
 function setupModalHandlers() {
     // Close modal when clicking outside
-    window.addEventListener('click', (e) => {
-        if (e.target.classList && e.target.classList.contains('modal')) {
+     window.addEventListener('click', (e) => {
+        if (e.target.classList.contains('modal')) {
             closeModal();
         }
     });
@@ -162,9 +159,10 @@ function setupModalHandlers() {
 function showModal(content) {
     // Remove existing modal if any
     const existingModal = document.getElementById('dynamicModal');
-    if (existingModal) existingModal.remove();
-
-    // Create new modal
+    if (existingModal) {
+        existingModal.remove();
+    }
+//Create Modal
     const modal = document.createElement('div');
     modal.id = 'dynamicModal';
     modal.className = 'modal';
@@ -172,35 +170,39 @@ function showModal(content) {
         <div class="modal-overlay"></div>
         ${content}
     `;
+    
     document.body.appendChild(modal);
-
-    setTimeout(() => { modal.classList.add('show'); }, 10);
+    
+    // Show modal with animation
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+    
+    // Prevent body scroll
     document.body.style.overflow = 'hidden';
 }
-
 function closeModal() {
     const modal = document.getElementById('dynamicModal');
     if (modal) {
         modal.classList.remove('show');
-        setTimeout(() => { modal.remove(); }, 300);
+        setTimeout(() => {
+            modal.remove();
+        }, 300);
     }
+    
+    // Restore body scroll
     document.body.style.overflow = '';
 }
 
 // Toast notifications
 function showToast(message, type = 'info', duration = 4000) {
-    let toastContainer = document.getElementById('toastContainer');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toastContainer';
-        toastContainer.className = 'toast-container';
-        document.body.appendChild(toastContainer);
-    }
-
+    const toastContainer = document.getElementById('toastContainer');
+    
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
+    
     const icon = getToastIcon(type);
-
+    
     toast.innerHTML = `
         <i class="${icon}"></i>
         <span>${message}</span>
@@ -208,12 +210,17 @@ function showToast(message, type = 'info', duration = 4000) {
             <i class="fas fa-times"></i>
         </button>
     `;
-
     toastContainer.appendChild(toast);
-
-    setTimeout(() => { toast.classList.add('show'); }, 10);
-    setTimeout(() => { closeToast(toast.querySelector('.toast-close')); }, duration);
+    // Show toast with animation
+    setTimeout(() => {
+        toast.classList.add('show');
+    }, 10);
+    // Auto remove toast
+    setTimeout(() => {
+        closeToast(toast.querySelector('.toast-close'));
+    }, duration);
 }
+
 
 function getToastIcon(type) {
     switch (type) {
@@ -499,21 +506,13 @@ function lazyLoadImages() {
     images.forEach(img => imageObserver.observe(img));
 }
 
-// Estates data manager
-const dataManager = {
-    getAllEstates: () => Object.values(window.EstateData),
-    getEstatesByCategory: (category) => Object.values(window.EstateData).filter(e => (e.features || []).includes(category)),
-    searchEstates: (query) => Object.values(window.EstateData).filter(e =>
-        e.name.toLowerCase().includes(query.toLowerCase()) ||
-        (e.description && e.description.toLowerCase().includes(query.toLowerCase()))
-    )
-};
 
 // Initialize performance monitoring and PWA features
 measurePerformance();
 initPWA();
 initAccessibility();
 initTheme();
+
 
 // Auto-sync data every 5 minutes
 setInterval(syncData, 5 * 60 * 1000);
@@ -525,7 +524,7 @@ window.addEventListener('unhandledrejection', (e) => {
 });
 
 // Export main functions for global access
-window.EyangFoodExplorer = {
+window.EyangVillage = {
     showToast,
     showModal,
     closeModal,
@@ -534,11 +533,4 @@ window.EyangFoodExplorer = {
     formatDate
 };
 
-window.openRestaurantPage = function(name) {
-    showToast(`Open details for ${name}`, 'info');
-};
-window.openQuickView = function(name) {
-    showToast(`Quick view for ${name}`, 'info');
-};
-
-console.log('Eyang Estate');
+console.log('Eyang Village');

@@ -1,4 +1,4 @@
-// main.js
+
 const EstateData = {
     'cite universitaire': {
             name: 'Cite Universitaire',
@@ -15,8 +15,7 @@ const EstateData = {
             Security: '24/7 security service',
             phone: '+237 xxx xxx xxx',
             Images: [
-                { name: 'Front View', img: '/Static/assets/img/Estate Images/cite_universitaire.jpg' },
-                { name: 'Room', img: '/Static/assets/img/Estate Images/cite_universitaire_room.jpg' }
+                { name: 'Front View', img: '/Static/assets/img/Estate Images/cite_universitaire.jpg' }
             ],
             features: [ 'Budget Friendly', 'Discipline'],
             
@@ -36,8 +35,7 @@ const EstateData = {
             Security: '24/7 security service',
             phone: '+237 xxx xxx xxx',
             Images: [
-                { name: 'To modify', img: 'To modify' },
-                { name: 'To modify', img: 'To modify' }, 
+                { name: 'Front View', img: '/Static/assets/img/Estate Images/rpn.jpg' }
             ],
             features: [ 'Luxury', 'Comfortable'],
         },
@@ -56,8 +54,7 @@ const EstateData = {
             Security: '24/7 security service',
             phone: '+237 xxx xxx xxx',
             Images: [
-                { name: 'To modify', img: 'To modify' },
-                { name: 'To modify', img: 'To modify' }, 
+                { name: 'Front View', img: '/Static/assets/img/Estate Images/colonel.jpg' }
             ],
             features: [ 'Budget Friendly', 'Discipline'],
         },
@@ -345,4 +342,30 @@ window.EstateData = EstateData;
             }
         });
     }
- */
+ *//*
+const dataManager = {
+    // Estates operations
+    getEstate: (id) => EstateData[id],
+    
+    getAllEstates: () => Object.values(EstateData),
+    
+    getEstatesByCategory: (category) => {
+        return Object.values(EstateData).filter(Estate => 
+            Estate.category.includes(category)
+        );
+    },
+    
+    searchEstates: (query) => {
+        const lowercaseQuery = query.toLowerCase();
+        return Object.values(EstateData).filter(Estate => 
+            Estate.name.toLowerCase().includes(lowercaseQuery) ||
+            Estate.location.toLowerCase().includes(lowercaseQuery) ||
+            Estate.desc.toLowerCase().includes(lowercaseQuery)
+        );
+    }    
+        
+    };
+    
+*/
+ 
+    
