@@ -9,7 +9,8 @@ urlpatterns = [
     path('login', views.login, name='login'),
     path('logout', views.logout, name='logout'),
     path('post/<str:pk>', views.post, name='post'), 
-    path('rpost/<str:pk>', views.rpost, name='rpost') 
+    path('rpost/<str:pk>', views.rpost, name='rpost'),
+    path('Estates', views.estates, name='Estates')
 ]
 
 if settings.DEBUG:

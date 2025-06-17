@@ -15,6 +15,14 @@ def index(request):
     recent= Recentposts.objects.all()
     return render(request, 'index.html', {'features': features,'estates':estates, 'recent' :recent,})
 
+def estates(request):
+    context = {
+    'estates': Estate.objects.all(),
+    }
+    return render(request, 'Estates.html',context)
+
+
+
 def registration(request):
     if request.method == 'POST':
         username = request.POST['username']

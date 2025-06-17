@@ -12,7 +12,47 @@ class Estate(models.Model):
     capacity = models.IntegerField()
     free = models.IntegerField()
     rating = models.CharField(max_length=10)
+    price= models.IntegerField(default=300000)
+    distance= models.IntegerField(default=100)
+    wifi= models.CharField(
+        choices=(
+            ('1','Yes'),
+            ('0','No'),
+            ),
+        default=0
+    )
+    restaurant=models.CharField(
+        choices=(
+            ('1','Yes'),
+            ('0','No'),
+            ),
+        default=0
+    )
+    generator=models.CharField(
+        choices=(
+            ('1','Yes'),
+            ('0','No'),
+            ),
+        default=0
+    )
+    room_size=models.CharField(
+        choices=(
+            ('1','Large'),
+            ('2','Medium'),
+            ('3','Small'),
+            ),
+        default=1
+    )
+    forage=models.CharField(
+        choices=(
+            ('1','Yes'),
+            ('0','No'),
+            ),
+        default=0
+    )
+    
     pic = models.ImageField(upload_to='estates/', blank=True, null=False)
+    
     
 class Recentposts(models.Model):
     name=models.CharField( max_length=50)

@@ -1,0 +1,46 @@
+{% load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+  <link rel="stylesheet" href="{% static 'assets/css/Components.css'%}">
+</head>
+<body>
+    
+
+<main>
+      <div class="container section-title" data-aos="fade-up">
+        <h2>Estates Overview</h2>
+
+        <div class="Estate-grid" id="EstateGrid">
+            <!-- Cite Universitaire -->
+            <div class="Estate-grid" id="EstateGrid">
+                <div class="Estate-img">
+                    <img src="DJI_0075.jpg" alt="">
+                    <div class="rating">3.0 ⭐</div>
+                </div>
+                <div class="Estate-info">
+                    <h3>{{estate.name}}</h3>
+                    <div class="Estate-meta">
+                        <span><i class="fas fa-map-marker-alt"></i> It is located near the school university, at 100m from the school.</span>
+                        <span><i class="fas fa-user"></i> Capacity: 114 double rooms, 10 single rooms</span>
+                        <span><i class="fas fa-wifi"></i> WIFI: NO</span> 
+                      <span><i class="fas fa-tag"></i> Price: 30,000FCFA/month- Double rooms<br> 60,000FCFA/month- Single rooms</span>
+                      <span><i class="fas fa-bed"></i> Free rooms: {{estate.free}}</span>
+                      <span><i class="fas fa-generator"></i> Generator: YES</span>
+                    </div>
+                    <p class="Estate-desc">A great place for students looking for affordable housing options.</p>
+                    <div class="button-group">
+                        <button class="btn" onclick="openRestaurantPage('cite-universitaire')">View Details</button>
+                        <button class="btn btn-outline" onclick="openQuickView('cite-universitaire')">Quick View</button>
+                    </div>
+                </div>
+            </div>
+           <!-- Cite RPN -->
+                 </div><!-- End Section Title -->
+</main>
+</body>
+</html>
