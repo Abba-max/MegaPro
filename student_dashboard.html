@@ -1,0 +1,332 @@
+
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <i class="fas fa-home"></i> Eyang Estate
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <a href="#dashboard" class="nav-item active" onclick="showSection('dashboard')">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#reservations" class="nav-item" onclick="showSection('reservations')">
+                    <i class="fas fa-calendar-check"></i>
+                    <span>My Reservations</span>
+                </a>
+                <a href="#reviews" class="nav-item" onclick="showSection('reviews')">
+                    <i class="fas fa-star"></i>
+                    <span>My Reviews</span>
+                </a>
+                <a href="#profile" class="nav-item" onclick="showSection('profile')">
+                    <i class="fas fa-user"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="#browse" class="nav-item" onclick="window.location.href='index.html#estates'">
+                    <i class="fas fa-search"></i>
+                    <span>Browse Estates</span>
+                </a>
+                <a href="#logout" class="nav-item" onclick="logout()" style="margin-top: auto; border-top: 1px solid #e5e7eb; color: #ef4444;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Logout</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content" id="mainContent">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <div class="header-left">
+                    <h1>Welcome back, <span id="welcomeName">John</span>!</h1>
+                    <p>Here's what's happening with your accommodations</p>
+                </div>
+                <div class="header-right">
+                    <button class="toggle-sidebar" onclick="toggleSidebar()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="notifications">
+                        <button class="btn btn-outline" onclick="showNotifications()">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge" id="notificationCount">3</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Section -->
+            <div id="dashboardSection" class="dashboard-section">
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card blue">
+                        <div class="stat-header">
+                            <span class="stat-title">Active Reservations</span>
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="activeReservations">2</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>1 new this month</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card green">
+                        <div class="stat-header">
+                            <span class="stat-title">Favorite Estates</span>
+                            <div class="stat-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="favoriteCount">5</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i>
+                            <span>2 added recently</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Dashboard Content -->
+                <div class="dashboard-sections">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h3 class="section-title">Recent Reservations</h3>
+                            <a href="#" class="section-action" onclick="showSection('reservations')">View all</a>
+                        </div>
+                        <div id="recentReservations">
+                            <div class="reservation-item">
+                                <img src="" alt="RPN Estate" class="reservation-image">
+                                <div class="reservation-info">
+                                    <div class="reservation-title">RPN Estate</div>
+                                    <div class="reservation-meta"></div>
+                                </div>
+                                <span class="reservation-status status-confirmed">Confirmed</span>
+                            </div>
+
+                            <div class="reservation-item">
+                                <img src="" alt="Cite Verte" class="reservation-image">
+                                <div class="reservation-info">
+                                    <div class="reservation-title">Mini Cite La Grace</div>
+                                    <div class="reservation-meta"></div>
+                                </div>
+                                <span class="reservation-status status-pending">Pending</span>
+                            </div>
+
+                            <div class="reservation-item">
+                                <img src="" alt="Cite Shekina" class="reservation-image">
+                                <div class="reservation-info">
+                                    <div class="reservation-title">Cite Shekina</div>
+                                    <div class="reservation-meta"></div>
+                                </div>
+                                <span class="reservation-status status-rejected">Rejected</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <!-- Quick Actions -->
+                        <div class="section-card" style="margin-bottom: 2rem;">
+                            <div class="section-header">
+                                <h3 class="section-title">Quick Actions</h3>
+                            </div>
+                            <div class="quick-actions">
+                                <a href="index.html#estates" class="action-button">
+                                    <div class="action-icon">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600;">Browse Estates</div>
+                                        <div style="color: #6b7280; font-size: 0.875rem;">Find your perfect room</div>
+                                    </div>
+                                </a>
+
+                                <a href="#" class="action-button" onclick="showSection('reservations')">
+                                    <div class="action-icon">
+                                        <i class="fas fa-plus"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600;">New Reservation</div>
+                                        <div style="color: #6b7280; font-size: 0.875rem;">Reserve a room</div>
+                                    </div>
+                                </a>
+
+                                <a href="#" class="action-button" onclick="showSection('profile')">
+                                    <div class="action-icon">
+                                        <i class="fas fa-user-edit"></i>
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600;">Update Profile</div>
+                                        <div style="color: #6b7280; font-size: 0.875rem;">Manage your info</div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                       
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Other Sections (Hidden by default) -->
+            <div id="reservationsSection" class="dashboard-section" style="display: none;">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">My Reservations</h3>
+                        <a href="/template/index.html" class="section-action">Make New Reservation</a>
+                    </div>
+                    <div id="allReservations">
+                        <div class="empty-state">
+                            <i class="fas fa-calendar-times"></i>
+                            <h3>No reservations yet</h3>
+                            <p>Start browsing estates to make your first reservation</p>
+                            <a href="/template/Estates.html" class="btn btn-primary">Browse Estates</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="favoritesSection" class="dashboard-section" style="display: none;">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Favorite Estates</h3>
+                        <span class="section-action">5 estates saved</span>
+                    </div>
+                    <div id="favoriteEstates">
+                        <!-- Favorites will be loaded here -->
+                        <div class="empty-state">
+                            <i class="fas fa-heart-broken"></i>
+                            <h3>No favorites yet</h3>
+                            <p>Save estates you like to easily find them later</p>
+                            <a href="/template/Estates.html" class="btn btn-primary">Browse Estates</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="reviewsSection" class="dashboard-section" style="display: none;">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">My Reviews</h3>
+                        <span class="section-action">Average rating: 4.5/5</span>
+                    </div>
+                    <div id="userReviews">
+                        <!-- Reviews will be loaded here -->
+                        <div class="empty-state">
+                            <i class="fas fa-star"></i>
+                            <h3>No reviews written</h3>
+                            <p>Share your experience by writing reviews for estates you've stayed at</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="profileSection" class="dashboard-section" style="display: none;">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Profile Settings</h3>
+                    </div>
+                    <div class="profile-form">
+                        <form id="profileForm" onsubmit="updateProfile(event)">
+                            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div class="form-group">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" class="form-input" id="profileName" value="3TE">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-input" id="profileEmail" value="tene@gmail.com">
+                                </div>
+                            </div>
+                            
+                            <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                                <div class="form-group">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-input" id="profilePhone" value="+237 XXX XXX XXX">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Student ID</label>
+                                    <input type="text" class="form-input" id="profileStudentId" value="STU2024001">
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.5rem;">
+                                <label class="form-label">Department</label>
+                                <input type="text" class="form-input" id="profileDepartment" value="Computer Science">
+                            </div>
+                            
+                            <div class="form-group" style="margin-bottom: 1.5rem;">
+                                <label class="form-label">Bio</label>
+                                <textarea class="form-input" id="profileBio" rows="3" placeholder="Tell us about yourself...">Third year Computer Science student looking for comfortable accommodation near campus.</textarea>
+                            </div>
+                            
+                            <div class="form-actions">
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                                <button type="button" class="btn btn-outline" onclick="changePassword()">Change Password</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="helpSection" class="dashboard-section" style="display: none;">
+                <div class="section-card">
+                    <div class="section-header">
+                        <h3 class="section-title">Help & Support</h3>
+                    </div>
+                    <div class="help-content">
+                        <div class="help-categories">
+                            <div class="help-category">
+                                <h4><i class="fas fa-question-circle"></i> Frequently Asked Questions</h4>
+                                <div class="faq-list">
+                                    <div class="faq-item">
+                                        <strong>How do I make a reservation?</strong>
+                                        <p>Browse estates, click "View Details", then "Make Reservation". Fill out the form and wait for owner approval.</p>
+                                    </div>
+                                    <div class="faq-item">
+                                        <strong>What happens after I submit a reservation?</strong>
+                                        <p>The estate owner will review your request and either approve or reject it. You'll receive a notification with their decision.</p>
+                                    </div>
+                                    <div class="faq-item">
+                                        <strong>Can I cancel a reservation?</strong>
+                                        <p>Yes, you can cancel pending reservations. Contact the estate owner for confirmed reservations.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="help-category">
+                                <h4><i class="fas fa-phone"></i> Contact Support</h4>
+                                <div class="contact-options">
+                                    <div class="contact-option">
+                                        <i class="fas fa-envelope"></i>
+                                    </div>
+                                    <div class="contact-option">
+                                        <i class="fab fa-whatsapp"></i>
+                                        <div>
+                                            <strong>WhatsApp</strong>
+                                            <p>+237 XXX XXX XXX</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="/Static/assets/js/dashboard.js"></script>
+
+    
+</body>
