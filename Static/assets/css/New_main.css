@@ -1,18 +1,20 @@
 /* styles/main.css */
 :root {
-    --primary-color: #cfb730;
-    --primary-dark: #097a22;
-    --secondary-color: #1c7733;
-    --accent-color: #ff6b6b;
-    --success-color: #48bb78;
-    --warning-color: #ed8936;
-    --error-color: #f56565;
-    --text-dark: #2d3748;
-    --text-light: #04b453;
-    --text-muted: #a0aec0;
-    --bg-light: #f7fafc;
-    --bg-white: #ffffff;
-    --border-color: #e2e8f0;
+    --primary-blue: #1e40af;
+    --secondary-gold: #f59e0b;
+    --accent-green: #059669;
+    --text-dark: #1f2937;
+    --text-light: #6b7280;
+    --bg-light: #f8fafc;
+    --white: #ffffff;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --border-color: #e5e7eb;
+    --hover-bg: #f3f4f6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --info: #3b82f6;
     --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
@@ -42,7 +44,7 @@ html {
 }
 
 body {
-    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
     color: var(--text-dark);
     background-color: var(--bg-light);
@@ -56,9 +58,8 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        background: linear-gradient(135deg, var(--primary-blue), var(--secondary-gold));
     display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
     z-index: 10000;
@@ -191,7 +192,7 @@ body {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background: var(--primary-color);
+    background: var(   --primary-blue: #1e40af;);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -249,13 +250,18 @@ body {
 
 /* Hero Section */
 .hero {
-      position: relative;
-    min-height: 80vh; /* Adjust height as needed */
-    display: flex;
-    align-items: center;
-    justify-content: center;
+   background: linear-gradient(
+        135deg,
+        rgba(30, 64, 175, 0.9) 0%,
+        rgba(245, 158, 11, 0.8) 100%
+    ),
+    url('/Static/assets/img/photo_2025-06-07_14-00-23.jpg') center/cover;
     color: white;
+    padding: 8rem 2rem 6rem;
+    text-align: center;
+    position: relative;
     overflow: hidden;
+}
 }
 .hero-background {
     position: absolute;
@@ -284,18 +290,15 @@ body {
 
 
 .hero::before {
-    content: '';
+   content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('photo_2025-06-07_14-00-23.jpg');
-    background-size: cover;
-    background-position: center;
-    filter: blur(8px);
-    z-index: 1;
-    opacity: 0.5;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 30% 70%, rgba(245, 158, 11, 0.3), transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(30, 64, 175, 0.3), transparent 50%);
+    pointer-events: none;
 }
 .hero::after {
     content: '';
@@ -307,12 +310,20 @@ body {
     background: linear-gradient(135deg, rgba(214, 179, 26, 0.8), rgba(36, 95, 18, 0.8));
     z-index: 1;
 }
+.hero-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 3rem;
+    animation: fadeInUp 1s ease-out 0.6s both;
+}
 
 .hero-content {
-   position: relative;
-    z-index: 2;
-    max-width: 1200px;
-    width: 100%;
+ max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
     text-align: center;
 }
 .hero-text h1,
@@ -321,12 +332,24 @@ body {
 }
 
 .hero-text p {
-    font-size: 1.25rem;
-    margin-bottom: var(--spacing-2xl);
-    opacity: 0.9;
-    line-height: 1.6;
+ font-size: clamp(1.125rem, 2vw, 1.5rem);
+    margin-bottom: 2.5rem;
+    opacity: 0.95;
+    animation: fadeInUp 1s ease-out 0.3s both;
 }
-
+.hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: 3rem;
+    flex-wrap: wrap;
+    animation: fadeInUp 1s ease-out 0.9s both;
+}
+.hero h1 {
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    margin-bottom: 1.5rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    animation: fadeInUp 1s ease-out;
+}
 .search-container {
  position: relative;
     max-width: 600px;
@@ -694,6 +717,120 @@ body {
     color: var(--text-muted);
     cursor: pointer;
     margin-left: auto;
+}
+.about-section {
+    padding: 6rem 2rem;
+    background: white;
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+}
+
+.about-content h2 {
+    margin-bottom: 1.5rem;
+}
+
+.about-content p {
+    font-size: 1.125rem;
+    margin-bottom: 2rem;
+}
+
+.features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.feature-item i {
+    width: 50px;
+    height: 50px;
+    background: var(--primary-blue);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.feature-item h4 {
+    margin-bottom: 0.5rem;
+}
+
+.about-image {
+    position: relative;
+}
+
+.about-image img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    border-radius: 1rem;
+    box-shadow: var(--shadow-lg);
+}
+
+/* Statistics Section */
+.stats-section {
+    background: var(--primary-blue);
+    color: white;
+    padding: 6rem 2rem;
+    text-align: center;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+.stat-card {
+    padding: 2rem;
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.stat-label {
+    font-size: 1.1rem;
+    opacity: 0.9;
 }
 
 /* Responsive Design */
