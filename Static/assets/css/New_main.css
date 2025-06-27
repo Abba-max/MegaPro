@@ -44,7 +44,7 @@ html {
 }
 
 body {
- font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     line-height: 1.6;
     color: var(--text-dark);
     background-color: var(--bg-light);
@@ -173,68 +173,6 @@ body {
     gap: var(--spacing-md);
 }
 
-.user-info {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-sm);
-    cursor: pointer;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border-radius: var(--radius-lg);
-    transition: var(--transition);
-}
-
-.user-info:hover {
-    background: var(--bg-light);
-}
-
-.user-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background: var(   --primary-blue: #1e40af;);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--bg-white);
-}
-
-.user-dropdown {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    background: var(--bg-white);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
-    padding: var(--spacing-sm);
-    min-width: 150px;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: var(--transition);
-}
-
-.user-info:hover .user-dropdown {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.user-dropdown button {
-    width: 100%;
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: none;
-    background: none;
-    text-align: left;
-    cursor: pointer;
-    border-radius: var(--radius-sm);
-    transition: var(--transition);
-}
-
-.user-dropdown button:hover {
-    background: var(--bg-light);
-}
 
 .mobile-toggle {
     display: none;
@@ -255,13 +193,12 @@ body {
         rgba(30, 64, 175, 0.9) 0%,
         rgba(245, 158, 11, 0.8) 100%
     ),
-    url('/Static/assets/img/photo_2025-06-07_14-00-23.jpg') center/cover;
+    url('/photo_2025-06-24_09-04-19.jpg') center/cover;
     color: white;
     padding: 8rem 2rem 6rem;
     text-align: center;
     position: relative;
     overflow: hidden;
-}
 }
 .hero-background {
     position: absolute;
@@ -269,7 +206,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('photo_2025-06-07_14-00-23.jpg');
+    background-image: url('/photo_2025-06-24_09-04-19.jpg');
     background-size: cover;
     background-position: center;
     filter: blur(8px);
@@ -326,7 +263,8 @@ body {
     z-index: 1;
     text-align: center;
 }
-.hero-text h1,
+.hero-text h2,
+.hero-text h3,
 .hero-text p {
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
@@ -344,7 +282,7 @@ body {
     flex-wrap: wrap;
     animation: fadeInUp 1s ease-out 0.9s both;
 }
-.hero h1 {
+.hero h2 {
     font-size: clamp(2.5rem, 5vw, 4rem);
     margin-bottom: 1.5rem;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
@@ -582,8 +520,7 @@ body {
     margin-bottom: var(--spacing-xl);
 }
 
-.footer-section h3,
-.footer-section h4 {
+.footer-section h4, {
     margin-bottom: var(--spacing-md);
     color: var(--bg-white);
 }
@@ -610,29 +547,6 @@ body {
 
 .footer-section ul li a:hover {
     color: var(--primary-color);
-}
-
-.social-links {
-    display: flex;
-    gap: var(--spacing-md);
-}
-
-.social-links a {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: var(--primary-color);
-    color: var(--bg-white);
-    border-radius: 50%;
-    text-decoration: none;
-    transition: var(--transition);
-}
-
-.social-links a:hover {
-    background: var(--primary-dark);
-    transform: translateY(-2px);
 }
 
 .footer-bottom {
@@ -671,7 +585,7 @@ body {
     transform: translateY(-3px);
 }
 
-/* Toast Notifications */
+ Toast Notifications 
 .toast-container {
     position: fixed;
     top: 90px;
@@ -717,7 +631,7 @@ body {
     color: var(--text-muted);
     cursor: pointer;
     margin-left: auto;
-}
+}/*
 .about-section {
     padding: 6rem 2rem;
     background: white;
@@ -778,7 +692,7 @@ body {
     object-fit: cover;
     border-radius: 1rem;
     box-shadow: var(--shadow-lg);
-}
+}*/
 
 /* Statistics Section */
 .stats-section {
@@ -899,14 +813,14 @@ body {
         right: var(--spacing-lg);
     }
     
-    .toast-container {
+ /*   .toast-container {
         right: var(--spacing-md);
         left: var(--spacing-md);
     }
     
     .toast {
         min-width: auto;
-    }
+    }*/
 }
 
 @media (max-width: 480px) {
