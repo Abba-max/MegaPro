@@ -1,23 +1,10 @@
-const dataManager = {
-    getAllEstates: () => Object.values(window.EstateData),
-    getEstatesByCategory: (category) =>
-        Object.values(window.EstateData).filter(e =>
-            (e.features || []).some(f => f.trim().toLowerCase() === category.trim().toLowerCase())
-        ),
-    searchEstates: (query) =>
-        Object.values(window.EstateData).filter(e =>
-            e.name.toLowerCase().includes(query.toLowerCase()) ||
-            (e.description && e.description.toLowerCase().includes(query.toLowerCase()))
-        )
-};
-window.filterEstates = filterEstates;
+
 
 function initEstates() {
     loadEstates(); // Load all estates by default
     setupSearchFunctionality();
 }
  function createEstateCard(Estate, index) {
-    // Use the first image if available, else a default image
     let imgSrc = '/Static/assets/img/Estate Images/DJI_0071.jpg';
     if (Estate.Images && Estate.Images[0] && Estate.Images[0].img && Estate.Images[0].img !== 'To modify') {
         imgSrc = Estate.Images[0].img;
@@ -36,28 +23,36 @@ function initEstates() {
                     <div class="Estate-meta">
                         <div class="meta-item">
                             <i class="fas fa-map-marker-alt"></i>
-                            <span>${Estate.location || ''}</span>
+                            <span>${Estate.location}</span>
                         </div>
                         <div class="meta-item">
                             <i class="fas fa-users"></i>
-                            <span>${Estate.Capacity || ''}</span>
+                            <span>${Estate.Capacity}</span>
                         </div>
                         <div class="meta-item">
                             <i class="fas fa-tag"></i>
-                            <span>${Estate.budget || ''}</span>
+                            <span>${Estate.Price}</span>
                         </div>
                         <div class="meta-item">
                             <i class="fas fa-generator"></i>
-                            <span>${Estate.Generator || ''}</span>
+                            <span>${Estate.Generator}</span>
                         </div>
                     </div>
                 </div>
-                <p class="Estate-desc">${Estate.description || ''}</p>
+                <p class="Estate-desc">${Estate.description}</p>
                 <div class="Estate-tags">
                     ${(Estate.features || []).slice(0, 3).map(feature => 
                         `<span class="tag">${feature}</span>`
                     ).join('')}
-                    <span class="tag primary">${Estate.Free_rooms || ''}</span>
+                    <span class="tag primary">${Estate.Free_rooms}</span>
+                </div>
+                <div class="Estate-actions">
+                    <button class="btn btn-primary" onclick="openEstateDetails('${Estate.id}')">
+                        <i class="fas fa-eye"></i> View Details
+                    </button>
+                    <button class="btn btn-outline" onclick="openPlaceOrder('${Estate.id}')">
+                        <i class="fas fa-shopping-cart"></i> Quick Order
+                    </button>
                 </div>
             </div>
         </div>
@@ -69,21 +64,19 @@ function loadEstates(filter = 'all') {
     const EstateGrid = document.getElementById('EstateGrid');
     let Estates = dataManager.getAllEstates();
 
-    // Apply filter only if not 'all'
-    if (filter && filter !== 'all') {
+    // Apply filter 
+    if (filter !== 'all') {
         Estates = dataManager.getEstatesByCategory(filter);
     }
 
     // Sort by rating (highest first)
-    Estates.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    Estates.sort((a, b) => b.rating  - a.rating);
 
-    // Update total Estates count
-    const totalEstatesElem = document.getElementById('totalEstates');
-    if (totalEstatesElem) totalEstatesElem.textContent = `${Estates.length}+`;
-
-    // Render estates
-    EstateGrid.innerHTML = Estates.map((Estate, index) =>
-        createEstateCard(Estate, index)
+     // Update total Estates count
+    document.getElementById('totalEstates').textContent = `${Estates.length}+`;
+    
+    EstateGrid.innerHTML = Estates.map((Estate, index) => 
+        createRestaurantCard(Estate, index)
     ).join('');
 
     // Add animation delay for staggered effect
@@ -92,8 +85,6 @@ function loadEstates(filter = 'all') {
         card.style.animationDelay = `${index * 0.1}s`;
         card.classList.add('animate');
     });
-
-    updateStatistics();
 }
 
 // Filter Estates
@@ -101,13 +92,9 @@ function filterEstates(category) {
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
     });
-    if (window.event && window.event.target.classList.contains('filter-btn')) {
-        window.event.target.classList.add('active');
-    }
+     event.target.classList.add('active');
     loadEstates(category);
 }
-window.filterEstates = filterEstates;
-
 // Search functionality
 function setupSearchFunctionality() {
     const searchInput = document.getElementById('searchInput');
@@ -222,10 +209,13 @@ function createEstateDetailsHTML(Estate) {
                 <div class="info-section">
                     <h4><i class="fas fa-info-circle"></i> About</h4>
                     <p><strong>Capacity:</strong> ${Estate.Capacity}</p>
-                    <p><strong>Budget:</strong> ${Estate.budget}</p>
+                    <p><strong>Budget:</strong> ${Estate.Price}</p>
                     <p><strong>Free_Space:</strong> ${Estate.Free}</p>
                     <p><strong>Location:</strong> ${Estate.location}</p>
+                     <p><strong>Space:</strong> ${Estate.Space}</p>
+                    <p><strong>TV_Fridge:</strong> ${Estate.TV_Fridge}</p>
                     <p><strong>Wifi:</strong> ${Estate.WIFI}</p>
+                           <p><strong>Security:</strong> ${Estate.Security}</p>
                     <p><strong>Distance:</strong> ${Estate.Distance}</p>
                     <p><strong>Description:</strong> ${Estate.desc}</p>
                 </div>
@@ -236,27 +226,14 @@ function createEstateDetailsHTML(Estate) {
                         ${Estate.features.map(feature => 
                             `<span class="feature-badge"><i class="fas fa-check"></i> ${feature}</span>`
                         ).join('')}
+                          ${Estate.reservationAvailable ? 
+                            '<span class="feature-badge reservation"><i class="fas fa-truck"></i> Reservation Available</span>' : ''
+                        }
                     </div>
                 </div>
             </div>
             
-            <!-- Assets Section -->
-            <div class="Asset-section">
-                <h4><i class="fas fa-utensils"></i> Assets</h4>
-                <div class="Asset-grid">
-                    ${Estate.Asset.map(item => `
-                        <div class="Asset-item-card ${item.available ? '' : 'unavailable'}">
-                            ${item.img ? `<img src="${item.img}" alt="${item.name}">` : ''}
-                            <div class="Asset-item-info">
-                                <h5>${item.name}</h5>
-                                ${item.description ? `<p class="Asset-item-desc">${item.description}</p>` : ''}
-                                ${!item.available ? '<span class="unavailable-badge">Unavailable</span>' : ''}
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-            
+       
             <!-- Reviews Section -->
             <div class="reviews-section">
                 <h4><i class="fas fa-comments"></i> Reviews (${Estate.reviews.length})</h4>
@@ -319,7 +296,7 @@ function openPlaceOrder(EstateId) {
             </div>
             <div class="modal-body">
                     <div class="Place-order-content">
-                    <form onsubmit="submitQuickOrder(event, '${EstateId}')" id="PlaceOrderForm">
+                    <form onsubmit="submitPlaceOrder(event, '${EstateId}')" id="PlaceOrderForm">
                         <div class="form-group">
                             <label>Your Name</label>
                             <input type="text" name="customerName" required ${appState.currentUser ? `value="${appState.currentUser.name}"` : ''}>
@@ -348,12 +325,11 @@ function submitPlaceOrder(event, EstateId) {
     event.preventDefault();
     const form = event.target;      
     const orderData = {
-        EstateId: EstateId,
-        customerName: form.customerName.value.trim(),
-        customerPhone: form.customerPhone.value.trim(),
-        instructions: form.instructions.value.trim(),
-        date: new Date().toISOString(),
-        status: 'pending'
+    EstateIdId,
+        userId: appState.currentUser ? appState.currentUser.id : null,
+        userName: formData.get('userName'),
+        userPhone: formData.get('userPhone'),
+         instructions: formData.get('instructions')
     };
     const order = dataManager.createOrder(orderData);
     
@@ -436,9 +412,9 @@ function submitReview(event, estateId) {
     }
     
     const reviewData = {
-        restaurantId,
-        customerId: appState.currentUser.id,
-        customerName: appState.currentUser.name,
+        EstateId,
+        userId: appState.currentUser.id,
+        userName: appState.currentUser.name,
         rating,
         comment: formData.get('comment'),
         recommend: formData.get('recommend') === 'on'
@@ -465,21 +441,10 @@ function scrollToEstates() {
 }
 
 function loadMoreEstates() {
-    // This could be implemented to load additional restaurants
-    showToast('All Estates loaded!', 'info');
 }
 
-// Initialize when DOM is loaded
-/*document.addEventListener('DOMContentLoaded', () => {
-    initEstates();
-    
-    // Example
-    const preloader = document.getElementById('preloader');
-    if (preloader) {
-        preloader.classList.add('hide');
-        setTimeout(() => { preloader.style.display = 'none'; }, 500);
-    }
-});*/
+
+
 document.addEventListener('DOMContentLoaded', () => {
     initEstates();
 });

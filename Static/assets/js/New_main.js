@@ -18,10 +18,10 @@ function initializeApp() {
     initNavigation();
     initScrollEffects();
     setupModalHandlers();
-    
+     updateStatistics();
     // Initialize other modules
     initAuth();
-
+    initEstates();
     console.log('Eyang Village initialized successfully!');
 }
 
@@ -240,9 +240,11 @@ function closeToast(closeBtn) {
 
 // Statistics update
 function updateStatistics() {
-    const totalEstates = typeof EstateData !== 'undefined' ? Object.keys(EstateData).length : 0;
-    const totalStudents = userData.Residents.length + 500;
-    animateNumber('totalEstates', totalEstates);
+   const Estates = Object.keys(EstateData).length;
+    const totalStudents = userData.students.length + 500; // Base number + registered users
+    
+    // Animate numbers
+    animateNumber('totalEstates', totalRestaurants);
     animateNumber('totalStudents', totalStudents);
 }
 
@@ -288,137 +290,6 @@ function submitContact(event) {
 }
 
 // Utility functions
-function formatCurrency(amount) {
-    return new Intl.NumberFormat('fr-CM', {
-        style: 'currency',
-        currency: 'XAF',
-        minimumFractionDigits: 0
-    }).format(amount);
-}
-
-function formatDate(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-    });
-}
-
-function formatTime(dateString) {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-}
-
-function generateId() {
-    return Date.now().toString(36) + Math.random().toString(36).substr(2);
-}
-
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
-
-function throttle(func, limit) {
-    let inThrottle;
-    return function() {
-        const args = arguments;
-        const context = this;
-        if (!inThrottle) {
-            func.apply(context, args);
-            inThrottle = true;
-            setTimeout(() => inThrottle = false, limit);
-        }
-    };
-}
-
-// Error handling
-window.addEventListener('error', (e) => {
-    console.error('Application error:', e.error);
-    showToast('An error occurred. Please refresh the page if problems persist.', 'error');
-});
-
-// Performance monitoring
-function measurePerformance() {
-    if ('performance' in window) {
-        window.addEventListener('load', () => {
-            const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
-            console.log(`Page load time: ${loadTime}ms`);
-        });
-    }
-}
-
-// Progressive Web App support
-function initPWA() {
-    // Register service worker (if available)
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js')
-            .then(registration => {
-                console.log('SW registered: ', registration);
-            })
-            .catch(registrationError => {
-                console.log('SW registration failed: ', registrationError);
-            });
-    }
-
-    // Handle install prompt
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        showInstallPrompt();
-    });
-}
-
-function showInstallPrompt() {
-    // Show custom install prompt
-    const installBanner = document.createElement('div');
-    installBanner.className = 'install-banner';
-    installBanner.innerHTML = `
-        <div class="install-content">
-            <i class="fas fa-mobile-alt"></i>
-            <span>Install EyangEstate for quick access!</span>
-            <button onclick="installApp()" class="btn btn-sm btn-primary">Install</button>
-            <button onclick="dismissInstall()" class="btn btn-sm btn-outline">Maybe Later</button>
-        </div>
-    `;
-
-    document.body.appendChild(installBanner);
-
-    setTimeout(() => {
-        installBanner.classList.add('show');
-    }, 1000);
-}
-
-function installApp() {
-    if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then((choiceResult) => {
-            if (choiceResult.outcome === 'accepted') {
-                console.log('User accepted the install prompt');
-            }
-            deferredPrompt = null;
-        });
-    }
-    dismissInstall();
-}
-
-function dismissInstall() {
-    const installBanner = document.querySelector('.install-banner');
-    if (installBanner) {
-        installBanner.remove();
-    }
-}
-
 // Accessibility enhancements
 function initAccessibility() {
     // Skip link for keyboard navigation
@@ -455,40 +326,6 @@ function trapFocus(e, container) {
     }
 }
 
-// Dark mode support (future enhancement)
-function initTheme() {
-    const savedTheme = localStorage.getItem('eyangEstate_theme') || 'light';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches && !localStorage.getItem('eyangEstate_theme')) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-    }
-}
-function toggleTheme() {
-    const currentTheme = document.documentElement.getAttribute('data-theme');
-    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('eyangEstate_theme', newTheme);
-    showToast(`Switched to ${newTheme} mode`, 'info');
-}
-
-// Analytics and tracking (placeholder)
-function trackEvent(eventName, properties = {}) {
-    console.log('Analytics event:', eventName, properties);
-    // In a real application, this would send data to analytics service
-}
-
-function trackPageView(pageName) {
-    console.log('Page view:', pageName);
-    // Track page views for analytics
-}
-
-// Data synchronization (for future server integration)
-function syncData() {
-    // This would sync local data with server
-    console.log('Syncing data...');
-    dataManager.saveToLocalStorage();
-}
-
 // Performance optimization
 function lazyLoadImages() {
     const images = document.querySelectorAll('img[data-src]');
@@ -505,32 +342,25 @@ function lazyLoadImages() {
 
     images.forEach(img => imageObserver.observe(img));
 }
+function trackPageView(pageName) {
+    console.log('Page view:', pageName);
+    // Track page views for analytics
+}
 
+// Data synchronization (for future server integration)
+function syncData() {
+    // This would sync local data with server
+    console.log('Syncing data...');
+    dataManager.saveToLocalStorage();
+}
 
-// Initialize performance monitoring and PWA features
-measurePerformance();
-initPWA();
-initAccessibility();
-initTheme();
-
-
-// Auto-sync data every 5 minutes
 setInterval(syncData, 5 * 60 * 1000);
-
-// Global error handler for unhandled promise rejections
-window.addEventListener('unhandledrejection', (e) => {
-    console.error('Unhandled promise rejection:', e.reason);
-    e.preventDefault();
-});
 
 // Export main functions for global access
 window.EyangVillage = {
     showToast,
     showModal,
     closeModal,
-    trackEvent,
-    formatCurrency,
-    formatDate
 };
 
 console.log('Eyang Village');
