@@ -9,8 +9,8 @@
   <meta name="keywords" content="">
 
   <!-- Favicons -->
-  <link href="{% Static 'assets/img/stats-bg.jpg' %}" rel="icon">
-  <link href="{% Static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
+  <link href="{% static 'assets/img/stats-bg.jpg' %}" rel="icon">
+  <link href="{% static 'assets/img/apple-touch-icon.png' %}" rel="apple-touch-icon">
 
   <!-- Fonts -->
   <link href="https://fonts.googleapis.com" rel="preconnect">
@@ -18,36 +18,35 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800=;1,300;1,400;1,500;1,600;1,700;1,800&family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
 
   <!-- Vendor CSS Files -->
-  <link href="{% Static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
-  <link href="{% Static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
-  <link href="{% Static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
-  <link href="{% Static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
-  <link href="{% Static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
 
   <!-- Main CSS File -->
-  <link href="{% Static 'assets/css/New_main.css'%}" rel="stylesheet">
-  <link href="{% Static 'assets/css/Components.css'%}" rel="stylesheet">
-
+  <link href="{% static 'assets/css/New_main.css'%}" rel="stylesheet">
+  <link href="{% static 'assets/css/Components.css'%}" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 
 </head>
- <!-- Preloader -->
+<body class="index-page">
+    <!-- Preloader -->
     <div class="preloader" id="preloader">
         <div class="spinner"></div>
         <p>Loading Eyang Estate...</p>
     </div>
-
-<body class="index-page">
 
   <header id="header" class="header d-flex align-items-center fixed-top">
     <div class="container-fluid position-relative d-flex align-items-center justify-content-between">
 
       <a class="logo d-flex align-items-center me-auto me-xl-0">
         <!-- Uncomment the line below if you also wish to use an image logo -->
-         <img src="{% Static 'assets/img/stats-bg.jpg' %}" alt="" > 
+         <img src="{% static 'assets/img/stats-bg.jpg' %}" alt="" > 
         <h1 text="title" class="sitename">Eyang Estate </h1><span> </span>
       </a>
 
-      <nav id="navmenu" class="navmenu" >
+      <nav id="navbar" class="navmenu" >
         <ul>
           <li><a href="index.html" class="active">Home</a></li>
           <li class="dropdown"><a href="#"><span></span>Estate <i class="bi bi-chevron-down toggle-dropdown"></i></a>
@@ -74,7 +73,7 @@
     <!-- Hero Section -->
     <section id="hero" class="hero">
       
-      <img src="{% Static 'assets/img/DJI_0078.jpg' %}" alt="" data-aos="fade-in">
+      <img src="{% static 'assets/img/DJI_0078.jpg' %}" alt="" data-aos="fade-in">
 
       <div class="container">
         <div class="row">
@@ -155,7 +154,7 @@
                 <!-- Filter Tabs -->
                 <div class="filter-container">
                     <button class="filter-btn active" onclick="filterEstates('all')">All</button>
-                    <button class="filter-btn active" onclick="filterEstates('Free_rooms')">Free Rooms Available</button>
+                    <button class="filter-btn" onclick="filterEstates('Free_Rooms')">Free Rooms Available</button>
                     <button class="filter-btn" onclick="filterEstates('Budget_Friendly')">Budget Friendly</button>
                     <button class="filter-btn" onclick="filterEstates('Large_Space')">Large_Space</button>
                     <button class="filter-btn" onclick="filterEstates('TV_Fridge')">TV_Fridge</button>
@@ -286,11 +285,11 @@
             
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-number" id="totalEstates">20+</div>
+                    <div class="stat-number" id="totalEstatesStats">20+</div>
                     <div class="stat-label">Quality Estates</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="totalStudents">500+</div>
+                    <div class="stat-number" id="totalStudentsStats">500+</div>
                     <div class="stat-label">Happy Students</div>
                 </div>
                 <div class="stat-card">
@@ -315,19 +314,19 @@
     <div class="toast-container" id="toastContainer"></div>
 
   <!-- Vendor JS Files -->
-  <script src="{% Static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
-  <script src="{% Static 'assets/vendor/php-email-form/validate.js' %}"></script>
-  <script src="{% Static 'assets/vendor/aos/aos.js' %}"></script>
-  <script src="{% Static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
-  <script src="{% Static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
-  <script src="{% Static 'assets/vendor/imagesloaded/imagesloaded.pkgd.min.js' %}"></script>
-  <script src="{% Static 'assets/vendor/isotope-layout/isotope.pkgd.min.js' %}"></script>
-  <script src="{% Static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
+  <script src="{% static 'assets/vendor/imagesloaded/imagesloaded.pkgd.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/isotope-layout/isotope.pkgd.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
 
   <!-- Main JS File -->
-  <script src="{% Static 'assets/js/New_main.js' %}"></script>
-  <script src="{% Static 'assets/js/Data.js' %}"></script>
-  <script src="{% Static 'assets/js/Estates.js' %}"></script>
+  <script src="{% static 'assets/js/New_main.js' %}"></script>
+  <script src="{% static 'assets/js/Data.js' %}"></script>
+  <script src="{% static 'assets/js/Estates.js' %}"></script>
 
 </body>
 
