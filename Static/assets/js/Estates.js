@@ -45,8 +45,8 @@ function initEstates() {
                     <button class="btn btn-primary" onclick="openEstateDetails('${Estate.id}')">
                         <i class="fas fa-eye"></i> View Details
                     </button>
-                    <button class="btn btn-outline" onclick="openPlaceOrder('${Estate.id}')">
-                        <i class="fas fa-shopping-cart"></i> Quick Order
+                    <a href="/quick_order/?estate=${encodeURIComponent(Estate.name)}" class="btn btn-primary">Place Quick Order</a>
+                        
                     </button>
                 </div>
             </div>
@@ -234,15 +234,7 @@ function createEstateDetailsHTML(Estate) {
             <!-- Action Buttons -->
             <div class="Estate-actions-section">
                 <div class="action-buttons">
-                    <button class="btn btn-primary" onclick="openOrderModal('${Estate.id}')">
-                        <i class="fas fa-shopping-cart"></i> Place Order
-                    </button>
-                    <button class="btn btn-secondary" onclick="openReservationModal('${Estate.id}')">
-                        <i class="fas fa-calendar-plus"></i> Make Reservation
-                    </button>
-                    <button class="btn btn-outline" onclick="openReviewModal('${Estate.id}')">
-                        <i class="fas fa-star"></i> Write Review
-                    </button>
+                       <a href="/review/?estate=${encodeURIComponent(Estate.name)}" class="btn btn-secondary">Write Review</a>
                 </div>
             </div>
         </div>
@@ -271,7 +263,7 @@ function openPlaceOrder(EstateId) {
                         </div>
                         <div class="form-group">
                             <label>Special Instructions</label>
-                            <textarea name="instructions" rows="3" placeholder="Any special requests, allergies, or cooking preferences..."></textarea>
+                            <textarea name="instructions" rows="3" placeholder="Any special requests, preferences or specifications..."></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary full-width">
                             <i class="fas fa-shopping-cart"></i> Place Order
@@ -300,10 +292,10 @@ const orderData = {
     
     if (order) {
         closeModal();
-        showToast('Order placed successfully! The restaurant will contact you shortly.', 'success');
+        showToast('Order placed successfully! We will contact you shortly.', 'success');
         
     }
-}
+}/*
 function openReviewModal(EstateId) {
     if (!appState.currentUser) {
         showToast('Please login to write a review', 'warning');
@@ -393,7 +385,7 @@ function submitReview(event, estateId) {
     } else {
         showToast('Failed to submit review. Please try again.', 'error');
     }
-}
+}*/
 function changeMainImage(imageSrc) {
     const mainImage = document.querySelector('.main-img img');
     if (mainImage) {

@@ -2,7 +2,7 @@ const EstateData = {
     'Cite Universitaire': {
         id: 'CU',
         name: 'Cite Universitaire',
-        rating: 3.0,
+        rating: 3.7,
         location: 'It is located near the school campus',
         Capacity: '// to modify',
         Price: '30,000FCFA-double rooms and 60,000FCFA single rooms',
@@ -26,7 +26,7 @@ const EstateData = {
     'RPN': {
         id: 'RPN',
         name: 'RPN',
-        rating: 4.0,
+        rating: 4.4,
         location: 'It is located near the school university',
         Capacity: '//To modify',
         Price: '60,000FCFA single rooms, 120,000FCFA caution,50,000FCFA wifi',
@@ -50,7 +50,7 @@ const EstateData = {
      'Colonel': {
         id: 'Colonel',
         name: 'Colonel/Bao',
-        rating: 3.0,
+        rating: 4.6,
         location: 'It is located near the school campus',
         Capacity: '// to modify',
         Price: '60,000FCFA single rooms',
@@ -64,7 +64,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'NO',
         image: "/static/assets/img/Estate Images/DJI_0081.jpg",
-        category: ['Distance', 'Generator','Budget_Friendly','WIFI'],
+        category: ['Distance', 'Generator','Budget_Friendly','WIFI','Large_Space'],
         images: [
             "/static/assets/img/Estate Images/DJI_0081.jpg"
         ],
@@ -73,7 +73,7 @@ const EstateData = {
      'Bevina': {
         id: 'Bevina',
         name: 'Bevina City',
-        rating: 3.0,
+        rating: 3.8,
         location: 'It is located near the school campus',
         Capacity: '// to modify',
         Price: ' 50,000FCFA single rooms',
@@ -96,7 +96,7 @@ const EstateData = {
      'Verte': {
         id: 'Verte',
         name: 'Mini Cite la Grace',
-        rating: 3.0,
+        rating: 4.5,
         location: 'It is located near the school campus',
         Capacity: '// to modify',
         Price: '60,000FCFA single rooms',
@@ -110,7 +110,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'NO',
         image: "/static/assets/img/Estate Images/DJI_0065.jpg",
-        category: ['Distance', 'Generator','Budget_Friendly','WIFI'],
+        category: ['Distance', 'Generator','Budget_Friendly','WIFI', 'Large_Space'],
         images: [
             "/static/assets/img/Estate Images/DJI_0065.jpg"
         ],
@@ -119,7 +119,7 @@ const EstateData = {
      'Peace': {
         id: 'Peace',
         name: 'City Of Peace',
-        rating: 3.0,
+        rating: 3.8,
         location: 'It is located near the school campus',
         Capacity: '// to modify',
         Price: '50,000FCFA single rooms',
@@ -133,7 +133,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'NO',
         image: "/static/assets/img/Estate Images/DJI_0071.jpg",
-        category: [ 'Budget_Friendly'],
+        category: [ 'Budget_Friendly','Distance'],
         images: [
             "/static/assets/img/Estate Images/DJI_0071.jpg"
         ],
@@ -142,7 +142,7 @@ const EstateData = {
      'Divine': {
         id: 'Divine',
         name: 'Grace Divine',
-        rating: 3.0,
+        rating: 3.7,
         location: 'It is located near the school campus',
         Capacity: '// to modify',
         Price: '50,000FCFA single rooms',
@@ -156,7 +156,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'NO',
         image: "/static/assets/img/Estate Images/DJI_0071.jpg",
-        category: [ 'Generator','Budget_Friendly'],
+        category: [ 'Generator','Budget_Friendly','Distance'],
         images: [
             "/static/assets/img/Estate Images/DJI_0071.jpg"
         ],
@@ -165,7 +165,7 @@ const EstateData = {
      'Providence': {
         id: 'Providence',
         name: 'Providence ',
-        rating: 3.0,
+        rating: 3.9,
         location: 'It is located near the school campus',
         Capacity: '// to modify',
         Price:'00',
@@ -189,7 +189,7 @@ const EstateData = {
      'Toundalia': {
         id: 'Toundalia',
         name: 'Toundalia City',
-        rating: 3.0,
+        rating: 3.8,
         location: 'It is located near the school campus',
         Capacity: '// to modify',
         Price: '60,000FCFA single rooms',
@@ -215,7 +215,7 @@ const EstateData = {
      'TBC': {
         id: 'TBC',
         name: 'TBC',
-        rating: 3.0,
+        rating: 3.5,
         location: 'It is located near the school campus',
         Capacity: '// to modify',
         Price: '60,000FCFA single rooms',
@@ -239,7 +239,7 @@ const EstateData = {
      'Digital': {
         id: 'Digital',
         name: 'Digital CIty',
-        rating: 3.0,
+        rating: 3.5,
         location: 'It is located near the school campus',
         Capacity: '// to modify',
         Price: ' 70,000FCFA single rooms',
@@ -262,7 +262,7 @@ const EstateData = {
      'Shekina': {
         id: 'Shekina',
         name: 'Shekina',
-        rating: 3.0,
+        rating: 4.0,
         location: 'It is located near the school campus',
         Capacity: '// to modify',
         Price: '80,000FCFA single rooms',
@@ -276,7 +276,7 @@ const EstateData = {
         TV_Fridge:'YES',
         Security:'YES',
         image: "/static/assets/img/Estate Images/photo_2024-11-26_08-36-15.jpg",
-        category: ['Security', 'Generator','Restaurant','TV_Fridge','WIFI'],
+        category: ['Security', 'Generator','Distance','Restaurant','TV_Fridge','WIFI'],
         images: [
             "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg"
 
@@ -286,7 +286,7 @@ const EstateData = {
      'Jumeirah': {
         id: 'Jumeirah',
         name: 'Jumeirah',
-        rating: 3.0,
+        rating: 3.5,
         location: 'It is located near the school campus',
         Capacity: '// to modify',
         Price: ' 60,000FCFA single rooms',
@@ -309,11 +309,11 @@ const EstateData = {
      'Heaven': {
         id: 'Heaven',
         name: 'Heaven City',
-        rating: 3.0,
+        rating: 4.0,
         location: 'It is located near the school campus',
-        Capacity: '// to modify',
-        Price: '55,000FCFA single rooms',
-        Free_Rooms: '//',
+        Capacity: '18 rooms',
+        Price: '60,000FCFA single rooms',
+        Free_Rooms: '5 rooms',
         Distance:'Far',
         Space: 'Medium',
         description: 'A good estate for disciplined students',
@@ -334,7 +334,7 @@ const EstateData = {
         name: 'Cite Saint Germain',
         rating: 3.0,
         location: 'It is located near the school campus',
-        Capacity: '// to modify',
+        Capacity: '18 rooms'
         Price: '50,000FCFA single rooms',
         Free_Rooms: '//',
         Distance:'Far',
@@ -353,14 +353,37 @@ const EstateData = {
         ],
         reviews: [],
     },
+     'Hope': {
+        id: 'Hope',
+        name: 'Hope City',
+        rating: 3.8,
+        location: 'It is located near the school campus',
+        Capacity: '39 rooms',
+        Price: '60,000FCFA single rooms',
+        Free_Rooms: '39 rooms',
+        Distance:'Far',
+        Space: 'medium',
+        description: 'A good estate for disciplined students',
+        WIFI: 'YES',
+        Restaurant:'NO',
+        Generator: 'YES',
+        TV_Fridge:'NO',
+        Security:'YES',
+        image: "/static/assets/img/Estate Images/DJI_0076.jpg",
+        category: ['Distance', 'Generator','budget_Friendly'],
+        images: [
+            "/static/assets/img/Estate Images/DJI_0076.jpg"
+        ],
+        reviews: [],
+    },
      'Joseph': {
         id: 'Joseph',
         name: 'Cite Saint Joseph',
-        rating: 3.0,
+        rating: 4.0,
         location: 'It is located near the school campus',
-        Capacity: '// to modify',
+        Capacity: '120 rooms',
         Price: '80,000FCFA single rooms',
-        Free_Rooms: '//',
+        Free_Rooms: '120 rooms',
         Distance:'Far',
         Space: 'Large',
         description: 'A good estate for disciplined students',
@@ -513,43 +536,4 @@ const dataManager = {
         }
     },
     
-    // Statistics
-  
-    // Local storage operations
-    saveToLocalStorage: () => {
-        try {
-            localStorage.setItem('EyangEstate_Estates', JSON.stringify(EstateData));
-            localStorage.setItem('EyangEstate_users', JSON.stringify(userData));
-            localStorage.setItem('EyangEstate_orders', JSON.stringify(ordersData));
-            localStorage.setItem('EyangEstate_reviews', JSON.stringify(reviewsData));
-        } catch (error) {
-            console.error('Error saving to localStorage:', error);
-        }
-    },
-    
-    loadFromLocalStorage: () => {
-        try {
-            const Estates = localStorage.getItem('EyangEstate_restaurants');
-            const users = localStorage.getItem('EyangEstate_users');
-            const orders = localStorage.getItem('EyangEstate_orders');
-            const reviews = localStorage.getItem('EyangEstate_reviews');
-            
-            if (Estates) {
-                Object.assign(EstateData, JSON.parse(Estates));
-            }
-            if (users) {
-                Object.assign(userData, JSON.parse(users));
-            }
-            if (orders) {
-                ordersData.splice(0, ordersData.length, ...JSON.parse(orders));
-            }
-            if (reviews) {
-                reviewsData.splice(0, reviewsData.length, ...JSON.parse(reviews));
-            }
-        } catch (error) {
-            console.error('Error loading from localStorage:', error);
-        }
-    },   
-    // Export data property for external access
-    userData
-};
+}
