@@ -21,7 +21,7 @@
   <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
   <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
   <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
-  <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/glightbox/css
   <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
 
   <!-- Main CSS File -->
@@ -31,6 +31,15 @@
 
 </head>
 <body class="index-page">
+    {% if messages %}
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          {% for message in messages %}
+            showToast("{{ message|escapejs }}", "{{ message.tags }}");
+          {% endfor %}
+        });
+      </script>
+    {% endif %}
     <!-- Preloader -->
     <div class="preloader" id="preloader">
         <div class="spinner"></div>
@@ -44,47 +53,56 @@
          <img src="{% static 'assets/img/photo_2025-06-24_09-04-19.jpg' %}" alt="" > 
         <h1 text="title" class="sitename">Eyang Estate </h1><span> </span>
       </a>-->
+ <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <i class="fas fa-home"></i>
+                <span>Eyang Estate</span>
+            </div>
+            <div class="nav-menu" id="navMenu">
+                <a href="#hero" class="nav-link">Home</a>
+                <a href="#Estates" class="nav-link">Estates</a>
+               <a href="#statistics" class="nav-link">About</a>
+              <a href="#contact-button" class="nav-link">Contact</a>
 
-      <nav id="navbar" class="navmenu">
-  <ul>
-    <li><a href="index.html" class="nav-link active">Home</a></li>
-    <li class="dropdown">
-      <a href="#" class="nav-link"><span></span>Estate <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-      <ul>
-        {% for estate in estates %}
-          <li><a href="post/{{estate.id}}" class="nav-link">{{estate.name}}</a></li>
-        {% endfor %}
-      </ul>
-    </li>
-    <li><a href="index.html" class="nav-link">Contact</a></li>
-  </ul>
-  <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-</nav>
-    {% if user.is_authenticated %}
-      <a class="btn-getstarted" href="logout">Logout</a>
-    {% else %}  
-    <a class="btn-getstarted" href="login">Login or Sign up</a>
-    {% endif%}
-    </div>
+
+            </div>
+
+            <div class="nav-actions">
+                   {% if user.is_authenticated %}
+                <div class="user-info" id="userInfo" style="display: flex;">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <span id="userName">{{ user.username }}</span>
+                    <div class="user-dropdown">
+                           <a href="{% url 'logout' %}">Logout</a>
+                    </div>
+                </div>
+                            {% else %}
+                <a class="btn btn-primary" id="loginBtn" href="{% url 'login' %}">
+    <i class="fas fa-sign-in-alt"></i> Login
+</a>
+     {% endif %}
+                <div class="mobile-toggle" onclick="toggleMobileMenu()">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
   </header>
 
   <main class="main">
     
     <!-- Hero Section -->
-    <section id="hero" class="hero">
+<section id="hero" class="hero {% if not user.is_authenticated %}full-screen{% endif %}">
 
-      <div class="container">
-        <div class="row">
-          <div class="col-lg-10">
+          <div class="hero-content">
+            <div class="hero-text">
+                <h1>Find Your Perfect Home in Eyang</h1>
+                <p>Join our community and find your ideal living space!.<br>Academic excellence starts with comfortable living!</p>
+            </div>
             {% if user.is_authenticated %}
-            <h2 data-aos="fade-up" data-aos-delay="100">Welcome, {{ user.username}}</h2>
-            <p data-aos="fade-up" data-aos-delay="200">You're at the  right place to solve all your housing issues.</p>
-            {% else %}
-            <h2 data-aos="fade-up" data-aos-delay="100">Welcome to our website</h2>
-            <p data-aos="fade-up" data-aos-delay="200">You're at the  right place to solve all your housing issues.</p>
-            {% endif %}
-         
-      </div>
       <div class="search-container">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
@@ -92,6 +110,19 @@
                     <button onclick="searchEstates()">Search </button>
                 </div>
             </div>
+            </div>
+            <div class="hero-actions">
+                <button class="btn btn-secondary" onclick="scrollToEstates()">
+                    <i class="fas fa-home"></i> Explore Estates
+                </button>
+                <a href="{% url 'contact' %}" class="btn btn-outline" id="contact-button">
+  <i class="fas fa-envelope"></i> Contact Us
+</a>
+
+                {% endif %}
+             <a class="btn btn-outline" href="{% url 'login' %}">
+    <i class="fas fa-user-plus"></i> Join Community
+</a>
             </div>
             <div class="hero-stats">
   <div class="stats">
@@ -105,48 +136,16 @@
 </div>
 
     </section><!-- /Hero Section -->
-{% if user.is_authenticated%}
-    <!-- Services Section -->
-    <section id="services" class="services section">
-
-      <!-- Section Title -->
-      <div class="container section-title" data-aos="fade-up">
-        <h2>Estates</h2>
-        <p>Make a choice and get in as soon as possible.</p>
-      </div><!-- End Section Title -->
-
-     <!---- <div class="container">
-     ----{% for estate in estates %}
-        <div style=" flex-direction:column; align-items:center; justify-content:space-evenly"class="col gy-4">
-
-          <div class="col-lg- " data-aos="fade-up" data-aos-delay="600">
-            <div  style=justify-content:space-evenly class="service-item d-flex">-->
-              <!-- <img src="{% static '' %}" class="img-fluid" alt=""> -->
-             <!---- <img class="image1" src="{{ estate.pic.url }}" alt=""> 
-              <div class="icon flex-shrink-0"><i class="bi bi-buildings"></i></div>
-              <div >
-                <h2 class="title"><a href="post/{{estate.id}} " class="stretched-link">{{estate.name}}</a></h2>
-                <p>Capacity: {{estate.capacity}}</p>
-                <p>Free rooms: {{estate.free}}</p>
-                <p>Distance: {{estate.distance}} metres away from campus</p>
-                <p>Rating: {{estate.rating}}</p>
-              </div>
-            </div>
-           
-          </div>-->
-          <!-- End Service Item -->
-
-
-     <!---- </div>
-      {% endfor%}
-    </div>-->
-
-    </section><!-- /Services Section -->
+{% if user.is_authenticated %}
  <section id="features" class="features section">
         <!-- Estates Section -->
         <section class="Estates-section" id="Estates">
-          <h2>Popular  Estates</h2>
-                    <p>Discover the best Estates</p>
+                    <div class="section-header">
+                        <h2>Popular Estates</h2>
+                        <p>Discover the best Estates</p>
+                         <p>Make a choice and get in as soon as possible.</p>
+                         <p>Choose from our wide selection of quality student accommodations in Eyang</p>
+                    </div>
                 <!-- Filter Tabs -->
                 <div class="filter-container">
                     <button class="filter-btn active" onclick="filterEstates(event, 'all')">All</button>
@@ -181,48 +180,10 @@
         <h2>Recent Posts</h2>
         <p>Be informed about the latest rooms deployed and information about the area.</p>
       </div><!-- End Section Title -->
-     
- 
-      <div class="container">
-
-         <div class="row gy-4">
-              {% for recent in recent %}
-          <div class="col-xl-4 col-md-6" data-aos="fade-up" data-aos-delay="{{recent.data_aos}}">
-            <article>
-
-              <div class="post-img">
-                <img src="/static/assets/img/blog/blog-1.jpg" alt="" class="img-fluid">
-              </div>
-
-              <h2 class="post-category">{{recent.name}}</h2>
-
-              <h1 class="title">
-                <a href="rpost/{{recent.id}}">{{recent.info}}</a>
-              </h1>
-
-              <div class="d-flex align-items-center">
-                <img src="assets/img/blog/blog-author.jpg" alt="" class="img-fluid post-author-img flex-shrink-0">
-                <div class="post-meta">
-                  <p class="post-author">{{recent.author}}</p>
-                  <p class="post-date">
-                    <time datetime="2022-01-01">{{recent.date}}</time>
-                  </p>
-                </div>
-              </div>
-
-            </article>
-           
-          </div><!-- End post list item -->
- {% endfor %}
-      
-    </section><!-- /Recent Posts Section -->
-
-
-
   </main>
-  <section class="stats-section">
+  <section id="statistics" class="statistics-section">
         <div class="container">
-            <div class="section-title">
+            <div class="stats-title">
                 <h2>Why Choose Eyang Estate?</h2>
                 <p>Join thousands of satisfied students who found their perfect home</p>
             </div>
@@ -271,6 +232,24 @@
   <script src="{% static 'assets/js/New_main.js' %}"></script>
   <script src="{% static 'assets/js/Data.js' %}"></script>
   <script src="{% static 'assets/js/Estates.js' %}"></script>
+  <style>
+.hero {
+    position: relative;
+    background: url("{% static 'assets/img/photo_2025-06-24_09-04-19.jpg' %}") center/cover no-repeat;
+}
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: inherit;
+    filter: blur(4px) brightness(1.0);
+    z-index: 0;
+}
+.hero > * {
+    position: relative;
+    z-index: 5;
+}
+</style>
 </body>
 </html>
 

@@ -1,0 +1,124 @@
+{% load static %}
+  <style>
+    body {
+      background: linear-gradient(135deg, #1e40af, #f59e0b);
+      font-family: 'Poppins', 'Montserrat', sans-serif;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+    }
+
+    .order-container {
+      max-width: 600px;
+      margin: 5rem auto;
+      background: rgba(255, 255, 255, 0.1);
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    .order-container h2 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    form label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    form input,
+    form textarea {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.95);
+      color: #1e3a8a;
+      font-size: 1rem;
+      font-family: inherit;
+    }
+
+    form textarea {
+      resize: vertical;
+    }
+
+    form button {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 0.5rem;
+      background-color: #f59e0b;
+      color: #1e3a8a;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    form button:hover {
+      background-color: #fff;
+      color: #1e40af;
+    }
+
+    .back-home {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .back-home a {
+      color: #fff;
+      text-decoration: underline;
+      font-weight: 500;
+    }
+
+    .back-home a:hover {
+      color: #f59e0b;
+    }
+
+    @media (max-width: 500px) {
+      .order-container {
+        margin: 2rem 1rem;
+        padding: 1.5rem;
+      }
+
+      .order-container h2 {
+        font-size: 1.5rem;
+      }
+    }
+  </style>
+
+  <div class="order-container">
+    <h2><i class="fas fa-utensils"></i> Place Quick Order – {{ estate_name }}</h2>
+    <form method="POST" action="#">
+      {% csrf_token %}
+      
+      <input type="hidden" name="estate" value="{{ estate_name }}">
+
+      <label for="name">Your Name</label>
+      <input type="text" id="name" name="name" required>
+
+      <label for="phone">Phone Number</label>
+      <input type="tel" id="phone" name="phone" placeholder="+237 6XX XXX XXX" required>
+      <label for="price">Price</label>
+      <input type="number" id="price" name="price" min="1" required>
+
+      <label for="note">Additional Notes (optional)</label>
+      <textarea id="note" name="note" rows="4" placeholder="E.g., no pepper, delivery before 6pm..."></textarea>
+
+      <button type="submit"><i class="fas fa-paper-plane"></i> Submit Order</button>
+    </form>
+
+    <div class="back-home">
+      <p><a href="/"><i class="fas fa-arrow-left"></i> Back to Home</a></p>
+    </div>
+  </div>
+
