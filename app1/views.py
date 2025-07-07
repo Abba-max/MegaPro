@@ -5,6 +5,10 @@ from django.contrib import messages
 from .models import Feature
 from .models import Estate
 from .models import Recentposts
+from .models import Estate, Review
+from .models import Quick_Order
+from django.contrib import messages
+from .models import ContactRequest
 # from django.core.files.storage import default_storage
 from .forms import CommentForm
 
@@ -39,7 +43,8 @@ def registration(request):
           else:
             user = User.objects.create_user(username=username, email=email, password=password)
             user.save()
-            return redirect('/login')
+            messages.success(request, "Registration successful! Welcome to Eyang Estate.")
+            return redirect('login')
         else:
             messages.info(request, 'Password not the same')
             return redirect('registration')
@@ -53,9 +58,10 @@ def login(request):
         user = auth.authenticate(username=username, password=password)
         if user is not None:
             auth.login(request, user)
-            return redirect('/')
+            messages.success(request, f"Welcome back, {user.username}!")
+            return redirect('index')
         else:
-            messages.info(request, 'Credentials not valid')
+            messages.error(request, "Invalid credentials.")
             return render(request, 'login.html')
     else:        
      return render(request, 'login.html')
@@ -84,4 +90,40 @@ def post(request, pk):
 def rpost(request, pk):
   recent = Recentposts.objects.get(id=pk)
   return render(request, 'rpost.html', {'recent': recent})
-
+def contact_view(request):
+    return render(request, 'contact.html')
+def review_view(request):
+    estate_name = request.GET.get('estate', 'Estate')
+    if request.method == 'POST':
+        name = request.POST['name']
+        rating = int(request.POST['rating'])
+        comment = request.POST['comment']
+        estate, created = Estate.objects.get_or_create(name=estate_name)
+        Review.objects.create(estate=estate, name=name, rating=rating, comment=comment)
+        messages.success(request, "Review submitted successfully!")
+        return redirect('index')  
+    return render(request, 'review.html', {'estate_name': estate_name})
+def quick_order_view(request):
+    estate_name = request.GET.get('estate', 'Estate')
+    if request.method == 'POST':
+        QuickOrder.objects.create(
+            estate=request.POST['estate'],
+            name=request.POST['name'],
+            phone=request.POST['phone'],
+            price=request.POST['price'],
+            note=request.POST.get('note', '')
+        )
+        messages.success(request, "Your order has been placed!")
+        return redirect('index')
+    return render(request, 'quick_order.html', {'estate_name': estate_name})
+def contact_view(request):
+    if request.method == 'POST':
+        ContactRequest.objects.create(
+            name=request.POST['name'],
+            email=request.POST['email'],
+            phone=request.POST['phone'],
+            message=request.POST['message']
+        )
+        messages.success(request, "Thanks! Your message was sent.")
+        return redirect('index')
+    return render(request, 'contact.html')
