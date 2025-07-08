@@ -7,27 +7,37 @@
         color: rgb(17, 0, 255);
     }
     h5{
-    color: rgb(255, 38, 0);
+    color:rgb(17, 0, 255);
     }
     body{
-        background-color: burlywood;
+        background-color: rgb(202, 243, 240);
     }
+
+    .login-holder{
+  border-radius:50px;
+  height:40px;
+}
+
+.login-holder:hover{
+  background-color:rgb(149, 225, 238);
+  transition: 1s;
+}
 
 </style>
 
 
 
 
-<form style="display: flex; align-items:center; justify-content:center; background-color:burlywood" method="POST" action="registration" >
+<form style="display: flex; align-items:center; justify-content:center;" method="POST" action="{% url 'registration' %}" >
      {% csrf_token %} 
      <center>{% for message in messages%}
 <h5> {{message}}</h5>
 {% endfor %}
     <h1> Sign up here</h1>
-    <h4>Username: <input type="text" name="username" /> </h4>
-    <h4>email: <input type="email" name="email" /></h4>
-    <h4>Password: <input type="password" name="password" /></h4>
-    <h4>Confirm Password: <input type="password" name="password1" /> </h4> 
+    <h4>Username: <input class= "login-holder"  type="text" name="username" /> </h4>
+    <h4>email: <input class= "login-holder"  type="email" name="email" /></h4>
+    <h4>Password: <input  class= "login-holder" type="password" name="password" /></h4>
+    <h4>Confirm Password: <input class= "login-holder" type="password" name="password1" /> </h4> 
     <input type="submit" />
     <h5>Already have an account? <a class="btn-login" href="{% url 'login' %}">Login</a></h5>
 </center>
@@ -36,10 +46,10 @@
 
 {% if messages %}
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    <!-- document.addEventListener('DOMContentLoaded', function() {
       {% for message in messages %}
         showToast("{{ message|escapejs }}", "{{ message.tags }}");
       {% endfor %}
-    });
+    }); -->
   </script>
 {% endif %}

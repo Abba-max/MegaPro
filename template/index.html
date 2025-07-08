@@ -21,11 +21,7 @@
   <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
   <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
   <link href="{% static 'assets/vendor/aos/aos.css' %}" rel="stylesheet">
-<<<<<<< HEAD
   <link href="{% static 'assets/vendor/glightbox/css/glightbox.min.css' %}" rel="stylesheet">
-=======
-  <link href="{% static 'assets/vendor/glightbox/css
->>>>>>> 056acbe68dee0d433cc623ccf6d3b55aeaf17821
   <link href="{% static 'assets/vendor/swiper/swiper-bundle.min.css' %}" rel="stylesheet">
 
   <!-- Main CSS File -->
@@ -35,18 +31,6 @@
 
 </head>
 <body class="index-page">
-<<<<<<< HEAD
-=======
-    {% if messages %}
-      <script>
-        document.addEventListener('DOMContentLoaded', function() {
-          {% for message in messages %}
-            showToast("{{ message|escapejs }}", "{{ message.tags }}");
-          {% endfor %}
-        });
-      </script>
-    {% endif %}
->>>>>>> 056acbe68dee0d433cc623ccf6d3b55aeaf17821
     <!-- Preloader -->
     <div class="preloader" id="preloader">
         <div class="spinner"></div>
@@ -60,79 +44,34 @@
          <img src="{% static 'assets/img/photo_2025-06-24_09-04-19.jpg' %}" alt="" > 
         <h1 text="title" class="sitename">Eyang Estate </h1><span> </span>
       </a>-->
-<<<<<<< HEAD
 
       <nav id="navbar" class="navmenu">
   <ul>
     <li><a href="index.html" class="nav-link active">Home</a></li>
     <li class="dropdown">
       <a href="#" class="nav-link"><span></span>Estate <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-      <ul>
-        {% for estate in estates %}
+             {% for estate in estates %}
           <li><a href="post/{{estate.id}}" class="nav-link">{{estate.name}}</a></li>
         {% endfor %}
       </ul>
     </li>
-    <li><a href="index.html" class="nav-link">Contact</a></li>
+    <li><a href="{% url 'contact' %}" class="nav-link">Contact</a></li>
   </ul>
   <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-</nav>
-    {% if user.is_authenticated %}
+   {% if user.is_authenticated %}
       <a class="btn-getstarted" href="logout">Logout</a>
     {% else %}  
     <a class="btn-getstarted" href="{% url 'login' %}">Login or Sign up</a>
     {% endif %}
+</nav>
+   
     </div>
-=======
- <nav class="navbar" id="navbar">
-        <div class="nav-container">
-            <div class="nav-brand">
-                <i class="fas fa-home"></i>
-                <span>Eyang Estate</span>
-            </div>
-            <div class="nav-menu" id="navMenu">
-                <a href="#hero" class="nav-link">Home</a>
-                <a href="#Estates" class="nav-link">Estates</a>
-               <a href="#statistics" class="nav-link">About</a>
-              <a href="#contact-button" class="nav-link">Contact</a>
-              <a href="#faq" class="nav-link">FAQ</a>
-
-
-            </div>
-
-            <div class="nav-actions">
-                   {% if user.is_authenticated %}
-                <div class="user-info" id="userInfo" style="display: flex;">
-                    <div class="user-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <span id="userName">{{ user.username }}</span>
-                    <div class="user-dropdown">
-                           <a href="{% url 'logout' %}">Logout</a>
-                    </div>
-                </div>
-                            {% else %}
-                <a class="btn btn-primary" id="loginBtn" href="{% url 'login' %}">
-    <i class="fas fa-sign-in-alt"></i> Login
-</a>
-     {% endif %}
-                <div class="mobile-toggle" onclick="toggleMobileMenu()">
-                    <i class="fas fa-bars"></i>
-                </div>
-            </div>
-        </div>
-    </nav>
->>>>>>> 056acbe68dee0d433cc623ccf6d3b55aeaf17821
   </header>
 
   <main class="main">
     
     <!-- Hero Section -->
-<<<<<<< HEAD
     <section id="hero" class="hero">
-=======
-<section id="hero" class="hero {% if not user.is_authenticated %}full-screen{% endif %}">
->>>>>>> 056acbe68dee0d433cc623ccf6d3b55aeaf17821
 
           <div class="hero-content">
             <div class="hero-text">
@@ -140,7 +79,6 @@
                 <p>Join our community and find your ideal living space!.<br>Academic excellence starts with comfortable living!</p>
             </div>
             {% if user.is_authenticated %}
-<<<<<<< HEAD
             <h2 data-aos="fade-up" data-aos-delay="100">Welcome, {{ user.username}}</h2>
             <p data-aos="fade-up" data-aos-delay="200">You're at the  right place to solve all your housing issues.</p>
             {% else %}
@@ -149,8 +87,6 @@
             {% endif %}
          
       </div>
-=======
->>>>>>> 056acbe68dee0d433cc623ccf6d3b55aeaf17821
       <div class="search-container">
                 <div class="search-box">
                     <i class="fas fa-search"></i>
@@ -167,7 +103,7 @@
   <i class="fas fa-envelope"></i> Contact Us
 </a>
 
-                {% endif %}
+ 
              <a class="btn btn-outline" href="{% url 'login' %}">
     <i class="fas fa-user-plus"></i> Join Community
 </a>
@@ -184,7 +120,6 @@
 </div>
 
     </section><!-- /Hero Section -->
-<<<<<<< HEAD
 {% if user.is_authenticated%}
     <!-- Services Section -->
     <section id="services" class="services section">
@@ -203,35 +138,16 @@
         <section class="Estates-section" id="Estates">
           <h2>Popular  Estates</h2>
                     <p>Discover the best Estates</p>
-=======
-{% if user.is_authenticated %}
- <section id="features" class="features section">
-        <!-- Estates Section -->
-        <section class="Estates-section" id="Estates">
-                    <div class="section-header">
-                        <h2>Popular Estates</h2>
-                        <p>Discover the best Estates</p>
-                         <p>Make a choice and get in as soon as possible.</p>
-                         <p>Choose from our wide selection of quality student accommodations in Eyang</p>
-                    </div>
->>>>>>> 056acbe68dee0d433cc623ccf6d3b55aeaf17821
                 <!-- Filter Tabs -->
                 <div class="filter-container">
                     <button class="filter-btn active" onclick="filterEstates(event, 'all')">All</button>
                     <button class="filter-btn" onclick="filterEstates(event, 'Free_Rooms')">Free Rooms Available</button>
                     <button class="filter-btn" onclick="filterEstates(event, 'Budget_Friendly')">Budget Friendly</button>
                     <button class="filter-btn" onclick="filterEstates(event, 'Large_Space')">Large_Space</button>
-<<<<<<< HEAD
                     <button class="filter-btn" onclick="filterEstates(event, 'TV_Fridge')">TV_Fridge</button>
                     <button class="filter-btn" onclick="filterEstates(event, 'WIFI')">WIFI</button>
                     <button class="filter-btn" onclick="filterEstates(event, 'Generator')">Generator</button>
                     <button class="filter-btn" onclick="filterEstates(event, 'Distance')">Distance</button>
-=======
-                    <button class="filter-btn" onclick="filterEstates(event, 'TV_Fridge')">TV or Fridge Available</button>
-                    <button class="filter-btn" onclick="filterEstates(event, 'WIFI')">WIFI</button>
-                    <button class="filter-btn" onclick="filterEstates(event, 'Generator')">Generator</button>
-                    <button class="filter-btn" onclick="filterEstates(event, 'Distance')">Distance From Campus</button>
->>>>>>> 056acbe68dee0d433cc623ccf6d3b55aeaf17821
                     <button class="filter-btn" onclick="filterEstates(event, 'Security')">Security</button>
                     <button class="filter-btn" onclick="filterEstates(event, 'Restaurant')">Restaurant</button>
                 </div>
@@ -256,41 +172,12 @@
         <h2>Recent Posts</h2>
         <p>Be informed about the latest rooms deployed and information about the area.</p>
       </div><!-- End Section Title -->
-<<<<<<< HEAD
      
  
       <div class="container">
 
          <div class="row gy-4">
-              {% for recent in recent %}
-          <div class="col-xl-4 col-md-6" data-aos="fade-up" data-aos-delay="{{recent.data_aos}}">
-            <article>
-
-              <div class="post-img">
-                <img src="/static/assets/img/blog/blog-1.jpg" alt="" class="img-fluid">
-              </div>
-
-              <h2 class="post-category">{{recent.name}}</h2>
-
-              <h1 class="title">
-                <a href="rpost/{{recent.id}}">{{recent.info}}</a>
-              </h1>
-
-              <div class="d-flex align-items-center">
-                <img src="assets/img/blog/blog-author.jpg" alt="" class="img-fluid post-author-img flex-shrink-0">
-                <div class="post-meta">
-                  <p class="post-author">{{recent.author}}</p>
-                  <p class="post-date">
-                    <time datetime="2022-01-01">{{recent.date}}</time>
-                  </p>
-                </div>
-              </div>
-
-            </article>
-           
-          </div><!-- End post list item -->
- {% endfor %}
-      
+ -->
     </section><!-- /Recent Posts Section -->
 
 
@@ -299,12 +186,6 @@
   <section class="stats-section">
         <div class="container">
             <div class="section-title">
-=======
-  </main>
-  <section id="statistics" class="statistics-section">
-        <div class="container">
-            <div class="stats-title">
->>>>>>> 056acbe68dee0d433cc623ccf6d3b55aeaf17821
                 <h2>Why Choose Eyang Estate?</h2>
                 <p>Join thousands of satisfied students who found their perfect home</p>
             </div>
@@ -329,38 +210,7 @@
             </div>
         </div>
     </section>
-<<<<<<< HEAD
   
-=======
-  <section id="faq" class="faq-section">
-  <div class="container">
-    <h2 class="faq-title">Frequently Asked Questions</h2>
-    <div class="faq-list">
-      <div class="faq-item">
-        <h3>📝 How do I register?</h3>
-        <p>Click on the <strong>"Join Community"</strong> button in the top right or in the hero section, fill in your details, and start using the platform.</p>
-      </div>
-      <div class="faq-item">
-        <h3>🔍 How can I search for estates?</h3>
-        <p>Once logged in, use the search bar on the homepage to find estates by name or location.</p>
-      </div>
-      <div class="faq-item">
-        <h3>⭐ How do I write a review?</h3>
-        <p>Click on the <strong>"Write Review"</strong> button under an estate card and submit your feedback using the form.</p>
-      </div>
-      <div class="faq-item">
-        <h3> How do I place a Reservation?</h3>
-        <p>Click on <strong>"Place Quick Order"</strong> under an estate to select your meal, quantity, and send your request.</p>
-      </div>
-      <div class="faq-item">
-        <h3>📞 How do I contact you?</h3>
-        <p>Click on the <strong>"Contact"</strong> link in the navbar to send us your message via the contact form.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
->>>>>>> 056acbe68dee0d433cc623ccf6d3b55aeaf17821
   <footer>
   <h5>Under a safe shelter knowlege comes best.</h5> 
 </footer>
@@ -382,36 +232,7 @@
 
   <!-- Main JS File -->
   <script src="{% static 'assets/js/New_main.js' %}"></script>
-<<<<<<< HEAD
   <script src="{% static 'assets/js/Data.js' %}"></script>
   <script src="{% static 'assets/js/Estates.js' %}"></script>
 </body>
 </html>
-=======
-    <script src="{% static 'assets/js/Estates.js' %}"></script>
-  <script src="{% static 'assets/js/Data.js' %}"></script>
-
-  <style>
-.hero {
-    position: relative;
-    background: url("{% static 'assets/img/photo_2025-06-24_09-04-19.jpg' %}") center/cover no-repeat;
-}
-.hero::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: inherit;
-    filter: blur(4px) brightness(1.0);
-    z-index: 0;
-}
-.hero > * {
-    position: relative;
-    z-index: 5;
-}
-</style>
-</body>
-</html>
-
-
-
->>>>>>> 056acbe68dee0d433cc623ccf6d3b55aeaf17821

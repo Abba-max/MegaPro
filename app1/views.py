@@ -86,17 +86,18 @@ def rpost(request, pk):
   return render(request, 'rpost.html', {'recent': recent})
 def contact_view(request):
     return render(request, 'contact.html')
+
 def review_view(request):
-    estate_name = request.GET.get('estate', 'Estate')
+    estate = Estate.objects.all()
     if request.method == 'POST':
         name = request.POST['name']
         rating = int(request.POST['rating'])
         comment = request.POST['comment']
-        estate, created = Estate.objects.get_or_create(name=estate_name)
         Review.objects.create(estate=estate, name=name, rating=rating, comment=comment)
         messages.success(request, "Review submitted successfully!")
         return redirect('index')  
-    return render(request, 'review.html', {'estate_name': estate_name})
+    return render(request, 'review.html', {'estate': estate})
+
 def quick_order_view(request):
     estate_name = request.GET.get('estate', 'Estate')
     if request.method == 'POST':

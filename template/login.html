@@ -1,4 +1,4 @@
-{% load static%}
+{% load static %}
 
 <style>
    h1{
@@ -12,7 +12,7 @@ h4{
  
 }
 body{
-  background-color: burlywood;
+  background-color: rgb(185, 236, 234);
 }
 
 .login-holder{
@@ -21,24 +21,24 @@ body{
 }
 
 .login-holder:hover{
-  background-color:rgb(192, 176, 140);
+  background-color:rgb(149, 225, 238);
   transition: 1s;
 }
 
 .btn-login{
   border-radius: 20px;
-  background-color:antiquewhite;
+  background-color:rgb(104, 177, 211);
 }
 
 .btn-login:hover{
-  background-color: blanchedalmond;
+  background-color: rgb(183, 235, 236);
 }
 
 </style> 
 
 
   
-<form style="display: flex; align-items:center; justify-content:center; background-color:burlywood" method="POST" action="{% url 'login' %}" >
+<form style="display: flex; align-items:center; justify-content:center;" method="POST" action="{% url 'login' %}" >
     {% csrf_token %}
    <center >
     {% for message in messages%}
@@ -56,11 +56,11 @@ body{
 
 {% if messages %}
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    <!-- document.addEventListener('DOMContentLoaded', function() {
       {% for message in messages %}
         showToast("{{ message|escapejs }}", "{{ message.tags }}");
       {% endfor %}
-    });
+    }); -->
   </script>
 {% endif %}
 
