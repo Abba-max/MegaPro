@@ -38,7 +38,7 @@ body{
 
 
   
-<form style="display: flex; align-items:center; justify-content:center; background-color:burlywood" method="POST" action="login" >
+<form style="display: flex; align-items:center; justify-content:center; background-color:burlywood" method="POST" action="{% url 'login' %}" >
     {% csrf_token %}
    <center >
     {% for message in messages%}
