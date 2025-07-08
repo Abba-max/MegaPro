@@ -64,6 +64,7 @@
                 <a href="#Estates" class="nav-link">Estates</a>
                <a href="#statistics" class="nav-link">About</a>
               <a href="#contact-button" class="nav-link">Contact</a>
+              <a href="#faq" class="nav-link">FAQ</a>
 
 
             </div>
@@ -152,10 +153,10 @@
                     <button class="filter-btn" onclick="filterEstates(event, 'Free_Rooms')">Free Rooms Available</button>
                     <button class="filter-btn" onclick="filterEstates(event, 'Budget_Friendly')">Budget Friendly</button>
                     <button class="filter-btn" onclick="filterEstates(event, 'Large_Space')">Large_Space</button>
-                    <button class="filter-btn" onclick="filterEstates(event, 'TV_Fridge')">TV_Fridge</button>
+                    <button class="filter-btn" onclick="filterEstates(event, 'TV_Fridge')">TV or Fridge Available</button>
                     <button class="filter-btn" onclick="filterEstates(event, 'WIFI')">WIFI</button>
                     <button class="filter-btn" onclick="filterEstates(event, 'Generator')">Generator</button>
-                    <button class="filter-btn" onclick="filterEstates(event, 'Distance')">Distance</button>
+                    <button class="filter-btn" onclick="filterEstates(event, 'Distance')">Distance From Campus</button>
                     <button class="filter-btn" onclick="filterEstates(event, 'Security')">Security</button>
                     <button class="filter-btn" onclick="filterEstates(event, 'Restaurant')">Restaurant</button>
                 </div>
@@ -208,7 +209,34 @@
             </div>
         </div>
     </section>
-  
+  <section id="faq" class="faq-section">
+  <div class="container">
+    <h2 class="faq-title">Frequently Asked Questions</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <h3>📝 How do I register?</h3>
+        <p>Click on the <strong>"Join Community"</strong> button in the top right or in the hero section, fill in your details, and start using the platform.</p>
+      </div>
+      <div class="faq-item">
+        <h3>🔍 How can I search for estates?</h3>
+        <p>Once logged in, use the search bar on the homepage to find estates by name or location.</p>
+      </div>
+      <div class="faq-item">
+        <h3>⭐ How do I write a review?</h3>
+        <p>Click on the <strong>"Write Review"</strong> button under an estate card and submit your feedback using the form.</p>
+      </div>
+      <div class="faq-item">
+        <h3> How do I place a Reservation?</h3>
+        <p>Click on <strong>"Place Quick Order"</strong> under an estate to select your meal, quantity, and send your request.</p>
+      </div>
+      <div class="faq-item">
+        <h3>📞 How do I contact you?</h3>
+        <p>Click on the <strong>"Contact"</strong> link in the navbar to send us your message via the contact form.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
   <footer>
   <h5>Under a safe shelter knowlege comes best.</h5> 
 </footer>
@@ -230,8 +258,9 @@
 
   <!-- Main JS File -->
   <script src="{% static 'assets/js/New_main.js' %}"></script>
+    <script src="{% static 'assets/js/Estates.js' %}"></script>
   <script src="{% static 'assets/js/Data.js' %}"></script>
-  <script src="{% static 'assets/js/Estates.js' %}"></script>
+
   <style>
 .hero {
     position: relative;
