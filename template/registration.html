@@ -1,55 +1,26 @@
-{% load static %}
-<style>
-    h1{
+{% load static%}
+<link href="{% static 'assets/css/auth.css' %}" rel="stylesheet">
+
+
+  <form id="myform" method= 'POST', action= '{% url 'registration' %}' >
+    {% csrf_token %}
+        <div id="error message"class="error-message">
+            {% for message in messages%}
+             <h5> {{message}}</h5>
+                 {% endfor %}
+        </div>
         
-    font-size:xx-large;
-    font-family: Arial, Helvetica, sans-serif;
-        color: rgb(17, 0, 255);
-    }
-    h5{
-    color:rgb(17, 0, 255);
-    }
-    body{
-        background-color: rgb(202, 243, 240);
-    }
-
-    .login-holder{
-  border-radius:50px;
-  height:40px;
-}
-
-.login-holder:hover{
-  background-color:rgb(149, 225, 238);
-  transition: 1s;
-}
-
-</style>
+         <h1 style="color:rgb(37, 121, 190);"> Sign up here</h1>
+    <p style="color:rgb(37, 121, 190);">Get certified and add value to your profile</p><hr>
+    <h4> <input  type="text" id="inputField" name='username' placeholder="Enter Username" required /> </h4>
+    <h4> <input  type="text" id="inputField" name='email' placeholder="Enter Email Address" required /></h4>
+    <h4>  <input  type="text" id="inputField" name='password' placeholder="Enter Password" required /></h4>
+    <h4>  <input  type="text" id="inputField" name='password1' placeholder="Confirm Password" required /></h4> 
+    <button onclick="validateInput()" type="submit">
+        Save
+    </button>
+   <a href='login/'> <button  type="button">Login</button><a/>
+    </form>
 
 
-
-
-<form style="display: flex; align-items:center; justify-content:center;" method="POST" action="{% url 'registration' %}" >
-     {% csrf_token %} 
-     <center>{% for message in messages%}
-<h5> {{message}}</h5>
-{% endfor %}
-    <h1> Sign up here</h1>
-    <h4>Username: <input class= "login-holder"  type="text" name="username" /> </h4>
-    <h4>email: <input class= "login-holder"  type="email" name="email" /></h4>
-    <h4>Password: <input  class= "login-holder" type="password" name="password" /></h4>
-    <h4>Confirm Password: <input class= "login-holder" type="password" name="password1" /> </h4> 
-    <input type="submit" />
-    <h5>Already have an account? <a class="btn-login" href="{% url 'login' %}">Login</a></h5>
-</center>
-</form>
-<!-- <img src={% static 'assets/img/hero-bg-light.webp' %} > -->
-
-{% if messages %}
-  <script>
-    <!-- document.addEventListener('DOMContentLoaded', function() {
-      {% for message in messages %}
-        showToast("{{ message|escapejs }}", "{{ message.tags }}");
-      {% endfor %}
-    }); -->
-  </script>
-{% endif %}
+<script src="{% static 'auth.js' %}"></script>

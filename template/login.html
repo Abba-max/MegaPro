@@ -1,67 +1,24 @@
-{% load static %}
+{% load static%}
 
-<style>
-   h1{
-    font-size:xx-large;
-    font-family: Arial, Helvetica, sans-serif;
-  color: rgb(0, 81, 255);
-}
-
-h4{
-  color: rgb(255, 60, 0);
- 
-}
-body{
-  background-color: rgb(185, 236, 234);
-}
-
-.login-holder{
-  border-radius:50px;
-  height:40px;
-}
-
-.login-holder:hover{
-  background-color:rgb(149, 225, 238);
-  transition: 1s;
-}
-
-.btn-login{
-  border-radius: 20px;
-  background-color:rgb(104, 177, 211);
-}
-
-.btn-login:hover{
-  background-color: rgb(183, 235, 236);
-}
-
-</style> 
-
-
-  
-<form style="display: flex; align-items:center; justify-content:center;" method="POST" action="{% url 'login' %}" >
+<link href="{% static 'assets/css/auth.css' %}" rel="stylesheet">
+ <form id="myform" method= 'POST', action= '{% url 'login' %}' >
     {% csrf_token %}
-   <center >
-    {% for message in messages%}
-<h4> {{message}}</h5>
-{% endfor %}
-    <h1> Login Page</h1>
-    <h3>Username: <input class="login-holder" type="text" name="username" /></h3>
-    <h3>Password: <input class="login-holder" type="Password" name="password" /></h3>
-    <input class="btn-login" type="submit"/>
+        <div id="error message"class="error-message">
+            {% for message in messages%}
+             <h5> {{message}}</h5>
+                 {% endfor %}
+        </div>
+        
+         <h1 style="color:rgb(37, 121, 190);"> Login </h1>
+    <p style="color:rgb(37, 121, 190);">Get certified and add value to your profile</p><hr>
+   <h4> <input  type="text" id="inputField" name='username' placeholder="Enter Username" required /> </h4>
+    <h4>  <input  type="text" id="inputField" name ='password' placeholder="Enter Password" required></h4>
+   
+    <button onclick="validateInput()" type="submit">Get started</button>
 
-    <h5> If you don't have an account,  <a class="btn-login" href="{% url 'registration' %}">Sign up</a></h5>
-   <!---- <h5> If you don't have an account,  <a class="btn-login" href="registration">Sign up</a></h5>-->
-  </center>
-</form>
+     <h5 > If you don't have an account,  <a style="color:rgb(37, 121, 190);"  href="{% url 'registration' %}">Sign up</a></h5>
+     <a style="color:rgb(37, 121, 190);" href="{% url 'password_reset' %}">Forgot your password?</a>  
+     </form>
 
-{% if messages %}
-  <script>
-    <!-- document.addEventListener('DOMContentLoaded', function() {
-      {% for message in messages %}
-        showToast("{{ message|escapejs }}", "{{ message.tags }}");
-      {% endfor %}
-    }); -->
-  </script>
-{% endif %}
 
-</body>
+<script src="{% static 'auth.js' %}"></script>
