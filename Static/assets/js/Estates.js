@@ -127,7 +127,7 @@ function searchEstates(query = null) {
             <div class="empty-state" style="grid-column: 1 / -1;">
                 <i class="fas fa-search"></i>
                 <h3>No Estates found</h3>
-                <p>Try searching for different keywords like "Generator", "WIFI", or "Fridge".</p>
+                <p>Try searching for different keywords like "Generator", "WIFI","City" or "Cite".</p>
                 <button class="btn btn-primary" onclick="clearSearch()">
                     <i class="fas fa-times"></i> Clear Search
                 </button>
@@ -295,97 +295,7 @@ const orderData = {
         showToast('Order placed successfully! We will contact you shortly.', 'success');
         
     }
-}/*
-function openReviewModal(EstateId) {
-    if (!appState.currentUser) {
-        showToast('Please login to write a review', 'warning');
-        openAuthModal();
-        return;
-    }
-
-    const Estate = dataManager.getEstate(EstateId);
-    if (!Estate) return;
-
-    const modalContent = `
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Write Review - ${Estate.name}</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form onsubmit="submitReview(event, '${EstateId}')" id="reviewForm">
-                    <div class="form-group">
-                        <label>Your Rating</label>
-                        <div class="rating-input" id="ratingInput">
-                            ${[1, 2, 3, 4, 5].map(rating => `
-                                <i class="fas fa-star rating-star" data-rating="${rating}" onclick="setRating(${rating})"></i>
-                            `).join('')}
-                        </div>
-                        <input type="hidden" name="rating" id="selectedRating" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Your Review</label>
-                        <textarea name="comment" rows="4" required placeholder="Share your experience with this estate..."></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>
-                            <input type="checkbox" name="recommend"> I would recommend this estate to others
-                        </label>
-                    </div>
-                    <button type="submit" class="btn btn-primary full-width">
-                        <i class="fas fa-paper-plane"></i> Submit Review
-                    </button>
-                </form>
-            </div>
-        </div>
-    `;
-    
-    showModal(modalContent);
 }
-
-function setRating(rating) {
-    document.getElementById('selectedRating').value = rating;
-    
-    // Update star display
-    const stars = document.querySelectorAll('.rating-star');
-    stars.forEach((star, index) => {
-        if (index < rating) {
-            star.classList.add('active');
-        } else {
-            star.classList.remove('active');
-        }
-    });
-}
-
-function submitReview(event, estateId) {
-    event.preventDefault();
-    
-    const formData = new FormData(event.target);
-    const rating = parseInt(formData.get('rating'));
-    
-    if (!rating) {
-        showToast('Please select a rating', 'warning');
-        return;
-    }
-    
-    const reviewData = {
-        EstateId: estateId,
-        userId: appState.currentUser.id,
-        userName: appState.currentUser.name,
-        rating,
-        comment: formData.get('comment'),
-        recommend: formData.get('recommend') === 'on'
-    };
-    
-    const review = dataManager.createReview(reviewData);
-    
-    if (review) {
-        closeModal();
-        showToast('Review submitted successfully!', 'success');
-    } else {
-        showToast('Failed to submit review. Please try again.', 'error');
-    }
-}*/
 function changeMainImage(imageSrc) {
     const mainImage = document.querySelector('.main-img img');
     if (mainImage) {

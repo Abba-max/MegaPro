@@ -241,7 +241,7 @@ function closeToast(closeBtn) {
 // Statistics update
 function updateStatistics() {
     const totalEstates = Object.keys(EstateData).length;
-    const totalStudents = userData.students.length + 500;
+    const totalStudents = userData.students.length + 100;
     animateNumber('totalEstates', totalEstates);
     animateNumber('totalStudents', totalStudents);
 }
