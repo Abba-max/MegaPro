@@ -6,7 +6,7 @@ from .models import Feature
 from .models import Estate
 from .models import Recentposts
 from .models import Estate, Review
-from .models import Quick_Order
+from .models import QuickOrder
 from django.contrib import messages
 from .models import ContactRequest
 # from django.core.files.storage import default_storage
@@ -69,12 +69,6 @@ def login(request):
 def logout(request):
       auth.logout(request)
       return redirect('/')
-  
-  
-def post(request, pk):
-    estates = Estate.objects.get(id=pk)
-    commentform=CommentForm.objects.get(all)
-    return render(request, 'post.html', {'estates': estates, 'commentform':commentform})
 
 # from django.core.files.storage import default_storage
 

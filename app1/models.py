@@ -79,7 +79,7 @@ class Review(models.Model):
     rating = models.IntegerField()
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-class Quick_Order(models.Model):
+class QuickOrder(models.Model):
     estate = models.CharField(max_length=255)
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
