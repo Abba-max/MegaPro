@@ -10,7 +10,9 @@ urlpatterns = [
     path('logout', views.logout, name='logout'),
     path('post/<str:pk>', views.post, name='post'), 
     path('rpost/<str:pk>', views.rpost, name='rpost'),
-    path('Estates', views.estates, name='Estates')
+    path('contact/', views.contact_view, name='contact'),
+    path('review/', views.review_view, name='review'),
+    path('quick_order/', views.quick_order_view, name='quick_order'),
 ]
 
 if settings.DEBUG:
