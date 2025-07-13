@@ -2,7 +2,7 @@ const EstateData = {
 
     'Cite Universitaire': {
         id: 'CU',
-        name: 'Cite Universitaire',
+        name: 'Cité Universitaire',
         rating: 3.7,
         location: 'It is located near the school campus',
         Capacity: '124 Rooms',
@@ -78,7 +78,7 @@ const EstateData = {
         location: 'It is located near the school campus',
         Capacity: '// Rooms',
         Price: ' 50,000FCFA single Rooms',
-        Free_Rooms: '// Free Rooms',
+        Free_Rooms: '00 Free Rooms',
         Distance:'Near',
         Space: 'Medium',
         description: 'A small estate with around 30 rooms; affordable but sometimes affected by odors and insects.',
@@ -96,7 +96,7 @@ const EstateData = {
     },
      'Verte': {
         id: 'Verte',
-        name: 'Mini Cite la Grace',
+        name: 'Mini Cité la Grace/Cité Verte',
         rating: 4.7,
         location: 'It is located near the school campus',
         Capacity: '// Rooms',
@@ -124,7 +124,7 @@ const EstateData = {
         location: ' Powered by solar energy, close to campus, but rooms are relatively small.',
         Capacity: '// Rooms',
         Price: '50,000FCFA single Rooms',
-        Free_Rooms: '// Free Rooms',
+        Free_Rooms: '00 Free Rooms',
         Distance:'Near',
         Space: 'Small',
         description: 'A good estate for disciplined students',
@@ -194,7 +194,7 @@ const EstateData = {
         location: 'It is located near the school campus',
         Capacity: '// Rooms',
         Price: '60,000FCFA single Rooms',
-        Free_Rooms: '// Free Rooms',
+        Free_Rooms: '00 Free Rooms',
         Distance:'Far',
         Space: 'Medium',
         description: 'A bit far from campus; well-built estate with outdoor kitchens and large room sizes.',
@@ -220,7 +220,7 @@ const EstateData = {
         location: 'It is located near the school campus',
         Capacity: '// Rooms',
         Price: '60,000FCFA single Rooms, 720,000FCFA/Year',
-        Free_Rooms: '// Free Rooms',
+        Free_Rooms: '02 Free Rooms',
         Distance:'Near',
         Space: 'Small',
         description: 'Offers a restaurant and is close to campus, but has small rooms and poor network.',
@@ -239,12 +239,12 @@ const EstateData = {
     },
      'Digital': {
         id: 'Digital',
-        name: 'Digital CIty',
+        name: 'Digital City',
         rating: 3.6,
         location: 'It is located near the school campus',
         Capacity: '// Rooms',
         Price: ' 70,000FCFA single Rooms',
-        Free_Rooms: '// Free Rooms',
+        Free_Rooms: '00 Free Rooms',
         Distance:'Near',
         Space: 'Small',
         description: 'Small room sizes; located after TBC. Features include TV, fridge, restaurant, snooker, and baby foot. Rent is high.',
@@ -253,16 +253,17 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'YES',
         Security:'YES',
-        image: "/static/assets/img/Estate Images/photo_2024-11-26_08-36-26.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-34-58.jpg",
         category: ['Security', 'Generator','Restaurant','TV_Fridge','WIFI'],
         images: [
-            "/static/assets/img/Estate Images/photo_2024-11-26_08-36-26.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-34-58.jpg",
+             "/static/assets/img/Estate Images/photo_2025-07-13_13-34-54.jpg"
         ],
         reviews: [],
     },
      'Shekina': {
         id: 'Shekina',
-        name: 'Shekina',
+        name: 'Shekina City',
         rating: 4.1,
         location: 'It is located near the school campus',
         Capacity: '// Rooms',
@@ -286,7 +287,7 @@ const EstateData = {
     },
      'Jumeirah': {
         id: 'Jumeirah',
-        name: 'Jumeirah',
+        name: 'Jumeirah City',
         rating: 3.6,
         location: 'It is located near the school campus',
         Capacity: '// Rooms',
@@ -300,10 +301,11 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-35-10.jpg",
         category: ['Distance', 'Generator','Budget_Friendly'],
         images: [
-            "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-35-14.jpg",
+
         ],
         reviews: [],
     },
@@ -349,10 +351,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg",
+        image:   "/static/assets/img/Estate Images/photo_2025-07-13_13-33-30.jpg",
         category: [ 'Generator','Budget_Friendly'],
         images: [
-            "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-33-30.jpg"
         ],
         reviews: [],
     },
@@ -361,7 +363,7 @@ const EstateData = {
         name: 'Jerusalem city',
         rating: 3.0,
         location: 'It is located near the school campus',
-        Capacity: '// Rooms',
+        Capacity: '12 Rooms',
         Price: '// FCFA single Rooms',
         Free_Rooms: '// Free Rooms',
         Distance:'Far',
@@ -372,19 +374,20 @@ const EstateData = {
         Generator: 'NO',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg",
+        image:   "/static/assets/img/Estate Images/photo_2025-07-13_13-35-31.jpg",
         category: ['Security','WIFI', 'Generator','Budget_Friendly'],
         images: [
-            "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-35-31.jpg"
+
         ],
         reviews: [],
     },
          'Genie': {
         id: 'Genie',
-        name: 'Cite des Genie',
+        name: 'Cité des Genie',
         rating: 3.0,
         location: 'It is located near the school campus',
-        Capacity: ' // Rooms',
+        Capacity: ' 21 Rooms',
         Price: '60,000FCFA single Rooms',
         Free_Rooms: '// Free Rooms',
         Distance:'Far',
@@ -395,10 +398,11 @@ const EstateData = {
         Generator: 'NO',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-35-39.jpg",
         category: ['Security','WIFI', 'Generator','Budget_Friendly'],
         images: [
-            "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-35-39.jpg",
+               "/static/assets/img/Estate Images/photo_2025-07-13_13-35-35.jpg"
         ],
         reviews: [],
     },
@@ -418,16 +422,16 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'YES',
         Security:'YES',
-        image: "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg",
+        image:  "/static/assets/img/Estate Images/photo_2025-07-13_13-34-36.jpg",
         category: ['Security','WIFI', 'Generator','TV_Fridge'],
         images: [
-            "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-34-36.jpg"
         ],
         reviews: [],
     },
          'FaceDigital': {
         id: 'FaceDigital',
-        name: 'Cite en face Digital',
+        name: 'Sans noms(en face Digital)',
         rating: 3.8,
         location: 'It is located near the school campus',
         Capacity: '// Rooms',
@@ -450,7 +454,7 @@ const EstateData = {
     },
          'FaceTBC': {
         id: 'FaceTBC',
-        name: 'Cite en Face TBC',
+        name: 'Cité en Face TBC',
         rating: 4.0,
         location: 'It is located near the school campus',
         Capacity: '// Rooms',
@@ -473,7 +477,7 @@ const EstateData = {
     },
          'FaceEcole': {
         id: 'FaceEcole',
-        name: 'Cite en Face Ecole',
+        name: 'Cité en Face Ecole',
         rating: 3.5,
         location: 'It is located near the school campus',
         Capacity: '// Rooms',
@@ -625,21 +629,21 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "/static/assets/img/Estate Images/DJI_0076.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-34-04.jpg",
         category: ['WIFI', 'Generator','budget_Friendly'],
         images: [
-            "/static/assets/img/Estate Images/DJI_0076.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-34-04.jpg"
         ],
         reviews: [],
     },
          'Bello': {
         id: 'Bello',
-        name: 'Mini Cite Bello',
+        name: 'Mini Cité Bello',
         rating: 2.7,
         location: 'It is located near the school campus',
-        Capacity: '// Rooms',
-        Price: '// FCFA single Rooms',
-        Free_Rooms: '// Free Rooms',
+        Capacity: '06 Rooms',
+        Price: '20,000 FCFA single Rooms',
+        Free_Rooms: '00 Free Rooms',
         Distance:'Far',
         Space: 'small',
         description: 'Very affordable estate with small rooms.',
@@ -648,16 +652,16 @@ const EstateData = {
         Generator: 'NO',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "/static/assets/img/Estate Images/DJI_0076.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-33-55.jpg",
         category: ['budget_Friendly'],
         images: [
-            "/static/assets/img/Estate Images/DJI_0076.jpg"
+           "/static/assets/img/Estate Images/photo_2025-07-13_13-34-00.jpg"
         ],
         reviews: [],
     },
          'Blanche': {
         id: 'Blanche',
-        name: 'Mini Cite La Blanche',
+        name: 'Mini Cité La Blanche',
         rating: 2.8,
         location: 'It is located near the school campus',
         Capacity: '// Rooms',
@@ -671,16 +675,18 @@ const EstateData = {
         Generator: 'NO',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "/static/assets/img/Estate Images/DJI_0076.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-34-31.jpg",
         category: ['budget_Friendly'],
         images: [
-            "/static/assets/img/Estate Images/DJI_0076.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-34-31.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-34-26.jpg",
+               "/static/assets/img/Estate Images/photo_2025-07-13_13-34-10.jpg"
         ],
         reviews: [],
     },
      'Germain': {
         id: 'Germain',
-        name: 'Cite Saint Germain',
+        name: 'Cité Saint Germain',
         rating: 3.0,
         location: 'It is located near the school campus',
         Capacity: '18 Rooms',
@@ -694,11 +700,11 @@ const EstateData = {
         Generator: 'NO',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-33-50.jpg",
         category: ['Large_Space', 'Budget_Friendly'],
        
         images: [
-            "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-33-50.jpg"
         ],
         reviews: [],
     },
@@ -727,7 +733,7 @@ const EstateData = {
     },
      'Joseph': {
         id: 'Joseph',
-        name: 'Cite Saint Joseph',
+        name: 'Cité Saint Joseph',
         rating: 4.0,
         location: 'It is located near the school campus',
         Capacity: '120 Rooms',
@@ -741,10 +747,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "/static/assets/img/Estate Images/DJI_0076.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-35-26.jpg",
         category: ['Security', 'Generator','Large_Space'],
         images: [
-            "/static/assets/img/Estate Images/DJI_0076.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-35-26.jpg"
         ],
         reviews: [],
     }

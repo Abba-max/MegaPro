@@ -58,8 +58,7 @@ function initEstates() {
                     <button class="btn btn-primary" onclick="openEstateDetails('${Estate.id}')">
                         <i class="fas fa-eye"></i> View Details
                     </button>
-                    <a href="/quick_order/?estate=${encodeURIComponent(Estate.name)}" class="btn btn-primary">Place Quick Order</a>
-                        
+                    <a href="/quick_order/?estate=${encodeURIComponent(Estate.name)}" class="btn btn-primary">Place Reservation</a>
                     </button>
                 </div>
             </div>
@@ -329,7 +328,6 @@ function prevImage() {
 
 // Initialize gallery when modal opens
 function showModal(content) {
-    // ... your existing showModal code ...
     const existingModal = document.getElementById('dynamicModal');
     if (existingModal) {
         existingModal.remove();
@@ -377,11 +375,6 @@ function showModal(content) {
 function scrollToEstates() {
     document.getElementById('Estates').scrollIntoView({ behavior: 'smooth' });
 }
-
-function loadMoreEstates() {
-}
-
-
 
 document.addEventListener('DOMContentLoaded', () => {
     initEstates();

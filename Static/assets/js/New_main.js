@@ -277,7 +277,6 @@ function submitContact(event) {
         timestamp: new Date().toISOString()
     };
 
-    // In a real application, this would be sent to a server
     console.log('Contact form submission:', contactData);
 
     // Show success message
