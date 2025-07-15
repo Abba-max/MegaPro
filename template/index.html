@@ -46,17 +46,17 @@
       </a>-->
 
       <nav id="navbar" class="navmenu">
-  <ul>
-    <li><a href="index.html" class="nav-link active">Home</a></li>
+  
+    <a href="index.html" class="nav-link active">Home</a>
     <li class="dropdown">
-      <a href="#" class="nav-link"><span></span>Estate <i class="bi bi-chevron-down toggle-dropdown"></i></a>
+      <a href="#" class="nav-link"><span></span>Estate <i class="bi bi-chevron-down toggle-dropdown"></a>
              {% for estate in estates %}
-          <li><a href="post/{{estate.id}}" class="nav-link">{{estate.name}}</a></li>
-        {% endfor %}
-      </ul>
+        <a href="post/{{estate.id}}/" class="nav-link">{{estate.name}}</a></li>
+            {% endfor %}
+  
     </li>
-    <li><a href="{% url 'contact' %}" class="nav-link">Contact</a></li>
-  </ul>
+    <a href="{% url 'contact' %}" class="nav-link">Contact</a>
+
   <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
    {% if user.is_authenticated %}
       <a class="btn-getstarted" href="logout">Logout</a>
@@ -64,7 +64,6 @@
     <a class="btn-getstarted" href="{% url 'login' %}">Login or Sign up</a>
     {% endif %}
 </nav>
-   
     </div>
   </header>
 
@@ -136,8 +135,10 @@
  <section id="features" class="features section">
         <!-- Estates Section -->
         <section class="Estates-section" id="Estates">
+          <center>
           <h2>Popular  Estates</h2>
                     <p>Discover the best Estates</p>
+          </center>          
                 <!-- Filter Tabs -->
                 <div class="filter-container">
                     <button class="filter-btn active" onclick="filterEstates(event, 'all')">All</button>
@@ -177,18 +178,20 @@
       <div class="container">
 
          <div class="row gy-4">
- -->
     </section><!-- /Recent Posts Section -->
 
 
 
   </main>
   <section class="stats-section">
-        <div class="container">
-            <div class="section-title">
+    <center>
+    <div class="section-title">
                 <h2>Why Choose Eyang Estate?</h2>
                 <p>Join thousands of satisfied students who found their perfect home</p>
             </div>
+            </center>
+        <div class="container">
+            
             
             <div class="stats-grid">
                 <div class="stat-card">
@@ -213,6 +216,7 @@
   
   <footer>
   <h5>Under a safe shelter knowlege comes best.</h5> 
+  ©Copyright 2025, all RightsReserved.
 </footer>
   {% endif%}
   <!-- Scroll Top -->

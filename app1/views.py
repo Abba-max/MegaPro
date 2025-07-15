@@ -2,11 +2,8 @@ from django.shortcuts import render,redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User,auth
 from django.contrib import messages 
-from .models import Feature
-from .models import Estate
-from .models import Recentposts
-from .models import Estate, Review
-from .models import QuickOrder
+from .models import Feature,Estate, Recentposts, Review, QuickOrder,Global_user
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import ContactRequest
 # from django.core.files.storage import default_storage
@@ -33,6 +30,9 @@ def registration(request):
         email = request.POST['email']
         password = request.POST.get('password')
         password1 = request.POST.get('password1')
+        contact = request.POST.get('contact')
+        status = request.POST.get('status')
+        address = request.POST.get('address')
         if password==password1:
           if User.objects.filter(email=email).exists():
             messages.info(request, 'Email Already Used')
@@ -42,6 +42,7 @@ def registration(request):
             return redirect('/registration')
           else:
             user = User.objects.create_user(username=username, email=email, password=password)
+            Global_user.objects.create(user=user, contact=contact, address=address, status=status)
             user.save()
             messages.success(request, "Registration successful! Welcome to Eyang Estate.")
             return redirect('login')
@@ -87,6 +88,7 @@ def rpost(request, pk):
 def contact_view(request):
     return render(request, 'contact.html')
 
+@login_required
 def review_view(request):
     estate = Estate.objects.all()
     if request.method == 'POST':
@@ -98,6 +100,7 @@ def review_view(request):
         return redirect('index')  
     return render(request, 'review.html', {'estate': estate})
 
+@login_required
 def quick_order_view(request):
     estate_name = request.GET.get('estate', 'Estate')
     if request.method == 'POST':
@@ -111,6 +114,8 @@ def quick_order_view(request):
         messages.success(request, "Your order has been placed!")
         return redirect('index')
     return render(request, 'quick_order.html', {'estate_name': estate_name})
+
+@login_required
 def contact_view(request):
     if request.method == 'POST':
         ContactRequest.objects.create(

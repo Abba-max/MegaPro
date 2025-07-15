@@ -1,6 +1,7 @@
 from django.db import models
 #from django.contrib.postgres.fields import ArrayField
 from PIL import Image
+from django.contrib.auth.models import User
 # from django import pillow
 class Feature(models.Model):
     name = models.CharField(max_length=255)
@@ -97,6 +98,24 @@ class ContactRequest(models.Model):
     submitted_at = models.DateTimeField(auto_now_add=True)
 
          
+class Global_user(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    first_name= models.CharField(max_length=20, null=True)
+    last_name= models.CharField(max_length=20, null=True)
+    contact= models.CharField(max_length=13, null=True)
+    address = models.CharField(max_length=50, null=True)
+    status= models.CharField(
+        max_length=20,
+        default="1",
+        choices=(
+            ("1", "Student"),
+            ("2", "Parent"),
+            ("3", "Local resident"),
+            ("4", "Visitor"),
+        ),
+    )
+    def __str__(self):
+        return self.user.username
 
 
 

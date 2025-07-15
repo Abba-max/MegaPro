@@ -153,7 +153,7 @@ function searchEstates(query = null) {
 function clearSearch() {
     document.getElementById('searchInput').value = '';
     loadEstates();
-
+    
     // Reset active filter
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
