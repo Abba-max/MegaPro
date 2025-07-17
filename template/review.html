@@ -105,15 +105,13 @@
       <input type="text" id="name" name="name" required>
 
       <label for="estate">Estate Name</label>
-       <select id="estate" name="estate" required>
+       <select id="estate" name="estate_name" required>
         <option value="">Choose an estate</option>
-        {% for estate in estates %}
-          <option value="{{ estate.name }}">{{ estate.name }}</option>
+        {% for estate in estate %}
+          <option value="{{estate.name}}">{{ estate.name }}</option>
         {% endfor %}
        </select>
 
-    
-       
       <label for="rating">Rating</label>
       <select id="rating" name="rating" required>
         <option value="">Choose a rating</option>

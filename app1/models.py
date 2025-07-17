@@ -85,7 +85,6 @@ class QuickOrder(models.Model):
     estate = models.CharField(max_length=255)
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
-    price= models.IntegerField()
     note = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     

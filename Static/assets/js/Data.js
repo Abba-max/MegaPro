@@ -32,7 +32,7 @@ const EstateData = {
         Capacity: '59 Rooms',
         Price: '60,000FCFA single Rooms',
         Free_Rooms: '00 Free Rooms',
-       Distance:'Near',
+        Distance:'Near',
         Space: 'Medium',
         description: 'A beautiful and well-maintained estate, but the network connection is sometimes poor.',
         WIFI: 'YES',

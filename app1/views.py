@@ -16,11 +16,11 @@ def index(request):
     recent= Recentposts.objects.all()
     return render(request, 'index.html', {'features': features,'estates':estates, 'recent' :recent,})
 
-def estates(request):
-    context = {
-    'estates': Estate.objects.all(),
-    }
-    return render(request, 'Estates.html',context)
+# def estates(request):
+#     context = {
+#     'estates': Estate.objects.all(),
+#     }
+#     return render(request, 'Estates.html',context)
 
 
 
@@ -93,6 +93,7 @@ def review_view(request):
     estate = Estate.objects.all()
     if request.method == 'POST':
         name = request.POST['name']
+        estate_name=request.POST['estate_name']
         rating = int(request.POST['rating'])
         comment = request.POST['comment']
         Review.objects.create(estate=estate, name=name, rating=rating, comment=comment)
@@ -102,18 +103,15 @@ def review_view(request):
 
 @login_required
 def quick_order_view(request):
-    estate_name = request.GET.get('estate', 'Estate')
     if request.method == 'POST':
         QuickOrder.objects.create(
-            estate=request.POST['estate'],
             name=request.POST['name'],
             phone=request.POST['phone'],
-            price=request.POST['price'],
             note=request.POST.get('note', '')
         )
         messages.success(request, "Your order has been placed!")
         return redirect('index')
-    return render(request, 'quick_order.html', {'estate_name': estate_name})
+    return render(request, 'quick_order.html')
 
 @login_required
 def contact_view(request):
