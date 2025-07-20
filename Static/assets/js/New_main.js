@@ -344,6 +344,7 @@ function trackPageView(pageName) {
     // Track page views for analytics
 }
 
+
 // Data synchronization (for future server integration)
 function syncData() {
     // This would sync local data with server

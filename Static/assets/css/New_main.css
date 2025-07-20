@@ -229,6 +229,12 @@ body {
     transition: background 0.2s, color 0.2s;
 }
 
+.search-btn{
+ background-color:transparent;
+ border-style: double;
+ border-color: white;
+}
+
 .user-dropdown a:hover {
     background: #1e40af;
     color: #fff;

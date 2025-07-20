@@ -72,7 +72,7 @@
           <div class="search-box">
             <i class="fas fa-search"></i>
             <input type="text" id="searchInput" placeholder="Search for estates in Eyang">
-            <button onclick="searchEstates()">Search </button>
+            <button class="search-btn" onclick="searchEstates()">Search </button>
           </div>
         </div>
         <div class="hero-actions">
@@ -84,9 +84,11 @@
           </a>
         </div>
         {% endif %}
+        {% if user.is_authenticated is none %}
         <a class="btn btn-outline" href="{% url 'login' %}">
           <i class="fas fa-user-plus"></i> Join Community
         </a>
+        {% endif %}
         <div class="hero-stats">
           <div class="stats">
             <h3 id="totalEstates">0+</h3>
