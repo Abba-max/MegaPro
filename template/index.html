@@ -84,7 +84,7 @@
           </a>
         </div>
         {% endif %}
-        {% if user.is_authenticated is none %}
+        {% if not user.is_authenticated %}
         <a class="btn btn-outline" href="{% url 'login' %}">
           <i class="fas fa-user-plus"></i> Join Community
         </a>
