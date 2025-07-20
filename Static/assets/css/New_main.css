@@ -229,7 +229,7 @@ body {
     transition: background 0.2s, color 0.2s;
 }
 
-.search-btn{
+.search-btn{ 
  background-color:transparent;
  border-style: double;
  border-color: white;
