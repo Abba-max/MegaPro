@@ -32,7 +32,7 @@ const EstateData = {
         Capacity: '59 Rooms',
         Price: '60,000FCFA single Rooms',
         Free_Rooms: '00 Free Rooms',
-        Distance:'Near',
+       Distance:'Near',
         Space: 'Medium',
         description: 'A beautiful and well-maintained estate, but the network connection is sometimes poor.',
         WIFI: 'YES',
@@ -167,7 +167,7 @@ const EstateData = {
      'Providence': {
         id: 'Providence',
         name: 'First Class City',
-        rating: 3.9,
+        rating: 4.1,
         location: 'It is located after mini cité la blanche,before toundalia at 600m from the school campus',
         Capacity: '39 Rooms',
         Price:'100,000FCFA single Rooms',
@@ -243,9 +243,9 @@ const EstateData = {
      'Digital': {
         id: 'Digital',
         name: 'Digital City',
-        rating: 3.6,
+        rating: 3.8,
         location: 'It is located near TBC at 300m from  the school campus',
-        Capacity: '54 Rooms',
+        Capacity: '36 Rooms',
         Price: ' 70,000FCFA single Rooms',
         Free_Rooms: '00 Free Rooms',
         Distance:'Near',
@@ -260,6 +260,14 @@ const EstateData = {
         category: ['Security', 'Generator','Restaurant','TV_Fridge','WIFI'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-13_13-34-58.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-20_10-38-45.jpg",
+              "/static/assets/img/Estate Images/photo_2025-07-20_10-41-41.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-20_10-42-07.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-20_10-42-10.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-20_10-42-16.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-20_10-42-20.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-20_10-42-28.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-20_10-42-31.jpg",
              "/static/assets/img/Estate Images/photo_2025-07-13_13-34-54.jpg"
         ],
         reviews: [],
@@ -291,7 +299,7 @@ const EstateData = {
      'Jumeirah': {
         id: 'Jumeirah',
         name: 'Jumeirah City',
-        rating: 3.6,
+        rating: 3.8,
         location: 'It is located near Shekina at 500m from the school campus',
         Capacity: '44 Single Rooms 30 double Rooms',
         Price: ' 60,000FCFA single Rooms, 40,000FCFA double rooms',
@@ -417,8 +425,8 @@ const EstateData = {
         name: 'Digital City 2',
         rating: 3.8,
         location: 'It is located near TBC at 200m from the school campus',
-        Capacity: '46 Rooms',
-        Price: '70,000FCFA single Rooms',
+        Capacity: '45 Rooms',
+        Price: '80,000FCFA single Rooms',
         Free_Rooms: '// Free Rooms',
         Distance:'Far',
         Space: 'Medium',
@@ -484,7 +492,7 @@ const EstateData = {
          'FaceEcole': {
         id: 'FaceEcole',
         name: 'Cité en Face Ecole',
-        rating: 3.5,
+        rating: 3.6,
         location: 'It is located near the school campus',
         Capacity: '42 Rooms',
         Price: '40,000FCFA single Rooms',
@@ -606,7 +614,7 @@ const EstateData = {
         rating: 4.0,
         location: 'It is located before Toundalia at 450m from the school campus',
         Capacity: '17 Rooms',
-        Price: '65,000FCFA single Rooms, 85,000FCFA Double Rooms',
+        Price: '65,000FCFA single Rooms, 42,500FCFA Double Rooms',
         Free_Rooms: '17 Free Rooms',
         Distance:'Far',
         Space: 'medium',
@@ -617,7 +625,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'YES',
         image: "/static/assets/img/Estate Images/photo_2025-07-19_16-18-06.jpg",
-        category: [ 'Generator','Security'],
+        category: [ 'Generator','Security','WIFI','Security','Double_Rooms'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-19_16-18-06.jpg",
             "/static/assets/img/Estate Images/photo_2025-07-19_16-18-55.jpg",
@@ -649,7 +657,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'YES',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_13-34-04.jpg",
-        category: ['WIFI', 'Generator','budget_Friendly'],
+        category: ['WIFI', 'Generator','Budget_Friendly'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-13_13-34-04.jpg"
         ],
@@ -672,7 +680,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'NO',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_13-33-55.jpg",
-        category: ['budget_Friendly'],
+        category: ['Budget_Friendly'],
         images: [
            "/static/assets/img/Estate Images/photo_2025-07-13_13-34-00.jpg"
         ],
@@ -695,7 +703,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'NO',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_13-34-31.jpg",
-        category: ['budget_Friendly'],
+        category: ['Budget_Friendly'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-13_13-34-31.jpg",
             "/static/assets/img/Estate Images/photo_2025-07-13_13-34-26.jpg",
@@ -744,7 +752,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'YES',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_19-10-29.jpg",
-        category: ['Distance', 'Generator','budget_Friendly'],
+        category: ['Distance', 'Generator','Budget_Friendly'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-13_19-10-29.jpg"
         ],

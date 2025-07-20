@@ -5,15 +5,6 @@ function initEstates() {
  function createEstateCard(Estate, index) {
     //let imgSrc = Estate.images && Estate.images[0] ? Estate.images[0] : '/Static/assets/img/Estate Images/DJI_0071.jpg';
      const mainImg = Estate.images?.[0] || Estate.image || '/Static/assets/img/Estate Images/DJI_0071.jpg';
-    /*Create thumbnail images if they exist
-    const thumbnails = Estate.images && Estate.images.length > 1 ? 
-        Estate.images.slice(0, 4).map((img, i) => `
-            <div class="thumbnail-img ${i === 0 ? 'active' : ''}" 
-                 style="background-image: url('${img}')"
-                 onclick="event.stopPropagation(); changeMainImage(this, '${img}')">
-                ${i === 3 && Estate.images.length > 4 ? `<div class="more-images">+${Estate.images.length - 4}</div>` : ''}
-            </div>
-        `).join('') : '';*/
         const showThumbs = Estate.images?.length > 1;
     const thumbCount = Math.min(4, Estate.images?.length || 0);
     const extraImages = Estate.images?.length > 4 ? Estate.images.length - 4 : 0;
@@ -165,7 +156,7 @@ function searchEstates(query = null) {
 function clearSearch() {
     document.getElementById('searchInput').value = '';
     loadEstates();
-    
+
     // Reset active filter
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -202,13 +193,13 @@ function createEstateDetailsHTML(Estate) {
             <!-- Estate Images -->
             <div class="Estate-gallery">
                  <div class="main-image">
-                    <img src="${mainImage}" alt="${Estate.name}" id="mainGalleryImage">
+                    <img src="${mainImage}" alt="${Estate.name}" id="mainGalleryImage" loading="lazy">
                     ${images.length > 1 ? `<div class="image-counter">1/${images.length}</div>` : ''}
                 </div>
                        ${images.length > 1 ? `
-                    <div class="gallery-thumbnails" id="galleryThumbnails">
+                    <div class="gallery-thumbnails" id="galleryThumbnails" >
                         ${images.map((img, index) => `
-                            <img src="${img}" alt="${Estate.name}" 
+                            <img src="${img}" alt="${Estate.name} " loading="lazy"
                                  onclick="changeGalleryImage(${index})"
                                  class="${index === 0 ? 'active' : ''}"
                                  data-index="${index}">
