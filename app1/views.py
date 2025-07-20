@@ -82,29 +82,29 @@ def logout(request):
 
 # from django.core.files.storage import default_storage
 
-# def post(request, pk):
-#     if request.method == 'POST':
-#         estate = Estate.objects.get(id=pk)
-#         # if 'pic' in request.FILES:
-#         #     estate.pic = request.FILES['pic']
-#         #     estate.save()
-#     estate = Estate.objects.get(id=pk)
-#     return render(request, 'post.html', {'estates': estate})
+def post(request, pk):
+    if request.method == 'POST':
+        estate = Estate.objects.get(id=pk)
+        # if 'pic' in request.FILES:
+        #     estate.pic = request.FILES['pic']
+        #     estate.save()
+    estate = Estate.objects.get(id=pk)
+    return render(request, 'post.html', {'estates': estate})
   
-# def rpost(request, pk):
-#   recent = Recentposts.objects.get(id=pk)
-#   return render(request, 'rpost.html', {'recent': recent})
-# def review_view(request):
-#     estate_name = request.GET.get('estate', 'Estate')
-#     if request.method == 'POST':
-#         name = request.POST['name']
-#         rating = int(request.POST['rating'])
-#         comment = request.POST['comment']
-#         estate, created = Estate.objects.get_or_create(name=estate_name)
-#         Review.objects.create(estate=estate, name=name, rating=rating, comment=comment)
-#         messages.success(request, "Review submitted successfully!")
-#         return redirect('index')  
-#     return render(request, 'review.html', {'estate_name': estate_name})
+def rpost(request, pk):
+  recent = Recentposts.objects.get(id=pk)
+  return render(request, 'rpost.html', {'recent': recent})
+def review_view(request):
+    estate_name = request.GET.get('estate', 'Estate')
+    if request.method == 'POST':
+        name = request.POST['name']
+        rating = int(request.POST['rating'])
+        comment = request.POST['comment']
+        estate, created = Estate.objects.get_or_create(name=estate_name)
+        Review.objects.create(estate=estate, name=name, rating=rating, comment=comment)
+        messages.success(request, "Review submitted successfully!")
+        return redirect('index')  
+    return render(request, 'review.html', {'estate_name': estate_name})
 @login_required
 def quick_order_view(request):
     if request.method == 'POST':
