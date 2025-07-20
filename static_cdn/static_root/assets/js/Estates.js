@@ -3,13 +3,26 @@ function initEstates() {
     setupSearchFunctionality();
 }
  function createEstateCard(Estate, index) {
-    let imgSrc = Estate.images && Estate.images[0] ? Estate.images[0] : '/Static/assets/img/Estate Images/DJI_0071.jpg';
+    //let imgSrc = Estate.images && Estate.images[0] ? Estate.images[0] : '/Static/assets/img/Estate Images/DJI_0071.jpg';
+     const mainImg = Estate.images?.[0] || Estate.image || '/Static/assets/img/Estate Images/DJI_0071.jpg';
+    /*Create thumbnail images if they exist
+    const thumbnails = Estate.images && Estate.images.length > 1 ? 
+        Estate.images.slice(0, 4).map((img, i) => `
+            <div class="thumbnail-img ${i === 0 ? 'active' : ''}" 
+                 style="background-image: url('${img}')"
+                 onclick="event.stopPropagation(); changeMainImage(this, '${img}')">
+                ${i === 3 && Estate.images.length > 4 ? `<div class="more-images">+${Estate.images.length - 4}</div>` : ''}
+            </div>
+        `).join('') : '';*/
+        const showThumbs = Estate.images?.length > 1;
+    const thumbCount = Math.min(4, Estate.images?.length || 0);
+    const extraImages = Estate.images?.length > 4 ? Estate.images.length - 4 : 0;
     return `
         <div class="Estate-card animate" style="animation-delay:${index * 0.1}s">
-            <div class="Estate-img">
-                <img src="${imgSrc}" alt="${Estate.name}" loading="lazy">
+            <div class="Estate-img-container">
+                <img src="${mainImg}" alt="${Estate.name}" loading="lazy" class="main-img">
                 <div class="Estate-badge rating">
-                    <i class="fas fa-star"></i> ${Estate.rating ? Estate.rating.toFixed(1) : 'N/A'}
+                    <i class="fas fa-star" style="color: gold;"></i> ${Estate.rating ? Estate.rating.toFixed(1) : 'N/A'}
                 </div>
             </div>
             <div class="Estate-content">
@@ -45,8 +58,7 @@ function initEstates() {
                     <button class="btn btn-primary" onclick="openEstateDetails('${Estate.id}')">
                         <i class="fas fa-eye"></i> View Details
                     </button>
-                    <a href="/quick_order/?estate=${encodeURIComponent(Estate.name)}" class="btn btn-primary">Place Quick Order</a>
-                        
+                    <a href="/quick_order/?estate=${encodeURIComponent(Estate.name)}" class="btn btn-primary">Place Reservation</a>
                     </button>
                 </div>
             </div>
@@ -127,7 +139,7 @@ function searchEstates(query = null) {
             <div class="empty-state" style="grid-column: 1 / -1;">
                 <i class="fas fa-search"></i>
                 <h3>No Estates found</h3>
-                <p>Try searching for different keywords like "Generator", "WIFI","City" or "Cite".</p>
+                <p>Try searching for different keywords like  "Mini Cite","City" or "Cite".</p>
                 <button class="btn btn-primary" onclick="clearSearch()">
                     <i class="fas fa-times"></i> Clear Search
                 </button>
@@ -153,7 +165,7 @@ function searchEstates(query = null) {
 function clearSearch() {
     document.getElementById('searchInput').value = '';
     loadEstates();
-
+    
     // Reset active filter
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.remove('active');
@@ -183,22 +195,27 @@ function openEstateDetails(EstateId) {
 }
 
 function createEstateDetailsHTML(Estate) {
+      const images = Estate.images || (Estate.image ? [Estate.image] : []);
+    const mainImage = images[0] || '/Static/assets/img/Estate Images/DJI_0071.jpg';
     return `
         <div class="Estate-details-content">
             <!-- Estate Images -->
             <div class="Estate-gallery">
-                <div class="main-image">
-                    <img src="${Estate.image}" alt="${Estate.name}">
+                 <div class="main-image">
+                    <img src="${mainImage}" alt="${Estate.name}" id="mainGalleryImage">
+                    ${images.length > 1 ? `<div class="image-counter">1/${images.length}</div>` : ''}
                 </div>
-                ${Estate.images.length > 0 ? `
-                    <div class="gallery-thumbnails">
-                        ${Estate.images.map(img => `
-                            <img src="${img}" alt="${Estate.name}" onclick="changeMainImage('${img}')">
+                       ${images.length > 1 ? `
+                    <div class="gallery-thumbnails" id="galleryThumbnails">
+                        ${images.map((img, index) => `
+                            <img src="${img}" alt="${Estate.name}" 
+                                 onclick="changeGalleryImage(${index})"
+                                 class="${index === 0 ? 'active' : ''}"
+                                 data-index="${index}">
                         `).join('')}
                     </div>
                 ` : ''}
             </div>
-            
             <!-- Estate Info -->
             <div class="Estate-info-grid">
                 <div class="info-section">
@@ -240,77 +257,124 @@ function createEstateDetailsHTML(Estate) {
         </div>
     `;
 }
-function openPlaceOrder(EstateId) {
-    const Estate = dataManager.getEstate(EstateId);
-    if (!Estate) return;
-
-    const modalContent = `
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Place Order - ${Estate.name}</h2>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                    <div class="Place-order-content">
-                    <form onsubmit="submitPlaceOrder(event, '${EstateId}')" id="PlaceOrderForm">
-                        <div class="form-group">
-                            <label>Your Name</label>
-                            <input type="text" name="customerName" required ${appState.currentUser ? `value="${appState.currentUser.name}"` : ''}>
-                        </div>
-                        <div class="form-group">
-                            <label>Whatshapp Phone Number</label>
-                            <input type="tel" name="customerPhone" required ${appState.currentUser ? `value="${appState.currentUser.phone || ''}"` : ''}>
-                        </div>
-                        <div class="form-group">
-                            <label>Special Instructions</label>
-                            <textarea name="instructions" rows="3" placeholder="Any special requests, preferences or specifications..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary full-width">
-                            <i class="fas fa-shopping-cart"></i> Place Order
-                        </button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    showModal(modalContent);
-}
-
-function submitPlaceOrder(event, EstateId) {
-    event.preventDefault();
-    const form = event.target;      
-const formData = new FormData(form);
-const orderData = {
-    EstateId,
-    userId: appState.currentUser ? appState.currentUser.id : null,
-    userName: formData.get('customerName'),
-    userPhone: formData.get('customerPhone'),
-    instructions: formData.get('instructions')
-};
-    const order = dataManager.createOrder(orderData);
-    
-    if (order) {
-        closeModal();
-        showToast('Order placed successfully! We will contact you shortly.', 'success');
-        
+function changeMainImage(element,imageSrc) {
+        // For card thumbnails
+    if (element) {
+        const card = element.closest('.Estate-card');
+        if (card) {
+            // Update main image
+            const mainImg = card.querySelector('.main-img');
+            if (mainImg) {
+                mainImg.src = imageSrc;
+            }
+            
+            // Update active thumbnail
+            const thumbnails = card.querySelectorAll('.thumbnail-img');
+            thumbnails.forEach(thumb => thumb.classList.remove('active'));
+            element.classList.add('active');
+        }
     }
-}
-function changeMainImage(imageSrc) {
     const mainImage = document.querySelector('.main-img img');
     if (mainImage) {
         mainImage.src = imageSrc;
     }
 }
+let currentImageIndex = 0;
+let estateImages = [];
 
+function changeGalleryImage(index) {
+    const mainImage = document.getElementById('mainGalleryImage');
+    const thumbnails = document.querySelectorAll('#galleryThumbnails img');
+    const counter = document.querySelector('.image-counter');
+    
+    if (!mainImage || !thumbnails.length) return;
+    
+    currentImageIndex = index;
+    estateImages = Array.from(thumbnails).map(t => t.src);
+    
+    // Update main image
+    mainImage.src = estateImages[currentImageIndex];
+    
+    // Update active thumbnail
+    thumbnails.forEach((thumb, i) => {
+        thumb.classList.toggle('active', i === currentImageIndex);
+    });
+    
+    // Update counter
+    if (counter) {
+        counter.textContent = `${currentImageIndex + 1}/${estateImages.length}`;
+    }
+    
+    // Scroll thumbnail into view
+    const activeThumb = thumbnails[currentImageIndex];
+    activeThumb.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'center'
+    });
+}
+
+function nextImage() {
+    if (estateImages.length === 0) return;
+    currentImageIndex = (currentImageIndex + 1) % estateImages.length;
+    changeGalleryImage(currentImageIndex);
+}
+
+function prevImage() {
+    if (estateImages.length === 0) return;
+    currentImageIndex = (currentImageIndex - 1 + estateImages.length) % estateImages.length;
+    changeGalleryImage(currentImageIndex);
+}
+
+// Initialize gallery when modal opens
+function showModal(content) {
+    const existingModal = document.getElementById('dynamicModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+//Create Modal
+    const modal = document.createElement('div');
+    modal.id = 'dynamicModal';
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-overlay"></div>
+        ${content}
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Show modal with animation
+    setTimeout(() => {
+        modal.classList.add('show');
+    }, 10);
+    
+    // Prevent body scroll
+    document.body.style.overflow = 'hidden';
+    // After showing modal, initialize gallery
+    setTimeout(() => {
+        const thumbnails = document.querySelectorAll('#galleryThumbnails img');
+        if (thumbnails.length) {
+            estateImages = Array.from(thumbnails).map(t => t.src);
+            currentImageIndex = 0;
+            
+            // Add navigation arrows if multiple images
+            if (estateImages.length > 1) {
+                const gallery = document.querySelector('.Estate-gallery');
+                gallery.insertAdjacentHTML('beforeend', `
+                    <div class="gallery-nav prev" onclick="prevImage()">
+                        <i class="fas fa-chevron-left"></i>
+                    </div>
+                    <div class="gallery-nav next" onclick="nextImage()">
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                `);
+            }
+        }
+    }, 10);
+}
 function scrollToEstates() {
     document.getElementById('Estates').scrollIntoView({ behavior: 'smooth' });
 }
-
-function loadMoreEstates() {
-}
-
-
 
 document.addEventListener('DOMContentLoaded', () => {
     initEstates();

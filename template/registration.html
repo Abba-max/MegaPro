@@ -2,7 +2,7 @@
 <link href="{% static 'assets/css/auth.css' %}" rel="stylesheet">
 
 
-  <form id="myform" method= 'POST', action= '{% url 'registration' %}' >
+  <form id="myform" method= 'POST' action= '{% url 'registration' %}' >
     {% csrf_token %}
         <div id="error message"class="error-message">
             {% for message in messages%}

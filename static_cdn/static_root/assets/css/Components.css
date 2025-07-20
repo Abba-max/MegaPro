@@ -10,6 +10,9 @@
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 0.6s ease-out forwards;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .Estate-card:hover {
@@ -20,11 +23,27 @@
 .Estate-card.animate {
     animation-delay: var(--animation-delay, 0s);
 }
+.Estate-img-container {
+    position: relative;
+    height: 200px;
+    overflow: hidden;
+}
 
+.Estate-img-container img.main-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.Estate-card:hover .Estate-img-container img.main-img {
+    transform: scale(1.05);
+}
 .Estate-image {
     position: relative;
-    height: 220px;
+    height: 200px;
     overflow: hidden;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
 }
 
 .Estate-img img {
@@ -34,6 +53,64 @@
     transition: var(--transition);
 }
 
+.Estate-img img.main-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.image-thumbnails {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    right: 10px;
+    display: flex;
+    gap: 6px;
+    z-index: 2;
+}
+
+.thumbnail-img {
+    flex: 1;
+    height: 40px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 3px;
+    border: 2px solid rgba(255,255,255,0.8);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.thumbnail-img.active {
+    border-color: var(--primary-color);
+    transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.thumbnail-img:hover {
+    transform: translateY(-5px);
+}
+
+.more-images {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.7rem;
+}
+.Estate-card:hover .Estate-img img.main-img {
+    transform: scale(1.05);
+}
 .Estate-card:hover .Estate-image img {
     transform: scale(1.1);
 }
@@ -52,14 +129,89 @@
     align-items: center;
     gap: var(--spacing-xs);
 }
-
-.Estate-badge.rating {
-    color: var(--warning-color);
+/* Modal Gallery Styles */
+.Estate-gallery {
+      margin-bottom: var(--spacing-lg);
+    position: relative;
 }
 
-.Estate-badge.delivery {
-    background: var(--success-color);
-    color: var(--bg-white);
+.main-image {
+   height: 400px;
+    margin-bottom: var(--spacing-md);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    position: relative;
+    background: var(--bg-light);
+}
+
+.main-image img {
+  width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+.main-image:hover img {
+    transform: scale(1.02);
+}
+
+.gallery-thumbnails {
+        display: flex;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) 0;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) var(--bg-light);
+}
+
+
+.gallery-thumbnails::-webkit-scrollbar {
+    height: 6px;
+}
+
+.gallery-thumbnails::-webkit-scrollbar-thumb {
+    background-color: var(--primary-color);
+    border-radius: 3px;
+}
+
+.gallery-thumbnails::-webkit-scrollbar-track {
+    background: var(--bg-light);
+}
+.gallery-thumbnails img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid transparent;
+    flex-shrink: 0;
+}
+.gallery-thumbnails img:hover {
+        border-color: var(--primary-color);
+    transform: translateY(-3px);
+}
+
+.gallery-thumbnails img.active {
+    border-color: var(--primary-color);
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.Estate-badge.rating {
+position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.Estate-badge.rating i {
+    color: gold !important;
 }
 
 .Estate-badge.new {
@@ -68,9 +220,11 @@
 }
 
 .Estate-content {
-    padding: var(--spacing-lg);
+ padding: var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
 }
-
 .Estate-header {
     margin-bottom: var(--spacing-md);
 }
@@ -130,6 +284,49 @@
 .tag.primary {
     background: rgba(102, 126, 234, 0.1);
     color: var(--primary-color);
+}
+.gallery-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+
+.Estate-gallery:hover .gallery-nav {
+    opacity: 1;
+}
+
+.gallery-nav.prev {
+    left: var(--spacing-md);
+}
+
+.gallery-nav.next {
+    right: var(--spacing-md);
+}
+
+.gallery-nav i {
+    color: var(--text-dark);
+    font-size: 1.2rem;
+}
+
+.gallery-nav:hover {
+    background: var(--primary-color);
+}
+
+.gallery-nav:hover i {
+    color: white;
 }
 
 
@@ -912,4 +1109,15 @@
     .form-group textarea {
         padding: var(--spacing-sm);
     }
+}/* Image counter */
+.image-counter {
+    position: absolute;
+    bottom: var(--spacing-md);
+    right: var(--spacing-md);
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    z-index: 2;
 }

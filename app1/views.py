@@ -2,8 +2,12 @@ from django.shortcuts import render,redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User,auth
 from django.contrib import messages 
-from .models import Feature,Estate, Recentposts, Review, QuickOrder,Global_user
+from .models import Feature
+from .models import Estate
+from .models import Recentposts
+from .models import Estate, Review, Global_user
 from django.contrib.auth.decorators import login_required
+from .models import QuickOrder
 from django.contrib import messages
 from .models import ContactRequest
 # from django.core.files.storage import default_storage
@@ -16,10 +20,19 @@ def index(request):
     recent= Recentposts.objects.all()
     return render(request, 'index.html', {'features': features,'estates':estates, 'recent' :recent,})
 
+
 # def estates(request):
+
+
 #     context = {
+
+
 #     'estates': Estate.objects.all(),
+
+
 #     }
+
+
 #     return render(request, 'Estates.html',context)
 
 
@@ -30,9 +43,6 @@ def registration(request):
         email = request.POST['email']
         password = request.POST.get('password')
         password1 = request.POST.get('password1')
-        contact = request.POST.get('contact')
-        status = request.POST.get('status')
-        address = request.POST.get('address')
         if password==password1:
           if User.objects.filter(email=email).exists():
             messages.info(request, 'Email Already Used')
@@ -42,7 +52,6 @@ def registration(request):
             return redirect('/registration')
           else:
             user = User.objects.create_user(username=username, email=email, password=password)
-            Global_user.objects.create(user=user, contact=contact, address=address, status=status)
             user.save()
             messages.success(request, "Registration successful! Welcome to Eyang Estate.")
             return redirect('login')
@@ -73,34 +82,29 @@ def logout(request):
 
 # from django.core.files.storage import default_storage
 
-def post(request, pk):
-    if request.method == 'POST':
-        estate = Estate.objects.get(id=pk)
-        # if 'pic' in request.FILES:
-        #     estate.pic = request.FILES['pic']
-        #     estate.save()
-    estate = Estate.objects.get(id=pk)
-    return render(request, 'post.html', {'estates': estate})
+# def post(request, pk):
+#     if request.method == 'POST':
+#         estate = Estate.objects.get(id=pk)
+#         # if 'pic' in request.FILES:
+#         #     estate.pic = request.FILES['pic']
+#         #     estate.save()
+#     estate = Estate.objects.get(id=pk)
+#     return render(request, 'post.html', {'estates': estate})
   
-def rpost(request, pk):
-  recent = Recentposts.objects.get(id=pk)
-  return render(request, 'rpost.html', {'recent': recent})
-def contact_view(request):
-    return render(request, 'contact.html')
-
-@login_required
-def review_view(request):
-    estate = Estate.objects.all()
-    if request.method == 'POST':
-        name = request.POST['name']
-        estate_name=request.POST['estate_name']
-        rating = int(request.POST['rating'])
-        comment = request.POST['comment']
-        Review.objects.create(estate=estate, name=name, rating=rating, comment=comment)
-        messages.success(request, "Review submitted successfully!")
-        return redirect('index')  
-    return render(request, 'review.html', {'estate': estate})
-
+# def rpost(request, pk):
+#   recent = Recentposts.objects.get(id=pk)
+#   return render(request, 'rpost.html', {'recent': recent})
+# def review_view(request):
+#     estate_name = request.GET.get('estate', 'Estate')
+#     if request.method == 'POST':
+#         name = request.POST['name']
+#         rating = int(request.POST['rating'])
+#         comment = request.POST['comment']
+#         estate, created = Estate.objects.get_or_create(name=estate_name)
+#         Review.objects.create(estate=estate, name=name, rating=rating, comment=comment)
+#         messages.success(request, "Review submitted successfully!")
+#         return redirect('index')  
+#     return render(request, 'review.html', {'estate_name': estate_name})
 @login_required
 def quick_order_view(request):
     if request.method == 'POST':
@@ -112,7 +116,6 @@ def quick_order_view(request):
         messages.success(request, "Your order has been placed!")
         return redirect('index')
     return render(request, 'quick_order.html')
-
 @login_required
 def contact_view(request):
     if request.method == 'POST':
