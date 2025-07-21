@@ -97,7 +97,7 @@ def rpost(request, pk):
 def review_view(request):
     estate_name = request.GET.get('estate', 'Estate')
     if request.method == 'POST':
-        name = request.POST['name']
+        name = request.POST['Username']
         rating = int(request.POST['rating'])
         comment = request.POST['comment']
         estate, created = Estate.objects.get_or_create(name=estate_name)
@@ -107,20 +107,22 @@ def review_view(request):
     return render(request, 'review.html', {'estate_name': estate_name})
 @login_required
 def quick_order_view(request):
+    estate_name = request.GET.get('estate', 'Estate') 
     if request.method == 'POST':
         QuickOrder.objects.create(
-            name=request.POST['name'],
+            name=request.POST['Username'],
+            estate=request.POST['estate_name'],
             phone=request.POST['phone'],
             note=request.POST.get('note', '')
         )
-        messages.success(request, "Your order has been placed!")
+        messages.success(request, "Your reservation has been placed!")
         return redirect('index')
-    return render(request, 'quick_order.html')
+    return render(request, 'quick_order.html',{'estate_name': estate_name})
 @login_required
 def contact_view(request):
     if request.method == 'POST':
         ContactRequest.objects.create(
-            name=request.POST['name'],
+            name=request.POST['Username'],
             email=request.POST['email'],
             phone=request.POST['phone'],
             message=request.POST['message']
