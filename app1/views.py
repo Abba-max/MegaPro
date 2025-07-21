@@ -63,7 +63,6 @@ def post(request, pk):
 def rpost(request, pk):
     recent = Recentposts.objects.get(id=pk)
     return render(request, 'rpost.html', {'recent': recent})
-
 def review_view(request):
     estate_name = request.GET.get('estate', 'Estate')
     
@@ -87,16 +86,16 @@ def review_view(request):
             messages.error(request, "Invalid rating selected.")
             return render(request, 'review.html', {'estate_name': estate_name})
         
-        # Fix: Try to get the estate first, if not found, create it
+        # Fix: Ensure all required fields have proper values
         try:
             estate = Estate.objects.get(name=estate_name)
         except Estate.DoesNotExist:
-            # Create new estate with default values
+            # Create new estate with explicit non-null values
             estate = Estate.objects.create(
                 name=estate_name,
-                capacity=0,
-                free=0,
-                rating='0',
+                capacity=1,  # Explicitly set to 1 instead of 0 or None
+                free=1,      # Explicitly set to 1 instead of 0 or None
+                rating='0.0',  # Provide a string rating
                 price=300000,
                 distance=100,
                 wifi='0',

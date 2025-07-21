@@ -8,52 +8,61 @@ class Feature(models.Model):
     name = models.CharField(max_length=255)
     details = models.CharField(max_length=500)
     
-
 class Estate(models.Model):
     name = models.CharField(max_length=255)
-    capacity = models.IntegerField(default=0, null=True, blank=True) 
-    free = models.IntegerField(default=0, null=True, blank=True)  
-    rating = models.CharField(max_length=10, default="0", blank=True)
-    price= models.IntegerField(default=300000)
-    distance= models.IntegerField(default=100)
-    wifi= models.CharField(
+    # Fix: Ensure default values are not None and remove null=True if not needed
+    capacity = models.IntegerField(default=1)  # Changed from default=0 to avoid issues
+    free = models.IntegerField(default=1)      # Changed from default=0 to avoid issues
+    rating = models.CharField(max_length=10, default="0.0", blank=True)
+    price = models.IntegerField(default=300000)
+    distance = models.IntegerField(default=100)
+    wifi = models.CharField(
+        max_length=1,  # Add max_length for CharField
         choices=(
-            ('1','Yes'),
-            ('0','No'),
-            ),
+            ('1', 'Yes'),
+            ('0', 'No'),
+        ),
         default='0'
     )
-    restaurant=models.CharField(
+    restaurant = models.CharField(
+        max_length=1,  # Add max_length for CharField
         choices=(
-            ('1','Yes'),
-            ('0','No'),
-            ),
+            ('1', 'Yes'),
+            ('0', 'No'),
+        ),
         default='0'
     )
-    generator=models.CharField(
+    generator = models.CharField(
+        max_length=1,  # Add max_length for CharField
         choices=(
-            ('1','Yes'),
-            ('0','No'),
-            ),
+            ('1', 'Yes'),
+            ('0', 'No'),
+        ),
         default='0'
     )
-    room_size=models.CharField(
+    room_size = models.CharField(
+        max_length=1,  # Add max_length for CharField
         choices=(
-            ('1','Large'),
-            ('2','Medium'),
-            ('3','Small'),
-            ),
-        default='1'
+            ('1', 'Large'),
+            ('2', 'Medium'),
+            ('3', 'Small'),
+        ),
+        default='2'  # Changed to '2' (Medium) as default
     )
-    forage=models.CharField(
+    forage = models.CharField(
+        max_length=1,  # Add max_length for CharField
         choices=(
-            ('1','Yes'),
-            ('0','No'),
-            ),
+            ('1', 'Yes'),
+            ('0', 'No'),
+        ),
         default='0'
     )
     
     pic = models.ImageField(upload_to='estates/', blank=True, null=True)
+    
+    def __str__(self):
+        return self.name
+
     
     
 class Recentposts(models.Model):
