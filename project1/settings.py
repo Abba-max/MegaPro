@@ -32,7 +32,11 @@ DEBUG = config('DEBUG', cast=bool)
 
 ALLOWED_HOSTS = ['127.0.0.1','eyang-estate.onrender.com', 'localhost', ]
 
-
+CSRF_TRUSTED_ORIGINS = [
+    'https://eyang-estate.onrender.com',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+]
 
 # Application definition
 
