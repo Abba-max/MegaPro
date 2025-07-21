@@ -97,7 +97,7 @@ def rpost(request, pk):
 def review_view(request):
     estate_name = request.GET.get('estate', 'Estate')
     if request.method == 'POST':
-        name = request.POST['Username']
+        name = request.POST.get('name', request.user.username)
         rating = int(request.POST['rating'])
         comment = request.POST['comment']
         estate, created = Estate.objects.get_or_create(name=estate_name)
@@ -110,8 +110,8 @@ def quick_order_view(request):
     estate_name = request.GET.get('estate', 'Estate') 
     if request.method == 'POST':
         QuickOrder.objects.create(
-            name=request.POST['Username'],
-            estate=request.POST['estate_name'],
+            name=request.POST.get('name', request.user.username),
+            estate=request.POST.get('estate_name', estate_name),
             phone=request.POST['phone'],
             note=request.POST.get('note', '')
         )
@@ -122,7 +122,7 @@ def quick_order_view(request):
 def contact_view(request):
     if request.method == 'POST':
         ContactRequest.objects.create(
-            name=request.POST['Username'],
+            name=request.POST.get('name', request.user.username),
             email=request.POST['email'],
             phone=request.POST['phone'],
             message=request.POST['message']
