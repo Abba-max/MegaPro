@@ -125,40 +125,79 @@ def quick_order_view(request):
         return redirect('index')
     return render(request, 'quick_order.html',{'estate_name': estate_name})
 
-@login_required
+@login_required  
 def contact_view(request):
     if request.method == 'POST':
         try:
-            # Get the Global_user profile if it exists
-            try:
-                profile = Global_user.objects.get(user=request.user)
-                phone = profile.contact if profile.contact else request.POST.get('phone', '')
-            except Global_user.DoesNotExist:
-                phone = request.POST.get('phone', '')
-                
-            ContactRequest.objects.create(
-                name=request.POST.get('name', request.user.username),
-                email=request.POST.get('email', request.user.email),
+            phone = request.POST.get('phone', '')
+            
+            contact_request = ContactRequest(
+                name=request.POST.get('name') or request.user.username,
+                email=request.POST.get('email') or request.user.email,
                 phone=phone,
-                message=request.POST['message'],
-                user=request.user  # Store reference to the user
+                message=request.POST.get('message', ''),
+                user=request.user
             )
+            contact_request.save()
+            
             messages.success(request, "Thanks! Your message was sent.")
             return redirect('index')
+            
         except Exception as e:
-            messages.error(request, f"Error sending message: {str(e)}")
-            return render(request, 'contact.html')
+            print(f"Contact form error: {e}")  # For debugging
+            messages.error(request, "Error sending message. Please try again.")
+            return redirect('index')  # Redirect anyway to prevent form resubmission
     
-    # Pre-fill form with user data for GET requests
-    context = {
-        'name': request.user.username,
-        'email': request.user.email,
-    }
-    try:
-        profile = Global_user.objects.get(user=request.user)
-        context['phone'] = profile.contact
-    except Global_user.DoesNotExist:
-        pass
+    return render(request, 'contact.html')
+   def review_view(request):
+    estate_name = request.GET.get('estate', 'Estate')
+    
+    if request.method == 'POST':
+        name = request.POST.get('userName', '')
+        if not name and request.user.is_authenticated:
+            name = request.user.username
+        elif not name:
+            name = "Anonymous"
+            
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment', '')
         
-    return render(request, 'contact.html', context)
-   
+        if not rating:
+            messages.error(request, "Please select a rating.")
+            return render(request, 'review.html', {'estate_name': estate_name})
+        
+        try:
+            rating = int(rating)
+        except ValueError:
+            messages.error(request, "Invalid rating selected.")
+            return render(request, 'review.html', {'estate_name': estate_name})
+        
+        # Try to get existing estate, if not found, create with explicit values
+        estate, created = Estate.objects.get_or_create(
+            name=estate_name,
+            defaults={
+                'capacity': 0,
+                'free': 0,
+                'rating': '0',
+                'price': 300000,
+                'distance': 100,
+                'wifi': '0',
+                'restaurant': '0',
+                'generator': '0',
+                'room_size': '2',
+                'forage': '0'
+            }
+        )
+        
+        # Create the review
+        Review.objects.create(
+            estate=estate, 
+            name=name, 
+            rating=rating, 
+            comment=comment
+        )
+        
+        messages.success(request, "Review submitted successfully!")
+        return redirect('index')  
+    
+    return render(request, 'review.html', {'estate_name': estate_name})
