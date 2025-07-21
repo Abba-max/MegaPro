@@ -94,6 +94,23 @@ def post(request, pk):
 def rpost(request, pk):
   recent = Recentposts.objects.get(id=pk)
   return render(request, 'rpost.html', {'recent': recent})
+def review_view(request):
+    estate_name = request.GET.get('estate', 'Estate')
+    if request.method == 'POST':
+        name = request.POST.get('userName', request.user.username)
+        rating = int(request.POST['rating'])
+        comment = request.POST['comment']
+        
+        # Only allow reviews for existing estates
+        try:
+            estate = Estate.objects.get(name=estate_name)
+            Review.objects.create(estate=estate, name=name, rating=rating, comment=comment)
+            messages.success(request, "Review submitted successfully!")
+        except Estate.DoesNotExist:
+            messages.error(request, "Estate not found. Cannot submit review.")
+        
+        return redirect('index')  
+    return render(request, 'review.html', {'estate_name': estate_name})
 @login_required
 def quick_order_view(request):
     estate_name = request.GET.get('estate', 'Estate') 
@@ -107,6 +124,7 @@ def quick_order_view(request):
         messages.success(request, "Your reservation has been placed!")
         return redirect('index')
     return render(request, 'quick_order.html',{'estate_name': estate_name})
+
 @login_required
 def contact_view(request):
     if request.method == 'POST':
@@ -143,40 +161,4 @@ def contact_view(request):
         pass
         
     return render(request, 'contact.html', context)
-def review_view(request):
-    estate_name = request.GET.get('estate', 'Estate')
-    if request.method == 'POST':
-        try:
-            name = request.POST.get('userName', request.user.username)  # Changed to match form field
-            rating = int(request.POST['rating'])
-            comment = request.POST['comment']
-            
-            # Get or create estate with all required fields
-            estate, created = Estate.objects.get_or_create(
-                name=estate_name,
-                defaults={
-                    'capacity': 0,
-                    'free': 0,
-                    'rating': '0',
-                    'price': 300000,
-                    'distance': 100,
-                    'wifi': '0',
-                    'restaurant': '0',
-                    'generator': '0',
-                    'room_size': '1',
-                    'forage': '0'
-                }
-            )
-            
-            Review.objects.create(
-                estate=estate,
-                name=name,
-                rating=rating,
-                comment=comment
-            )
-            messages.success(request, "Review submitted successfully!")
-            return redirect('index')
-        except Exception as e:
-            messages.error(request, f"Error submitting review: {str(e)}")
-            return redirect('index')
-    return render(request, 'review.html', {'estate_name': estate_name})
+   
