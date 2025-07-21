@@ -613,7 +613,7 @@ const EstateData = {
         name: 'Eureka City',
         rating: 4.0,
         location: 'It is located before Toundalia at 450m from the school campus',
-        Capacity: '17 Rooms',
+        Capacity: '12 SingleRooms, 5 Double Rooms',
         Price: '65,000FCFA single Rooms, 42,500FCFA Double Rooms',
         Free_Rooms: '17 Free Rooms',
         Distance:'Far',
