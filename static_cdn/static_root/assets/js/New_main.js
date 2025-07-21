@@ -19,10 +19,11 @@ function initializeApp() {
     initScrollEffects();
     setupModalHandlers();
      updateStatistics();
+     showDjangoMessages(); 
     // Initialize other modules
     //initAuth();
     initEstates();
-    console.log('Eyang Village initialized successfully!');
+    lazyLoadImages();
 }
 
 // Navigation functionality
@@ -94,6 +95,41 @@ function updateActiveNavigation() {
         }
     });
 }
+function lazyLoadImages() {
+    const images = document.querySelectorAll('img[loading="lazy"], img[data-src]');
+    const imageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const img = entry.target;
+                
+                // Handle both data-src and regular lazy loading
+                if (img.dataset.src) {
+                    img.src = img.dataset.src;
+                    img.removeAttribute('data-src');
+                }
+                
+                // Add a small delay before loading to prioritize critical content
+                setTimeout(() => {
+                    img.loading = 'eager'; // Switch to eager loading once in viewport
+                }, 200);
+                
+                imageObserver.unobserve(img);
+            }
+        });
+    }, {
+        rootMargin: '200px 0px' // Load images 200px before they enter viewport
+    });
+
+    images.forEach(img => imageObserver.observe(img));
+}
+document.addEventListener("DOMContentLoaded", () => {
+    const lazyImages = document.querySelectorAll('img[loading="lazy"]');
+    lazyImages.forEach(img => {
+        img.addEventListener("load", () => {
+            img.classList.add("loaded");
+        });
+    });
+});
 
 // Mobile menu toggle
 function toggleMobileMenu() {
@@ -193,34 +229,57 @@ function closeModal() {
     // Restore body scroll
     document.body.style.overflow = '';
 }
-
+function showDjangoMessages() {
+    // Check if there are Django messages in the template
+    const messages = document.querySelectorAll('.alert, .error, .success, .info, .warning');
+    
+    messages.forEach(message => {
+        const text = message.textContent.trim();
+        let type = 'info';
+        
+        if (message.classList.contains('error')) {
+            type = 'error';
+        } else if (message.classList.contains('success')) {
+            type = 'success';
+        } else if (message.classList.contains('warning')) {
+            type = 'warning';
+        }
+        
+        showToast(text, type);
+        message.remove(); // Remove the original message element
+    });
+}
 // Toast notifications
 function showToast(message, type = 'info', duration = 4000) {
     const toastContainer = document.getElementById('toastContainer');
     
     const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
+    toast.className = `toast toast-${type}`;
     
     const icon = getToastIcon(type);
     
     toast.innerHTML = `
-        <i class="${icon}"></i>
-        <span>${message}</span>
+        <div class="toast-content">
+            <i class="${icon}"></i>
+            <span>${message}</span>
+        </div>
         <button class="toast-close" onclick="closeToast(this)">
             <i class="fas fa-times"></i>
         </button>
     `;
+    
     toastContainer.appendChild(toast);
+    
     // Show toast with animation
     setTimeout(() => {
         toast.classList.add('show');
     }, 10);
+    
     // Auto remove toast
     setTimeout(() => {
         closeToast(toast.querySelector('.toast-close'));
     }, duration);
 }
-
 
 function getToastIcon(type) {
     switch (type) {
@@ -234,8 +293,12 @@ function getToastIcon(type) {
 
 function closeToast(closeBtn) {
     const toast = closeBtn.closest('.toast');
-    toast.classList.remove('show');
-    setTimeout(() => { toast.remove(); }, 300);
+    if (toast) {
+        toast.classList.remove('show');
+        setTimeout(() => { 
+            toast.remove(); 
+        }, 300);
+    }
 }
 
 // Statistics update
@@ -343,21 +406,3 @@ function trackPageView(pageName) {
     console.log('Page view:', pageName);
     // Track page views for analytics
 }
-
-// Data synchronization (for future server integration)
-function syncData() {
-    // This would sync local data with server
-    console.log('Syncing data...');
-    dataManager.saveToLocalStorage();
-}
-
-setInterval(syncData, 5 * 60 * 1000);
-
-// Export main functions for global access
-window.EyangVillage = {
-    showToast,
-    showModal,
-    closeModal,
-};
-
-console.log('Eyang Village');
