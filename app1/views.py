@@ -121,12 +121,36 @@ def quick_order_view(request):
 @login_required
 def contact_view(request):
     if request.method == 'POST':
-        ContactRequest.objects.create(
-            name=request.POST.get('name', request.user.username),
-            email=request.POST['email'],
-            phone=request.POST['phone'],
-            message=request.POST['message']
-        )
-        messages.success(request, "Thanks! Your message was sent.")
-        return redirect('index')
-    return render(request, 'contact.html')
+        try:
+            # Get the Global_user profile if it exists
+            try:
+                profile = Global_user.objects.get(user=request.user)
+                phone = profile.contact if profile.contact else request.POST.get('phone', '')
+            except Global_user.DoesNotExist:
+                phone = request.POST.get('phone', '')
+                
+            ContactRequest.objects.create(
+                name=request.POST.get('name', request.user.username),
+                email=request.POST.get('email', request.user.email),
+                phone=phone,
+                message=request.POST['message'],
+                user=request.user  # Store reference to the user
+            )
+            messages.success(request, "Thanks! Your message was sent.")
+            return redirect('index')
+        except Exception as e:
+            messages.error(request, f"Error sending message: {str(e)}")
+            return render(request, 'contact.html')
+    
+    # Pre-fill form with user data for GET requests
+    context = {
+        'name': request.user.username,
+        'email': request.user.email,
+    }
+    try:
+        profile = Global_user.objects.get(user=request.user)
+        context['phone'] = profile.contact
+    except Global_user.DoesNotExist:
+        pass
+        
+    return render(request, 'contact.html', context)
