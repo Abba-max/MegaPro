@@ -87,22 +87,24 @@ def review_view(request):
             messages.error(request, "Invalid rating selected.")
             return render(request, 'review.html', {'estate_name': estate_name})
         
-        # Try to get existing estate, if not found, create with explicit values
-        estate, created = Estate.objects.get_or_create(
-            name=estate_name,
-            defaults={
-                'capacity': 0,
-                'free': 0,
-                'rating': '0',
-                'price': 300000,
-                'distance': 100,
-                'wifi': '0',
-                'restaurant': '0',
-                'generator': '0',
-                'room_size': '2',
-                'forage': '0'
-            }
-        )
+        # Fix: Try to get the estate first, if not found, create it
+        try:
+            estate = Estate.objects.get(name=estate_name)
+        except Estate.DoesNotExist:
+            # Create new estate with default values
+            estate = Estate.objects.create(
+                name=estate_name,
+                capacity=0,
+                free=0,
+                rating='0',
+                price=300000,
+                distance=100,
+                wifi='0',
+                restaurant='0',
+                generator='0',
+                room_size='2',
+                forage='0'
+            )
         
         # Create the review
         Review.objects.create(
@@ -116,7 +118,6 @@ def review_view(request):
         return redirect('index')  
     
     return render(request, 'review.html', {'estate_name': estate_name})
-
 @login_required
 def quick_order_view(request):
     estate_name = request.GET.get('estate', 'Estate') 
@@ -131,24 +132,40 @@ def quick_order_view(request):
         return redirect('index')
     return render(request, 'quick_order.html', {'estate_name': estate_name})
 
-@login_required  
 def contact_view(request):
     if request.method == 'POST':
+        try:
+            # Get form data with fallbacks
+            name = request.POST.get('name', '')
+            email = request.POST.get('email', '')
             phone = request.POST.get('phone', '')
-            contact_request = ContactRequest(
-                name=request.POST.get('name') or request.user.username,
-                email=request.POST.get('email') or request.user.email,
-                phone=request.POST['phone'],
-                message=request.POST.get('message', ''),
-               
+            message = request.POST.get('message', '')
+            
+            # Use authenticated user data as fallback
+            if not name and request.user.is_authenticated:
+                name = request.user.username
+            if not email and request.user.is_authenticated:
+                email = request.user.email
+            
+            # Validate required fields
+            if not all([name, email, phone, message]):
+                messages.error(request, "All fields are required.")
+                return render(request, 'contact.html', {'user': request.user})
+            
+            # Create and save contact request
+            contact_request = ContactRequest.objects.create(
+                name=name,
+                email=email,
+                phone=phone,
+                message=message
             )
-            contact_request.save()
             
-            messages.success(request, "Thanks! Your message was sent.")
-            return redirect('index')  # Added redirect to index
+            messages.success(request, "Thanks! Your message was sent successfully.")
+            return redirect('index')
             
-       
+        except Exception as e:
+            messages.error(request, "There was an error sending your message. Please try again.")
+            return render(request, 'contact.html', {'user': request.user})
     
-    # For GET requests, pass user data to pre-fill the form
-    context = {'user': request.user}
-    return render(request, 'contact.html', context)
+    # For GET requests
+    return render(request, 'contact.html', {'user': request.user})
