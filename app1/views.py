@@ -154,3 +154,36 @@ def contact_view(request):
         pass
         
     return render(request, 'contact.html', context)
+def review_view(request):
+    estate_name = request.GET.get('estate', 'Estate')
+    if request.method == 'POST':
+        try:
+            name = request.POST.get('name', request.user.username)
+            rating = int(request.POST['rating'])
+            comment = request.POST['comment']
+            
+            # Get or create estate with all required fields
+            estate, created = Estate.objects.get_or_create(
+                name=estate_name,
+                defaults={
+                    'capacity': 0,  # Default value
+                    'free': 0,      # Default value
+                    'rating': '0',   # Default value
+                    'price': 300000, # Default value
+                    'distance': 100  # Default value
+                    # Other fields will use their model defaults
+                }
+            )
+            
+            Review.objects.create(
+                estate=estate,
+                name=name,
+                rating=rating,
+                comment=comment
+            )
+            messages.success(request, "Review submitted successfully!")
+            return redirect('index')
+        except Exception as e:
+            messages.error(request, f"Error submitting review: {str(e)}")
+            return redirect('index')
+    return render(request, 'review.html', {'estate_name': estate_name})
