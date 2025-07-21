@@ -94,17 +94,6 @@ def post(request, pk):
 def rpost(request, pk):
   recent = Recentposts.objects.get(id=pk)
   return render(request, 'rpost.html', {'recent': recent})
-def review_view(request):
-    estate_name = request.GET.get('estate', 'Estate')
-    if request.method == 'POST':
-        name = request.POST.get('name', request.user.username)
-        rating = int(request.POST['rating'])
-        comment = request.POST['comment']
-        estate, created = Estate.objects.get_or_create(name=estate_name)
-        Review.objects.create(estate=estate, name=name, rating=rating, comment=comment)
-        messages.success(request, "Review submitted successfully!")
-        return redirect('index')  
-    return render(request, 'review.html', {'estate_name': estate_name})
 @login_required
 def quick_order_view(request):
     estate_name = request.GET.get('estate', 'Estate') 
@@ -158,7 +147,7 @@ def review_view(request):
     estate_name = request.GET.get('estate', 'Estate')
     if request.method == 'POST':
         try:
-            name = request.POST.get('name', request.user.username)
+            name = request.POST.get('userName', request.user.username)  # Changed to match form field
             rating = int(request.POST['rating'])
             comment = request.POST['comment']
             
@@ -166,12 +155,16 @@ def review_view(request):
             estate, created = Estate.objects.get_or_create(
                 name=estate_name,
                 defaults={
-                    'capacity': 0,  # Default value
-                    'free': 0,      # Default value
-                    'rating': '0',   # Default value
-                    'price': 300000, # Default value
-                    'distance': 100  # Default value
-                    # Other fields will use their model defaults
+                    'capacity': 0,
+                    'free': 0,
+                    'rating': '0',
+                    'price': 300000,
+                    'distance': 100,
+                    'wifi': '0',
+                    'restaurant': '0',
+                    'generator': '0',
+                    'room_size': '1',
+                    'forage': '0'
                 }
             )
             
