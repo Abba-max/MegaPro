@@ -2,6 +2,7 @@ from django.db import models
 #from django.contrib.postgres.fields import ArrayField
 from PIL import Image
 from django.contrib.auth.models import User
+from PIL import Image
 # from django import pillow
 class Feature(models.Model):
     name = models.CharField(max_length=255)
@@ -10,9 +11,9 @@ class Feature(models.Model):
 
 class Estate(models.Model):
     name = models.CharField(max_length=255)
-    capacity = models.IntegerField()
-    free = models.IntegerField()
-    rating = models.CharField(max_length=10)
+    capacity = models.IntegerField(default=0, null=True, blank=True) 
+    free = models.IntegerField(default=0, null=True, blank=True)  
+    rating = models.CharField(max_length=10, default="0", blank=True)
     price= models.IntegerField(default=300000)
     distance= models.IntegerField(default=100)
     wifi= models.CharField(
@@ -20,21 +21,21 @@ class Estate(models.Model):
             ('1','Yes'),
             ('0','No'),
             ),
-        default=0
+        default='0'
     )
     restaurant=models.CharField(
         choices=(
             ('1','Yes'),
             ('0','No'),
             ),
-        default=0
+        default='0'
     )
     generator=models.CharField(
         choices=(
             ('1','Yes'),
             ('0','No'),
             ),
-        default=0
+        default='0'
     )
     room_size=models.CharField(
         choices=(
@@ -42,17 +43,17 @@ class Estate(models.Model):
             ('2','Medium'),
             ('3','Small'),
             ),
-        default=1
+        default='1'
     )
     forage=models.CharField(
         choices=(
             ('1','Yes'),
             ('0','No'),
             ),
-        default=0
+        default='0'
     )
     
-    pic = models.ImageField(upload_to='estates/', blank=True, null=False)
+    pic = models.ImageField(upload_to='estates/', blank=True, null=True)
     
     
 class Recentposts(models.Model):
@@ -80,23 +81,19 @@ class Review(models.Model):
     rating = models.IntegerField()
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    
 class QuickOrder(models.Model):
     estate = models.CharField(max_length=255)
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
     note = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    
-    
 class ContactRequest(models.Model):
     name = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
     message = models.TextField()
     submitted_at = models.DateTimeField(auto_now_add=True)
-
-         
+    
 class Global_user(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     first_name= models.CharField(max_length=20, null=True)
@@ -115,6 +112,7 @@ class Global_user(models.Model):
     )
     def __str__(self):
         return self.user.username
+         
 
 
 

@@ -103,8 +103,9 @@
       
       <input type="hidden" name="estate" value="{{ estate_name }}">
 
-      <label for="name">Your Name</label>
-      <input type="text" id="name" name="name" required>
+      <label for="userName">Your Name</label>
+      <input type="text" id="userName" name="userName" value="{{ user.username }}" readonly>
+
       <label for="estate_name">Estate Name </label>
       <input type="text" id="estate_name" name="estate_name" value="{{ estate_name }}" readonly>
 
