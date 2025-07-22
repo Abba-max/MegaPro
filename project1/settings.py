@@ -62,6 +62,8 @@ MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 ROOT_URLCONF = 'project1.urls'
 
 TEMPLATES = [
@@ -98,7 +100,8 @@ WSGI_APPLICATION = 'project1.wsgi.application'
 # }
 
 DATABASES ={
-    'default': dj_database_url.parse(config('DATABASE_URL'))
+    'default': dj_database_url.parse(config('DATABASE_URL'), ssl_require=True),
+    
 }
 
 
