@@ -76,13 +76,15 @@
         <div id="countdown">
             <div>
               <h5>Countdown On August 18th, 2025: </h5>
-                <span style="color:chartreuse;" class="value" id="days"></span>
+                <span class="value" id="days"></span>
                 <span class="label">Days</span>
-                <span  style="color:chartreuse;"class="value" id="hours"></span>
+                <span class="value" id="hours"></span>
                 <span class="label">Hours</span>
-                <span  style="color:chartreuse;"class="value" id="minutes"></span>
+                <span class="value" id="minutes"></span>
                 <span class="label">Minutes</span>
-                <span  style="color:chartreuse;"class="value" id="seconds"></span>
+                <span class="value" id="minutes"></span>
+                <span class="label">Minutes</span>
+                <span class="value" id="seconds"></span>
                 <span class="label">Seconds</span>
               
             </div>
@@ -296,7 +298,9 @@
     }, 1000); // Update every 1000ms (1 second)
 });
 
-
+document.addEventListener('DOMContentLoaded', function() {
+    document.documentElement.classList.add('loaded');
+});
   </script>
   
 </body>
