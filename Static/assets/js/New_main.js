@@ -380,7 +380,7 @@ function trapFocus(e, container) {
 
 
     images.forEach(img => imageObserver.observe(img));
-}
+
 function trackPageView(pageName) {
     console.log('Page view:', pageName);
     // Track page views for analytics

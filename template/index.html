@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
-  <title>Eyang village</title>
+  <title>Eyang Estate </title>
   <link href="{% static 'assets/img/photo_2025-06-24_09-04-19.jpg' %}" rel="icon">
   <link href="{% static 'assets/img/photo_2025-06-24_09-04-19.jpg' %}" rel="apple-touch-icon">
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
@@ -68,26 +68,25 @@
   </header>
   <div class="toast-container" id="toastContainer"></div>
   <main class="main">
+    
     <section id="hero" class="hero {% if not user.is_authenticated %}full-screen{% endif %}">
       
-        <div class="countdown-container">
-        <h1>Reserve before the 18th of August. Site under maintainance and amelioration then!</h1>
+      <div class="countdown-container">
+        <h4>Reserve before the 18th of August. Site under maintainance and amelioration then!</h4>
         <div id="countdown">
             <div>
+              <h3>Countdown On August 18th, 2025: </h3>
                 <span class="value" id="days"></span>
                 <span class="label">Days</span>
-            </div>
-            <div>
                 <span class="value" id="hours"></span>
                 <span class="label">Hours</span>
-            </div>
-            <div>
                 <span class="value" id="minutes"></span>
                 <span class="label">Minutes</span>
-            </div>
-            <div>
+                <span class="value" id="minutes"></span>
+                <span class="label">Minutes</span>
                 <span class="value" id="seconds"></span>
                 <span class="label">Seconds</span>
+              
             </div>
         </div>
     </div>
@@ -256,7 +255,7 @@
 
     document.addEventListener('DOMContentLoaded', function() {
     // Set the date we're counting down to (Year, Month (0-11), Day, Hour, Minute, Second)
-    const countdownDate = new Date("December 31, 2025 23:59:59").getTime();
+    const countdownDate = new Date("August 17, 2025 23:59:59").getTime();
 
     // Update the countdown every 1 second
     const x = setInterval(function() {
