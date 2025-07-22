@@ -3,7 +3,11 @@ function initEstates() {
     setupSearchFunctionality();
 }
  function createEstateCard(Estate, index) {
-    //let imgSrc = Estate.images && Estate.images[0] ? Estate.images[0] : '/Static/assets/img/Estate Images/DJI_0071.jpg';
+     const processImagePath = (path) => {
+        if (!path) return '';
+        return path.replace(/^\/?static\//, '');
+    };
+    //let imgSrc = Estate.images && Estate.images[0] ? Estate.images[0] : 'assets/img/Estate Images/DJI_0071.jpg';
      const mainImg = Estate.images?.[0] || Estate.image || '/Static/assets/img/Estate Images/DJI_0071.jpg';
         const showThumbs = Estate.images?.length > 1;
     const thumbCount = Math.min(4, Estate.images?.length || 0);
@@ -187,7 +191,7 @@ function openEstateDetails(EstateId) {
 
 function createEstateDetailsHTML(Estate) {
       const images = Estate.images || (Estate.image ? [Estate.image] : []);
-    const mainImage = images[0] || '/Static/assets/img/Estate Images/DJI_0071.jpg' ;
+    const mainImage = images[0] || '/Static/assets/img/Estate Images/DJI_0071.jpg';
     return `
         <div class="Estate-details-content">
             <!-- Estate Images -->
@@ -195,7 +199,7 @@ function createEstateDetailsHTML(Estate) {
                  <div class="main-image">
                     <img src="${mainImage}" alt="${Estate.name}" id="mainGalleryImage" loading="lazy">
                     ${images.length > 1 ? `<div class="image-counter">1/${images.length}</div>` : ''}
-                </div>8
+                </div>
                        ${images.length > 1 ? `
                     <div class="gallery-thumbnails" id="galleryThumbnails" >
                         ${images.map((img, index) => `
