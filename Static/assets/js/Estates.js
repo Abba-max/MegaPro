@@ -187,7 +187,7 @@ function openEstateDetails(EstateId) {
 
 function createEstateDetailsHTML(Estate) {
       const images = Estate.images || (Estate.image ? [Estate.image] : []);
-    const mainImage = images[0] || '/Static/assets/img/Estate Images/DJI_0071.jpg';
+    const mainImage = images[0] || '/Static/assets/img/Estate Images/DJI_0071.jpg' ;
     return `
         <div class="Estate-details-content">
             <!-- Estate Images -->
@@ -195,7 +195,7 @@ function createEstateDetailsHTML(Estate) {
                  <div class="main-image">
                     <img src="${mainImage}" alt="${Estate.name}" id="mainGalleryImage" loading="lazy">
                     ${images.length > 1 ? `<div class="image-counter">1/${images.length}</div>` : ''}
-                </div>
+                </div>8
                        ${images.length > 1 ? `
                     <div class="gallery-thumbnails" id="galleryThumbnails" >
                         ${images.map((img, index) => `
