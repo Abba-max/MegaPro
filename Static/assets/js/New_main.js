@@ -95,6 +95,7 @@ function updateActiveNavigation() {
         }
     });
 }
+
 function lazyLoadImages() {
     const images = document.querySelectorAll('img[loading="lazy"], img[data-src]');
     const imageObserver = new IntersectionObserver((entries) => {
@@ -122,13 +123,16 @@ function lazyLoadImages() {
 
     images.forEach(img => imageObserver.observe(img));
 }
+
 document.addEventListener("DOMContentLoaded", () => {
     const lazyImages = document.querySelectorAll('img[loading="lazy"]');
     lazyImages.forEach(img => {
         img.addEventListener("load", () => {
             img.classList.add("loaded");
         });
-    }
+    });  // FIXED: Added missing closing parenthesis
+});
+
 // Mobile menu toggle
 function toggleMobileMenu() {
     const navMenu = document.getElementById('navMenu');
@@ -215,6 +219,7 @@ function showModal(content) {
     // Prevent body scroll
     document.body.style.overflow = 'hidden';
 }
+
 function closeModal() {
     const modal = document.getElementById('dynamicModal');
     if (modal) {
@@ -227,6 +232,7 @@ function closeModal() {
     // Restore body scroll
     document.body.style.overflow = '';
 }
+
 function showDjangoMessages() {
     // Check if there are Django messages in the template
     const messages = document.querySelectorAll('.alert, .error, .success, .info, .warning');
@@ -247,6 +253,7 @@ function showDjangoMessages() {
         message.remove(); // Remove the original message element
     });
 }
+
 // Toast notifications
 function showToast(message, type = 'info', duration = 4000) {
     const toastContainer = document.getElementById('toastContainer');
@@ -363,8 +370,6 @@ function trapFocus(e, container) {
     }
 }
 
-    images.forEach(img => imageObserver.observe(img));
-}
 function trackPageView(pageName) {
     console.log('Page view:', pageName);
     // Track page views for analytics
