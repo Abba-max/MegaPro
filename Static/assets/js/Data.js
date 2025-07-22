@@ -16,11 +16,11 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/DJI_0069.jpg",
+        image: "/static/assets/img/Estate Images/DJI_0069.jpg",
         category: ['Security', 'Generator','Budget_Friendly','Distance','Double_Rooms'],
         images: [
-            "assets/img/Estate Images/DJI_0076.jpg",
-            "assets/img/Estate Images/DJI_0075.jpg"
+            "/static/assets/img/Estate Images/DJI_0076.jpg",
+            "/static/assets/img/Estate Images/DJI_0075.jpg"
         ],
         reviews: [],
     },
@@ -133,10 +133,10 @@ const EstateData = {
         Generator: 'NO',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "assets/img/Estate Images/DJI_0071.jpg",
+        image: "/static/assets/img/Estate Images/DJI_0071.jpg",
         category: [ 'Budget_Friendly','Distance','WIFI'],
         images: [
-            "assets/img/Estate Images/DJI_0071.jpg"
+            "/static/assets/img/Estate Images/DJI_0071.jpg"
         ],
         reviews: [],
     },
@@ -156,11 +156,11 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "assets/img/Estate Images/photo_2025-07-13_19-12-05.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_19-12-05.jpg",
         category: [ 'Generator','Budget_Friendly','Distance'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_19-12-05.jpg",
-            "assets/img/Estate Images/DJI_0071.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-12-05.jpg",
+            "/static/assets/img/Estate Images/DJI_0071.jpg"
         ],
         reviews: [],
     },
@@ -180,13 +180,13 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2025-07-19_16-13-25.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-19_16-13-25.jpg",
         category: ['Security', 'Generator','Large_Space','WIFI'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-19_16-13-25.jpg",
-            "assets/img/Estate Images/photo_2025-07-13_19-12-35.jpg",
-             "assets/img/Estate Images/photo_2025-07-19_16-15-49.jpg",
-             "assets/img/Estate Images/photo_2025-07-19_16-16-38.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-19_16-13-25.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-12-35.jpg",
+             "/static/assets/img/Estate Images/photo_2025-07-19_16-15-49.jpg",
+             "/static/assets/img/Estate Images/photo_2025-07-19_16-16-38.jpg"
         ],
         reviews: [],
     },
@@ -206,13 +206,13 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/DJI_0068.jpg",
+        image: "/static/assets/img/Estate Images/DJI_0068.jpg",
         category: ['Security', 'Generator','Budget_Friendly','WIFI'],
         deliveryAvailable: true,
         features: [  'Budget Friendly', 'Generator', 'WIFI'],
         images: [
-            "assets/img/Estate Images/DJI_0068.jpg",
-            "assets/img/Estate Images/DJI_0067.jpg"
+            "/static/assets/img/Estate Images/DJI_0068.jpg",
+            "/static/assets/img/Estate Images/DJI_0067.jpg"
         ],
         reviews: [],
     },
@@ -232,11 +232,11 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2024-11-26_08-36-31.jpg",
+        image: "/static/assets/img/Estate Images/photo_2024-11-26_08-36-31.jpg",
         category: ['Security', 'Generator','Budget_Friendly','Restaurant','WIFI'],
         images: [
-            "assets/img/Estate Images/photo_2024-11-26_08-36-29.jpg",
-            "assets/img/Estate Images/photo_2024-11-26_08-36-26.jpg"
+            "/static/assets/img/Estate Images/photo_2024-11-26_08-36-29.jpg",
+            "/static/assets/img/Estate Images/photo_2024-11-26_08-36-26.jpg"
         ],
         reviews: [],
     },
@@ -259,16 +259,16 @@ const EstateData = {
         image: "/static/assets/img/Estate Images/photo_2025-07-13_13-34-58.jpg",
         category: ['Security', 'Generator','Restaurant','TV_Fridge','WIFI'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_13-34-58.jpg",
-            "assets/img/Estate Images/photo_2025-07-20_10-38-45.jpg",
-              "assets/img/Estate Images/photo_2025-07-20_10-41-41.jpg",
-                "assets/img/Estate Images/photo_2025-07-20_10-42-07.jpg",
-                "assets/img/Estate Images/photo_2025-07-20_10-42-10.jpg",
-                "assets/img/Estate Images/photo_2025-07-20_10-42-16.jpg",
-                "assets/img/Estate Images/photo_2025-07-20_10-42-20.jpg",
-                "assets/img/Estate Images/photo_2025-07-20_10-42-28.jpg",
-                "assets/img/Estate Images/photo_2025-07-20_10-42-31.jpg",
-             "assets/img/Estate Images/photo_2025-07-13_13-34-54.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-34-58.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-20_10-38-45.jpg",
+              "/static/assets/img/Estate Images/photo_2025-07-20_10-41-41.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-20_10-42-07.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-20_10-42-10.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-20_10-42-16.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-20_10-42-20.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-20_10-42-28.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-20_10-42-31.jpg",
+             "/static/assets/img/Estate Images/photo_2025-07-13_13-34-54.jpg"
         ],
         reviews: [],
     },
@@ -288,10 +288,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'YES',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2024-11-26_08-36-15.jpg",
+        image: "/static/assets/img/Estate Images/photo_2024-11-26_08-36-15.jpg",
         category: ['Security', 'Generator','Distance','Restaurant','TV_Fridge','WIFI'],
         images: [
-            "assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg"
+            "/static/assets/img/Estate Images/photo_2024-11-26_08-36-09.jpg"
 
         ],
         reviews: [],
@@ -312,13 +312,13 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "assets/img/Estate Images/photo_2025-07-13_13-35-10.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-35-10.jpg",
         category: ['Distance', 'Generator','WIFI','Budget_Friendly','Double_Rooms'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_13-35-14.jpg",
-            "assets/img/Estate Images/photo_2025-07-16_12-48-22.jpg",
-            "assets/img/Estate Images/photo_2025-07-16_12-48-12.jpg",
-            "assets/img/Estate Images/photo_2025-07-16_12-48-26.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-35-14.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-16_12-48-22.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-16_12-48-12.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-16_12-48-26.jpg"
 
         ],
         reviews: [],
@@ -339,13 +339,13 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2025-07-08_12-38-34.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-08_12-38-34.jpg",
         category: ['Security','WIFI', 'Generator','Budget_Friendly'],
         images: [
-             "assets/img/Estate Images/photo_2025-07-08_12-38-34.jpg",
-            "assets/img/Estate Images/photo_2025-07-08_12-37-23.jpg",
-            "assets/img/Estate Images/photo_2025-07-08_12-37-09.jpg",
-            "assets/img/Estate Images/photo_2025-07-08_12-37-01.jpg"
+             "/static/assets/img/Estate Images/photo_2025-07-08_12-38-34.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-08_12-37-23.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-08_12-37-09.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-08_12-37-01.jpg"
         ],
         reviews: [],
     },
@@ -365,10 +365,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'NO',
-        image:   "assets/img/Estate Images/photo_2025-07-13_13-33-30.jpg",
+        image:   "/static/assets/img/Estate Images/photo_2025-07-13_13-33-30.jpg",
         category: [ 'Generator','Budget_Friendly','Large_Space'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_13-33-30.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-33-30.jpg"
         ],
         reviews: [],
     },
@@ -388,10 +388,10 @@ const EstateData = {
         Generator: 'NO',
         TV_Fridge:'NO',
         Security:'YES',
-        image:   "assets/img/Estate Images/photo_2025-07-13_13-35-31.jpg",
+        image:   "/static/assets/img/Estate Images/photo_2025-07-13_13-35-31.jpg",
         category: ['Budget_Friendly'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_13-35-31.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-35-31.jpg"
 
         ],
         reviews: [],
@@ -412,11 +412,11 @@ const EstateData = {
         Generator: 'NO',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2025-07-13_13-35-39.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-35-39.jpg",
         category: ['Budget_Friendly'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_13-35-39.jpg",
-               "assets/img/Estate Images/photo_2025-07-13_13-35-35.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-35-39.jpg",
+               "/static/assets/img/Estate Images/photo_2025-07-13_13-35-35.jpg"
         ],
         reviews: [],
     },
@@ -436,10 +436,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'YES',
         Security:'YES',
-        image:  "assets/img/Estate Images/photo_2025-07-13_13-34-36.jpg",
+        image:  "/static/assets/img/Estate Images/photo_2025-07-13_13-34-36.jpg",
         category: ['Security','WIFI', 'Generator','TV_Fridge'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_13-34-36.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-34-36.jpg"
         ],
         reviews: [],
     },
@@ -459,10 +459,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2025-07-13_19-11-40.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_19-11-40.jpg",
         category: ['Security','WIFI', 'Generator','Budget_Friendly'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_19-11-40.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-11-40.jpg"
         ],
         reviews: [],
     },
@@ -482,10 +482,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'YES',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2025-07-13_19-11-44.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_19-11-44.jpg",
         category: ['Security','WIFI', 'Generator','Budget_Friendly','TV_Fridge'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_19-11-44.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-11-44.jpg"
         ],
         reviews: [],
     },
@@ -505,10 +505,10 @@ const EstateData = {
         Generator: 'NO',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2025-07-13_19-12-38.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_19-12-38.jpg",
         category: ['Security', 'Budget_Friendly'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_19-12-38.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-12-38.jpg"
         ],
         reviews: [],
     },
@@ -528,11 +528,11 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2025-07-13_19-11-20.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_19-11-20.jpg",
         category: ['Security','WIFI', 'Generator','Large_Space'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_19-11-20.jpg",
-            "assets/img/Estate Images/photo_2025-07-13_19-11-31.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-11-20.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-11-31.jpg"
         ],
         reviews: [],
     },
@@ -552,11 +552,11 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2025-07-13_19-11-06.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_19-11-06.jpg",
         category: ['Security','WIFI', 'Generator','Large_Space'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_19-11-06.jpg",
-            "assets/img/Estate Images/photo_2025-07-13_19-11-12.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-11-06.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-11-12.jpg"
         ],
         reviews: [],
     },
@@ -576,10 +576,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/DJI_0078 copy.jpg",
+        image: "/static/assets/img/Estate Images/DJI_0078 copy.jpg",
         category: ['Security','WIFI', 'Generator','Budget_Friendly'],
         images: [
-            "assets/img/Estate Images/DJI_0078 copy.jpg"
+            "/static/assets/img/Estate Images/DJI_0078 copy.jpg"
         ],
         reviews: [],
     },
@@ -599,12 +599,12 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2025-07-13_19-12-17.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_19-12-17.jpg",
         category: ['Distance', 'Generator','Large_Space'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_19-12-17.jpg",
-            "assets/img/Estate Images/photo_2025-07-13_19-12-21.jpg",
-            "assets/img/Estate Images/photo_2025-07-13_19-12-25.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-12-17.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-12-21.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-12-25.jpg"
         ],
         reviews: [],
     },
@@ -624,19 +624,19 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2025-07-19_16-18-06.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-19_16-18-06.jpg",
         category: [ 'Generator','Security','WIFI','Security','Double_Rooms'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-19_16-18-06.jpg",
-            "assets/img/Estate Images/photo_2025-07-19_16-18-55.jpg",
-             "assets/img/Estate Images/photo_2025-07-19_16-21-01.jpg",
-              "assets/img/Estate Images/photo_2025-07-19_16-21-04.jpg",
-                "assets/img/Estate Images/photo_2025-07-19_16-21-08.jpg",
-                "assets/img/Estate Images/photo_2025-07-19_16-21-11.jpg",
-                "assets/img/Estate Images/photo_2025-07-19_16-21-15.jpg",
-                "assets/img/Estate Images/photo_2025-07-19_16-21-32.jpg",
-                "assets/img/Estate Images/photo_2025-07-19_16-21-29.jpg",
-                "assets/img/Estate Images/photo_2025-07-13_19-12-54.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-19_16-18-06.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-19_16-18-55.jpg",
+             "/static/assets/img/Estate Images/photo_2025-07-19_16-21-01.jpg",
+              "/static/assets/img/Estate Images/photo_2025-07-19_16-21-04.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-19_16-21-08.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-19_16-21-11.jpg",
+                "/static/assets/img/Estate Images/photo_2025-07-19_16-21-15.jpg",
+                  "/static/assets/img/Estate Images/photo_2025-07-19_16-21-32.jpg",
+                    "/static/assets/img/Estate Images/photo_2025-07-19_16-21-29.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-12-54.jpg"
         ],
         reviews: [],
     },
@@ -656,10 +656,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2025-07-13_13-34-04.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-34-04.jpg",
         category: ['WIFI', 'Generator','Budget_Friendly'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_13-34-04.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-34-04.jpg"
         ],
         reviews: [],
     },
@@ -679,10 +679,10 @@ const EstateData = {
         Generator: 'NO',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "assets/img/Estate Images/photo_2025-07-13_13-33-55.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-33-55.jpg",
         category: ['Budget_Friendly'],
         images: [
-           "assets/img/Estate Images/photo_2025-07-13_13-34-00.jpg"
+           "/static/assets/img/Estate Images/photo_2025-07-13_13-34-00.jpg"
         ],
         reviews: [],
     },
@@ -702,12 +702,12 @@ const EstateData = {
         Generator: 'NO',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "assets/img/Estate Images/photo_2025-07-13_13-34-31.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-34-31.jpg",
         category: ['Budget_Friendly'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_13-34-31.jpg",
-            "assets/img/Estate Images/photo_2025-07-13_13-34-26.jpg",
-            "assets/img/Estate Images/photo_2025-07-13_13-34-10.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-34-31.jpg",
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-34-26.jpg",
+               "/static/assets/img/Estate Images/photo_2025-07-13_13-34-10.jpg"
         ],
         reviews: [],
     },
@@ -727,11 +727,11 @@ const EstateData = {
         Generator: 'NO',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "assets/img/Estate Images/photo_2025-07-13_13-33-50.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-33-50.jpg",
         category: ['Large_Space', 'Budget_Friendly'],
        
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_13-33-50.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-33-50.jpg"
         ],
         reviews: [],
     },
@@ -751,10 +751,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2025-07-13_19-10-29.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_19-10-29.jpg",
         category: ['Distance', 'Generator','Budget_Friendly'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_19-10-29.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_19-10-29.jpg"
         ],
         reviews: [],
     },
@@ -774,10 +774,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/Estate Images/photo_2025-07-13_13-35-26.jpg",
+        image: "/static/assets/img/Estate Images/photo_2025-07-13_13-35-26.jpg",
         category: ['Security', 'Generator','Large_Space','Double_Rooms'],
         images: [
-            "assets/img/Estate Images/photo_2025-07-13_13-35-26.jpg"
+            "/static/assets/img/Estate Images/photo_2025-07-13_13-35-26.jpg"
         ],
         reviews: [],
     }
