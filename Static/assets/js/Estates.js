@@ -3,12 +3,15 @@ function initEstates() {
     setupSearchFunctionality();
 }
  function createEstateCard(Estate, index) {
-     const processImagePath = (path) => {
-        if (!path) return '';
-        return path.replace(/^\/?static\//, '');
+        const processImagePath = (path) => {
+        if (!path) return '/static/assets/img/Estate Images/DJI_0071.jpg';
+        // Remove Django static tag if present
+        return path.replace(/^{%\s*static\s*'([^']+)'\s*%}/, '/static/$1')
+                   .replace(/^'/, '') // Remove any leading single quotes
+                   .replace(/'$/, ''); // Remove any trailing single quotes
     };
-    //let imgSrc = Estate.images && Estate.images[0] ? Estate.images[0] : 'assets/img/Estate Images/DJI_0071.jpg';
-     const mainImg = Estate.images?.[0] || Estate.image || '/Static/assets/img/Estate Images/DJI_0071.jpg';
+
+    const mainImg = processImagePath(Estate.images?.[0] || Estate.image);
         const showThumbs = Estate.images?.length > 1;
     const thumbCount = Math.min(4, Estate.images?.length || 0);
     const extraImages = Estate.images?.length > 4 ? Estate.images.length - 4 : 0;
