@@ -97,30 +97,43 @@ function updateActiveNavigation() {
 }
 function lazyLoadImages() {
     const images = document.querySelectorAll('img[loading="lazy"], img[data-src]');
-    const imageObserver = new IntersectionObserver((entries) => {
+    const imageObserver = new IntersectionObserver((entries, observer) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const img = entry.target;
                 
-                // Handle both data-src and regular lazy loading
-                if (img.dataset.src) {
-                    img.src = img.dataset.src;
+                // Handle both data-src and src attributes
+                const src = img.dataset.src || img.src;
+                
+                // Create a new image to test loading
+                const tempImg = new Image();
+                tempImg.src = src;
+                
+                tempImg.onload = () => {
+                    img.src = src;
+                    img.classList.add('loaded');
                     img.removeAttribute('data-src');
-                }
+                    observer.unobserve(img);
+                };
                 
-                // Add a small delay before loading to prioritize critical content
-                setTimeout(() => {
-                    img.loading = 'eager'; // Switch to eager loading once in viewport
-                }, 200);
-                
-                imageObserver.unobserve(img);
+                tempImg.onerror = () => {
+                    console.error('Failed to load image:', src);
+                    img.src = 'assets/img/Estate Images/placeholder.jpg'; // Fallback image
+                    img.classList.add('error');
+                    observer.unobserve(img);
+                };
             }
         });
     }, {
-        rootMargin: '200px 0px' // Load images 200px before they enter viewport
+        rootMargin: '200px',
+        threshold: 0.01
     });
 
-    images.forEach(img => imageObserver.observe(img));
+    images.forEach(img => {
+        // Add loading state class
+        img.classList.add('loading');
+        imageObserver.observe(img);
+    });
 }
 document.addEventListener("DOMContentLoaded", () => {
     const lazyImages = document.querySelectorAll('img[loading="lazy"]');
@@ -328,27 +341,6 @@ function animateNumber(elementId, finalNumber) {
     }, 50);
 }
 
-// Contact form submission
-function submitContact(event) {
-    event.preventDefault();
-
-    const formData = new FormData(event.target);
-    const contactData = {
-        name: formData.get('userName'),
-        email: formData.get('userPhone'),
-        message: formData.get('instructions'),
-        timestamp: new Date().toISOString()
-    };
-
-    console.log('Contact form submission:', contactData);
-
-    // Show success message
-    showToast('Message sent successfully! We\'ll get back to you soon.', 'success');
-
-    // Reset form
-    event.target.reset();
-}
-
 // Utility functions
 // Accessibility enhancements
 function initAccessibility() {
@@ -386,19 +378,6 @@ function trapFocus(e, container) {
     }
 }
 
-// Performance optimization
-function lazyLoadImages() {
-    const images = document.querySelectorAll('img[data-src]');
-    const imageObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const img = entry.target;
-                img.src = img.dataset.src;
-                img.removeAttribute('data-src');
-                imageObserver.unobserve(img);
-            }
-        });
-    });
 
     images.forEach(img => imageObserver.observe(img));
 }
