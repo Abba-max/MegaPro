@@ -69,8 +69,32 @@
   <div class="toast-container" id="toastContainer"></div>
   <main class="main">
     <section id="hero" class="hero {% if not user.is_authenticated %}full-screen{% endif %}">
+      
+        <div class="countdown-container">
+        <h1>Reserve before the 18th of August. Site under maintainance and amelioration then!</h1>
+        <div id="countdown">
+            <div>
+                <span class="value" id="days"></span>
+                <span class="label">Days</span>
+            </div>
+            <div>
+                <span class="value" id="hours"></span>
+                <span class="label">Hours</span>
+            </div>
+            <div>
+                <span class="value" id="minutes"></span>
+                <span class="label">Minutes</span>
+            </div>
+            <div>
+                <span class="value" id="seconds"></span>
+                <span class="label">Seconds</span>
+            </div>
+        </div>
+    </div>
+
       <div class="hero-content">
         <div class="hero-text">
+
           <h1>Find Your Perfect Home in Eyang</h1>
           <p>Join our community and find your ideal living space!.<br>Academic excellence starts with comfortable living!</p>
         </div>
@@ -91,7 +115,7 @@
           </a>
         </div>
         {% endif %}
-        {% if user.is_authenticated is none %}
+        {% if not user.is_authenticated %}
         <a class="btn btn-outline" href="{% url 'login' %}">
           <i class="fas fa-user-plus"></i> Join Community
         </a>
@@ -229,6 +253,43 @@
         });
       });
     });
+
+    document.addEventListener('DOMContentLoaded', function() {
+    // Set the date we're counting down to (Year, Month (0-11), Day, Hour, Minute, Second)
+    const countdownDate = new Date("December 31, 2025 23:59:59").getTime();
+
+    // Update the countdown every 1 second
+    const x = setInterval(function() {
+
+        // Get today's date and time
+        const now = new Date().getTime();
+
+        // Find the distance between now and the countdown date
+        const distance = countdownDate - now;
+        // Time calculations for days, hours, minutes and seconds
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // Display the result in the corresponding elements
+        document.getElementById("days").innerHTML = days;
+        document.getElementById("hours").innerHTML = hours;
+        document.getElementById("minutes").innerHTML = minutes;
+        document.getElementById("seconds").innerHTML = seconds;
+
+        // If the countdown is over, display a message
+        if (distance < 0) {
+            clearInterval(x); // Stop the interval
+            document.getElementById("countdown").innerHTML = "<p>The event has started!</p>";
+            // You might also hide the labels or change the styling
+            document.querySelector(".countdown-container h1").innerHTML = "Welcome!";
+        }
+    }, 1000); // Update every 1000ms (1 second)
+});
+
+
   </script>
+  
 </body>
 </html>

@@ -406,3 +406,5 @@ function trackPageView(pageName) {
     console.log('Page view:', pageName);
     // Track page views for analytics
 }
+
+

@@ -852,6 +852,66 @@ footer {
     font-size: 1.1rem;
     opacity: 0.9;
 }
+.countdown-container {
+    text-align: center;
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+
+
+#countdown {
+    display: flex;
+    justify-content: center;
+    gap: 25px; /* Space between each time unit */
+}
+
+#countdown > div {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #4CAF50; /* A nice green */
+    color: white;
+    padding: 20px 30px;
+    border-radius: 8px;
+    min-width: 100px; /* Ensure consistent width */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.value {
+    font-size: 3.5em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.label {
+    font-size: 1em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    #countdown {
+        flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+        gap: 15px;
+    }
+
+    #countdown > div {
+        padding: 15px 20px;
+        min-width: 80px;
+    }
+
+    .value {
+        font-size: 2.5em;
+    }
+
+}
+
+
 
 /* --- Responsive Design --- */
 @media (max-width: 991px) {
