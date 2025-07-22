@@ -5,7 +5,6 @@ from .models import QuickOrder
 from .models import Review
 from .models import ContactRequest
 from .models import Global_user
-
 # Register your models here.
 
 admin.site.register(Feature)
