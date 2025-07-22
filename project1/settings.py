@@ -147,6 +147,7 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 MEDIA_ROOT= (os.path.join(os.path.join(BASE_DIR),'static_cdn', 'media_root'))
 STATIC_ROOT= (os.path.join(os.path.join(BASE_DIR), 'static_cdn', 'static_root'))
 
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend' #password reset
 
 # Default primary key field type
