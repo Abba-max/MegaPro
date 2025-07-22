@@ -95,53 +95,42 @@ function updateActiveNavigation() {
         }
     });
 }
+
 function lazyLoadImages() {
     const images = document.querySelectorAll('img[loading="lazy"], img[data-src]');
-    const imageObserver = new IntersectionObserver((entries, observer) => {
+    const imageObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const img = entry.target;
                 
-                // Handle both data-src and src attributes
-                const src = img.dataset.src || img.src;
-                
-                // Create a new image to test loading
-                const tempImg = new Image();
-                tempImg.src = src;
-                
-                tempImg.onload = () => {
-                    img.src = src;
-                    img.classList.add('loaded');
+                // Handle both data-src and regular lazy loading
+                if (img.dataset.src) {
+                    img.src = img.dataset.src;
                     img.removeAttribute('data-src');
-                    observer.unobserve(img);
+                }
+                
+                // Add loaded class for transition effect
+                img.onload = () => {
+                    img.classList.add('loaded');
                 };
                 
-                tempImg.onerror = () => {
-                    console.error('Failed to load image:', src);
-                    img.src = 'assets/img/Estate Images/placeholder.jpg'; // Fallback image
-                    img.classList.add('error');
-                    observer.unobserve(img);
-                };
+                imageObserver.unobserve(img);
             }
         });
     }, {
-        rootMargin: '200px',
-        threshold: 0.01
+        rootMargin: '200px 0px'
     });
 
-    images.forEach(img => {
-        // Add loading state class
-        img.classList.add('loading');
-        imageObserver.observe(img);
-    });
+    images.forEach(img => imageObserver.observe(img));
 }
+
 document.addEventListener("DOMContentLoaded", () => {
     const lazyImages = document.querySelectorAll('img[loading="lazy"]');
     lazyImages.forEach(img => {
         img.addEventListener("load", () => {
             img.classList.add("loaded");
         });
-    });
+    });  // FIXED: Added missing closing parenthesis
 });
 
 // Mobile menu toggle
@@ -230,6 +219,7 @@ function showModal(content) {
     // Prevent body scroll
     document.body.style.overflow = 'hidden';
 }
+
 function closeModal() {
     const modal = document.getElementById('dynamicModal');
     if (modal) {
@@ -242,6 +232,7 @@ function closeModal() {
     // Restore body scroll
     document.body.style.overflow = '';
 }
+
 function showDjangoMessages() {
     // Check if there are Django messages in the template
     const messages = document.querySelectorAll('.alert, .error, .success, .info, .warning');
@@ -262,6 +253,7 @@ function showDjangoMessages() {
         message.remove(); // Remove the original message element
     });
 }
+
 // Toast notifications
 function showToast(message, type = 'info', duration = 4000) {
     const toastContainer = document.getElementById('toastContainer');
@@ -378,12 +370,7 @@ function trapFocus(e, container) {
     }
 }
 
-
-    images.forEach(img => imageObserver.observe(img));
-
 function trackPageView(pageName) {
     console.log('Page view:', pageName);
     // Track page views for analytics
 }
-
-

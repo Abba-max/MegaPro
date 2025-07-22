@@ -40,11 +40,11 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
-        image: "assets/img/DJI_0078.jpg",
+        image: "/static/assets/img/DJI_0078.jpg",
         category: ['Security', 'Generator','Budget_Friendly','WIFI','Distance'],
        
         images: [
-            "assets/img/DJI_0078.jpg"
+            "/static/assets/img/DJI_0078.jpg"
         ],
         reviews: [],
     },
@@ -64,10 +64,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "assets/img/Estate Images/DJI_0081.jpg",
+        image: "/static/assets/img/Estate Images/DJI_0081.jpg",
         category: ['Distance', 'Generator','Budget_Friendly','WIFI','Large_Space'],
         images: [
-            "assets/img/Estate Images/DJI_0081.jpg"
+            "/static/assets/img/Estate Images/DJI_0081.jpg"
         ],
         reviews: [],
     },
@@ -87,10 +87,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "assets/img/Estate Images/DJI_0084.jpg",
+        image: "/static/assets/img/Estate Images/DJI_0084.jpg",
         category: ['Distance', 'Generator','Budget_Friendly'],
         images: [
-            "assets/img/Estate Images/DJI_0084.jpg"
+            "/static/assets/img/Estate Images/DJI_0084.jpg"
         ],
         reviews: [],
     },
@@ -110,10 +110,10 @@ const EstateData = {
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'NO',
-        image: "assets/img/Estate Images/DJI_0065.jpg",
+        image: "/static/assets/img/Estate Images/DJI_0065.jpg",
         category: ['Distance', 'Generator','Budget_Friendly','WIFI', 'Large_Space','Double_Rooms'],
         images: [
-            "assets/img/Estate Images/DJI_0065.jpg"
+            "/static/assets/img/Estate Images/DJI_0065.jpg"
         ],
         reviews: [],
     },
