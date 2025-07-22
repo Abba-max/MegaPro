@@ -15,7 +15,7 @@ function initEstates() {
     return `
         <div class="Estate-card animate" style="animation-delay:${index * 0.1}s">
             <div class="Estate-img-container">
-                <img src="${mainImg}" alt="${Estate.name}" loading="lazy" class="main-img">
+                <img src="${mainImg}" alt="${Estate.name}"  class="main-img">
                 <div class="Estate-badge rating">
                     <i class="fas fa-star" style="color: gold;"></i> ${Estate.rating ? Estate.rating.toFixed(1) : 'N/A'}
                 </div>
@@ -197,13 +197,13 @@ function createEstateDetailsHTML(Estate) {
             <!-- Estate Images -->
             <div class="Estate-gallery">
                  <div class="main-image">
-                    <img src="${mainImage}" alt="${Estate.name}" id="mainGalleryImage" loading="lazy">
+                    <img src="${mainImage}" alt="${Estate.name}" id="mainGalleryImage" >
                     ${images.length > 1 ? `<div class="image-counter">1/${images.length}</div>` : ''}
                 </div>
                        ${images.length > 1 ? `
                     <div class="gallery-thumbnails" id="galleryThumbnails" >
                         ${images.map((img, index) => `
-                            <img src="${img}" alt="${Estate.name} " loading="lazy"
+                            <img src="${img}" alt="${Estate.name} 
                                  onclick="changeGalleryImage(${index})"
                                  class="${index === 0 ? 'active' : ''}"
                                  data-index="${index}">
