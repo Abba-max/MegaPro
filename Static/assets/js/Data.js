@@ -330,7 +330,7 @@ const EstateData = {
         location: 'It is located after Shekina at 600m from the school campus',
         Capacity: '18 Rooms',
         Price: '60,000FCFA single Rooms',
-        Free_Rooms: '00 Free Rooms',
+        Free_Rooms: '03 Free Rooms',
         Distance:'Far',
         Space: 'Medium',
         description: ' Beautiful buildings with a peaceful vibe; located after Shekina',
@@ -611,7 +611,7 @@ const EstateData = {
          'Eureka': {
         id: 'Eureka',
         name: 'Eureka City',
-        rating: 4.0,
+        rating: 4.2,
         location: 'It is located before Toundalia at 450m from the school campus',
         Capacity: '12 SingleRooms, 5 Double Rooms',
         Price: '65,000FCFA single Rooms, 42,500FCFA Double Rooms',
@@ -625,7 +625,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'YES',
         image: "/static/assets/img/Estate Images/photo_2025-07-19_16-18-06.jpg",
-        category: [ 'Generator','Security','WIFI','Security','Double_Rooms'],
+        category: [ 'Generator','Security','WIFI','Security','Double_Rooms','Restaurant'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-19_16-18-06.jpg",
             "/static/assets/img/Estate Images/photo_2025-07-19_16-18-55.jpg",
