@@ -1058,10 +1058,25 @@ img[loading="lazy"].loaded {
     position: absolute;
     bottom: var(--spacing-md);
     right: var(--spacing-md);
-    background: rgba(0,0,0,0.7);
-    color: white;
+    background: rgba(239, 237, 245, 0.7);
+    color:rgb(2, 2, 2);
     padding: 4px 12px;
     border-radius: 20px;
     font-size: 0.9rem;
     z-index: 2;
+}
+
+timestamp-number {
+    color: #3498db; /* Blue color */
+    font-weight: 600;
+}
+
+.published-time {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin-top: var(--spacing-xs);
+}
+
+.Estate-meta .fa-clock {
+    color: var(--primary-color);
 }

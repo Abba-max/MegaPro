@@ -24,6 +24,7 @@ function createEstateCard(Estate, index) {
         const showThumbs = Estate.images?.length > 1;
     const thumbCount = Math.min(4, Estate.images?.length || 0);
     const extraImages = Estate.images?.length > 4 ? Estate.images.length - 4 : 0;
+    const publishedTime = Estate.publishedAt ? formatPublishedTime(Estate.publishedAt) : '';
     return `
         <div class="Estate-card animate" style="animation-delay:${index * 0.1}s">
             <div class="Estate-img-container">
@@ -50,7 +51,7 @@ function createEstateCard(Estate, index) {
                         </div>
                         <div class="meta-item">
                             <i class="fas fa-clock"></i>
-                            <span>${publishedTime}</span>
+                            <span style="color:blue;">${publishedTime}</span>
                         </div>
                     </div>
                 </div>

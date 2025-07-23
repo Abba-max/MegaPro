@@ -1,37 +1,3 @@
-function getTimeAgo(publishDateString) {
-    // Current time is Wednesday, July 23, 2025 at 4:48:00 PM WAT
-    const now = new Date("July 23, 2025 16:48:00"); // Using the provided current time for consistent calculation
-    const published = new Date(publishDateString); // Convert published date string to Date object
-
-    // If for some reason the date is invalid, return a default
-    if (isNaN(published.getTime())) {
-        return 'Date N/A';
-    }
-
-    const distance = now.getTime() - published.getTime(); // Difference in milliseconds
-
-    const seconds = Math.floor(distance / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
-    const days = Math.floor(hours / 24);
-    const months = Math.floor(days / 30); // Approximate months
-    const years = Math.floor(days / 365); // Approximate years
-
-    if (years > 0) {
-        return `${years} year${years > 1 ? 's' : ''} ago`;
-    } else if (months > 0) {
-        return `${months} month${months > 1 ? 's' : ''} ago`;
-    } else if (days > 0) {
-        return `${days} day${days > 1 ? 's' : ''} ago`;
-    } else if (hours > 0) {
-        return `${hours} hr${hours > 1 ? 's' : ''} ago`;
-    } else if (minutes > 0) {
-        return `${minutes} min${minutes > 1 ? 's' : ''} ago`;
-    } else {
-        return `Just now`;
-    }
-}
-
 function initEstates() {
     loadEstates(); // Load all estates by default
     setupSearchFunctionality();
@@ -55,14 +21,10 @@ function processImagePath(path) {
 
 function createEstateCard(Estate, index) {
     const mainImg = processImagePath(Estate.images?.[0] || Estate.image);
-
-    // Get the published date from the Estate object.
-    // IMPORTANT: Ensure your Estate objects have a 'published_at' property
-    // (e.g., "YYYY-MM-DDTHH:mm:ss" or "Month Day, Year HH:mm:ss").
-    // If not present, it will default to 'July 15, 2025 16:59:59' for calculation.
-    const publishedDateForCalculation = Estate.published_at || 'July 15, 2025 16:59:59';
-    const timeAgo = getTimeAgo(publishedDateForCalculation); // Pass the estate's published date
-
+        const showThumbs = Estate.images?.length > 1;
+    const thumbCount = Math.min(4, Estate.images?.length || 0);
+    const extraImages = Estate.images?.length > 4 ? Estate.images.length - 4 : 0;
+    const publishedTime = Estate.publishedAt ? formatPublishedTime(Estate.publishedAt) : '';
     return `
         <div class="Estate-card animate" style="animation-delay:${index * 0.1}s">
             <div class="Estate-img-container">
@@ -72,7 +34,7 @@ function createEstateCard(Estate, index) {
                 </div>
             </div>
             <div class="Estate-content">
-                <div class="Estate-header">
+                <di class="Estate-header">
                     <h3 class="Estate-name">${Estate.name}</h3>
                     <div class="Estate-meta">
                         <div class="meta-item">
@@ -88,14 +50,10 @@ function createEstateCard(Estate, index) {
                             <span>${Estate.Price}</span>
                         </div>
                         <div class="meta-item">
-                            <i class="fas fa-bolt"></i>
-                            <span>${Estate.Generator}</span>
+                            <i class="fas fa-clock"></i>
+                            <span style="color:blue;">${publishedTime}</span>
                         </div>
                     </div>
-                </div>
-                <div>
-                    <span class="label">Published:</span>
-                    <span style="color:blue;" class="value">${timeAgo}</span>
                 </div>
                 <p class="Estate-desc">${Estate.description}</p>
                 <div class="Estate-tags">
@@ -316,6 +274,8 @@ function createEstateDetailsHTML(Estate) {
                     <p><strong>Free Rooms:</strong> ${Estate.Free_Rooms}</p>
                     <p><strong>Location:</strong> ${Estate.location}</p>
                     <p><strong>Space:</strong> ${Estate.Space}</p>
+                    <p><strong>Generator:</strong> ${Estate.Generator}</p>
+                    <p><strong>Restaurant:</strong> ${Estate.Restaurant}</p>
                     <p><strong>TV/Fridge:</strong> ${Estate.TV_Fridge}</p>
                     <p><strong>Wifi:</strong> ${Estate.WIFI}</p>
                     <p><strong>Security:</strong> ${Estate.Security}</p>
@@ -469,3 +429,23 @@ function scrollToEstates() {
 document.addEventListener('DOMContentLoaded', () => {
     initEstates();
 });
+function formatPublishedTime(publishedTimestamp) {
+    const now = new Date().getTime();
+    const diff = now - publishedTimestamp;
+    
+    // Calculate time units
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    
+    if (days > 0) {
+        return `Updated ${days} day${days > 1 ? 's' : ''} ago`;
+    } else if (hours > 0) {
+        return `Updated ${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else if (minutes > 0) {
+        return `Updated ${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    } else {
+        return `Updated just now`;
+    }
+}
