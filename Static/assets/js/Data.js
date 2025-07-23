@@ -3,6 +3,7 @@ const EstateData = {
     'Cite Universitaire': {
         id: 'Cite Universitaire',
         name: 'Cité Universitaire',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 3.7,
         location: 'It is located at 150m from the school campus',
         Capacity: '124 Rooms',
@@ -27,6 +28,7 @@ const EstateData = {
     'RPN': {
         id: 'RPN',
         name: 'RPN',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 4.4,
         location: 'It is located at 400m from the school university,behind colonel',
         Capacity: '59 Rooms',
@@ -51,6 +53,7 @@ const EstateData = {
      'Colonel': {
         id: 'Colonel',
         name: 'Colonel/Bao',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 4.6,
         location: 'It is located at 250m from the school campus,behind cité universitaire',
         Capacity: '49 Rooms',
@@ -74,6 +77,7 @@ const EstateData = {
      'Bevina': {
         id: 'Bevina',
         name: 'Bevina City',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 3.8,
         location: 'It is located at 300m from  the school campus,beside colonel',
         Capacity: '28 Rooms',
@@ -97,6 +101,7 @@ const EstateData = {
      'Verte': {
         id: 'Verte',
         name: 'Mini Cité la Grace/Cité Verte',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 4.7,
         location: 'It is located  at 200m from the school campus,beside the junction ',
         Capacity: '36 Rooms, 02 studios',
@@ -120,6 +125,7 @@ const EstateData = {
      'Peace': {
         id: 'Peace',
         name: 'City Of Peace',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 3.8,
         location: ' It is located near Grace divine at 300m from school campus',
         Capacity: '23 Rooms',
@@ -143,6 +149,7 @@ const EstateData = {
      'Divine': {
         id: 'Divine',
         name: 'Grace Divine',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 3.7,
         location: 'It is located next to city of peace, at 300m from school campus',
         Capacity: '23 Rooms',
@@ -167,6 +174,7 @@ const EstateData = {
      'Providence': {
         id: 'Providence',
         name: 'First Class City',
+        publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
         rating: 4.1,
         location: 'It is located after mini cité la blanche,before toundalia at 600m from the school campus',
         Capacity: '39 Rooms',
@@ -195,6 +203,7 @@ const EstateData = {
      'Toundalia': {
         id: 'Toundalia',
         name: 'Toundalia City',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 3.8,
         location: 'It is located at 800m from school campus',
         Capacity: '36 Rooms',
@@ -221,6 +230,7 @@ const EstateData = {
      'TBC': {
         id: 'TBC',
         name: 'TBC',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 3.5,
         location: 'It is located at 250m from the school campus,beside the junction',
         Capacity: '32 Rooms',
@@ -245,6 +255,7 @@ const EstateData = {
      'Digital': {
         id: 'Digital',
         name: 'Digital City',
+        publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
         rating: 3.8,
         location: 'It is located near TBC at 300m from  the school campus',
         Capacity: '36 Rooms',
@@ -277,6 +288,7 @@ const EstateData = {
      'Shekina': {
         id: 'Shekina',
         name: 'Shekina City',
+        publishedAt: new Date("July 10, 2025 10:00:00").getTime(), 
         rating: 4.1,
         location: 'It is located near Digital at 400m from the school campus',
         Capacity: '// Rooms',
@@ -301,6 +313,7 @@ const EstateData = {
      'Jumeirah': {
         id: 'Jumeirah',
         name: 'Jumeirah City',
+        publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
         rating: 3.8,
         location: 'It is located near Shekina at 500m from the school campus',
         Capacity: '44 Single Rooms 30 double Rooms',
@@ -328,6 +341,7 @@ const EstateData = {
      'Heaven': {
         id: 'Heaven',
         name: 'Heaven City',
+        publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
         rating: 4.0,
         location: 'It is located after Shekina at 600m from the school campus',
         Capacity: '18 Rooms',
@@ -354,6 +368,7 @@ const EstateData = {
          'Germain2': {
         id: 'Germain2',
         name: 'Cité Saint Germain 2',
+        publishedAt: new Date("July 10, 2025 10:00:00").getTime(), 
         rating: 3.5,
         location: 'It is located after Shekina before Carrefour Eyang at 750m from the school campus',
         Capacity: '27 Rooms',
@@ -377,6 +392,7 @@ const EstateData = {
          'Jerusalem': {
         id: 'Jerusalem',
         name: 'Jerusalem city',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 3.0,
         location: 'It is located after Carrefour eyang near Cité des genie at 1Km from the school campus',
         Capacity: '10 Rooms',
@@ -401,6 +417,7 @@ const EstateData = {
          'Genie': {
         id: 'Genie',
         name: 'Cité des Genie',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 3.0,
         location: 'It is located near Jerusalem at 1Km from the school campus',
         Capacity: ' 27 Rooms',
@@ -425,6 +442,7 @@ const EstateData = {
          'Digital2': {
         id: 'Digital2',
         name: 'Digital City 2',
+        publishedAt: new Date("June 30, 2025 10:00:00").getTime(), 
         rating: 3.8,
         location: 'It is located near TBC at 200m from the school campus',
         Capacity: '45 Rooms',
@@ -448,6 +466,7 @@ const EstateData = {
          'FaceDigital': {
         id: 'FaceDigital',
         name: 'Sans noms(en face Digital)',
+        publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
         rating: 3.8,
         location: 'It is located infront of Digital City at 300m from the school campus',
         Capacity: '// Rooms',
@@ -471,6 +490,7 @@ const EstateData = {
          'FaceTBC': {
         id: 'FaceTBC',
         name: 'Toundalia 2',
+        publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
         rating: 4.0,
         location: 'It is located infront of TBC at 200m the school campus',
         Capacity: '51 Rooms',
@@ -494,6 +514,7 @@ const EstateData = {
          'FaceEcole': {
         id: 'FaceEcole',
         name: 'Cité en Face Ecole',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 3.6,
         location: 'It is located near the school campus',
         Capacity: '42 Rooms',
@@ -517,6 +538,7 @@ const EstateData = {
          'Twins': {
         id: 'Twins',
         name: 'Sans noms(Devant Colonel)',
+        publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
         rating: 4.0,
         location: 'It is located near colonel at 300m from  the school campus',
         Capacity: '// Rooms',
@@ -541,6 +563,7 @@ const EstateData = {
          'DevantColonel': {
         id: 'DevantColonel',
         name: 'Cite Devant Colonel',
+        publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
         rating: 4.0,
         location: 'It is located near colonel at 300m from the school campus',
         Capacity: '// Rooms',
@@ -565,6 +588,7 @@ const EstateData = {
          'RPN2': {
         id: 'RPN2',
         name: 'LORY',
+        publishedAt: new Date("June 30, 2025 10:00:00").getTime(), 
         rating: 4.0,
         location: 'It is located near RPN at 400m from the school campus',
         Capacity: '25 Rooms',
@@ -588,6 +612,7 @@ const EstateData = {
          '100k': {
         id: '100k',
         name: 'Sans noms avant Toundalia',
+        publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
         rating: 4.2,
         location: 'It is located before Toundalia at 500m from the school campus',
         Capacity: '40 Rooms',
@@ -613,6 +638,7 @@ const EstateData = {
          'Eureka': {
         id: 'Eureka',
         name: 'Eureka City',
+        publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
         rating: 4.2,
         location: 'It is located before Toundalia at 450m from the school campus',
         Capacity: '12 SingleRooms, 5 Double Rooms',
@@ -645,6 +671,7 @@ const EstateData = {
          'LA': {
         id: 'LA',
         name: 'Sans noms(Avant Toundalia)',
+        publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
         rating: 3.8,
         location: 'It is located before Toundalia at 400m from the school campus',
         Capacity: '// Rooms',
@@ -668,6 +695,7 @@ const EstateData = {
          'Bello': {
         id: 'Bello',
         name: 'Mini Cité Bello',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 2.7,
         location: 'It is located at 1Km from the school campus',
         Capacity: '06 Rooms',
@@ -691,6 +719,7 @@ const EstateData = {
          'Blanche': {
         id: 'Blanche',
         name: 'Mini Cité La Blanche',
+        publishedAt: new Date("June 20, 2025 10:00:00").getTime(), 
         rating: 2.8,
         location: 'It is located after City of peace beside restaurant la blanche at 300m from the school campus',
         Capacity: '10 Rooms',
@@ -716,6 +745,7 @@ const EstateData = {
      'Germain': {
         id: 'Germain',
         name: 'Cité Saint Germain',
+        publishedAt: new Date("June 30, 2025 10:00:00").getTime(), 
         rating: 3.0,
         location: 'It is located after Shekina before Carrefour Eyang at 750m from the school campus',
         Capacity: '18 Rooms',
@@ -740,6 +770,7 @@ const EstateData = {
      'Hope': {
         id: 'Hope',
         name: 'Hope City',
+        publishedAt: new Date("June 30, 2025 10:00:00").getTime(), 
         rating: 3.8,
         location: 'It is located near Shekina at 500m from the school campus',
         Capacity: '39 Rooms',
@@ -763,6 +794,7 @@ const EstateData = {
      'Joseph': {
         id: 'Joseph',
         name: 'Cité Saint Joseph',
+        publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
         rating: 4.0,
         location: 'It is located after Carrefour Eyang at 800m from the school campus',
         Capacity: '120 Rooms',
