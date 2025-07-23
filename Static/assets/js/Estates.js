@@ -21,14 +21,9 @@ function processImagePath(path) {
 
 function createEstateCard(Estate, index) {
     const mainImg = processImagePath(Estate.images?.[0] || Estate.image);
-
-    // Get the published date from the Estate object.
-    // IMPORTANT: Ensure your Estate objects have a 'published_at' property
-    // (e.g., "YYYY-MM-DDTHH:mm:ss" or "Month Day, Year HH:mm:ss").
-    // If not present, it will default to 'July 15, 2025 16:59:59' for calculation.
-    const publishedDateForCalculation = Estate.published_at || 'July 15, 2025 16:59:59';
-    const timeAgo = getTimeAgo(publishedDateForCalculation); // Pass the estate's published date
-
+        const showThumbs = Estate.images?.length > 1;
+    const thumbCount = Math.min(4, Estate.images?.length || 0);
+    const extraImages = Estate.images?.length > 4 ? Estate.images.length - 4 : 0;
     return `
         <div class="Estate-card animate" style="animation-delay:${index * 0.1}s">
             <div class="Estate-img-container">
@@ -54,8 +49,8 @@ function createEstateCard(Estate, index) {
                             <span>${Estate.Price}</span>
                         </div>
                         <div class="meta-item">
-                            <i class="fas fa-bolt"></i>
-                            <span>${Estate.Generator}</span>
+                            <i class="fas fa-clock"></i>
+                            <span>${publishedTime}</span>
                         </div>
                     </div>
                 </div>
@@ -278,6 +273,8 @@ function createEstateDetailsHTML(Estate) {
                     <p><strong>Free Rooms:</strong> ${Estate.Free_Rooms}</p>
                     <p><strong>Location:</strong> ${Estate.location}</p>
                     <p><strong>Space:</strong> ${Estate.Space}</p>
+                    <p><strong>Generator:</strong> ${Estate.Generator}</p>
+                    <p><strong>Restaurant:</strong> ${Estate.Restaurant}</p>
                     <p><strong>TV/Fridge:</strong> ${Estate.TV_Fridge}</p>
                     <p><strong>Wifi:</strong> ${Estate.WIFI}</p>
                     <p><strong>Security:</strong> ${Estate.Security}</p>
@@ -431,3 +428,23 @@ function scrollToEstates() {
 document.addEventListener('DOMContentLoaded', () => {
     initEstates();
 });
+function formatPublishedTime(publishedTimestamp) {
+    const now = new Date().getTime();
+    const diff = now - publishedTimestamp;
+    
+    // Calculate time units
+    const seconds = Math.floor(diff / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    
+    if (days > 0) {
+        return `Updated ${days} day${days > 1 ? 's' : ''} ago`;
+    } else if (hours > 0) {
+        return `Updated ${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else if (minutes > 0) {
+        return `Updated ${minutes} minute${minutes > 1 ? 's' : ''} ago`;
+    } else {
+        return `Updated just now`;
+    }
+}
