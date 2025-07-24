@@ -134,7 +134,7 @@ const EstateData = {
         Distance:'Near',
         Space: 'Small',
         description: 'Powered by solar energy, close to campus, but rooms are relatively small.',
-        WIFI: 'NO',
+        WIFI: 'YES',
         Restaurant:'NO',
         Generator: 'NO',
         TV_Fridge:'NO',
@@ -245,7 +245,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'YES',
         image: "/static/assets/img/Estate Images/photo_2024-11-26_08-36-31.jpg",
-        category: ['Security', 'Generator','Budget_Friendly','Restaurant','WIFI'],
+        category: ['Security', 'Generator','Budget_Friendly','Restaurant','Distance','WIFI'],
         images: [
             "/static/assets/img/Estate Images/photo_2024-11-26_08-36-29.jpg",
             "/static/assets/img/Estate Images/photo_2024-11-26_08-36-26.jpg"
@@ -270,7 +270,7 @@ const EstateData = {
         TV_Fridge:'YES',
         Security:'YES',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_13-34-58.jpg",
-        category: ['Security', 'Generator','Restaurant','TV_Fridge','WIFI'],
+        category: ['Security', 'Generator','Restaurant','TV_Fridge','WIFI','Distance'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-13_13-34-58.jpg",
             "/static/assets/img/Estate Images/photo_2025-07-20_10-38-45.jpg",
@@ -405,7 +405,7 @@ const EstateData = {
         Restaurant:'NO',
         Generator: 'NO',
         TV_Fridge:'NO',
-        Security:'YES',
+        Security:'NO',
         image:   "/static/assets/img/Estate Images/photo_2025-07-13_13-35-31.jpg",
         category: ['Budget_Friendly'],
         images: [
@@ -430,7 +430,7 @@ const EstateData = {
         Restaurant:'NO',
         Generator: 'NO',
         TV_Fridge:'NO',
-        Security:'YES',
+        Security:'NO',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_13-35-39.jpg",
         category: ['Budget_Friendly'],
         images: [
@@ -448,7 +448,7 @@ const EstateData = {
         Capacity: '45 Rooms',
         Price: '80,000FCFA single Rooms',
         Free_Rooms: '// Free Rooms',
-        Distance:'Far',
+        Distance:'Near',
         Space: 'Medium',
         description: 'A good estate for disciplined students',
         WIFI: 'YES',
@@ -457,7 +457,7 @@ const EstateData = {
         TV_Fridge:'YES',
         Security:'YES',
         image:  "/static/assets/img/Estate Images/photo_2025-07-13_13-34-36.jpg",
-        category: ['Security','WIFI', 'Generator','TV_Fridge'],
+        category: ['Security','WIFI', 'Generator','TV_Fridge','Distance'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-13_13-34-36.jpg"
         ],
@@ -481,7 +481,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'YES',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_19-11-40.jpg",
-        category: ['Security','WIFI', 'Generator','Budget_Friendly'],
+        category: ['Security','WIFI', 'Generator','Budget_Friendly','Distance'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-13_19-11-40.jpg"
         ],
@@ -505,7 +505,7 @@ const EstateData = {
         TV_Fridge:'YES',
         Security:'YES',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_19-11-44.jpg",
-        category: ['Security','WIFI', 'Generator','Budget_Friendly','TV_Fridge'],
+        category: ['Security','WIFI', 'Generator','Budget_Friendly','TV_Fridge','Distance'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-13_19-11-44.jpg"
         ],
@@ -527,9 +527,9 @@ const EstateData = {
         Restaurant:'NO',
         Generator: 'NO',
         TV_Fridge:'NO',
-        Security:'YES',
+        Security:'NO',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_19-12-38.jpg",
-        category: ['Security', 'Budget_Friendly'],
+        category: [ 'Budget_Friendly','Distance'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-13_19-12-38.jpg"
         ],
@@ -553,7 +553,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'YES',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_19-11-20.jpg",
-        category: ['Security','WIFI', 'Generator','Large_Space'],
+        category: ['Security','WIFI', 'Generator','Large_Space','Distance'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-13_19-11-20.jpg",
             "/static/assets/img/Estate Images/photo_2025-07-13_19-11-31.jpg"
@@ -572,13 +572,13 @@ const EstateData = {
         Distance:'Near',
         Space: 'Large',
         description: 'A good estate for disciplined students',
-        WIFI: 'NO',
+        WIFI: 'YES',
         Restaurant:'NO',
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_19-11-06.jpg",
-        category: ['Security','WIFI', 'Generator','Large_Space'],
+        category: ['Security','WIFI', 'Generator','Large_Space','Distance'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-13_19-11-06.jpg",
             "/static/assets/img/Estate Images/photo_2025-07-13_19-11-12.jpg"
@@ -603,7 +603,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'YES',
         image: "/static/assets/img/Estate Images/DJI_0078 copy.jpg",
-        category: ['Security','WIFI', 'Generator','Budget_Friendly'],
+        category: ['Security','WIFI', 'Generator','Budget_Friendly','Distance'],
         images: [
             "/static/assets/img/Estate Images/DJI_0078 copy.jpg"
         ],
@@ -643,12 +643,12 @@ const EstateData = {
         location: 'It is located before Toundalia at 450m from the school campus',
         Capacity: '12 SingleRooms, 5 Double Rooms',
         Price: '65,000FCFA single Rooms, 42,500FCFA Double Rooms',
-        Free_Rooms: '17 Free Rooms',
+        Free_Rooms: '10 Free Rooms',
         Distance:'Far',
         Space: 'medium',
         description: 'A good estate for disciplined students,Located far from school with expensive but decent room options.',
-        WIFI: 'NO',
-        Restaurant:'NO',
+        WIFI: 'YES',
+        Restaurant:'YES',
         Generator: 'YES',
         TV_Fridge:'NO',
         Security:'YES',
@@ -725,7 +725,7 @@ const EstateData = {
         Capacity: '10 Rooms',
         Price: '// FCFA single Rooms',
         Free_Rooms: '// Free Rooms',
-        Distance:'Far',
+        Distance:'Near',
         Space: 'small',
         description: 'Very affordable estate with small rooms.',
         WIFI: 'NO',
@@ -734,7 +734,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'NO',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_13-34-31.jpg",
-        category: ['Budget_Friendly'],
+        category: ['Budget_Friendly','Distance'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-13_13-34-31.jpg",
             "/static/assets/img/Estate Images/photo_2025-07-13_13-34-26.jpg",
@@ -775,15 +775,15 @@ const EstateData = {
         location: 'It is located near Shekina at 500m from the school campus',
         Capacity: '39 Rooms',
         Price: '60,000FCFA single Rooms',
-        Free_Rooms: '39 Free Rooms',
+        Free_Rooms: '36 Free Rooms',
         Distance:'Far',
         Space: 'medium',
         description: 'A good estate for disciplined students',
-        WIFI: 'YES',
+        WIFI: 'NO',
         Restaurant:'NO',
         Generator: 'YES',
         TV_Fridge:'NO',
-        Security:'YES',
+        Security:'NO',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_19-10-29.jpg",
         category: ['Distance', 'Generator','Budget_Friendly'],
         images: [
@@ -809,7 +809,7 @@ const EstateData = {
         TV_Fridge:'NO',
         Security:'YES',
         image: "/static/assets/img/Estate Images/photo_2025-07-13_13-35-26.jpg",
-        category: ['Security', 'Generator','Large_Space','Double_Rooms'],
+        category: ['Security', 'Generator','WIFI','Large_Space','Double_Rooms'],
         images: [
             "/static/assets/img/Estate Images/photo_2025-07-13_13-35-26.jpg"
         ],
