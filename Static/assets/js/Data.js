@@ -637,8 +637,8 @@ const EstateData = {
     },
          'Eureka': {
         id: 'Eureka',
-        name: 'Eureka City',
-        publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
+        name: 'Residence Eureka',
+        publishedAt: new Date("July 26, 2025 10:00:00").getTime(), 
         rating: 4.2,
         location: 'It is located before Toundalia at 450m from the school campus',
         Capacity: '12 SingleRooms, 5 Double Rooms',
