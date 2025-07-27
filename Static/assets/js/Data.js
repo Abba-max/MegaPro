@@ -816,20 +816,8 @@ const EstateData = {
         reviews: [],
     }
 };
-const userData = {
-    students: [],
-    owners: []
-};
-const ordersData = [];
 const reviewsData = [];
-const appState = {
-    currentUser: null,
-    userRole: null,
-    selectedEstate: null,
-    currentView: 'main',
-    searchResults: [],
-    filteredEstates: Object.values(EstateData)
-};
+
 const dataManager = {
     // Estate operations
     getEstate: (id) => EstateData[id],

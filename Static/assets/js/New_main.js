@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
         img.addEventListener("load", () => {
             img.classList.add("loaded");
         });
-    });  // FIXED: Added missing closing parenthesis
+    });  
 });
 
 // Mobile menu toggle
