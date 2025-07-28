@@ -88,21 +88,21 @@ WSGI_APPLICATION = 'project1.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-# DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.postgresql',
-#         'NAME':'Project1',
-#         'USER':'postgres',
-#         'PASSWORD':'1234567',
-#         'HOST':'localhost',
-#         'PORT':'5432',
-#     }
-# }
-
-DATABASES ={
-    'default': dj_database_url.parse(config('DATABASE_URL'), ssl_require=True),
-    
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME':'Project1',
+        'USER':'postgres',
+        'PASSWORD':'1234567',
+        'HOST':'localhost',
+        'PORT':'5432',
+    }
 }
+
+# DATABASES ={
+#     'default': dj_database_url.parse(config('DATABASE_URL'), ssl_require=True),
+    
+# }
 
 
 

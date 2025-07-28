@@ -2,16 +2,60 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.contrib.auth.models import User, auth
 from django.contrib import messages 
-from .models import Feature, Estate, Recentposts, Review, Global_user, QuickOrder, ContactRequest
+from .models import  Estate, Recentposts, Review, Global_user, QuickOrder, ContactRequest
 from django.contrib.auth.decorators import login_required
 from .forms import CommentForm
-
+from django.http import JsonResponse
+from .models import Estate, EstateFeature, EstateImage
+from django.core.serializers import serialize
+import json
+from django.forms.models import model_to_dict
 # Create your views
 def index(request):
-    features = Feature.objects.all()
     estates = Estate.objects.all()
     recent = Recentposts.objects.all()
-    return render(request, 'index.html', {'features': features, 'estates': estates, 'recent': recent})
+    return render(request, 'index.html', { 'estates': estates, 'recent': recent})
+
+def get_estates_api(request):
+    estates_qs = Estate.objects.all().order_by('-rating') # Sorted by rating as in your JS
+
+    estates_data = []
+    for estate in estates_qs:
+        # Get features
+        features = [feature.name for feature in estate.features.all()]
+
+        # Get images
+        images = [request.build_absolute_uri(image.image.url) for image in estate.images.all()]
+        if not images and estate.main_image: # If no specific images but main_image exists
+            images.append(request.build_absolute_uri(estate.main_image.url))
+
+        # Construct the dictionary similar to your JS EstateData structure
+        estate_dict = {
+            'id': estate.id,
+            'name': estate.name,
+            'publishedAt': int(estate.published_at.timestamp() * 1000), # Convert to milliseconds timestamp
+            'rating': estate.rating,
+            'location': estate.location,
+            'Capacity': estate.capacity, # Note: JS uses 'Capacity', Python 'capacity'
+            'Price': estate.price,       # Note: JS uses 'Price', Python 'price'
+            'Free_Rooms': estate.free_rooms, # Note: JS uses 'Free_Rooms', Python 'free_rooms'
+            'Distance': estate.distance,     # Note: JS uses 'Distance', Python 'distance'
+            'Space': estate.space,
+            'description': estate.description,
+            'WIFI': 'YES' if estate.wifi else 'NO', # Convert boolean to 'YES'/'NO'
+            'Restaurant': 'YES' if estate.restaurant else 'NO',
+            'Generator': 'YES' if estate.generator else 'NO',
+            'TV_Fridge': 'YES' if estate.tv_fridge else 'NO',
+            'Security': 'YES' if estate.security else 'NO',
+            'image': request.build_absolute_uri(estate.main_image.url) if estate.main_image else '/static/assets/img/Estate Images/DJI_0071.jpg',
+            'category': features, # Using the features as categories
+            'images': images,
+            'reviews': [], # Placeholder, you might add a Review model later
+            'reservationAvailable': True # Example if you have such a field
+        }
+        estates_data.append(estate_dict)
+
+    return JsonResponse(estates_data, safe=False) # safe=False allows lists as top-level JSON
 
 def registration(request):
     if request.method == 'POST':
@@ -91,18 +135,21 @@ def review_view(request):
             estate = Estate.objects.get(name=estate_name)
         except Estate.DoesNotExist:
             # Create new estate with explicit non-null values
-            estate = Estate.objects.create(
-                name=estate_name,
-                capacity=1,  # Explicitly set to 1 instead of 0 or None
-                free=1,      # Explicitly set to 1 instead of 0 or None
-                rating='0.0',  # Provide a string rating
-                price=300000,
-                distance=100,
-                wifi='0',
-                restaurant='0',
-                generator='0',
-                room_size='2',
-                forage='0'
+                estate = Estate.objects.create(
+        name=estate_name,
+        capacity=1,
+        free_rooms=1, # Ensure this matches your model field
+        rating=0.0,   # Make sure this is a float
+        price=0.0,
+        distance=0.0,
+        space=0.0,
+        description="Default description for a new estate.", # Make sure this matches your model
+        wifi=False,
+        restaurant=False,
+        generator=False,
+        tv_fridge=False, # Ensure this matches your model field
+        security=False,
+        location="Unknown", # Add a default if location is non-nullable
             )
         
         # Create the review
