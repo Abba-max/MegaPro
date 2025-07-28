@@ -616,7 +616,7 @@ const EstateData = {
         rating: 4.2,
         location: 'It is located before Toundalia at 500m from the school campus',
         Capacity: '40 Rooms',
-        Price: '//FCFA single Rooms',
+        Price: '100,000FCFA single Rooms',
         Free_Rooms: '40 Free Rooms',
         Distance:'Far',
         Space: 'Large',
