@@ -541,7 +541,7 @@ const EstateData = {
         publishedAt: new Date("July 20, 2025 10:00:00").getTime(), 
         rating: 4.0,
         location: 'It is located near colonel at 300m from  the school campus',
-        Capacity: '// Rooms',
+        Capacity: '48 Rooms',
         Price: '//FCFA single Rooms',
         Free_Rooms: '// Free Rooms',
         Distance:'Near',
