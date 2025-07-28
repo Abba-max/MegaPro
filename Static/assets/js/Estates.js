@@ -75,7 +75,6 @@ function initEstates() {
 }
 function processImagePath(path) {
     if (!path) return '/static/assets/img/Estate Images/DJI_0071.jpg';
-<<<<<<< HEAD
 
     // If Django is serving images via /media/ and you're getting full URLs from Django API,
     // this function might become simpler or unnecessary for image paths from the API.
@@ -93,28 +92,14 @@ function processImagePath(path) {
     // Adjust this logic if your image paths from Django API are different.
     if (!processedPath.startsWith('/static/') && !processedPath.startsWith('/media/')) {
         // Assume it's a relative path that needs /static/ prepended if it's a fallback
-=======
-    
-    // Remove any Django static tags if present
-    let processedPath = path.replace(/^{%\s*static\s*'([^']+)'\s*%}/, '/static/$1')
-                           .replace(/^'/, '')
-                           .replace(/'$/, '');
-    
-    // Ensure the path starts with /static/
-    if (!processedPath.startsWith('/static/')) {
->>>>>>> 83386d20f611f2b16abf84d30197cf80d0987398
         processedPath = '/static' + (processedPath.startsWith('/') ? '' : '/') + processedPath;
     }
     
     return processedPath;
 }
-<<<<<<< HEAD
 
 function createEstateCard(Estate, index) {
     // processImagePath might still be useful for fallback images
-=======
- function createEstateCard(Estate, index) {
->>>>>>> 83386d20f611f2b16abf84d30197cf80d0987398
     const mainImg = processImagePath(Estate.images?.[0] || Estate.image);
     const publishedTime = Estate.publishedAt ? formatPublishedTime(Estate.publishedAt) : '';
 
@@ -150,11 +135,7 @@ function createEstateCard(Estate, index) {
                 </div>
                 <p class="Estate-desc">${Estate.description}</p>
                 <div class="Estate-tags">
-<<<<<<< HEAD
                     ${(Estate.category || []).slice(0, 3).map(feature =>
-=======
-                    ${(Estate.features || Estate.category || []).slice(0, 3).map(feature => 
->>>>>>> 83386d20f611f2b16abf84d30197cf80d0987398
                         `<span class="tag">${feature}</span>`
                     ).join('')}
                     <span class="tag primary">${Estate.Free_Rooms || ''}</span>
@@ -169,7 +150,6 @@ function createEstateCard(Estate, index) {
             </div>
         </div>
     `;
-<<<<<<< HEAD
 }
 
 // ... All other functions (filterEstates, setupSearchFunctionality, searchEstates,
@@ -181,27 +161,14 @@ function createEstateCard(Estate, index) {
 function loadEstates(filter = 'all') {
     const EstateGrid = document.getElementById('EstateGrid');
     let Estates = dataManager.getAllEstates(); // Get data from dataManager
-=======
-} 
-
-// Load and display Estates
-function loadEstates(filter = 'all') {
-    const EstateGrid = document.getElementById('EstateGrid');
-    let Estates = dataManager.getAllEstates();
->>>>>>> 83386d20f611f2b16abf84d30197cf80d0987398
 
     // Apply filter 
     if (filter !== 'all') {
         Estates = dataManager.getEstatesByCategory(filter);
     }
 
-<<<<<<< HEAD
     // Sort by rating (highest first) - already sorted by Django API, but keeping for client-side sort preference
     Estates.sort((a, b) => b.rating - a.rating);
-=======
-    // Sort by rating (highest first)
-    Estates.sort((a, b) => b.rating  - a.rating);
->>>>>>> 83386d20f611f2b16abf84d30197cf80d0987398
 
      // Update total Estates count
     document.getElementById('totalEstates').textContent = `${Estates.length}+`;
@@ -336,11 +303,7 @@ function createEstateDetailsHTML(Estate) {
                             ${images.length > 1 ? `
                     <div class="gallery-thumbnails" id="galleryThumbnails" >
                         ${images.map((img, index) => `
-<<<<<<< HEAD
                             <img src="${processImagePath(img)}" alt="${Estate.name}"
-=======
-                            <img src="${img}" alt="${Estate.name} 
->>>>>>> 83386d20f611f2b16abf84d30197cf80d0987398
                                  onclick="changeGalleryImage(${index})"
                                  class="${index === 0 ? 'active' : ''}"
                                  data-index="${index}">
@@ -368,11 +331,7 @@ function createEstateDetailsHTML(Estate) {
                 <div class="info-section">
                     <h4><i class="fas fa-star"></i> Features</h4>
                     <div class="features-grid">
-<<<<<<< HEAD
                         ${(Estate.category || []).map(feature => // Use Estate.category for features here
-=======
-                        ${(Estate.features || Estate.category || []).map(feature => 
->>>>>>> 83386d20f611f2b16abf84d30197cf80d0987398
                             `<span class="feature-badge"><i class="fas fa-check"></i> ${feature}</span>`
                         ).join('')}
                     </div>
@@ -392,35 +351,10 @@ function createEstateDetailsHTML(Estate) {
         </div>
     `;
 }
-<<<<<<< HEAD
 
 // Functions related to modal, image gallery, and toast remain unchanged as they operate on the DOM
 // and the data provided by the `openEstateDetails` and `createEstateDetailsHTML` functions.
 
-=======
-function changeMainImage(element,imageSrc) {
-        // For card thumbnails
-    if (element) {
-        const card = element.closest('.Estate-card');
-        if (card) {
-            // Update main image
-            const mainImg = card.querySelector('.main-img');
-            if (mainImg) {
-                mainImg.src = imageSrc;
-            }
-            
-            // Update active thumbnail
-            const thumbnails = card.querySelectorAll('.thumbnail-img');
-            thumbnails.forEach(thumb => thumb.classList.remove('active'));
-            element.classList.add('active');
-        }
-    }
-    const mainImage = document.querySelector('.main-img img');
-    if (mainImage) {
-        mainImage.src = imageSrc;
-    }
-}
->>>>>>> 83386d20f611f2b16abf84d30197cf80d0987398
 let currentImageIndex = 0;
 let estateImages = [];
 
@@ -430,7 +364,6 @@ function changeGalleryImage(index) {
     const counter = document.querySelector('.image-counter');
     
     if (!mainImage || !thumbnails.length) return;
-<<<<<<< HEAD
 
     // Ensure estateImages is populated from the current modal's thumbnails
     if (estateImages.length === 0 || !thumbnails[0].src.includes(estateImages[0])) {
@@ -439,12 +372,6 @@ function changeGalleryImage(index) {
 
     currentImageIndex = index;
 
-=======
-    
-    currentImageIndex = index;
-    estateImages = Array.from(thumbnails).map(t => t.src);
-    
->>>>>>> 83386d20f611f2b16abf84d30197cf80d0987398
     // Update main image
     mainImage.src = estateImages[currentImageIndex];
     
@@ -494,21 +421,11 @@ function showModal(content) {
     `;
     
     document.body.appendChild(modal);
-<<<<<<< HEAD
 
     setTimeout(() => {
         modal.classList.add('show');
     }, 10);
 
-=======
-    
-    // Show modal with animation
-    setTimeout(() => {
-        modal.classList.add('show');
-    }, 10);
-    
-    // Prevent body scroll
->>>>>>> 83386d20f611f2b16abf84d30197cf80d0987398
     document.body.style.overflow = 'hidden';
 
     // Initialize gallery after modal content is in DOM
@@ -516,14 +433,8 @@ function showModal(content) {
         const thumbnails = document.querySelectorAll('#galleryThumbnails img');
         if (thumbnails.length) {
             estateImages = Array.from(thumbnails).map(t => t.src);
-<<<<<<< HEAD
             currentImageIndex = 0; // Reset index for new modal
 
-=======
-            currentImageIndex = 0;
-            
-            // Add navigation arrows if multiple images
->>>>>>> 83386d20f611f2b16abf84d30197cf80d0987398
             if (estateImages.length > 1) {
                 const gallery = document.querySelector('.Estate-gallery');
                 // Remove existing nav if modal is reused
