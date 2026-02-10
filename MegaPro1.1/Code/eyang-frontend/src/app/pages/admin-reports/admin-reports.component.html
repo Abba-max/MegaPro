@@ -1,0 +1,43 @@
+<div class="page-header">
+    <h1 class="page-title">Rapports et statistiques</h1>
+</div>
+
+<div class="stats-grid mt-8">
+    <!-- Donut Chart Card -->
+    <div class="card p-6 chart-card">
+        <h3 class="card-title">Répartition des utilisateurs</h3>
+        <div class="chart-container">
+            <div class="donut-chart">
+                <div class="donut-inner">
+                </div>
+            </div>
+            <div class="chart-legend">
+                <div class="legend-item"><span class="dot blue"></span> Étudiants (50%)</div>
+                <div class="legend-item"><span class="dot green"></span> Parents (30%)</div>
+                <div class="legend-item"><span class="dot orange"></span> Proprios (20%)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Occupancy Card -->
+    <div class="card p-6 chart-card">
+        <h3 class="card-title">Taux d'occupation global</h3>
+        <div class="occupancy-display">
+            <div class="big-percent">75%</div>
+            <div class="occupancy-label">Taux d'occupation moyen</div>
+        </div>
+    </div>
+</div>
+
+<!-- Revenue Bar Chart -->
+<div class="card p-6 mt-8">
+    <h3 class="card-title">Revenus mensuels estimés</h3>
+    <div class="revenue-chart mt-6">
+        <div class="revenue-labels">
+            <div class="revenue-item" *ngFor="let m of months">
+                <span class="revenue-month">{{m.name}}</span>
+                <span class="revenue-value">{{m.value}}</span>
+            </div>
+        </div>
+    </div>
+</div>

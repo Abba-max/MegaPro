@@ -1,0 +1,147 @@
+<div class="detail-container fade-in">
+    <div class="content-area">
+        <!-- Header with Back Button -->
+        <div class="header-nav">
+            <button class="back-btn" (click)="goBack()">
+                <lucide-icon [img]="ChevronLeftIcon" class="icon-sm"></lucide-icon>
+                <span>Retour</span>
+            </button>
+        </div>
+
+        <!-- Main Image Section -->
+        <div class="image-gallery-hero">
+            <div class="main-image-wrapper">
+                <div class="badge-overlay" *ngIf="housing.places > 0 && !currentUser">
+                    <span class="count-badge">{{housing.places}} places</span>
+                </div>
+                <div class="placeholder-img">
+                    <lucide-icon [img]="BuildingIcon" class="icon-xl text-blue-100"></lucide-icon>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Section -->
+        <div class="info-section">
+            <div class="info-flex">
+                <div class="housing-main-info">
+                    <h1 class="housing-title">{{housing.title}}</h1>
+                    <div class="meta-row">
+                        <div class="meta-item">
+                            <lucide-icon [img]="MapPinIcon" class="icon-xs red"></lucide-icon>
+                            <span>{{housing.distance}} km</span>
+                        </div>
+                        <div class="meta-item ml-4">
+                            <div class="stars">
+                                <lucide-icon [img]="StarIcon" class="icon-xs gold"
+                                    *ngFor="let s of getStarArray(housing.rating)"></lucide-icon>
+                            </div>
+                            <span class="rating-text">{{housing.rating}} ({{reviews.length}})</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="price-section">
+                    <div class="price-amount">{{housing.price | number}} FCFA</div>
+                    <div class="price-period">/mois • {{housing.minMonths || 2}} mois min</div>
+                </div>
+            </div>
+
+            <!-- Description & Equipments (Auth Only) -->
+            <div class="auth-details fade-in" *ngIf="currentUser">
+                <div class="detail-block mt-8">
+                    <h3 class="detail-subtitle">Description</h3>
+                    <p class="detail-text mt-2">{{housing.description}}</p>
+                </div>
+
+                <div class="detail-block mt-8">
+                    <h3 class="detail-subtitle">Équipements</h3>
+                    <div class="equipments-grid mt-4">
+                        <div class="equipment-card" *ngFor="let eq of housing.equipments">
+                            <lucide-icon [img]="eq.icon" class="eq-icon" [ngClass]="eq.color"></lucide-icon>
+                            <span>{{eq.name}}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons mt-12">
+                    <button class="btn btn-primary action-btn">
+                        <lucide-icon [img]="CalendarIcon" class="icon-sm mr-2"></lucide-icon>
+                        Réserver
+                    </button>
+                    <button class="btn btn-outline action-btn" (click)="openContact()">
+                        <lucide-icon [img]="MessageIcon" class="icon-sm mr-2"></lucide-icon>
+                        Contacter
+                    </button>
+                    <button class="btn btn-ghost action-btn">
+                        <lucide-icon [img]="StarIcon" class="icon-sm mr-2 gold"></lucide-icon>
+                        Avis
+                    </button>
+                </div>
+            </div>
+
+            <!-- Auth Call to Action (Unauth Only) -->
+            <div class="auth-card" *ngIf="!currentUser">
+                <div class="auth-box">
+                    <p class="auth-prompt">Connectez-vous pour voir les détails</p>
+                    <button class="btn btn-primary btn-sm mt-3" (click)="openLogin()">Connexion</button>
+                </div>
+            </div>
+
+            <!-- Reviews Section -->
+            <div class="reviews-section">
+                <h2 class="section-title">Avis ({{reviews.length}})</h2>
+                <div class="reviews-list">
+                    <div class="review-item" *ngFor="let r of reviews">
+                        <div class="review-header">
+                            <div class="flex items-center gap-3">
+                                <div class="avatar-sm">{{r.initials}}</div>
+                                <div class="reviewer-info">
+                                    <div class="reviewer-name">{{r.name}}</div>
+                                    <div class="review-date">{{r.date}}</div>
+                                </div>
+                            </div>
+                            <div class="review-stars">
+                                <lucide-icon [img]="StarIcon" class="icon-xs gold"
+                                    *ngFor="let s of [1,2,3,4,5]"></lucide-icon>
+                            </div>
+                        </div>
+                        <p class="review-comment">{{r.comment}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal (Demande de réservation - Mockup 0) -->
+    <div class="modal-overlay fade-in" *ngIf="showContactModal">
+        <div class="modal-card">
+            <button class="close-btn" (click)="closeContact()">
+                <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
+            </button>
+            <div class="modal-header">
+                <h2>Demande de réservation</h2>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Logement</label>
+                    <input type="text" [value]="housing.title" disabled class="input bg-gray-50">
+                </div>
+                <div class="form-group mt-4">
+                    <label>Votre nom</label>
+                    <input type="text" [(ngModel)]="contactForm.name" placeholder="Marie Kamga" class="input">
+                </div>
+                <div class="form-group mt-4">
+                    <label>Téléphone</label>
+                    <input type="text" [(ngModel)]="contactForm.phone" placeholder="+237655123456" class="input">
+                </div>
+                <div class="form-group mt-4">
+                    <label>Message (optionnel)</label>
+                    <textarea [(ngModel)]="contactForm.message" class="input" rows="4"></textarea>
+                </div>
+                <button class="btn btn-primary w-full mt-6 py-4" (click)="handleSendRequest()">
+                    Envoyer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
