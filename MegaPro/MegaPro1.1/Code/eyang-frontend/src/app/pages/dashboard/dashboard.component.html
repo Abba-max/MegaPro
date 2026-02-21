@@ -1,0 +1,251 @@
+<!-- Owner Dashboard -->
+<ng-container *ngIf="isOwner">
+    <div class="page-header">
+        <h1 class="page-title">Tableau de bord propriétaire</h1>
+        <button class="btn btn-primary" (click)="openAddModal()">
+            <lucide-icon [img]="PlusIcon" class="icon-sm mr-2"></lucide-icon>
+            + Ajouter
+        </button>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid mt-6">
+        <div class="stat-card">
+            <div class="stat-icon blue">
+                <lucide-icon [img]="HomeIcon" class="stat-icon-inner"></lucide-icon>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{stats.totalHousings}}</div>
+                <div class="stat-label">Logements</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">
+                <lucide-icon [img]="BarChartIcon" class="stat-icon-inner"></lucide-icon>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{stats.occupancy}}%</div>
+                <div class="stat-label">Occupation</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange">
+                <lucide-icon [img]="ClockIcon" class="stat-icon-inner"></lucide-icon>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{stats.pending}}</div>
+                <div class="stat-label">En attente</div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple">
+                <lucide-icon [img]="StarIcon" class="stat-icon-inner"></lucide-icon>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">{{stats.avgRating}}</div>
+                <div class="stat-label">Note moy.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs mt-6">
+        <div class="tab" [class.active]="activeTab === 'logements'" (click)="activeTab = 'logements'">
+            Mes logements
+        </div>
+        <div class="tab" [class.active]="activeTab === 'reservations'" (click)="activeTab = 'reservations'">
+            Réservations
+        </div>
+        <div class="tab" [class.active]="activeTab === 'avis'" (click)="activeTab = 'avis'">
+            Avis
+        </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content mt-6">
+        <!-- Mes logements -->
+        <div *ngIf="activeTab === 'logements'" class="fade-in">
+            <div class="housings-grid" *ngIf="housings.length > 0; else noHousings">
+                <div class="housing-card" *ngFor="let housing of housings">
+                    <div class="housing-image">
+                        <div class="image-placeholder">
+                            <lucide-icon [img]="HomeIcon" class="placeholder-icon"></lucide-icon>
+                        </div>
+                    </div>
+                    <div class="housing-body">
+                        <h3 class="housing-name">{{housing.name}}</h3>
+                        <div class="housing-price">{{housing.price | number:'1.0-0':'fr'}} FCFA</div>
+                        <div class="housing-places">{{housing.occupiedPlaces}}/{{housing.totalPlaces}} places</div>
+                        <div class="housing-actions">
+                            <button class="btn-edit" (click)="openEditModal(housing)">
+                                Modifier
+                            </button>
+                            <button class="btn-delete" (click)="deleteHousing(housing)">
+                                <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <ng-template #noHousings>
+                <div class="card p-8 text-center empty-state">
+                    <div class="empty-icon-container">
+                        <div class="empty-icon gray"></div>
+                    </div>
+                    <h3 class="mt-4 font-semibold">Aucun logement</h3>
+                    <p class="text-muted mt-1">Commencez par ajouter votre premier logement.</p>
+                    <button class="btn btn-primary mt-6" (click)="openAddModal()">Ajouter un logement</button>
+                </div>
+            </ng-template>
+        </div>
+
+        <!-- Réservations -->
+        <div *ngIf="activeTab === 'reservations'" class="fade-in">
+            <div class="card p-8 text-center empty-state">
+                <div class="empty-icon-container">
+                    <div class="empty-icon gray"></div>
+                </div>
+                <h3 class="mt-4 font-semibold">Aucune réservation</h3>
+                <p class="text-muted mt-1">Aucune réservation en attente pour le moment.</p>
+            </div>
+        </div>
+
+        <!-- Avis -->
+        <div *ngIf="activeTab === 'avis'" class="fade-in">
+            <div class="card p-8 text-center empty-state">
+                <div class="empty-icon-container">
+                    <div class="empty-icon gray"></div>
+                </div>
+                <h3 class="mt-4 font-semibold">Aucun avis</h3>
+                <p class="text-muted mt-1">Aucun avis reçu pour le moment.</p>
+            </div>
+        </div>
+    </div>
+</ng-container>
+
+<!-- Student Dashboard -->
+<ng-container *ngIf="!isOwner">
+    <div class="page-header">
+        <h1 class="page-title">Mon tableau de bord</h1>
+    </div>
+
+    <div class="tabs mt-6">
+        <div class="tab" [class.active]="activeTab === 'reservations'" (click)="activeTab = 'reservations'">
+            Mes réservations
+        </div>
+        <div class="tab" [class.active]="activeTab === 'avis'" (click)="activeTab = 'avis'">
+            Mes avis
+        </div>
+    </div>
+
+    <div class="tab-content mt-6">
+        <div *ngIf="activeTab === 'reservations'" class="fade-in">
+            <div class="reservations-list" *ngIf="reservations.length > 0; else noReservations">
+                <div class="reservation-card" *ngFor="let reservation of reservations">
+                    <div class="reservation-header">
+                        <h3 class="reservation-title">{{reservation.propertyName}}</h3>
+                    </div>
+                    <div class="reservation-date">{{reservation.date}}</div>
+                    <div class="reservation-status">
+                        <span class="status-badge" [class.pending]="reservation.status === 'En attente'"
+                            [class.confirmed]="reservation.status === 'Confirmée'"
+                            [class.cancelled]="reservation.status === 'Annulée'">
+                            {{reservation.status}}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <ng-template #noReservations>
+                <div class="card p-8 text-center empty-state">
+                    <div class="empty-icon-container">
+                        <div class="empty-icon gray"></div>
+                    </div>
+                    <h3 class="mt-4 font-semibold">Aucune réservation</h3>
+                    <p class="text-muted mt-1">Vous n'avez pas encore effectué de réservation.</p>
+                    <button class="btn btn-primary mt-6">Chercher un logement</button>
+                </div>
+            </ng-template>
+        </div>
+
+        <div *ngIf="activeTab === 'avis'" class="fade-in">
+            <div class="card p-8 text-center empty-state">
+                <div class="empty-icon-container">
+                    <div class="empty-icon gray"></div>
+                </div>
+                <h3 class="mt-4 font-semibold">Aucun avis</h3>
+                <p class="text-muted mt-1">Vous n'avez pas encore laissé d'avis sur un logement.</p>
+            </div>
+        </div>
+    </div>
+</ng-container>
+
+<!-- Modal: Add/Edit Housing -->
+<div class="modal-overlay fade-in" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-card housing-modal" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="closeModal()">
+            <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
+        </button>
+
+        <div class="modal-header">
+            <h2>{{isEditMode ? 'Modifier le logement' : 'Ajouter un logement'}}</h2>
+        </div>
+
+        <div class="modal-body">
+            <div class="form-group">
+                <label>Nom du logement</label>
+                <input type="text" [(ngModel)]="housingForm.name" placeholder="Nom du logement" class="input">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Prix (FCFA)</label>
+                    <input type="number" [(ngModel)]="housingForm.price" placeholder="0" class="input">
+                </div>
+                <div class="form-group">
+                    <label>Mois min.</label>
+                    <input type="number" [(ngModel)]="housingForm.minMonths" placeholder="0" class="input">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Caution</label>
+                    <input type="number" [(ngModel)]="housingForm.deposit" placeholder="0" class="input">
+                </div>
+                <div class="form-group">
+                    <label>Distance (km)</label>
+                    <input type="text" [(ngModel)]="distanceDisplay" placeholder="0" class="input" (blur)="onDistanceBlur()">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Places dispo</label>
+                    <input type="number" [(ngModel)]="housingForm.totalPlaces" placeholder="0" class="input">
+                </div>
+                <div class="form-group">
+                    <label>Occupées</label>
+                    <input type="number" [(ngModel)]="housingForm.occupiedPlaces" placeholder="0" class="input">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Équipements</label>
+                <div class="equipments-grid">
+                    <label class="equipment-item" *ngFor="let eq of availableEquipments">
+                        <input type="checkbox" [checked]="isEquipmentSelected(eq.key)" (change)="toggleEquipment(eq.key)">
+                        <lucide-icon [img]="eq.icon" class="equipment-icon"></lucide-icon>
+                        <span>{{eq.label}}</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea [(ngModel)]="housingForm.description" placeholder="Description du logement..." class="textarea" rows="3"></textarea>
+            </div>
+
+            <button class="btn btn-primary w-full mt-6" (click)="saveHousing()">Enregistrer</button>
+        </div>
+    </div>
+</div>

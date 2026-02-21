@@ -1,0 +1,23 @@
+{% load static%}
+
+<link href="{% static 'assets/css/auth.css' %}" rel="stylesheet">
+ <form id="myform" method= 'POST'  action= '{% url 'login' %}'>
+    {% csrf_token %}
+        <div id="error message"class="error-message">
+            {% for message in messages%}
+             <h5> {{message}}</h5>
+                 {% endfor %}
+        </div>
+        
+         <h1 style="color:rgb(37, 121, 190);"> Login </h1>
+   <h4> <input  type="text" id="inputField" name='username' placeholder="Enter Username" required /> </h4>
+    <h4>  <input  type="text" id="inputField" name ='password' placeholder="Enter Password" required></h4>
+   
+    <button onclick="validateInput()" type="submit">Get started</button>
+
+     <h5 > If you don't have an account,  <a style="color:rgb(37, 121, 190);"  href="{% url 'registration' %}">Sign up</a></h5>
+     <a style="color:rgb(37, 121, 190);" href="{% url 'password_reset' %}">Forgot your password?</a>  
+     </form>
+
+
+<script src="{% static 'auth.js' %}"></script>

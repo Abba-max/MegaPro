@@ -1,0 +1,313 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <title>Eyang Estate </title>
+  <link href="{% static 'assets/img/photo_2025-06-24_09-04-19.jpg' %}" rel="icon">
+  <link href="{% static 'assets/img/photo_2025-06-24_09-04-19.jpg' %}" rel="apple-touch-icon">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'assets/vendor/bootstrap-icons/bootstrap-icons.css' %}" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'assets/css/New_main.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/css/Components.css' %}">
+</head>
+<body>
+  <div class="preloader" id="preloader">
+      <div class="spinner"></div>
+      <p>Loading Eyang Estate...</p>
+  </div>
+
+  <header id="header" class="header">
+    <div class="container-fluid position-relative d-flex align-items-center justify-content-between">
+      <nav class="navbar" id="navbar">
+        <div class="nav-container">
+          <div class="nav-brand">
+            <i class="fas fa-home"></i>
+            <span>Eyang Estate</span>
+          </div>
+          {% if messages %}
+<div class="django-messages"style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
+    {% for message in messages %}
+    <div class="{% if message.tags %}{{ message.tags }}{% endif %}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+          <div class="nav-menu" id="navMenu">
+            <a href="#hero" class="nav-link active">Home</a>
+            <a href="#Estates" class="nav-link">Estates</a>
+            <a href="#statistics" class="nav-link">About</a>
+            <a href="#contact-button" class="nav-link">Contact</a>
+            <a href="#faq" class="nav-link">FAQ</a>
+          </div>
+          <div class="nav-actions">
+            {% if user.is_authenticated %}
+            <div class="user-info" id="userInfo">
+              <div class="user-avatar">
+                <i class="fas fa-user"></i>
+              </div>
+              <span id="userName">{{ user.username }}</span>
+              <div class="user-dropdown">
+                <a href="{% url 'logout' %}">Logout</a>
+                <a href="{% url 'dashboard' %}"> Dashboard</a>
+              </div>
+            </div>
+            {% else %}
+            <a class="btn btn-primary" id="loginBtn" href="{% url 'login' %}">
+              <i class="fas fa-sign-in-alt"></i> Login
+            </a>
+            {% endif %}
+            <div class="mobile-toggle" id="mobileToggle">
+              <i class="fas fa-bars"></i>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+  <div class="toast-container" id="toastContainer"></div>
+  <main class="main">
+    
+    <section id="hero" class="hero {% if not user.is_authenticated %}full-screen{% endif %}">
+      
+      <div class="countdown-container">
+        <h6>Reserve before the 18th of August. Site under maintainance and amelioration then!</h6>
+        <div id="countdown">
+            <div>
+              <h5>Countdown On August 18th, 2025: </h5>
+                <span class="value" id="days"></span>
+                <span class="label">Days</span>
+                <span class="value" id="hours"></span>
+                <span class="label">Hours</span>
+                <span class="value" id="minutes"></span>
+                <span class="label">Minutes</span>
+                <span class="value" id="minutes"></span>
+                <span class="label">Minutes</span>
+                <span class="value" id="seconds"></span>
+                <span class="label">Seconds</span>
+              
+            </div>
+        </div>
+    </div>
+
+      <div class="hero-content">
+        <div class="hero-text">
+
+          <h1>Find Your Perfect Home in Eyang</h1>
+          <p>Join our community and find your ideal living space!.<br>Academic excellence starts with comfortable living!</p>
+        </div>
+        {% if user.is_authenticated %}
+        <div class="search-container">
+          <div class="search-box">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search for estates in Eyang">
+            <button onclick="searchEstates()">Search </button>
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-secondary" onclick="scrollToEstates()">
+            <i class="fas fa-home"></i> Explore Estates
+          </button>
+          <a href="{% url 'contact' %}" class="btn btn-outline" id="contact-button">
+            <i class="fas fa-envelope"></i> Contact Us
+          </a>
+        </div>
+        {% endif %}
+        {% if not user.is_authenticated %}
+        <a class="btn btn-outline" href="{% url 'login' %}">
+          <i class="fas fa-user-plus"></i> Join Community
+        </a>
+        {% endif %}
+        <div class="hero-stats">
+          <div class="stats">
+            <h3 id="totalEstates">0+</h3>
+            <p>Estates</p>
+          </div>
+          <div class="stat-item">
+            <h3 id="totalStudents">0+</h3>
+            <p>Students</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="features section">
+      <section class="Estates-section" id="Estates">
+        <div class="section-header">
+          <h2>Popular Estates</h2>
+          <p>Discover the best Estates</p>
+          <p>Make a choice and get in as soon as possible.</p>
+          <p>Choose from our wide selection of quality student accommodations in Eyang</p>
+        </div>
+        <div class="filter-container">
+          <button class="filter-btn active" onclick="filterEstates(event, 'all')">All</button>
+          <button class="filter-btn" onclick="filterEstates(event, 'Free_Rooms')">Free Rooms Available</button>
+          <button class="filter-btn" onclick="filterEstates(event, 'Double_Rooms')">Double rooms or Studios</button>
+          <button class="filter-btn" onclick="filterEstates(event, 'Budget_Friendly')">Budget Friendly</button>
+          <button class="filter-btn" onclick="filterEstates(event, 'Large_Space')">Large Space</button>
+          <button class="filter-btn" onclick="filterEstates(event, 'TV_Fridge')">TV or Fridge Available</button>
+          <button class="filter-btn" onclick="filterEstates(event, 'WIFI')">WIFI</button>
+          <button class="filter-btn" onclick="filterEstates(event, 'Generator')">Generator</button>
+          <button class="filter-btn" onclick="filterEstates(event, 'Distance')">Good Distance From Campus</button>
+          <button class="filter-btn" onclick="filterEstates(event, 'Security')">Security Agent</button>
+          <button class="filter-btn" onclick="filterEstates(event, 'Restaurant')">Restaurant</button>
+        </div>
+      </section>
+      <div id="EstateGrid" class="Estate-grid"></div>
+      <button class="scroll-to-top" id="scrollToTop" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+      </button>
+    </section>
+  </main>
+
+  <section id="statistics" class="statistics-section">
+    <div class="container">
+      <div class="stats-title">
+        <h2>Why Choose Eyang Estate?</h2>
+        <p>Join thousands of satisfied students who found their perfect home</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-number" id="totalEstatesStats">20+</div>
+          <div class="stat-label">Quality Estates</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalStudentsStats">500+</div>
+          <div class="stat-label">Happy Students</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">24/7</div>
+          <div class="stat-label">Security & Support</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number">100%</div>
+          <div class="stat-label">Satisfaction Rate</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" class="faq-section">
+    <div class="container">
+      <h2 class="faq-title">Frequently Asked Questions</h2>
+      <div class="faq-list">
+        <div class="faq-item">
+          <h3>📝 How do I register?</h3>
+          <p>Click on the <strong>"Join Community"</strong> button in the top right or in the hero section, fill in your details, and start using the platform.</p>
+        </div>
+        <div class="faq-item">
+          <h3>🔍 How can I search for estates?</h3>
+          <p>Once logged in, use the search bar on the homepage to find estates by name or location.</p>
+        </div>
+        <div class="faq-item">
+          <h3>⭐ How do I write a review?</h3>
+          <p>Click on the <strong>"Write Review"</strong> button under an estate card and submit your feedback using the form.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How do I place a Reservation?</h3>
+          <p>Click on <strong>"Place Reservation"</strong> under an estate and send your request.</p>
+        </div>
+        <div class="faq-item">
+          <h3>📞 How do I contact you?</h3>
+          <p>Click on the <strong>"Contact"</strong> link in the navbar to send us your message via the contact form.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How do I Access My Dashboard?</h3>
+          <p>Once logged in, click on your profile icon in the top right corner and select "Dashboard" from the dropdown menu.</p>
+        </div>
+        <div class="faq-item">
+          <h3>How do I reset my password?</h3>
+          <p>Click on the <strong>"Forgot Password"</strong> link on the login page to reset your password.</p>
+        </div>
+      </div>
+  </section>
+
+  <footer>
+      <div class="footer-socials">
+        <a href="#"><i class="fab fa-facebook-f"></i></a>
+        <a href="#"><i class="fab fa-twitter"></i></a>
+        <a href="#"><i class="fab fa-instagram"></i></a>
+      </div>
+      <div class="footer-container">
+      <div class="footer-logo">
+        <i class="fas fa-home"></i>
+        <span>Eyang Estate</span>
+      </div>
+    <h5>Under a safe shelter knowledge comes best.</h5> 
+    <h5>&copy; 2025 Eyang Estate. All rights reserved</h5>
+
+  </footer>
+  <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center"><i class="bi bi-arrow-up-short"></i></a>
+
+
+  <!-- Vendor JS Files -->
+  <script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/php-email-form/validate.js' %}"></script>
+  <script src="{% static 'assets/vendor/aos/aos.js' %}"></script>
+  <script src="{% static 'assets/vendor/glightbox/js/glightbox.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/purecounter/purecounter_vanilla.js' %}"></script>
+  <script src="{% static 'assets/vendor/imagesloaded/imagesloaded.pkgd.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/isotope-layout/isotope.pkgd.min.js' %}"></script>
+  <script src="{% static 'assets/vendor/swiper/swiper-bundle.min.js' %}"></script>
+  <script src="{% static 'assets/js/New_main.js' %}"></script>
+  <script src="{% static 'assets/js/Estates.js' %}"></script>
+  <script src="{% static 'assets/js/Data.js' %}"></script>
+ -- <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const mobileToggle = document.getElementById('mobileToggle');
+      const navMenu = document.getElementById('navMenu');
+      mobileToggle.addEventListener('click', function() {
+        navMenu.classList.toggle('open');
+      });
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', function() {
+          if (window.innerWidth <= 991) {
+            navMenu.classList.remove('open');
+          }
+        });
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+    // Set the date we're counting down to (Year, Month (0-11), Day, Hour, Minute, Second)
+    const countdownDate = new Date("August 17, 2025 23:59:59").getTime();
+
+    // Update the countdown every 1 second
+    const x = setInterval(function() {
+
+        // Get today's date and time
+        const now = new Date().getTime();
+
+        // Find the distance between now and the countdown date
+        const distance = countdownDate - now;
+        // Time calculations for days, hours, minutes and seconds
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        // Display the result in the corresponding elements
+        document.getElementById("days").innerHTML = days;
+        document.getElementById("hours").innerHTML = hours;
+        document.getElementById("minutes").innerHTML = minutes;
+        document.getElementById("seconds").innerHTML = seconds;
+
+        // If the countdown is over, display a message
+        if (distance < 0) {
+            clearInterval(x); // Stop the interval
+            document.getElementById("countdown").innerHTML = "<p>The event has started!</p>";
+            // You might also hide the labels or change the styling
+            document.querySelector(".countdown-container h1").innerHTML = "Welcome!";
+        }
+    }, 1000); // Update every 1000ms (1 second)
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.documentElement.classList.add('loaded');
+});
+  </script>
+  
+</body>
+</html>
