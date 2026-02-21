@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'app1'
+    'apps.estate_app'
 ]
 
 MIDDLEWARE = [
@@ -64,12 +64,12 @@ MIDDLEWARE = [
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-ROOT_URLCONF = 'project1.urls'
+ROOT_URLCONF = 'project.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR, 'template'],
+        'DIRS': [os.path.join(BASE_DIR, 'template')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -82,7 +82,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'project1.wsgi.application'
+WSGI_APPLICATION = 'project.wsgi.application'
   
 
 # Database
@@ -150,7 +150,7 @@ LOGIN_URL = '/login/'
 
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/' 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
+STATICFILES_DIRS = (os.path.join(BASE_DIR, 'Static'),)
 
 MEDIA_ROOT= (os.path.join(os.path.join(BASE_DIR),'static_cdn', 'media_root'))
 STATIC_ROOT= (os.path.join(os.path.join(BASE_DIR), 'static_cdn', 'static_root'))

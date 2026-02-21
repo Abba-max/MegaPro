@@ -21,8 +21,8 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('app1.urls')),
-    path('api/estates/', include('app1.urls')), # Include your app's URLs
+    path('', include('apps.estate_app.urls')),
+    path('api/estates/', include('apps.estate_app.urls')), # Include your app's URLs
 ]
 
 
