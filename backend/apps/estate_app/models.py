@@ -11,7 +11,9 @@ class Feature(models.Model):
     
 class Estate(models.Model):
     name = models.CharField(max_length=255)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='estates', null=True, blank=True)
     capacity = models.IntegerField(default=1)
+    location = models.CharField(max_length=255, default="Yaounde")
     free = models.IntegerField(default=1)
     rating = models.CharField(max_length=10, default="0.0", blank=False)
     price = models.IntegerField(default=300000)
@@ -23,7 +25,12 @@ class Estate(models.Model):
     room_size = models.CharField(max_length=1, choices=(('1', 'Large'), ('2', 'Medium'), ('3', 'Small')), default='2')
     forage = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
     description = models.TextField(blank=True, default="")
-    publishedAt = models.DateTimeField(auto_now=True)  # <-- Add this field
+    publishedAt = models.DateTimeField(auto_now=True)
+    status = models.CharField(
+        max_length=20, 
+        default="published", 
+        choices=(("draft", "Draft"), ("published", "Published"), ("archived", "Archived"))
+    )
 
     def __str__(self):
         return self.name
@@ -55,7 +62,7 @@ class Review(models.Model):
     def is_reply(self):
         return self.parent is not None
 class QuickOrder(models.Model):
-    estate = models.CharField(max_length=255)
+    estate = models.ForeignKey(Estate, on_delete=models.CASCADE, related_name='quick_orders')
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
     note = models.TextField(blank=True)

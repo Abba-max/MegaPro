@@ -4,3 +4,4 @@ from django.apps import AppConfig
 class App1Config(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'apps.estate_app'
+    label = 'estate_app'

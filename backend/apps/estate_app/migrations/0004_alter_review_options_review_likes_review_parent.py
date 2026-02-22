@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('app1', '0003_feature_remove_estateimage_estate_and_more'),
+        ('estate_app', '0003_feature_remove_estateimage_estate_and_more'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 

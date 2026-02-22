@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('app1', '0002_estatefeature_estateimage_delete_feature_and_more'),
+        ('estate_app', '0002_estatefeature_estateimage_delete_feature_and_more'),
     ]
 
     operations = [
