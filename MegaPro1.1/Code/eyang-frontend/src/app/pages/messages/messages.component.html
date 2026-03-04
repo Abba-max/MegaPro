@@ -1,0 +1,46 @@
+<div class="messages-container fade-in">
+    <!-- Conversations Sidebar -->
+    <aside class="conversations-sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">Messages</h2>
+        </div>
+        <div class="conversations-list">
+            <div class="conversation-item active">
+                <div class="avatar blue-bg">J</div>
+                <div class="conv-info">
+                    <div class="conv-name">Jean Eyenga</div>
+                    <div class="conv-subject">Cité Universitaire Soa</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Chat Area -->
+    <main class="chat-area">
+        <header class="chat-header">
+            <div class="flex items-center gap-3">
+                <div class="avatar blue-bg">J</div>
+                <div class="chat-contact-info">
+                    <div class="contact-name">Jean Eyenga</div>
+                    <div class="contact-subject">Cité Universitaire Soa</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="messages-viewport">
+            <div class="system-message">
+                <span>Conversation à propos de "Cité Universitaire Soa"</span>
+            </div>
+            <!-- Messages would go here -->
+        </div>
+
+        <footer class="chat-footer">
+            <div class="message-input-wrapper">
+                <input type="text" placeholder="Écrivez votre message..." class="message-input">
+                <button class="send-btn">
+                    <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
+                </button>
+            </div>
+        </footer>
+    </main>
+</div>

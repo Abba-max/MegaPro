@@ -1,0 +1,55 @@
+<div class="page-header">
+    <h1 class="page-title">Vue d'ensemble</h1>
+</div>
+
+<!-- Stats Cards -->
+<div class="stats-cards-grid mt-8">
+    <div class="stat-card" *ngFor="let stat of stats">
+        <div class="stat-icon" [style.background]="stat.iconColor + '20'">
+            <lucide-icon [img]="stat.icon" [style.color]="stat.iconColor"></lucide-icon>
+        </div>
+        <div class="stat-content">
+            <div class="stat-title">{{stat.title}}</div>
+            <div class="stat-value">{{stat.value}}</div>
+            <div class="stat-change" [class.positive]="stat.changeType === 'positive'"
+                [class.warning]="stat.changeType === 'warning'">
+                {{stat.change}}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bottom Section -->
+<div class="bottom-section mt-8">
+    <!-- Recent Activity -->
+    <div class="activity-card card">
+        <h3 class="card-title">Activité récente</h3>
+        <div class="activity-list">
+            <div class="activity-item" *ngFor="let activity of recentActivities">
+                <div class="activity-icon" [style.color]="activity.iconColor">
+                    <lucide-icon [img]="activity.icon" class="icon-sm"></lucide-icon>
+                </div>
+                <div class="activity-content">
+                    <div class="activity-title">{{activity.title}}</div>
+                    <div class="activity-date">{{activity.date}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Reservations Chart -->
+    <div class="chart-card card">
+        <h3 class="card-title">Réservations par mois</h3>
+        <div class="chart-container">
+            <div class="chart-area">
+                <div class="chart-bars">
+                    <div class="chart-bar-item" *ngFor="let month of monthlyReservations">
+                        <div class="chart-bar" [style.height.%]="(month.value / 25) * 100"></div>
+                        <span class="chart-label">{{month.month}}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

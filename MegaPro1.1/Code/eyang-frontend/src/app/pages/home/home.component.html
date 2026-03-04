@@ -1,0 +1,307 @@
+<div class="home-container fade-in">
+    <!-- Hero Section with Background Image -->
+    <section class="hero-section">
+        <div class="hero-bg-image"></div>
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <h1 class="hero-title">Trouvez votre logement étudiant idéal</h1>
+            <p class="hero-subtitle">Des chambres de qualité, proches des campus, avec tous les équipements nécessaires.</p>
+
+            <!-- Search Bar integrated in hero -->
+            <div class="hero-search-wrapper mt-6">
+                <div class="hero-search-bar">
+                    <lucide-icon [img]="SearchIcon" class="hero-search-icon"></lucide-icon>
+                    <input type="text" placeholder="Rechercher par ville, campus, quartier...">
+                    <button class="hero-search-btn">
+                        <lucide-icon [img]="SearchIcon" class="btn-search-icon"></lucide-icon>
+                        <span>Rechercher</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="hero-tags mt-5">
+                <div class="hero-tag">
+                    <lucide-icon [img]="CheckIcon" class="tag-icon"></lucide-icon>
+                    <span>Logements vérifiés</span>
+                </div>
+                <div class="hero-tag">
+                    <lucide-icon [img]="LockIcon" class="tag-icon"></lucide-icon>
+                    <span>Paiements sécurisés</span>
+                </div>
+                <div class="hero-tag">
+                    <lucide-icon [img]="ZapIcon" class="tag-icon"></lucide-icon>
+                    <span>Réservation rapide</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="scroll-indicator">
+            <div class="scroll-dot"></div>
+        </div>
+    </section>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar-container">
+        <div class="filter-bar">
+            <div class="filter-items">
+                <button class="filter-item border active-filter">
+                    <lucide-icon [img]="FilterIcon" class="filter-icon"></lucide-icon>
+                    <span>Filtres</span>
+                </button>
+                <button class="filter-item">
+                    <lucide-icon [img]="WifiIcon" class="filter-icon orange"></lucide-icon>
+                    <span>WiFi</span>
+                </button>
+                <button class="filter-item">
+                    <lucide-icon [img]="CoffeeIcon" class="filter-icon gray"></lucide-icon>
+                    <span>Restaurant</span>
+                </button>
+                <button class="filter-item">
+                    <lucide-icon [img]="ZapIcon" class="filter-icon yellow"></lucide-icon>
+                    <span>Générateur</span>
+                </button>
+                <button class="filter-item">
+                    <lucide-icon [img]="DropletsIcon" class="filter-icon blue"></lucide-icon>
+                    <span>Forage</span>
+                </button>
+                <button class="filter-item">
+                    <lucide-icon [img]="StarIcon" class="filter-icon yellow"></lucide-icon>
+                    <span>4+ étoiles</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Listings Section -->
+    <section class="listings-section">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Logements disponibles</h2>
+                <p class="section-desc">Découvrez nos meilleures offres près des campus</p>
+            </div>
+            <span class="listing-count-badge">{{housings.length}} logements</span>
+        </div>
+
+        <div class="listings-grid">
+            <div class="housing-card" *ngFor="let h of housings" [routerLink]="['/housing', h.id]"
+                style="cursor: pointer;">
+                <div class="card-image-area">
+                    <div class="badges-overlay">
+                        <span class="badge-green" *ngIf="h.places">{{h.places}} places</span>
+                        <div class="badge-rating" *ngIf="h.rating">
+                            <lucide-icon [img]="StarIcon" class="icon-star"></lucide-icon>
+                            <span>{{h.rating}}</span>
+                        </div>
+                    </div>
+
+                    <div class="image-wrapper" [class.no-image]="!h.image">
+                        <img *ngIf="h.image" [src]="h.image" [alt]="h.title">
+                        <div class="placeholder-content" *ngIf="!h.image">
+                            <lucide-icon [img]="BuildingIcon" class="icon-building"></lucide-icon>
+                        </div>
+                    </div>
+
+                    <div class="card-type-badge">{{h.type}}</div>
+                </div>
+
+                <div class="card-body">
+                    <h3 class="housing-title">{{h.title}}</h3>
+
+                    <div class="housing-meta mt-1">
+                        <lucide-icon [img]="MapPinIcon" class="icon-xs"></lucide-icon>
+                        <span>{{h.distance}}</span>
+                    </div>
+
+                    <div class="features-row mt-3">
+                        <div class="feature-tag" *ngIf="h.features.includes('wifi')">
+                            <lucide-icon [img]="WifiIcon" class="feature-icon orange"></lucide-icon>
+                            <span>WiFi</span>
+                        </div>
+                        <div class="feature-tag" *ngIf="h.features.includes('water') || h.features.includes('droplets')">
+                            <lucide-icon [img]="DropletsIcon" class="feature-icon blue"></lucide-icon>
+                            <span>Forage</span>
+                        </div>
+                        <div class="feature-tag" *ngIf="h.features.includes('zap')">
+                            <lucide-icon [img]="ZapIcon" class="feature-icon yellow"></lucide-icon>
+                            <span>Générateur</span>
+                        </div>
+                    </div>
+
+                    <div class="price-row mt-4">
+                        <span class="price-amount">{{h.price | number}} FCFA</span>
+                        <span class="price-period">/mois</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== WHY CHOOSE US ===== -->
+    <section class="why-section">
+        <div class="why-container">
+            <h2 class="why-title">Pourquoi choisir Eyang Estate ?</h2>
+            <p class="why-subtitle">Nous simplifions la recherche de logement étudiant avec des outils modernes et une communauté de confiance.</p>
+
+            <div class="why-grid">
+                <div class="why-card">
+                    <div class="why-icon-wrap blue-grad">
+                        <lucide-icon [img]="ShieldIcon" class="why-icon"></lucide-icon>
+                    </div>
+                    <h3 class="why-card-title">Logements certifiés</h3>
+                    <p class="why-card-text">Chaque logement est inspecté et vérifié par notre équipe avant d'être publié sur la plateforme.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon-wrap green-grad">
+                        <lucide-icon [img]="ZapIcon" class="why-icon"></lucide-icon>
+                    </div>
+                    <h3 class="why-card-title">Réservation en 3 clics</h3>
+                    <p class="why-card-text">Trouvez, comparez et réservez votre chambre en quelques minutes depuis votre téléphone ou ordinateur.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon-wrap orange-grad">
+                        <lucide-icon [img]="MapPinIcon" class="why-icon"></lucide-icon>
+                    </div>
+                    <h3 class="why-card-title">Proche de votre campus</h3>
+                    <p class="why-card-text">Tous nos logements sont géolocalisés et filtrables par proximité avec votre établissement.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon-wrap purple-grad">
+                        <lucide-icon [img]="StarIcon" class="why-icon"></lucide-icon>
+                    </div>
+                    <h3 class="why-card-title">Avis authentiques</h3>
+                    <p class="why-card-text">Des milliers d'avis d'étudiants vérifiés pour vous aider à faire le meilleur choix en toute confiance.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon-wrap teal-grad">
+                        <lucide-icon [img]="LockIcon" class="why-icon"></lucide-icon>
+                    </div>
+                    <h3 class="why-card-title">Paiements sécurisés</h3>
+                    <p class="why-card-text">Vos transactions sont protégées par un système de paiement sécurisé. Votre argent est en sécurité.</p>
+                </div>
+                <div class="why-card">
+                    <div class="why-icon-wrap pink-grad">
+                        <lucide-icon [img]="MessageSquareIcon" class="why-icon"></lucide-icon>
+                    </div>
+                    <h3 class="why-card-title">Support 24/7</h3>
+                    <p class="why-card-text">Notre équipe est disponible en permanence pour répondre à vos questions et résoudre vos problèmes.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== STATS BANNER ===== -->
+    <section class="stats-banner">
+        <div class="stats-container">
+            <div class="stat-item">
+                <span class="stat-number">30+</span>
+                <span class="stat-label">Logements disponibles</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number">500+</span>
+                <span class="stat-label">Étudiants logés</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number">98%</span>
+                <span class="stat-label">Taux de satisfaction</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-number">15+</span>
+                <span class="stat-label">Reservation</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== TESTIMONIALS ===== -->
+    <section class="testimonials-section">
+        <div class="testimonials-container">
+            <h2 class="why-title">Ce que disent nos étudiants</h2>
+            <p class="why-subtitle">Des centaines d'étudiants ont trouvé leur logement idéal grâce à Eyang Estate.</p>
+
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">
+                        <span *ngFor="let s of [1,2,3,4,5]">⭐</span>
+                    </div>
+                    <p class="testimonial-text">"J'ai trouvé ma chambre en moins de 24h ! La plateforme est super intuitive et le propriétaire était très réactif. Je recommande vivement Eyang Estate à tous les étudiants."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">MK</div>
+                        <div>
+                            <div class="author-name">Marie Kamga</div>
+                            <div class="author-role">Étudiante en Médecine – FMSB Yaoundé</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card featured">
+                    <div class="testimonial-stars">
+                        <span *ngFor="let s of [1,2,3,4,5]">⭐</span>
+                    </div>
+                    <p class="testimonial-text">"Grâce à Eyang Estate, j'ai pu comparer plusieurs logements proches de mon campus et choisir celui qui correspondait le mieux à mon budget. Un service vraiment professionnel."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar green-av">PN</div>
+                        <div>
+                            <div class="author-name">Paul Nkemdirim</div>
+                            <div class="author-role">Étudiant en Ingénierie – ENSP Yaoundé</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-stars">
+                        <span *ngFor="let s of [1,2,3,4]">⭐</span>
+                    </div>
+                    <p class="testimonial-text">"En tant que propriétaire, j'ai pu gérer facilement mes logements et recevoir des demandes de qualité. La plateforme m'a vraiment aidé à rentabiliser mon investissement."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar orange-av">BM</div>
+                        <div>
+                            <div class="author-name">Boris Ebenezer</div>
+                            <div class="author-role">Propriétaire – Résidence Les Palmiers</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FAQ as CARDS ===== -->
+    <section class="faq-section">
+        <div class="faq-container">
+            <h2 class="why-title">Vous avez des questions ?</h2>
+            <p class="why-subtitle">Retrouvez les réponses aux questions les plus fréquemment posées par nos utilisateurs.</p>
+
+            <div class="faq-cards-grid">
+                <div class="faq-card" *ngFor="let faq of faqs; let i = index" (click)="toggleFaq(i)" [class.open]="faq.open">
+                    <div class="faq-card-header">
+                        <div class="faq-card-icon">
+                            <span>?</span>
+                        </div>
+                        <span class="faq-card-question">{{faq.question}}</span>
+                        <span class="faq-toggle-icon" [class.open]="faq.open">+</span>
+                    </div>
+                    <div class="faq-card-answer" [class.visible]="faq.open">
+                        <p>{{faq.answer}}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA CONTACT ===== -->
+    <section class="cta-section">
+        <div class="cta-bg"></div>
+        <div class="cta-content">
+            <h2 class="cta-title">Vous avez un projet ou une question ?</h2>
+            <p class="cta-subtitle">Que vous soyez étudiant, propriétaire ou partenaire, notre équipe est là pour vous accompagner.</p>
+            <div class="cta-buttons">
+                <a routerLink="/contact" class="cta-btn-primary">
+                    <lucide-icon [img]="MessageSquareIcon" class="btn-icon"></lucide-icon>
+                    Contactez-nous
+                </a>
+                <button class="cta-btn-outline" (click)="scrollToListings()">Voir les logements</button>
+            </div>
+        </div>
+    </section>
+
+</div>

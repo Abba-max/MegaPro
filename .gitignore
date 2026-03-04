@@ -1,0 +1,15 @@
+.env
+.static/assets/img
+../archive/
+.node_modules
+.vscode
+.angular
+.public/assets/images/Estate Images
+.backend/venv
+.backend/__pycache__
+.backend/static/assets/img
+.idea
+node_modules/
+media/
+backend/static_cdn/media_root/
+MegaPro1.1/Code/eyang-frontend/public/assets/images/Estate Images/

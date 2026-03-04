@@ -1,0 +1,27 @@
+<div class="page-header">
+    <h1 class="page-title">Gestion des avis</h1>
+</div>
+
+<div class="reviews-list mt-8">
+    <div class="review-card card" *ngFor="let r of reviews">
+        <div class="review-content">
+            <h3 class="review-location">{{r.location}}</h3>
+            <div class="review-meta">
+                <span class="review-author">Par {{r.author}} - {{r.date}}</span>
+            </div>
+            <div class="review-rating">
+                <lucide-icon [img]="StarIcon" class="icon-xs gold" *ngFor="let s of getStars(r.rating)"></lucide-icon>
+            </div>
+            <p class="review-comment">{{r.comment}}</p>
+        </div>
+        <div class="review-actions">
+            <button class="delete-btn" (click)="deleteReview(r.id)" *ngIf="!r.deleted">
+                <lucide-icon [img]="TrashIcon" class="icon-sm"></lucide-icon>
+            </button>
+            <div class="toast-success" *ngIf="r.deleted">
+                <lucide-icon [img]="CheckIcon" class="icon-sm"></lucide-icon>
+                <span>Avis supprimé</span>
+            </div>
+        </div>
+    </div>
+</div>
