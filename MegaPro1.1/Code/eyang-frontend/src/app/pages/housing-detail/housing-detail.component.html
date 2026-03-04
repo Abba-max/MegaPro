@@ -1,147 +1,278 @@
 <div class="detail-container fade-in">
-    <div class="content-area">
-        <!-- Header with Back Button -->
-        <div class="header-nav">
-            <button class="back-btn" (click)="goBack()">
-                <lucide-icon [img]="ChevronLeftIcon" class="icon-sm"></lucide-icon>
-                <span>Retour</span>
-            </button>
+  <div class="content-area">
+<!-- Loading -->
+<div *ngIf="isLoading" style="display:flex;align-items:center;justify-content:center;min-height:300px;">
+  <lucide-icon [img]="LoaderIcon" style="width:32px;height:32px;animation:spin 1s linear infinite;color:#2563EB">
+  </lucide-icon>
+</div>
+
+<!-- Error -->
+<div *ngIf="!isLoading && errorMessage" style="padding:2rem;text-align:center;color:#DC2626;">
+  <p>{{ errorMessage }}</p>
+  <button class="back-btn" (click)="goBack()" style="margin-top:1rem">← Retour</button>
+</div>
+
+<!-- MAIN CONTENT — guarded by *ngIf -->
+<ng-container *ngIf="!isLoading && housing">
+
+
+  <!-- ════ TOAST ════ -->
+  <div class="toast-container">
+    <div *ngFor="let t of toasts" class="toast" [class]="'toast-' + t.type" (click)="dismissToast(t.id)">
+      <span class="toast-msg">{{ t.message }}</span>
+      <span class="toast-close">×</span>
+    </div>
+  </div>
+
+  <!-- Back Button -->
+  <div class="header-nav">
+    <button class="back-btn" (click)="goBack()">
+      <lucide-icon [img]="ChevronLeftIcon" class="icon-sm"></lucide-icon>
+          <span>{{ 'detail.back' | translate }}</span>
+          </button>
+          </div>
+
+      <!-- PHOTO GALLERY HERO -->
+      <div class="gallery-hero">
+      
+        <div class="gallery-main" (click)="openLightbox(activePhotoIndex)">
+          <img [src]="photos[activePhotoIndex]" [alt]="housing!.name" class="gallery-main-img">
+          <div class="gallery-nav gallery-nav-left" (click)="$event.stopPropagation(); prevPhoto()">
+            <lucide-icon [img]="ChevronLeftIcon" class="gallery-nav-icon"></lucide-icon>
+          </div>
+          <div class="gallery-nav gallery-nav-right" (click)="$event.stopPropagation(); nextPhoto()">
+            <lucide-icon [img]="ChevronRightIcon" class="gallery-nav-icon"></lucide-icon>
+          </div>
+          <div class="gallery-counter">
+            <lucide-icon [img]="ImagesIcon" class="counter-icon"></lucide-icon>
+            {{ activePhotoIndex + 1 }} / {{ photos.length }}
+          </div>
+          <div class="gallery-place-badge" *ngIf="housing!.free > 0">
+            {{ housing!.free }} {{ 'detail.available_places' | translate }}
+          </div>
         </div>
 
-        <!-- Main Image Section -->
-        <div class="image-gallery-hero">
-            <div class="main-image-wrapper">
-                <div class="badge-overlay" *ngIf="housing.places > 0 && !currentUser">
-                    <span class="count-badge">{{housing.places}} places</span>
-                </div>
-                <div class="placeholder-img">
-                    <lucide-icon [img]="BuildingIcon" class="icon-xl text-blue-100"></lucide-icon>
-                </div>
-            </div>
+        <div class="gallery-thumbs">
+          <div class="gallery-thumb" *ngFor="let photo of photos; let i = index" [class.active]="i === activePhotoIndex"
+            (click)="setActivePhoto(i)">
+            <img [src]="photo" [alt]="housing!.name + ' photo ' + (i+1)">
+          </div>
         </div>
-
-        <!-- Info Section -->
+        
+        </div>
+        
+        <!-- INFO SECTION -->
         <div class="info-section">
-            <div class="info-flex">
-                <div class="housing-main-info">
-                    <h1 class="housing-title">{{housing.title}}</h1>
-                    <div class="meta-row">
-                        <div class="meta-item">
-                            <lucide-icon [img]="MapPinIcon" class="icon-xs red"></lucide-icon>
-                            <span>{{housing.distance}} km</span>
-                        </div>
-                        <div class="meta-item ml-4">
-                            <div class="stars">
-                                <lucide-icon [img]="StarIcon" class="icon-xs gold"
-                                    *ngFor="let s of getStarArray(housing.rating)"></lucide-icon>
-                            </div>
-                            <span class="rating-text">{{housing.rating}} ({{reviews.length}})</span>
-                        </div>
-                    </div>
+
+        <div class="info-flex">
+          <div class="housing-main-info">
+            <h1 class="housing-title">{{ housing!.name }}</h1>
+            <div class="meta-row">
+              <div class="meta-item">
+                <lucide-icon [img]="MapPinIcon" class="icon-xs red"></lucide-icon>
+                <span>{{ housing!.distance }} {{ 'detail.distance' | translate }}</span>
                 </div>
-                <div class="price-section">
-                    <div class="price-amount">{{housing.price | number}} FCFA</div>
-                    <div class="price-period">/mois • {{housing.minMonths || 2}} mois min</div>
-                </div>
+              <div class="meta-item ml-4" *ngIf="getRatingAsNumber(housing!.rating) > 0">
+                <lucide-icon [img]="StarIcon" class="icon-xs gold" *ngFor="let s of getStarArray(housing!.rating)">
+                </lucide-icon>
+                <span class="rating-text">
+                  {{ housing!.rating }} ({{ reviews.length }} {{ 'detail.reviews_count' | translate }})
+                </span>
+              </div>
+              </div>
+              </div>
+              <div class="price-section">
+            <div class="price-amount">{{ housing!.price | number }} FCFA</div>
+            <div class="price-period">
+              {{ 'detail.per_month' | translate }} · {{ housing!.minMonths || 2 }} {{ 'detail.min_months' | translate }}
+            </div>
+            </div>
             </div>
 
-            <!-- Description & Equipments (Auth Only) -->
-            <div class="auth-details fade-in" *ngIf="currentUser">
-                <div class="detail-block mt-8">
-                    <h3 class="detail-subtitle">Description</h3>
-                    <p class="detail-text mt-2">{{housing.description}}</p>
-                </div>
+        <!-- Auth Details (logged in) -->
+        <div class="auth-details fade-in" *ngIf="currentUser">
+<div class="quick-stats mt-6">
+  <div class="stat-chip">
+    <lucide-icon [img]="UsersIcon" class="chip-icon blue"></lucide-icon>
+    <span>{{ housing!.free }} {{ 'detail.available_places' | translate }}</span>
+  </div>
+  <div class="stat-chip">
+    <lucide-icon [img]="MapPinIcon" class="chip-icon red"></lucide-icon>
+    <span>{{ housing!.distance }} km campus</span>
+  </div>
+  <div class="stat-chip" *ngIf="housing!.roomInfo?.single">
+    <lucide-icon [img]="BedIcon" class="chip-icon purple"></lucide-icon>
+    <span>{{ housing!.roomInfo?.single }} {{ 'detail.single_room' | translate }}</span>
+  </div>
+  <div class="stat-chip" *ngIf="housing!.roomInfo?.double">
+    <lucide-icon [img]="BedDoubleIcon" class="chip-icon orange"></lucide-icon>
+    <span>{{ housing!.roomInfo?.double }} {{ 'detail.double_room' | translate }}</span>
+  </div>
+  <div class="stat-chip" *ngIf="housing!.area">
+    <lucide-icon [img]="LayoutIcon" class="chip-icon green"></lucide-icon>
+    <span>{{ housing!.area }} {{ 'detail.area' | translate }}</span>
+  </div>
+</div>
 
-                <div class="detail-block mt-8">
-                    <h3 class="detail-subtitle">Équipements</h3>
-                    <div class="equipments-grid mt-4">
-                        <div class="equipment-card" *ngFor="let eq of housing.equipments">
-                            <lucide-icon [img]="eq.icon" class="eq-icon" [ngClass]="eq.color"></lucide-icon>
-                            <span>{{eq.name}}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="action-buttons mt-12">
-                    <button class="btn btn-primary action-btn">
-                        <lucide-icon [img]="CalendarIcon" class="icon-sm mr-2"></lucide-icon>
-                        Réserver
-                    </button>
-                    <button class="btn btn-outline action-btn" (click)="openContact()">
-                        <lucide-icon [img]="MessageIcon" class="icon-sm mr-2"></lucide-icon>
-                        Contacter
-                    </button>
-                    <button class="btn btn-ghost action-btn">
-                        <lucide-icon [img]="StarIcon" class="icon-sm mr-2 gold"></lucide-icon>
-                        Avis
-                    </button>
-                </div>
+          <div class="detail-block mt-8">
+            <h3 class="detail-subtitle">{{ 'detail.description' | translate }}</h3>
+            <p class="detail-text mt-2">{{ housing!.description }}</p>
             </div>
 
-            <!-- Auth Call to Action (Unauth Only) -->
-            <div class="auth-card" *ngIf="!currentUser">
-                <div class="auth-box">
-                    <p class="auth-prompt">Connectez-vous pour voir les détails</p>
-                    <button class="btn btn-primary btn-sm mt-3" (click)="openLogin()">Connexion</button>
+          <div class="detail-block mt-8">
+            <h3 class="detail-subtitle">{{ 'detail.equipments' | translate }}</h3>
+            <div class="equipments-grid mt-4">
+              <div class="equipment-card" *ngFor="let eq of housing!.equipments">
+                <lucide-icon [img]="eq.icon" class="eq-icon" [ngClass]="eq.color"></lucide-icon>
+                <span>{{ eq.name }}</span>
                 </div>
-            </div>
+                </div>
+                </div>
 
-            <!-- Reviews Section -->
-            <div class="reviews-section">
-                <h2 class="section-title">Avis ({{reviews.length}})</h2>
-                <div class="reviews-list">
-                    <div class="review-item" *ngFor="let r of reviews">
-                        <div class="review-header">
-                            <div class="flex items-center gap-3">
-                                <div class="avatar-sm">{{r.initials}}</div>
-                                <div class="reviewer-info">
-                                    <div class="reviewer-name">{{r.name}}</div>
-                                    <div class="review-date">{{r.date}}</div>
-                                </div>
-                            </div>
-                            <div class="review-stars">
-                                <lucide-icon [img]="StarIcon" class="icon-xs gold"
-                                    *ngFor="let s of [1,2,3,4,5]"></lucide-icon>
-                            </div>
-                        </div>
-                        <p class="review-comment">{{r.comment}}</p>
-                    </div>
-                </div>
-            </div>
+          <div class="action-buttons mt-12">
+            <button class="btn btn-primary action-btn" (click)="openContact()">
+              <lucide-icon [img]="CalendarIcon" class="icon-sm mr-2"></lucide-icon>
+              {{ 'detail.book' | translate }}
+              </button>
+              <button class="btn btn-outline action-btn" (click)="openContact()">
+                <lucide-icon [img]="MessageIcon" class="icon-sm mr-2"></lucide-icon>
+              {{ 'detail.contact' | translate }}
+              </button>
+              </div>
+
         </div>
-    </div>
 
-    <!-- Contact Modal (Demande de réservation - Mockup 0) -->
-    <div class="modal-overlay fade-in" *ngIf="showContactModal">
-        <div class="modal-card">
-            <button class="close-btn" (click)="closeContact()">
-                <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
+        <!-- Unauth CTA -->
+        <div class="auth-card" *ngIf="!currentUser">
+          <div class="auth-box">
+            <p class="auth-prompt">{{ 'detail.login_cta' | translate }}</p>
+            <button class="btn btn-primary btn-sm mt-3" (click)="openLogin()">
+              {{ 'detail.login_btn' | translate }}
             </button>
-            <div class="modal-header">
-                <h2>Demande de réservation</h2>
             </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Logement</label>
-                    <input type="text" [value]="housing.title" disabled class="input bg-gray-50">
+            </div>
+
+        <!-- Reviews -->
+        <div class="reviews-section">
+          <h2 class="section-title">
+            {{ 'detail.reviews_title' | translate }} ({{ reviews.length }})
+          </h2>
+          <div class="review-item" *ngFor="let r of reviews">
+            <div class="review-header">
+              <div class="review-left">
+                <div class="avatar-sm">{{ r.initials }}</div>
+                <div>
+                  <div class="reviewer-name">{{ r.name }}</div>
+                  <div class="review-date">{{ r.date }}</div>
                 </div>
-                <div class="form-group mt-4">
-                    <label>Votre nom</label>
-                    <input type="text" [(ngModel)]="contactForm.name" placeholder="Marie Kamga" class="input">
+              </div>
+              <div class="review-stars">
+                <lucide-icon [img]="StarIcon" class="icon-xs gold" *ngFor="let s of getStarArray(r.rating)">
+                </lucide-icon>
                 </div>
-                <div class="form-group mt-4">
-                    <label>Téléphone</label>
-                    <input type="text" [(ngModel)]="contactForm.phone" placeholder="+237655123456" class="input">
-                </div>
-                <div class="form-group mt-4">
-                    <label>Message (optionnel)</label>
-                    <textarea [(ngModel)]="contactForm.message" class="input" rows="4"></textarea>
-                </div>
-                <button class="btn btn-primary w-full mt-6 py-4" (click)="handleSendRequest()">
-                    Envoyer
-                </button>
+            </div>
+            <p class="review-comment">{{ r.comment }}</p>
             </div>
         </div>
+</div>
+<!-- LIGHTBOX -->
+<div class="lightbox-overlay fade-in" *ngIf="showLightbox" (click)="closeLightbox()">
+  <button class="lightbox-close" (click)="closeLightbox()">
+    <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
+  </button>
+  <div class="lightbox-content" (click)="$event.stopPropagation()">
+    <button class="lightbox-nav lightbox-prev" (click)="prevPhoto()">
+      <lucide-icon [img]="ChevronLeftIcon" class="icon-md"></lucide-icon>
+    </button>
+    <img [src]="photos[activePhotoIndex]" [alt]="housing!.name" class="lightbox-img">
+    <button class="lightbox-nav lightbox-next" (click)="nextPhoto()">
+      <lucide-icon [img]="ChevronRightIcon" class="icon-md"></lucide-icon>
+    </button>
+          </div>
+          <div class="lightbox-counter">{{ activePhotoIndex + 1 }} / {{ photos.length }}</div>
+          <div class="lightbox-thumbs">
+            <img *ngFor="let photo of photos; let i = index" [src]="photo" [class.active]="i === activePhotoIndex"
+              (click)="$event.stopPropagation(); setActivePhoto(i)" class="lightbox-thumb">
+          </div>
+          </div>
+
+      <!-- CONTACT / RESERVATION MODAL -->
+      <div class="modal-overlay fade-in" *ngIf="showContactModal" (click)="closeContact()">
+        <div class="modal-card" (click)="$event.stopPropagation()">
+      
+          <button class="close-btn" (click)="closeContact()">
+            <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
+          </button>
+<div class="modal-housing-header">
+  <div class="modal-housing-img">
+    <img [src]="photos[0]" [alt]="housing!.name" class="modal-thumb-img">
+  </div>
+  <div>
+    <h2 class="modal-title">{{ 'modal.reservation_title' | translate }}</h2>
+    <p class="modal-subtitle">{{ housing!.name }}</p>
+  </div>
+</div>
+
+<div class="modal-detail-grid">
+  <div class="modal-detail-item">
+    <lucide-icon [img]="MapPinIcon" class="mdi-icon red"></lucide-icon>
+    <div>
+      <div class="mdi-label">{{ 'modal.distance_label' | translate }}</div>
+      <div class="mdi-value">{{ housing!.distance }} km</div>
     </div>
+  </div>
+  <div class="modal-detail-item">
+    <lucide-icon [img]="ZapIconRef" class="mdi-icon orange"></lucide-icon>
+    <div>
+      <div class="mdi-label">{{ 'modal.price_label' | translate }}</div>
+      <div class="mdi-value">{{ housing!.price | number }} FCFA</div>
+    </div>
+  </div>
+  <div class="modal-detail-item">
+    <lucide-icon [img]="UsersIcon" class="mdi-icon blue"></lucide-icon>
+    <div>
+      <div class="mdi-label">{{ 'modal.places_label' | translate }}</div>
+      <div class="mdi-value">{{ housing!.free }}</div>
+    </div>
+  </div>
+  <div class="modal-detail-item" *ngIf="housing!.area">
+    <lucide-icon [img]="LayoutIcon" class="mdi-icon green"></lucide-icon>
+    <div>
+      <div class="mdi-label">{{ 'modal.area_label' | translate }}</div>
+      <div class="mdi-value">{{ housing!.area }} m²</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-equip-tags">
+  <span class="equip-tag" *ngFor="let eq of housing!.equipments">
+    <lucide-icon [img]="eq.icon" class="equip-tag-icon" [ngClass]="eq.color"></lucide-icon>
+    {{ eq.name }}
+  </span>
+            </div>
+<div class="modal-divider"></div>
+
+<div class="form-group">
+            <label>{{ 'modal.name_label' | translate }}</label>
+            <input type="text" [(ngModel)]="contactForm.name" [placeholder]="'modal.name_placeholder' | translate" class="input">
+            </div>
+            <div class="form-group mt-4">
+              <label>{{ 'modal.phone_label' | translate }}</label>
+              <input type="text" [(ngModel)]="contactForm.phone" [placeholder]="'modal.phone_placeholder' | translate" class="input">
+              </div>
+              <div class="form-group mt-4">
+              <label>{{ 'modal.message_label' | translate }}</label>
+              <textarea [(ngModel)]="contactForm.message" class="input" rows="3"
+                [placeholder]="'modal.message_placeholder' | translate"></textarea>
+              </div>
+<button class="btn btn-primary w-full mt-6 py-4" (click)="handleSendRequest()">
+            <lucide-icon [img]="SendIcon" class="icon-sm mr-2"></lucide-icon>
+            {{ 'modal.send_btn' | translate }}
+            </button>
+
+        </div>
+        </div>
+      </ng-container>
+
+  </div>
 </div>

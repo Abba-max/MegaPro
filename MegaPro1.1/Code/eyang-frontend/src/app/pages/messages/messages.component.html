@@ -1,46 +1,136 @@
-<div class="messages-container fade-in">
-    <!-- Conversations Sidebar -->
-    <aside class="conversations-sidebar">
-        <div class="sidebar-header">
-            <h2 class="sidebar-title">Messages</h2>
-        </div>
-        <div class="conversations-list">
-            <div class="conversation-item active">
-                <div class="avatar blue-bg">J</div>
-                <div class="conv-info">
-                    <div class="conv-name">Jean Eyenga</div>
-                    <div class="conv-subject">Cité Universitaire Soa</div>
-                </div>
-            </div>
-        </div>
-    </aside>
+<div class="messages-page">
 
-    <!-- Chat Area -->
-    <main class="chat-area">
-        <header class="chat-header">
-            <div class="flex items-center gap-3">
-                <div class="avatar blue-bg">J</div>
-                <div class="chat-contact-info">
-                    <div class="contact-name">Jean Eyenga</div>
-                    <div class="contact-subject">Cité Universitaire Soa</div>
-                </div>
+    <!-- ═══ SIDEBAR: Conversations List ═══ -->
+    <aside class="conv-sidebar" [class.hidden-mobile]="!showSidebar">
+
+        <div class="conv-sidebar-header">
+            <h2 class="conv-title">Messages
+                <span class="unread-badge" *ngIf="getTotalUnread() > 0">{{ getTotalUnread() }}</span>
+            </h2>
+            <div class="conv-search-bar">
+                <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
+                <input type="text" [(ngModel)]="searchQuery" placeholder="Rechercher une conversation..."
+                    class="conv-search-input">
             </div>
+    </div>
+    
+    <div class="conv-list">
+        <div *ngIf="filteredConversations.length === 0" class="conv-empty">
+            Aucune conversation trouvée
+        </div>
+        <div *ngFor="let conv of filteredConversations" class="conv-item"
+            [class.active]="activeConversation?.id === conv.id" (click)="selectConversation(conv)">
+            <div class="conv-avatar" [style.background]="conv.contactColor">
+                {{ conv.contactInitials }}
+            </div>
+            <div class="conv-info">
+        <div class="conv-top">
+            <span class="conv-name">{{ conv.contactName }}</span>
+            <span class="conv-time">{{ conv.lastTime }}</span>
+        </div>
+        <div class="conv-bottom">
+            <div class="conv-estate">
+                <lucide-icon [img]="HomeIcon" class="estate-icon"></lucide-icon>
+                {{ conv.estateTitle }}
+            </div>
+            <span class="unread-pill" *ngIf="conv.unread > 0">{{ conv.unread }}</span>
+        </div>
+        <div class="conv-last-msg">{{ conv.lastMessage }}</div>
+        </div>
+        </div>
+        </div>
+
+</aside>
+
+<!-- ═══ CHAT AREA ═══ -->
+<main class="chat-area" [class.hidden-mobile]="showSidebar">
+
+    <!-- Empty state -->
+    <div *ngIf="!activeConversation" class="chat-empty">
+        <div class="chat-empty-icon">💬</div>
+        <h3>Sélectionnez une conversation</h3>
+        <p>Choisissez une conversation dans la liste pour commencer à échanger.</p>
+    </div>
+
+    <!-- Active conversation -->
+    <ng-container *ngIf="activeConversation">
+
+        <!-- Chat Header -->
+        <header class="chat-header">
+        <button class="back-mobile-btn" (click)="backToList()">
+            <lucide-icon [img]="ArrowLeftIcon" class="icon-sm"></lucide-icon>
+        </button>
+        <div class="chat-avatar" [style.background]="activeConversation.contactColor">
+            {{ activeConversation.contactInitials }}
+        </div>
+        <div class="chat-header-info">
+            <div class="chat-contact-name">{{ activeConversation.contactName }}</div>
+            <div class="chat-estate-badge">
+                <lucide-icon [img]="HomeIcon" class="estate-icon-sm"></lucide-icon>
+                {{ activeConversation.estateTitle }}
+            </div>
+        </div>
+        <div class="chat-header-actions">
+            <button class="hdr-btn" title="Appeler">
+                <lucide-icon [img]="PhoneIcon" class="icon-sm"></lucide-icon>
+            </button>
+            <button class="hdr-btn" title="Plus">
+                <lucide-icon [img]="MoreIcon" class="icon-sm"></lucide-icon>
+            </button>
+        </div>
         </header>
 
-        <div class="messages-viewport">
-            <div class="system-message">
-                <span>Conversation à propos de "Cité Universitaire Soa"</span>
-            </div>
-            <!-- Messages would go here -->
+    <!-- Messages viewport -->
+    <div class="messages-viewport" #messagesViewport>
+    
+        <!-- System message -->
+        <div class="system-msg">
+            Conversation à propos de « {{ activeConversation.estateTitle }} »
         </div>
-
-        <footer class="chat-footer">
-            <div class="message-input-wrapper">
-                <input type="text" placeholder="Écrivez votre message..." class="message-input">
-                <button class="send-btn">
-                    <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
-                </button>
+    
+        <!-- Message bubbles -->
+        <ng-container *ngFor="let msg of activeConversation.messages">
+    
+            <!-- Received -->
+            <div class="msg-row received" *ngIf="msg.type === 'received'">
+                <div class="msg-avatar-sm" [style.background]="activeConversation.contactColor">
+                    {{ activeConversation.contactInitials }}
+                </div>
+                <div class="msg-bubble received-bubble">
+                    <p class="msg-text">{{ msg.text }}</p>
+                    <span class="msg-time">{{ msg.time }}</span>
+                </div>
             </div>
+    
+            <!-- Sent -->
+            <div class="msg-row sent" *ngIf="msg.type === 'sent'">
+                <div class="msg-bubble sent-bubble">
+                    <p class="msg-text">{{ msg.text }}</p>
+                    <div class="msg-footer">
+                        <span class="msg-time">{{ msg.time }}</span>
+                        <lucide-icon [img]="CheckCheckIcon" class="read-icon" [class.read]="msg.read"></lucide-icon>
+                    </div>
+                </div>
+            </div>
+</ng-container>
+</div>
+
+    <!-- Chat Input -->
+    <footer class="chat-footer">
+        <div class="input-row">
+            <button class="attach-btn" title="Joindre un fichier">
+                <lucide-icon [img]="PaperclipIcon" class="icon-sm"></lucide-icon>
+            </button>
+            <div class="input-wrapper">
+                <input type="text" [(ngModel)]="newMessage" (keydown)="onKeydown($event)" placeholder="Écrivez votre message..."
+                    class="chat-input">
+            </div>
+            <button class="send-btn" (click)="sendMessage()" [class.active]="newMessage.trim()">
+                <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
+            </button>
+        </div>
         </footer>
-    </main>
+</ng-container>
+</main>
+
 </div>

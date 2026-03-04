@@ -66,6 +66,14 @@ export interface ContactRequest {
   message: string;
 }
 
+
+export interface PlatformStats {
+  estates:  number;
+  users:    number;
+  reviews:  number;
+  campuses: number;
+}
+
 export interface EstateFilters {
   location?: string;
   status?: string;
@@ -176,4 +184,9 @@ export class EstateService {
   sendContact(data: ContactRequest): Observable<any> {
     return this.http.post(`${this.BASE}/contact-requests/`, data);
   }
+
+  getStats(): Observable<PlatformStats> {
+    return this.http.get<PlatformStats>(`${this.BASE}/stats/`);
+  }
+
 }

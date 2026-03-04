@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 from .api_views import (
     EstateViewSet, ReviewViewSet,
     QuickOrderViewSet, ContactRequestViewSet,
-    register_view, me_view,
+    register_view, me_view,stats_view
 )
 
 router = DefaultRouter()
@@ -19,4 +19,5 @@ urlpatterns = [
     # ── Auth endpoints ──────────────────────────────────────────
     path('api/auth/register/', register_view, name='register'),
     path('api/auth/me/',       me_view,       name='me'),
+    path('api/stats/',         stats_view,    name='stats'),
 ]

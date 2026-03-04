@@ -1,20 +1,33 @@
 <div class="home-container fade-in">
-    <!-- Hero Section with Background Image -->
+<!-- ════ TOAST NOTIFICATIONS ════ -->
+<div class="toast-container">
+  <div *ngFor="let t of toasts" class="toast" [class]="'toast-' + t.type" (click)="dismissToast(t.id)">
+    <lucide-icon *ngIf="t.type === 'success'" [img]="CheckCircleIcon" class="toast-icon"></lucide-icon>
+    <lucide-icon *ngIf="t.type === 'error'" [img]="XCircleIcon" class="toast-icon"></lucide-icon>
+    <lucide-icon *ngIf="t.type === 'warning'" [img]="AlertCircleIcon" class="toast-icon"></lucide-icon>
+    <lucide-icon *ngIf="t.type === 'info'" [img]="InfoIcon" class="toast-icon"></lucide-icon>
+    <span class="toast-msg">{{ t.message }}</span>
+    <span class="toast-close">×</span>
+  </div>
+</div>
+
+
+<!-- Hero Section -->
     <section class="hero-section">
         <div class="hero-bg-image"></div>
         <div class="hero-overlay"></div>
         <div class="hero-content">
-            <h1 class="hero-title">Trouvez votre logement étudiant idéal</h1>
-            <p class="hero-subtitle">Des chambres de qualité, proches des campus, avec tous les équipements nécessaires.</p>
+            <h1 class="hero-title">{{ 'hero.title' | translate }}</h1>
+            <p class="hero-subtitle">{{ 'hero.subtitle' | translate }}</p>
 
-            <!-- Search Bar integrated in hero -->
             <div class="hero-search-wrapper mt-6">
                 <div class="hero-search-bar">
                     <lucide-icon [img]="SearchIcon" class="hero-search-icon"></lucide-icon>
-                    <input type="text" placeholder="Rechercher par ville, campus, quartier...">
-                    <button class="hero-search-btn">
+                    <input type="text" [(ngModel)]="searchQuery" (input)="onSearchInput()"
+                      [placeholder]="'hero.search_placeholder' | translate">
+                    <button class="hero-search-btn" (click)="onSearch()">
                         <lucide-icon [img]="SearchIcon" class="btn-search-icon"></lucide-icon>
-                        <span>Rechercher</span>
+                        <span>{{ 'hero.search_btn' | translate }}</span>
                     </button>
                 </div>
             </div>
@@ -22,20 +35,19 @@
             <div class="hero-tags mt-5">
                 <div class="hero-tag">
                     <lucide-icon [img]="CheckIcon" class="tag-icon"></lucide-icon>
-                    <span>Logements vérifiés</span>
+                    <span>{{ 'hero.tag_verified' | translate }}</span>
                 </div>
                 <div class="hero-tag">
                     <lucide-icon [img]="LockIcon" class="tag-icon"></lucide-icon>
-                    <span>Paiements sécurisés</span>
+                    <span>{{ 'hero.tag_secure' | translate }}</span>
                 </div>
                 <div class="hero-tag">
                     <lucide-icon [img]="ZapIcon" class="tag-icon"></lucide-icon>
-                    <span>Réservation rapide</span>
+                    <span>{{ 'hero.tag_fast' | translate }}</span>
                 </div>
             </div>
         </div>
 
-        <!-- Scroll Indicator -->
         <div class="scroll-indicator">
             <div class="scroll-dot"></div>
         </div>
@@ -47,27 +59,27 @@
             <div class="filter-items">
                 <button class="filter-item border active-filter">
                     <lucide-icon [img]="FilterIcon" class="filter-icon"></lucide-icon>
-                    <span>Filtres</span>
+                    <span>{{ 'filters.filters' | translate }}</span>
                 </button>
-                <button class="filter-item">
+                <button class="filter-item" (click)="filterWifi = filterWifi ? '' : '1'; applyFilters()">
                     <lucide-icon [img]="WifiIcon" class="filter-icon orange"></lucide-icon>
-                    <span>WiFi</span>
+                    <span>{{ 'filters.wifi' | translate }}</span>
                 </button>
-                <button class="filter-item">
+                <button class="filter-item" (click)="filterGenerator = filterGenerator ? '' : '1'; applyFilters()">
                     <lucide-icon [img]="CoffeeIcon" class="filter-icon gray"></lucide-icon>
-                    <span>Restaurant</span>
+                    <span>{{ 'filters.restaurant' | translate }}</span>
                 </button>
-                <button class="filter-item">
+                <button class="filter-item" (click)="filterGenerator = filterGenerator ? '' : '1'; applyFilters()">
                     <lucide-icon [img]="ZapIcon" class="filter-icon yellow"></lucide-icon>
-                    <span>Générateur</span>
+                    <span>{{ 'filters.generator' | translate }}</span>
                 </button>
-                <button class="filter-item">
+                <button class="filter-item" (click)="filterForage = filterForage ? '' : '1'; applyFilters()">
                     <lucide-icon [img]="DropletsIcon" class="filter-icon blue"></lucide-icon>
-                    <span>Forage</span>
+                    <span>{{ 'filters.water' | translate }}</span>
                 </button>
                 <button class="filter-item">
                     <lucide-icon [img]="StarIcon" class="filter-icon yellow"></lucide-icon>
-                    <span>4+ étoiles</span>
+                    <span>{{ 'filters.stars' | translate }}</span>
                 </button>
             </div>
         </div>
@@ -77,187 +89,236 @@
     <section class="listings-section">
         <div class="section-header">
             <div>
-                <h2 class="section-title">Logements disponibles</h2>
-                <p class="section-desc">Découvrez nos meilleures offres près des campus</p>
+                <h2 class="section-title">{{ 'listings.title' | translate }}</h2>
+                <p class="section-desc">{{ 'listings.desc' | translate }}</p>
             </div>
-            <span class="listing-count-badge">{{housings.length}} logements</span>
+            <span class="listing-count-badge">{{ housings.length }} {{ 'listings.title' | translate }}</span>
         </div>
 
-        <div class="listings-grid">
-            <div class="housing-card" *ngFor="let h of housings" [routerLink]="['/housing', h.id]"
-                style="cursor: pointer;">
-                <div class="card-image-area">
-                    <div class="badges-overlay">
-                        <span class="badge-green" *ngIf="h.places">{{h.places}} places</span>
-                        <div class="badge-rating" *ngIf="h.rating">
-                            <lucide-icon [img]="StarIcon" class="icon-star"></lucide-icon>
-                            <span>{{h.rating}}</span>
-                        </div>
-                    </div>
-
-                    <div class="image-wrapper" [class.no-image]="!h.image">
-                        <img *ngIf="h.image" [src]="h.image" [alt]="h.title">
-                        <div class="placeholder-content" *ngIf="!h.image">
-                            <lucide-icon [img]="BuildingIcon" class="icon-building"></lucide-icon>
-                        </div>
-                    </div>
-
-                    <div class="card-type-badge">{{h.type}}</div>
+        <!-- Loading state -->
+        <div *ngIf="isLoading" style="display:flex;justify-content:center;padding:3rem;">
+          <lucide-icon [img]="LoaderIcon"
+            style="width:32px;height:32px;animation:spin 1s linear infinite;color:#2563EB"></lucide-icon>
+        </div>
+        <!-- Error state -->
+        <div *ngIf="!isLoading && errorMessage" style="text-align:center;padding:2rem;color:#DC2626;">
+          {{ errorMessage }}
+        </div>
+        <div class="listings-grid" *ngIf="!isLoading && !errorMessage">
+          <div class="housing-card" *ngFor="let h of housings" [routerLink]="['/housing', h.id]">
+        
+            <!-- IMAGE + OVERLAYS -->
+            <div class="card-image-area">
+              <div class="image-wrapper" [class.no-image]="getFirstImage(h) === 'assets/images/placeholder.jpg'">
+                <img *ngIf="getFirstImage(h) !== 'assets/images/placeholder.jpg'" [src]="getFirstImage(h)" [alt]="h.name">
+                <div class="placeholder-content" *ngIf="getFirstImage(h) === 'assets/images/placeholder.jpg'">
+                  <lucide-icon [img]="BuildingIcon" class="icon-building"></lucide-icon>
                 </div>
-
-                <div class="card-body">
-                    <h3 class="housing-title">{{h.title}}</h3>
-
-                    <div class="housing-meta mt-1">
-                        <lucide-icon [img]="MapPinIcon" class="icon-xs"></lucide-icon>
-                        <span>{{h.distance}}</span>
-                    </div>
-
-                    <div class="features-row mt-3">
-                        <div class="feature-tag" *ngIf="h.features.includes('wifi')">
-                            <lucide-icon [img]="WifiIcon" class="feature-icon orange"></lucide-icon>
-                            <span>WiFi</span>
-                        </div>
-                        <div class="feature-tag" *ngIf="h.features.includes('water') || h.features.includes('droplets')">
-                            <lucide-icon [img]="DropletsIcon" class="feature-icon blue"></lucide-icon>
-                            <span>Forage</span>
-                        </div>
-                        <div class="feature-tag" *ngIf="h.features.includes('zap')">
-                            <lucide-icon [img]="ZapIcon" class="feature-icon yellow"></lucide-icon>
-                            <span>Générateur</span>
+              </div>
+              
+              <!-- Top row: places badge + rating -->
+                    <div class="badges-overlay">
+                      <span class="badge-places" *ngIf="h.free > 0">
+                        {{ h.free }} {{ 'detail.places' | translate }}
+                      </span>
+                      <div class="badge-rating" *ngIf="+h.rating > 0">
+                        <lucide-icon [img]="StarIcon" class="icon-star"></lucide-icon>
+                        <span>{{ h.rating }}</span>
                         </div>
                     </div>
 
-                    <div class="price-row mt-4">
-                        <span class="price-amount">{{h.price | number}} FCFA</span>
-                        <span class="price-period">/mois</span>
+                    <!-- Bottom: cite type badge -->
+                    <div class="card-type-badge">
+                      <ng-container *ngIf="h.capacity < 20">Mini Cité</ng-container>
+                      <ng-container *ngIf="h.capacity >= 20 && h.capacity < 30">Cité</ng-container>
+                      <ng-container *ngIf="h.capacity >= 30">Grande Cité</ng-container>
                     </div>
+                    </div>
+                    
+                    <!-- CARD BODY -->
+                    <div class="card-body">
+                    
+                      <!-- Name -->
+                      <h3 class="housing-title">{{ h.name }}</h3>
+                    
+                      <!-- Distance -->
+                      <div class="card-meta-row">
+                        <lucide-icon [img]="MapPinIcon" class="meta-icon red"></lucide-icon>
+                        <span>{{ h.distance }} {{ 'detail.distance' | translate }}</span>
+                      </div>
+
+                    <!-- Published ago -->
+                    <div class="card-meta-row published-row" *ngIf="h.publishedAt">
+                      <lucide-icon [img]="CheckIcon" class="meta-icon green"></lucide-icon>
+                      <span>{{ getTimeAgo(h.publishedAt) }}</span>
+                    </div>
+                    <!-- Divider -->
+                    <div class="card-divider"></div>
+                    
+                    <!-- Features: icon + text -->
+                    <div class="features-tags-row">
+                      <div class="feat-tag wifi" *ngIf="h.wifi === '1'">
+                        <lucide-icon [img]="WifiIcon" class="feat-icon"></lucide-icon>
+                        <span>WiFi</span>
+                      </div>
+                      <div class="feat-tag water" *ngIf="h.forage === '1'">
+                        <lucide-icon [img]="DropletsIcon" class="feat-icon"></lucide-icon>
+                        <span>{{ 'filters.water' | translate }}</span>
+                      </div>
+                      <div class="feat-tag gen" *ngIf="h.generator === '1'">
+                        <lucide-icon [img]="ZapIcon" class="feat-icon"></lucide-icon>
+                        <span>{{ 'filters.generator' | translate }}</span>
+                      </div>
+                      <div class="feat-tag resto" *ngIf="h.restaurant === '1'">
+                        <lucide-icon [img]="CoffeeIcon" class="feat-icon"></lucide-icon>
+                        <span>{{ 'filters.restaurant' | translate }}</span>
+                      </div>
+                      </div>
+                      <!-- Capacity chip -->
+                      <div class="capacity-chip">
+                        <lucide-icon [img]="BuildingIcon" class="feat-icon gray"></lucide-icon>
+                        <span>{{ h.capacity }} ch.</span>
+                    </div>
+
+                    <!-- Price -->
+                    <div class="price-row">
+                      <span class="price-amount">{{ h.price | number }}</span>
+                      <span class="price-currency">FCFA</span>
+                      <span class="price-period">{{ 'listings.per_month' | translate }}</span>
+                    </div>
+
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ===== WHY CHOOSE US ===== -->
+    <!-- WHY CHOOSE US -->
     <section class="why-section">
         <div class="why-container">
-            <h2 class="why-title">Pourquoi choisir Eyang Estate ?</h2>
-            <p class="why-subtitle">Nous simplifions la recherche de logement étudiant avec des outils modernes et une communauté de confiance.</p>
+            <h2 class="why-title">{{ 'why.title' | translate }}</h2>
+            <p class="why-subtitle">{{ 'why.subtitle' | translate }}</p>
 
             <div class="why-grid">
                 <div class="why-card">
                     <div class="why-icon-wrap blue-grad">
                         <lucide-icon [img]="ShieldIcon" class="why-icon"></lucide-icon>
                     </div>
-                    <h3 class="why-card-title">Logements certifiés</h3>
-                    <p class="why-card-text">Chaque logement est inspecté et vérifié par notre équipe avant d'être publié sur la plateforme.</p>
+                    <h3 class="why-card-title">{{ 'why.certified_title' | translate }}</h3>
+                    <p class="why-card-text">{{ 'why.certified_text' | translate }}</p>
                 </div>
                 <div class="why-card">
                     <div class="why-icon-wrap green-grad">
                         <lucide-icon [img]="ZapIcon" class="why-icon"></lucide-icon>
                     </div>
-                    <h3 class="why-card-title">Réservation en 3 clics</h3>
-                    <p class="why-card-text">Trouvez, comparez et réservez votre chambre en quelques minutes depuis votre téléphone ou ordinateur.</p>
+                    <h3 class="why-card-title">{{ 'why.booking_title' | translate }}</h3>
+                    <p class="why-card-text">{{ 'why.booking_text' | translate }}</p>
                 </div>
                 <div class="why-card">
                     <div class="why-icon-wrap orange-grad">
                         <lucide-icon [img]="MapPinIcon" class="why-icon"></lucide-icon>
                     </div>
-                    <h3 class="why-card-title">Proche de votre campus</h3>
-                    <p class="why-card-text">Tous nos logements sont géolocalisés et filtrables par proximité avec votre établissement.</p>
+                    <h3 class="why-card-title">{{ 'why.location_title' | translate }}</h3>
+                    <p class="why-card-text">{{ 'why.location_text' | translate }}</p>
                 </div>
                 <div class="why-card">
                     <div class="why-icon-wrap purple-grad">
                         <lucide-icon [img]="StarIcon" class="why-icon"></lucide-icon>
                     </div>
-                    <h3 class="why-card-title">Avis authentiques</h3>
-                    <p class="why-card-text">Des milliers d'avis d'étudiants vérifiés pour vous aider à faire le meilleur choix en toute confiance.</p>
+                    <h3 class="why-card-title">{{ 'why.reviews_title' | translate }}</h3>
+                    <p class="why-card-text">{{ 'why.reviews_text' | translate }}</p>
                 </div>
                 <div class="why-card">
                     <div class="why-icon-wrap teal-grad">
                         <lucide-icon [img]="LockIcon" class="why-icon"></lucide-icon>
                     </div>
-                    <h3 class="why-card-title">Paiements sécurisés</h3>
-                    <p class="why-card-text">Vos transactions sont protégées par un système de paiement sécurisé. Votre argent est en sécurité.</p>
+                    <h3 class="why-card-title">{{ 'why.secure_title' | translate }}</h3>
+                    <p class="why-card-text">{{ 'why.secure_text' | translate }}</p>
                 </div>
                 <div class="why-card">
                     <div class="why-icon-wrap pink-grad">
                         <lucide-icon [img]="MessageSquareIcon" class="why-icon"></lucide-icon>
                     </div>
-                    <h3 class="why-card-title">Support 24/7</h3>
-                    <p class="why-card-text">Notre équipe est disponible en permanence pour répondre à vos questions et résoudre vos problèmes.</p>
+                    <h3 class="why-card-title">{{ 'why.support_title' | translate }}</h3>
+                    <p class="why-card-text">{{ 'why.support_text' | translate }}</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ===== STATS BANNER ===== -->
+    <!-- STATS BANNER -->
     <section class="stats-banner">
         <div class="stats-container">
             <div class="stat-item">
-                <span class="stat-number">30+</span>
-                <span class="stat-label">Logements disponibles</span>
+                <span class="stat-number">
+                  <ng-container *ngIf="!statsLoading">{{ platformStats.estates }}</ng-container>
+                  <span *ngIf="statsLoading" class="stat-loading">…</span>
+                </span>
+                <span class="stat-label">{{ 'stats.housings' | translate }}</span>
             </div>
             <div class="stat-divider"></div>
             <div class="stat-item">
-                <span class="stat-number">500+</span>
-                <span class="stat-label">Étudiants logés</span>
+                <span class="stat-number">
+                  <ng-container *ngIf="!statsLoading">{{ platformStats.users }}</ng-container>
+                  <span *ngIf="statsLoading" class="stat-loading">…</span>
+                </span>
+                <span class="stat-label">{{ 'stats.students' | translate }}</span>
             </div>
             <div class="stat-divider"></div>
             <div class="stat-item">
-                <span class="stat-number">98%</span>
-                <span class="stat-label">Taux de satisfaction</span>
+                <span class="stat-number">
+                  <ng-container *ngIf="!statsLoading">{{ platformStats.reviews }}</ng-container>
+                  <span *ngIf="statsLoading" class="stat-loading">…</span>
+                </span>
+                <span class="stat-label">{{ 'stats.satisfaction' | translate }}</span>
             </div>
             <div class="stat-divider"></div>
             <div class="stat-item">
-                <span class="stat-number">15+</span>
-                <span class="stat-label">Reservation</span>
+                <span class="stat-number">
+                  <ng-container *ngIf="!statsLoading">{{ platformStats.campuses }}</ng-container>
+                  <span *ngIf="statsLoading" class="stat-loading">…</span>
+                </span>
+                <span class="stat-label">{{ 'stats.campuses' | translate }}</span>
             </div>
         </div>
     </section>
 
-    <!-- ===== TESTIMONIALS ===== -->
+    <!-- TESTIMONIALS -->
     <section class="testimonials-section">
         <div class="testimonials-container">
-            <h2 class="why-title">Ce que disent nos étudiants</h2>
-            <p class="why-subtitle">Des centaines d'étudiants ont trouvé leur logement idéal grâce à Eyang Estate.</p>
+            <h2 class="why-title">{{ 'testimonials.title' | translate }}</h2>
+            <p class="why-subtitle">{{ 'testimonials.subtitle' | translate }}</p>
 
             <div class="testimonials-grid">
                 <div class="testimonial-card">
-                    <div class="testimonial-stars">
-                        <span *ngFor="let s of [1,2,3,4,5]">⭐</span>
-                    </div>
-                    <p class="testimonial-text">"J'ai trouvé ma chambre en moins de 24h ! La plateforme est super intuitive et le propriétaire était très réactif. Je recommande vivement Eyang Estate à tous les étudiants."</p>
+                    <div class="testimonial-stars"><span *ngFor="let s of [1,2,3,4,5]">⭐</span></div>
+                    <p class="testimonial-text">{{ 'testimonials.t1_text' | translate }}</p>
                     <div class="testimonial-author">
                         <div class="author-avatar">MK</div>
                         <div>
                             <div class="author-name">Marie Kamga</div>
-                            <div class="author-role">Étudiante en Médecine – FMSB Yaoundé</div>
+                            <div class="author-role">{{ 'testimonials.t1_role' | translate }}</div>
                         </div>
                     </div>
                 </div>
                 <div class="testimonial-card featured">
-                    <div class="testimonial-stars">
-                        <span *ngFor="let s of [1,2,3,4,5]">⭐</span>
-                    </div>
-                    <p class="testimonial-text">"Grâce à Eyang Estate, j'ai pu comparer plusieurs logements proches de mon campus et choisir celui qui correspondait le mieux à mon budget. Un service vraiment professionnel."</p>
+                    <div class="testimonial-stars"><span *ngFor="let s of [1,2,3,4,5]">⭐</span></div>
+                    <p class="testimonial-text">{{ 'testimonials.t2_text' | translate }}</p>
                     <div class="testimonial-author">
                         <div class="author-avatar green-av">PN</div>
                         <div>
                             <div class="author-name">Paul Nkemdirim</div>
-                            <div class="author-role">Étudiant en Ingénierie – ENSP Yaoundé</div>
+                            <div class="author-role">{{ 'testimonials.t2_role' | translate }}</div>
                         </div>
                     </div>
                 </div>
                 <div class="testimonial-card">
-                    <div class="testimonial-stars">
-                        <span *ngFor="let s of [1,2,3,4]">⭐</span>
-                    </div>
-                    <p class="testimonial-text">"En tant que propriétaire, j'ai pu gérer facilement mes logements et recevoir des demandes de qualité. La plateforme m'a vraiment aidé à rentabiliser mon investissement."</p>
+                    <div class="testimonial-stars"><span *ngFor="let s of [1,2,3,4]">⭐</span></div>
+                    <p class="testimonial-text">{{ 'testimonials.t3_text' | translate }}</p>
                     <div class="testimonial-author">
-                        <div class="author-avatar orange-av">BM</div>
+                        <div class="author-avatar orange-av">BE</div>
                         <div>
                             <div class="author-name">Boris Ebenezer</div>
-                            <div class="author-role">Propriétaire – Résidence Les Palmiers</div>
+                            <div class="author-role">{{ 'testimonials.t3_role' | translate }}</div>
                         </div>
                     </div>
                 </div>
@@ -265,41 +326,41 @@
         </div>
     </section>
 
-    <!-- ===== FAQ as CARDS ===== -->
+    <!-- FAQ -->
     <section class="faq-section">
         <div class="faq-container">
-            <h2 class="why-title">Vous avez des questions ?</h2>
-            <p class="why-subtitle">Retrouvez les réponses aux questions les plus fréquemment posées par nos utilisateurs.</p>
+            <h2 class="why-title">{{ 'faq.title' | translate }}</h2>
+            <p class="why-subtitle">{{ 'faq.subtitle' | translate }}</p>
 
             <div class="faq-cards-grid">
                 <div class="faq-card" *ngFor="let faq of faqs; let i = index" (click)="toggleFaq(i)" [class.open]="faq.open">
                     <div class="faq-card-header">
-                        <div class="faq-card-icon">
-                            <span>?</span>
-                        </div>
-                        <span class="faq-card-question">{{faq.question}}</span>
+                        <div class="faq-card-icon"><span>?</span></div>
+                        <span class="faq-card-question">{{ faq.question }}</span>
                         <span class="faq-toggle-icon" [class.open]="faq.open">+</span>
                     </div>
                     <div class="faq-card-answer" [class.visible]="faq.open">
-                        <p>{{faq.answer}}</p>
+                        <p>{{ faq.answer }}</p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ===== CTA CONTACT ===== -->
+    <!-- CTA -->
     <section class="cta-section">
         <div class="cta-bg"></div>
         <div class="cta-content">
-            <h2 class="cta-title">Vous avez un projet ou une question ?</h2>
-            <p class="cta-subtitle">Que vous soyez étudiant, propriétaire ou partenaire, notre équipe est là pour vous accompagner.</p>
+            <h2 class="cta-title">{{ 'cta.title' | translate }}</h2>
+            <p class="cta-subtitle">{{ 'cta.subtitle' | translate }}</p>
             <div class="cta-buttons">
                 <a routerLink="/contact" class="cta-btn-primary">
                     <lucide-icon [img]="MessageSquareIcon" class="btn-icon"></lucide-icon>
-                    Contactez-nous
+                    {{ 'cta.contact_btn' | translate }}
                 </a>
-                <button class="cta-btn-outline" (click)="scrollToListings()">Voir les logements</button>
+                <button class="cta-btn-outline" (click)="scrollToListings()">
+                  {{ 'cta.listings_btn' | translate }}
+                </button>
             </div>
         </div>
     </section>
