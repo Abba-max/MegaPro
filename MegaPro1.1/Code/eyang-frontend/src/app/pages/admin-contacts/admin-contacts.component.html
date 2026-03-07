@@ -1,0 +1,58 @@
+<div class="toast-container">
+    <div *ngFor="let t of toasts" class="toast" [class]="'toast-' + t.type" (click)="dismissToast(t.id)">
+        <lucide-icon [img]="CheckCircleIcon" class="toast-icon" *ngIf="t.type==='success'"></lucide-icon>
+        <lucide-icon [img]="XCircleIcon" class="toast-icon" *ngIf="t.type==='error'"></lucide-icon>
+        <lucide-icon [img]="InfoIcon" class="toast-icon" *ngIf="t.type==='info'"></lucide-icon>
+        <lucide-icon [img]="AlertIcon" class="toast-icon" *ngIf="t.type==='warning'"></lucide-icon>
+        <span class="toast-msg">{{ t.message }}</span>
+        <span class="toast-close">×</span>
+    </div>
+</div>
+
+<div class="page-header">
+    <h1 class="page-title">Demandes de contact</h1>
+</div>
+
+<div *ngIf="isLoading" class="loader-center">
+    <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
+    <span>Chargement…</span>
+</div>
+
+<ng-container *ngIf="!isLoading">
+    <div class="toolbar-bar">
+        <div class="search-input-group">
+            <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
+            <input type="text" [(ngModel)]="searchQuery" (input)="applyFilter()"
+                placeholder="Rechercher par nom, email, logement…" class="search-input">
+        </div>
+        <span class="total-counter">{{ filtered.length }} demande{{ filtered.length !== 1 ? 's' : '' }}</span>
+    </div>
+
+    <p *ngIf="filtered.length === 0" class="empty-row">Aucune demande de contact trouvée.</p>
+
+    <div class="contacts-grid">
+        <div class="contact-card fade-in" *ngFor="let c of filtered">
+            <div class="contact-card-header">
+                <div>
+                    <div class="contact-name">{{ c.name }}</div>
+                    <div class="contact-estate" *ngIf="c.estate_name">🏠 {{ c.estate_name }}</div>
+                </div>
+                <div class="contact-header-right">
+                    <span class="contact-date">{{ formatDate(c.submitted_at) }}</span>
+                    <button class="icon-btn danger" (click)="delete(c)" title="Supprimer">
+                        <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
+                    </button>
+                </div>
+            </div>
+            <div class="contact-meta">
+                <lucide-icon [img]="MailIcon" class="meta-icon-sm"></lucide-icon>
+                {{ c.email }}
+            </div>
+            <div class="contact-meta" *ngIf="c.phone">
+                <lucide-icon [img]="PhoneIcon" class="meta-icon-sm"></lucide-icon>
+                {{ c.phone }}
+            </div>
+            <p class="contact-msg">"{{ c.message }}"</p>
+        </div>
+    </div>
+</ng-container>

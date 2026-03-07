@@ -1,20 +1,53 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit } from '@angular/core';
+import { CommonModule, DatePipe } from '@angular/common';
+import { LucideAngularModule, BarChart3, Users, Home, Star, Calendar, Loader } from 'lucide-angular';
+import { EstateService, AdminStats } from '../../services/estate.service';
+import { catchError, of } from 'rxjs';
 
 @Component({
   selector: 'app-admin-reports',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, DatePipe, LucideAngularModule],
   templateUrl: './admin-reports.component.html',
   styleUrl: './admin-reports.component.css'
 })
-export class AdminReportsComponent {
-  months = [
-    { name: 'Jan', value: '2.5M' },
-    { name: 'Fév', value: '3.2M' },
-    { name: 'Mar', value: '2.1M' },
-    { name: 'Avr', value: '3.8M' },
-    { name: 'Mai', value: '3.4M' },
-    { name: 'Juin', value: '4.2M' }
-  ];
+export class AdminReportsComponent implements OnInit {
+  readonly BarChartIcon = BarChart3;
+  readonly UsersIcon    = Users;
+  readonly HomeIcon     = Home;
+  readonly StarIcon     = Star;
+  readonly CalendarIcon = Calendar;
+  readonly LoaderIcon   = Loader;
+
+  isLoading = true;
+  data: AdminStats | null = null;
+  chartMax  = 1;
+
+  constructor(private estateService: EstateService) {}
+
+  ngOnInit(): void {
+    this.estateService.getAdminStats()
+      .pipe(catchError(() => of(null)))
+      .subscribe(d => {
+        this.data     = d as AdminStats | null;
+        this.chartMax = Math.max(...(d?.monthly_orders?.map(m => m.value) ?? [1]), 1);
+        this.isLoading = false;
+      });
+  }
+
+  getBarHeight(value: number): number {
+    return Math.round((value / this.chartMax) * 100);
+  }
+
+  getAvgOrders(): string {
+    if (!this.data || this.data.monthly_orders.length === 0) return '–';
+    const total = this.data.monthly_orders.reduce((acc, m) => acc + m.value, 0);
+    return (total / this.data.monthly_orders.length).toFixed(1);
+  }
+
+  getPeakMonth(): string {
+    if (!this.data || this.data.monthly_orders.length === 0) return '–';
+    const peak = this.data.monthly_orders.reduce((a, b) => a.value > b.value ? a : b);
+    return `${peak.month} (${peak.value})`;
+  }
 }

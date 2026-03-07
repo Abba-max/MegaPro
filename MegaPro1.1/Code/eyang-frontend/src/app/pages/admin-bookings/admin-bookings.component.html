@@ -1,40 +1,73 @@
-<div class="page-header">
-    <h1 class="page-title">Gestion des réservations</h1>
+<!-- Toast -->
+<div class="toast-container">
+    <div *ngFor="let t of toasts" class="toast" [class]="'toast-' + t.type" (click)="dismissToast(t.id)">
+        <lucide-icon [img]="CheckCircleIcon" class="toast-icon" *ngIf="t.type==='success'"></lucide-icon>
+        <lucide-icon [img]="XCircleIcon" class="toast-icon" *ngIf="t.type==='error'"></lucide-icon>
+        <lucide-icon [img]="InfoIcon" class="toast-icon" *ngIf="t.type==='info'"></lucide-icon>
+        <lucide-icon [img]="AlertIcon" class="toast-icon" *ngIf="t.type==='warning'"></lucide-icon>
+        <span class="toast-msg">{{ t.message }}</span>
+        <span class="toast-close">×</span>
+    </div>
 </div>
 
-<div class="card mt-8">
+<div class="page-header">
+<h1 class="page-title">Gestion des réservations</h1>
+</div>
+<div *ngIf="isLoading" class="loader-center">
+    <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
+    <span>Chargement…</span>
+</div>
+
+<div class="card mt-8" *ngIf="!isLoading">
+    <div class="toolbar">
+        <div class="search-input-group">
+            <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
+            <input type="text" [(ngModel)]="searchQuery" (input)="applyFilter()"
+                placeholder="Rechercher par nom, logement, téléphone…" class="search-input">
+        </div>
+        <span class="total-counter">{{ filtered.length }} réservation{{ filtered.length !== 1 ? 's' : '' }}</span>
+    </div>
+
     <table class="table">
         <thead>
             <tr>
                 <th>LOGEMENT</th>
                 <th>CLIENT</th>
+                <th>TÉLÉPHONE</th>
                 <th>DATE</th>
-                <th>STATUT</th>
+                <th>NOTE</th>
                 <th class="text-right">ACTIONS</th>
             </tr>
         </thead>
         <tbody>
-            <tr *ngFor="let booking of bookings" class="fade-in">
+            <tr *ngFor="let b of filtered" class="fade-in">
                 <td data-label="LOGEMENT">
-                    <span class="booking-title">{{booking.property}}</span>
+                    <span class="booking-title">{{ b.estate_name || 'Logement #' + b.estate }}</span>
                 </td>
-                <td data-label="CLIENT"><span class="text-sm">{{booking.client}}</span></td>
-                <td data-label="DATE"><span class="text-sm">{{booking.date}}</span></td>
-                <td data-label="STATUT">
-                    <span class="status-badge" [class.pending]="booking.status === 'En attente'"
-                        [class.accepted]="booking.status === 'Acceptée'"
-                        [class.refused]="booking.status === 'Refusée'">
-                        {{booking.status}}
-                    </span>
+                <td data-label="CLIENT">
+                    <div>
+                        <div class="booking-title">{{ b.name }}</div>
+                        <div class="meta-sub" *ngIf="b.user_email">{{ b.user_email }}</div>
+                    </div>
+                </td>
+                <td data-label="TÉLÉPHONE"><span class="text-sm">{{ b.phone }}</span></td>
+                <td data-label="DATE"><span class="text-sm">{{ formatDate(b.created_at || '') }}</span></td>
+                <td data-label="NOTE">
+                    <span class="note-text" *ngIf="b.note">"{{ b.note }}"</span>
+                    <span class="text-sm" *ngIf="!b.note">–</span>
                 </td>
                 <td class="text-right" data-label="ACTIONS">
-                    <div class="action-buttons" *ngIf="booking.status === 'En attente'">
-                        <button class="action-link accept-link">Accepter</button>
-                        <button class="action-link refuse-link">Refuser</button>
+                    <div class="action-buttons">
+                        <span class="status-badge pending">En attente</span>
+                        <button class="icon-btn danger" (click)="delete(b)" title="Supprimer">
+                            <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
+                        </button>
                     </div>
-                    <span class="text-sm" *ngIf="booking.status !== 'En attente'">-</span>
                 </td>
             </tr>
-        </tbody>
+            <tr *ngIf="filtered.length === 0">
+                <td colspan="6" class="empty-row">Aucune réservation trouvée.</td>
+            </tr>
+    </tbody>
     </table>
 </div>

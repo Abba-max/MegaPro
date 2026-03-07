@@ -1,193 +1,235 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+// src/app/components/header/header.component.ts
+import { Component, Input, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { filter, take } from 'rxjs/operators';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   LucideAngularModule,
-  Search,
-  Bell,
-  MessageSquare,
-  ChevronDown,
-  ChevronRight,
-  Home,
-  Settings,
-  LayoutDashboard,
-  LogOut,
-  X,
-  GraduationCap,
-  Users,
-  Building
+  Search, Bell, MessageSquare, ChevronDown, ChevronRight,
+  Home, Settings, LayoutDashboard, LogOut, X,
+  GraduationCap, Users, Building, Globe
 } from 'lucide-angular';
 import { AuthService, User } from '../../services/auth.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, RouterModule, FormsModule],
+  imports: [CommonModule, LucideAngularModule, RouterModule, FormsModule, TranslateModule],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css'
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   @Input() isPublic = false;
-  @Input() isAdmin = false;
+  @Input() isAdmin  = false;
 
-  readonly SearchIcon = Search;
-  readonly BellIcon = Bell;
-  readonly MessageIcon = MessageSquare;
-  readonly ChevronDownIcon = ChevronDown;
-  readonly ChevronRightIcon = ChevronRight;
-  readonly HomeIcon = Home;
-  readonly SettingsIcon = Settings;
-  readonly DashboardIcon = LayoutDashboard;
-  readonly LogOutIcon = LogOut;
-  readonly XIcon = X;
+  // Icons
+  readonly SearchIcon        = Search;
+  readonly BellIcon          = Bell;
+  readonly MessageIcon       = MessageSquare;
+  readonly ChevronDownIcon   = ChevronDown;
+  readonly ChevronRightIcon  = ChevronRight;
+  readonly HomeIcon          = Home;
+  readonly SettingsIcon      = Settings;
+  readonly DashboardIcon     = LayoutDashboard;
+  readonly LogOutIcon        = LogOut;
+  readonly XIcon             = X;
   readonly GraduationCapIcon = GraduationCap;
-  readonly UsersIcon = Users;
-  readonly BuildingIcon = Building;
+  readonly UsersIcon         = Users;
+  readonly BuildingIcon      = Building;
+  readonly GlobeIcon         = Globe;
 
+  // State
   currentUser: User | null = null;
-  showMenu = false;
-  showLoginModal = false;
+  showMenu        = false;
+  showLoginModal  = false;
   showSignupModal = false;
+  isLoggingIn     = false;
+  isSigningUp     = false;
+  currentLang     = 'fr';
 
-  // Login Form
-  loginEmail = '';
+  // Login form
+  loginEmail    = '';
   loginPassword = '';
-  loginError = '';
+  loginError    = '';
 
-  // Signup Form
+  // Signup form
   signupForm = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    password: '',
+    firstName:   '',
+    lastName:    '',
+    email:       '',
+    phone:       '',
+    password:    '',
     accountType: 'Student' as 'Student' | 'Parent' | 'Owner'
   };
   signupError = '';
 
-  private loginSub: Subscription | null = null;
+  private subs: Subscription[] = [];
 
   constructor(
     private authService: AuthService,
-    private router: Router
-  ) { }
+    private router: Router,
+    private translate: TranslateService
+  ) {}
 
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-    });
+    const saved = localStorage.getItem('lang') ?? 'fr';
+    this.currentLang = saved;
+    this.translate.use(saved);
 
-    this.loginSub = this.authService.showLoginModal$.subscribe(show => {
-      this.showLoginModal = show;
-      if (!show) {
-        this.loginError = '';
-        this.loginEmail = '';
-        this.loginPassword = '';
-      }
-    });
+    this.subs.push(
+      this.authService.currentUser$.subscribe(user => {
+        this.currentUser = user;
+      })
+    );
+
+    this.subs.push(
+      this.authService.showLoginModal$.subscribe(show => {
+        this.showLoginModal = show;
+        if (!show) {
+          this.loginError    = '';
+          this.loginEmail    = '';
+          this.loginPassword = '';
+        }
+      })
+    );
   }
 
-  ngOnDestroy() {
-    if (this.loginSub) {
-      this.loginSub.unsubscribe();
+  ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
+
+  // ── Language ──────────────────────────────────────────────────────────
+  toggleLang(): void {
+    this.currentLang = this.currentLang === 'fr' ? 'en' : 'fr';
+    this.translate.use(this.currentLang);
+    localStorage.setItem('lang', this.currentLang);
+  }
+
+  scrollTo(id: string): void {
+    document.querySelector('.' + id + '-section')?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  toggleMenu(): void { this.showMenu = !this.showMenu; }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(e: Event): void {
+    if (!(e.target as HTMLElement).closest('.user-profile-container')) {
+      this.showMenu = false;
     }
   }
-  scrollTo(id: string) { document.querySelector('.' + id + '-section')?.scrollIntoView({ behavior: 'smooth' }) }
 
-  toggleMenu() {
-    this.showMenu = !this.showMenu;
-  }
-
-  onLogout() {
+  onLogout(): void {
     this.authService.logout();
     this.showMenu = false;
     this.router.navigate(['/']);
   }
 
-  openLogin() {
-    this.authService.openLogin();
-  }
+  // ── Modal controls ────────────────────────────────────────────────────
+  openLogin():      void { this.authService.openLogin(); }
+  closeLogin():     void { this.authService.closeLogin(); }
+  openSignup():     void { this.showSignupModal = true;  this.authService.closeLogin(); }
+  closeSignup():    void { this.showSignupModal = false; this.signupError = ''; this.resetSignupForm(); }
+  switchToSignup(): void { this.closeLogin();  this.openSignup(); }
+  switchToLogin():  void { this.closeSignup(); this.openLogin();  }
 
-  closeLogin() {
-    this.authService.closeLogin();
-  }
-
-  openSignup() {
-    this.showSignupModal = true;
-    this.showLoginModal = false;
-  }
-
-  closeSignup() {
-    this.showSignupModal = false;
-    this.signupError = '';
-    this.signupForm = {
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: '',
-      password: '',
-      accountType: 'Student'
-    };
-  }
-
-  switchToLogin() {
-    this.closeSignup();
-    this.openLogin();
-  }
-
-  switchToSignup() {
-    this.closeLogin();
-    this.openSignup();
-  }
-
-  handleSignup() {
-    if (!this.signupForm.firstName || !this.signupForm.lastName || !this.signupForm.email || !this.signupForm.phone || !this.signupForm.password) {
-      this.signupError = 'Veuillez remplir tous les champs';
+  // ── Login — wait for fetchMe() to complete before redirecting ─────────
+  handleLogin(): void {
+    this.loginError = '';
+    if (!this.loginEmail || !this.loginPassword) {
+      this.loginError = this.currentLang === 'fr'
+        ? 'Veuillez remplir tous les champs.'
+        : 'Please fill in all fields.';
       return;
     }
 
-    // Simulate registration
-    const fullName = `${this.signupForm.firstName} ${this.signupForm.lastName}`;
-    const initials = `${this.signupForm.firstName[0]}${this.signupForm.lastName[0]}`.toUpperCase();
-    
-    // Create user based on account type
-    const user: User = {
-      name: fullName,
-      email: this.signupForm.email,
-      role: this.signupForm.accountType === 'Student' ? 'Student' : this.signupForm.accountType === 'Parent' ? 'Student' : 'Owner',
-      initials: initials
-    };
+    this.isLoggingIn = true;
+    this.authService.login(this.loginEmail, this.loginPassword).subscribe({
+      next: () => {
+        this.authService.closeLogin();
+        this.loginEmail    = '';
+        this.loginPassword = '';
 
-    // Auto-login after signup
-    this.authService.setUser(user);
-    this.closeSignup();
-    
-    // Redirect based on role
-    if (user.role === 'Admin') {
-      this.router.navigate(['/admin/overview']);
-    } else if (user.role === 'Owner') {
-      this.router.navigate(['/dashboard']);
-    } else {
-      this.router.navigate(['/dashboard']);
-    }
+        // ✅ Wait for currentUser$ to emit a non-null value (fetchMe resolved)
+        // then redirect based on actual role — no more setTimeout race condition
+        this.authService.currentUser$.pipe(
+          filter(user => user !== null),
+          take(1)
+        ).subscribe(user => {
+          this.isLoggingIn = false;
+          if (user!.role === 'Admin') {
+            this.router.navigate(['/admin/overview']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
+        });
+      },
+      error: () => {
+        this.isLoggingIn = false;
+        this.loginError = this.currentLang === 'fr'
+          ? 'Email ou mot de passe incorrect.'
+          : 'Invalid email or password.';
+      }
+    });
   }
 
-  handleLogin() {
-    if (this.authService.login(this.loginEmail, this.loginPassword)) {
-      this.authService.closeLogin();
-      // Role-based redirection logic
-      if (this.currentUser?.role === 'Admin') {
-        this.router.navigate(['/admin/overview']);
-      } else if (this.currentUser?.role === 'Owner') {
-        this.router.navigate(['/dashboard']);
-      } else {
-        // Student stays on current page or goes to dashboard
-        this.router.navigate(['/dashboard']);
-      }
-    } else {
-      this.loginError = 'Identifiants invalides';
+  // ── Sign up ───────────────────────────────────────────────────────────
+  handleSignup(): void {
+    this.signupError = '';
+    const f = this.signupForm;
+    if (!f.firstName || !f.lastName || !f.email || !f.password) {
+      this.signupError = this.currentLang === 'fr'
+        ? 'Veuillez remplir tous les champs obligatoires.'
+        : 'Please fill in all required fields.';
+      return;
     }
+
+    this.isSigningUp = true;
+    this.authService.register({
+      email:       f.email,
+      password:    f.password,
+      firstName:   f.firstName,
+      lastName:    f.lastName,
+      phone:       f.phone,
+      accountType: f.accountType,
+    }).subscribe({
+      next: () => {
+        this.closeSignup();
+        this.authService.currentUser$.pipe(
+          filter(user => user !== null),
+          take(1)
+        ).subscribe(user => {
+          this.isSigningUp = false;
+          if (user!.role === 'Admin') {
+            this.router.navigate(['/admin/overview']);
+          } else {
+            this.router.navigate(['/dashboard']);
+          }
+        });
+      },
+      error: (err: any) => {
+        this.isSigningUp = false;
+        const msg = err?.error?.email?.[0]
+          ?? err?.error?.username?.[0]
+          ?? (this.currentLang === 'fr' ? 'Erreur lors de l\'inscription.' : 'Registration error.');
+        this.signupError = msg;
+      }
+    });
+  }
+
+  // ── Helpers ───────────────────────────────────────────────────────────
+  getRoleLabel(role: string): string {
+    const labels: Record<string, Record<string, string>> = {
+      fr: { Student: 'Étudiant', Parent: 'Parent', Owner: 'Bailleur', Admin: 'Admin' },
+      en: { Student: 'Student',  Parent: 'Parent', Owner: 'Owner',    Admin: 'Admin' },
+    };
+    return labels[this.currentLang]?.[role] ?? role;
+  }
+
+  private resetSignupForm(): void {
+    this.signupForm = {
+      firstName: '', lastName: '', email: '',
+      phone: '', password: '', accountType: 'Student'
+    };
   }
 }

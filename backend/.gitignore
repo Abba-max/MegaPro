@@ -1,3 +1,5 @@
 .env
 .static/assets/img
 ../archive/
+static_root/
+static_cdn/

@@ -1,59 +1,174 @@
-<div class="page-header">
-    <div class="flex justify-between items-center w-full">
-        <div>
-            <h1 class="page-title">Gestion des utilisateurs</h1>
-        </div>
-        <button class="btn btn-primary">
-            <lucide-icon [img]="PlusIcon" class="icon-sm mr-2"></lucide-icon>
-            Ajouter
-        </button>
+<!-- Toasts -->
+<div class="toast-container">
+    <div *ngFor="let t of toasts" class="toast" [class]="'toast-' + t.type" (click)="dismissToast(t.id)">
+        <lucide-icon [img]="CheckCircleIcon" class="toast-icon" *ngIf="t.type==='success'"></lucide-icon>
+        <lucide-icon [img]="XCircleIcon" class="toast-icon" *ngIf="t.type==='error'"></lucide-icon>
+        <lucide-icon [img]="InfoIcon" class="toast-icon" *ngIf="t.type==='info'"></lucide-icon>
+        <lucide-icon [img]="AlertIcon" class="toast-icon" *ngIf="t.type==='warning'"></lucide-icon>
+        <span class="toast-msg">{{ t.message }}</span>
+        <span class="toast-close">×</span>
     </div>
 </div>
 
-    <div class="card mt-8">
-    <div class="p-4 border-b bg-gray-50">
+<!-- Header -->
+<div class="page-header page-header-row">
+    <h1 class="page-title">Gestion des utilisateurs</h1>
+<button class="btn-add" (click)="openCreate()">
+    <lucide-icon [img]="PlusIcon" class="icon-btn-sm"></lucide-icon>
+    Nouvel utilisateur
+</button>
+</div>
+<!-- Loading -->
+<div *ngIf="isLoading" class="loader-center mt-8">
+    <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
+    <span>Chargement…</span>
+</div>
+
+<!-- Table Card -->
+<div class="card mt-8" *ngIf="!isLoading">
+    <div class="toolbar">
         <div class="search-input-group">
             <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
-            <input type="text" placeholder="Rechercher un utilisateur..." class="search-input">
-        </div>
+    <input type="text" [(ngModel)]="searchQuery" (input)="applyFilter()" placeholder="Rechercher par nom ou email…"
+        class="search-input">
     </div>
+    <select class="select-input" [(ngModel)]="filterType" (change)="applyFilter()">
+        <option value="">Tous les rôles</option>
+        <option *ngFor="let t of userTypes" [value]="t">{{ t }}</option>
+    </select>
+    <span class="total-counter">{{ filtered.length }} utilisateur{{ filtered.length !== 1 ? 's' : '' }}</span>
+</div>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Utilisateur</th>
-                <th>Email</th>
-                <th>Type</th>
-                <th>Statut</th>
-                <th class="text-right">Actions</th>
-            </tr>
+<table class="table">
+    <thead>
+        <tr>
+        <th>UTILISATEUR</th>
+        <th>EMAIL</th>
+        <th>RÔLE</th>
+        <th>INSCRIPTION</th>
+        <th>STATUT</th>
+        <th class="text-right">ACTIONS</th>
+        </tr>
         </thead>
         <tbody>
-            <tr *ngFor="let u of users" class="fade-in">
-                <td data-label="Utilisateur">
-                    <div class="user-cell">
-                        <div class="avatar-sm" [style.background]="u.color">{{u.initials}}</div>
-                        <span class="user-name">{{u.name}}</span>
-                    </div>
-                </td>
-                <td data-label="Email"><span class="text-sm">{{u.email}}</span></td>
-                <td data-label="Type">
-                    <div class="role-badge" [class.student]="u.type === 'Étudiant'"
-                        [class.parent]="u.type === 'Parent'"
-                        [class.owner]="u.type === 'Propriétaire'"
-                        [class.admin]="u.type === 'Admin'">
-                        <span>{{u.type}}</span>
-                    </div>
-                </td>
-                <td data-label="Statut">
-                    <span class="badge badge-success">
-                        {{u.active ? 'Actif' : 'Inactif'}}
-                    </span>
-                </td>
-                <td class="text-right" data-label="Actions">
-                    <button class="action-link" *ngIf="u.active">Désactiver</button>
-                </td>
-            </tr>
-        </tbody>
+    <tr *ngFor="let u of filtered" class="fade-in">
+        <td data-label="UTILISATEUR">
+            <div class="user-cell">
+            <div class="user-avatar" [style.background]="u.color">{{ u.initials }}</div>
+            <span class="booking-title">{{ u.name }}</span>
+            </div>
+            </td>
+        <td data-label="EMAIL"><span class="text-sm">{{ u.email }}</span></td>
+        <td data-label="RÔLE">
+            <span class="role-badge" [style.background]="u.color + '20'" [style.color]="u.color">{{ u.type }}</span>
+        </td>
+        <td data-label="INSCRIPTION"><span class="text-sm">{{ u.joined }}</span></td>
+        <td data-label="STATUT">
+            <span [class]="u.active ? 'active-badge' : 'inactive-badge'">
+                {{ u.active ? 'Actif' : 'Inactif' }}
+            </span>
+        </td>
+        <td class="text-right" data-label="ACTIONS">
+            <div class="action-buttons">
+                <!-- Toggle active -->
+                <button class="toggle-btn" [class.on]="u.active" (click)="toggle(u)"
+                    [title]="u.active ? 'Désactiver' : 'Activer'">
+                    <lucide-icon [img]="u.active ? ToggleOnIcon : ToggleOffIcon" class="toggle-icon"></lucide-icon>
+                </button>
+                <!-- Edit -->
+                <button class="icon-btn" (click)="openEdit(u)" title="Modifier">
+                    <lucide-icon [img]="PencilIcon" class="icon-xs"></lucide-icon>
+                </button>
+                <!-- Delete -->
+                <button class="icon-btn danger" (click)="confirmDelete(u)" title="Supprimer">
+                    <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
+                </button>
+            </div>
+        </td>
+        </tr>
+    <tr *ngIf="filtered.length === 0">
+        <td colspan="6" class="empty-row">Aucun utilisateur trouvé.</td>
+    </tr>
+    </tbody>
     </table>
+</div>
+<!-- ══ Create / Edit Modal ══════════════════════════════════════ -->
+<div class="modal-overlay fade-in" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="closeModal()">
+            <lucide-icon [img]="CloseIcon" class="icon-xs"></lucide-icon>
+        </button>
+
+        <h2 class="modal-title">
+            {{ isEditMode ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}
+        </h2>
+
+        <div class="modal-form">
+            <div class="form-row-modal">
+                <div class="form-group">
+                    <label>Prénom</label>
+                    <input type="text" [(ngModel)]="form.firstName" class="input" placeholder="Jean">
+                </div>
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" [(ngModel)]="form.lastName" class="input" placeholder="Dupont">
+                </div>
+            </div>
+
+            <div class="form-group" *ngIf="!isEditMode">
+                <label>Nom d'utilisateur</label>
+                <input type="text" [(ngModel)]="form.username" class="input" placeholder="jean_dupont">
+            </div>
+
+            <div class="form-group">
+                <label>Email <span class="required">*</span></label>
+                <input type="email" [(ngModel)]="form.email" class="input" placeholder="jean@example.cm">
+            </div>
+
+            <div class="form-group">
+                <label>{{ isEditMode ? 'Nouveau mot de passe (optionnel)' : 'Mot de passe *' }}</label>
+                <div class="password-group">
+                    <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="form.password" class="input"
+                        placeholder="••••••••">
+                    <button class="eye-btn" type="button" (click)="showPassword = !showPassword">
+                        <lucide-icon [img]="showPassword ? EyeOffIcon : EyeIcon" class="icon-xs"></lucide-icon>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Rôle</label>
+                <select [(ngModel)]="form.role" class="select-input full-width">
+                    <option value="Student">Étudiant</option>
+                    <option value="Parent">Parent</option>
+                    <option value="Owner">Propriétaire</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="modal-actions">
+            <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+            <button class="btn-save-modal" (click)="saveUser()" [disabled]="isSaving">
+                <lucide-icon *ngIf="isSaving" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
+                <lucide-icon *ngIf="!isSaving" [img]="SaveIcon" class="icon-xs"></lucide-icon>
+                {{ isSaving ? 'Enregistrement…' : (isEditMode ? 'Mettre à jour' : 'Créer') }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Delete Confirm Modal ══════════════════════════════════════ -->
+<div class="modal-overlay fade-in" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+    <div class="modal-card modal-card-sm" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">Confirmer la suppression</h2>
+        <p class="delete-msg">
+            Êtes-vous sûr de vouloir supprimer <strong>{{ userToDelete?.name }}</strong> ?
+            Cette action est irréversible.
+        </p>
+        <div class="modal-actions">
+            <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
+            <button class="btn-delete" (click)="deleteUser()">Supprimer</button>
+        </div>
+    </div>
 </div>

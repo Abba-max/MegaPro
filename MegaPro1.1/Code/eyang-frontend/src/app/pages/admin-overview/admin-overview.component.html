@@ -1,55 +1,75 @@
 <div class="page-header">
-    <h1 class="page-title">Vue d'ensemble</h1>
+<h1 class="page-title">Vue d'ensemble</h1>
+</div>
+
+<!-- Loading -->
+<div *ngIf="isLoading" class="loader-center mt-8">
+    <lucide-icon [img]="TrendIcon" class="spin-icon"></lucide-icon>
+    <span>Chargement des données…</span>
+</div>
+
+<!-- Error -->
+<div *ngIf="!isLoading && hasError" class="error-banner mt-8">
+    <span>⚠️ Impossible de charger les données. Vérifiez la connexion au serveur.</span>
+    <button class="btn-retry" (click)="load()">Réessayer</button>
 </div>
 
 <!-- Stats Cards -->
-<div class="stats-cards-grid mt-8">
+<div class="stats-cards-grid mt-8" *ngIf="!isLoading && !hasError">
     <div class="stat-card" *ngFor="let stat of stats">
         <div class="stat-icon" [style.background]="stat.iconColor + '20'">
             <lucide-icon [img]="stat.icon" [style.color]="stat.iconColor"></lucide-icon>
         </div>
         <div class="stat-content">
-            <div class="stat-title">{{stat.title}}</div>
-            <div class="stat-value">{{stat.value}}</div>
-            <div class="stat-change" [class.positive]="stat.changeType === 'positive'"
-                [class.warning]="stat.changeType === 'warning'">
-                {{stat.change}}
-            </div>
+    <div class="stat-title">{{ stat.title }}</div>
+    <div class="stat-value">{{ stat.value }}</div>
+    <div class="stat-change" [class.positive]="stat.changeType === 'positive'"
+        [class.warning]="stat.changeType === 'warning'">
+        {{ stat.change }}
         </div>
-    </div>
+        </div>
+        </div>
 </div>
 
 <!-- Bottom Section -->
-<div class="bottom-section mt-8">
+<div class="bottom-section mt-8" *ngIf="!isLoading && !hasError">
+
     <!-- Recent Activity -->
     <div class="activity-card card">
         <h3 class="card-title">Activité récente</h3>
-        <div class="activity-list">
-            <div class="activity-item" *ngFor="let activity of recentActivities">
-                <div class="activity-icon" [style.color]="activity.iconColor">
-                    <lucide-icon [img]="activity.icon" class="icon-sm"></lucide-icon>
-                </div>
-                <div class="activity-content">
-                    <div class="activity-title">{{activity.title}}</div>
-                    <div class="activity-date">{{activity.date}}</div>
-                </div>
+    <div class="activity-list" *ngIf="recentActivities.length > 0; else noActivity">
+        <div class="activity-item" *ngFor="let activity of recentActivities">
+            <div class="activity-icon" [style.color]="activity.iconColor">
+                <lucide-icon [img]="activity.icon" class="icon-sm"></lucide-icon>
             </div>
+            <div class="activity-content">
+        <div class="activity-title">{{ activity.title }}</div>
+        <div class="activity-date">{{ activity.date }}</div>
         </div>
-    </div>
-
-    <!-- Monthly Reservations Chart -->
-    <div class="chart-card card">
-        <h3 class="card-title">Réservations par mois</h3>
-        <div class="chart-container">
-            <div class="chart-area">
-                <div class="chart-bars">
-                    <div class="chart-bar-item" *ngFor="let month of monthlyReservations">
-                        <div class="chart-bar" [style.height.%]="(month.value / 25) * 100"></div>
-                        <span class="chart-label">{{month.month}}</span>
-                    </div>
-                </div>
-            </div>
         </div>
-    </div>
+        </div>
+    <ng-template #noActivity>
+        <p class="no-data">Aucune activité récente.</p>
+    </ng-template>
 </div>
 
+<!-- Monthly Reservations Chart -->
+<div class="chart-card card">
+    <h3 class="card-title">Réservations par mois</h3>
+    <div class="chart-container" *ngIf="monthlyReservations.length > 0; else noChart">
+        <div class="chart-area">
+            <div class="chart-bars">
+                <div class="chart-bar-item" *ngFor="let month of monthlyReservations">
+            <span class="bar-val">{{ month.value }}</span>
+            <div class="chart-bar" [style.height.%]="barHeightPct(month.value)"></div>
+            <span class="chart-label">{{ month.month }}</span>
+            </div>
+            </div>
+            </div>
+            </div>
+    <ng-template #noChart>
+        <p class="no-data">Pas encore de données de réservations.</p>
+    </ng-template>
+    </div>
+
+</div>

@@ -1,45 +1,105 @@
+<div class="toast-container">
+    <div *ngFor="let t of toasts" class="toast" [class]="'toast-' + t.type" (click)="dismissToast(t.id)">
+        <lucide-icon [img]="CheckCircleIcon" class="toast-icon" *ngIf="t.type==='success'"></lucide-icon>
+        <lucide-icon [img]="XCircleIcon" class="toast-icon" *ngIf="t.type==='error'"></lucide-icon>
+        <lucide-icon [img]="InfoIcon" class="toast-icon" *ngIf="t.type==='info'"></lucide-icon>
+        <lucide-icon [img]="AlertIcon" class="toast-icon" *ngIf="t.type==='warning'"></lucide-icon>
+        <span class="toast-msg">{{ t.message }}</span>
+        <span class="toast-close">×</span>
+    </div>
+</div>
+
 <div class="page-header">
-    <h1 class="page-title">Paramètres</h1>
+<h1 class="page-title">Paramètres</h1>
 </div>
 
-<div class="settings-grid mt-8">
-    <!-- General Settings -->
-    <div class="card p-6">
-        <h2 class="card-title">Paramètres généraux</h2>
+<!-- ── Site Info ─────────────────────────────────────────────── -->
+<div class="settings-section mt-8">
+    <h2 class="settings-title">Informations du site</h2>
+    <div class="form-row">
         <div class="form-group">
-            <label>Nom de la plateforme</label>
-            <input type="text" value="Eyang Estate" class="input">
-        </div>
-        <div class="form-group">
-            <label>Email de contact</label>
-            <input type="email" value="contact@eyangestate.com" class="input">
-        </div>
-        <div class="form-group">
-            <label>Téléphone</label>
-            <input type="text" value="+237 6XX XXX XXX" class="input">
-        </div>
+    <label>Nom du site</label>
+    <input type="text" [(ngModel)]="siteSettings.siteName" class="input" placeholder="Ex: Eyang Estate">
     </div>
-
-    <!-- Notifications -->
-    <div class="card p-6">
-        <h2 class="card-title">Notifications</h2>
-        <div class="checkbox-group">
-            <label class="checkbox-item">
-                <input type="checkbox" checked>
-                <span>Notifications par email</span>
-            </label>
-            <label class="checkbox-item">
-                <input type="checkbox" checked>
-                <span>Nouvelles réservations</span>
-            </label>
-            <label class="checkbox-item">
-                <input type="checkbox" checked>
-                <span>Nouveaux avis</span>
-            </label>
-        </div>
+    <div class="form-group">
+        <label>Email de contact</label>
+    <input type="email" [(ngModel)]="siteSettings.siteEmail" class="input" placeholder="contact@example.cm">
     </div>
 </div>
+<div class="form-row">
+    <div class="form-group">
+        <label>Téléphone</label>
+    <input type="text" [(ngModel)]="siteSettings.sitePhone" class="input" placeholder="+237 6XX XXX XXX">
+    </div>
+    <div class="form-group">
+        <label>Adresse</label>
+        <input type="text" [(ngModel)]="siteSettings.siteAddress" class="input" placeholder="Yaoundé, Cameroun">
+    </div>
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <textarea [(ngModel)]="siteSettings.description" class="textarea" rows="3"
+            placeholder="Description de la plateforme…"></textarea>
+    </div>
+    </div>
 
-<div class="mt-8">
-    <button class="btn btn-primary btn-large">Enregistrer les modifications</button>
+<!-- ── Language ──────────────────────────────────────────────── -->
+<div class="settings-section">
+    <h2 class="settings-title">Langue de l'interface</h2>
+    <div class="lang-selector">
+        <button class="lang-option" [class.active]="selectedLang === 'fr'" (click)="selectedLang = 'fr'">
+            <span class="lang-flag">🇫🇷</span>
+            <span class="lang-name">Français</span>
+            <span class="lang-check" *ngIf="selectedLang === 'fr'">✓</span>
+        </button>
+        <button class="lang-option" [class.active]="selectedLang === 'en'" (click)="selectedLang = 'en'">
+            <span class="lang-flag">🇬🇧</span>
+            <span class="lang-name">English</span>
+            <span class="lang-check" *ngIf="selectedLang === 'en'">✓</span>
+        </button>
+    </div>
+    <p class="lang-hint">La langue sera appliquée à l'ensemble du site après enregistrement.</p>
 </div>
+
+<!-- ── Email Notifications ───────────────────────────────────── -->
+<div class="settings-section">
+    <h2 class="settings-title">Notifications email</h2>
+    <div class="notif-list">
+        <div class="notif-item">
+            <div class="notif-text">
+                <span class="notif-label">Nouvelle réservation</span>
+                <span class="notif-sub">Recevoir un email à chaque nouvelle demande de réservation</span>
+            </div>
+            <div class="toggle-wrapper" [class.on]="notifSettings.emailOnOrder"
+                (click)="notifSettings.emailOnOrder = !notifSettings.emailOnOrder">
+                <div class="toggle-knob"></div>
+            </div>
+        </div>
+        <div class="notif-item">
+            <div class="notif-text">
+                <span class="notif-label">Nouvel avis</span>
+                <span class="notif-sub">Recevoir un email à chaque nouvel avis publié</span>
+            </div>
+            <div class="toggle-wrapper" [class.on]="notifSettings.emailOnReview"
+                (click)="notifSettings.emailOnReview = !notifSettings.emailOnReview">
+                <div class="toggle-knob"></div>
+            </div>
+        </div>
+        <div class="notif-item">
+            <div class="notif-text">
+                <span class="notif-label">Demande de contact</span>
+                <span class="notif-sub">Recevoir un email à chaque nouvelle demande de contact</span>
+            </div>
+            <div class="toggle-wrapper" [class.on]="notifSettings.emailOnContact"
+                (click)="notifSettings.emailOnContact = !notifSettings.emailOnContact">
+                <div class="toggle-knob"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button class="btn-save" (click)="save()" [disabled]="isSaving">
+    <lucide-icon *ngIf="isSaving" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
+    <lucide-icon *ngIf="!isSaving" [img]="SaveIcon" class="icon-sm-btn"></lucide-icon>
+    {{ isSaving ? 'Enregistrement…' : 'Enregistrer et appliquer' }}
+</button>

@@ -1,6 +1,22 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Users, Home, Calendar, DollarSign, Calendar as CalendarIcon, Star } from 'lucide-angular';
+import {
+  LucideAngularModule, Users, Home, Calendar, Star,
+  ShoppingBag, TrendingUp
+} from 'lucide-angular';
+import { EstateService } from '../../services/estate.service';
+import { catchError, of } from 'rxjs';
+
+interface StatCard {
+  title: string; value: string; change: string;
+  changeType: 'positive' | 'warning' | 'neutral';
+  icon: any; iconColor: string;
+}
+interface Activity {
+  type: string; title: string; date: string;
+  icon: any; iconColor: string;
+}
+interface MonthBar { month: string; value: number; }
 
 @Component({
   selector: 'app-admin-overview',
@@ -9,93 +25,97 @@ import { LucideAngularModule, Users, Home, Calendar, DollarSign, Calendar as Cal
   templateUrl: './admin-overview.component.html',
   styleUrl: './admin-overview.component.css'
 })
-export class AdminOverviewComponent {
-  readonly UsersIcon = Users;
-  readonly HomeIcon = Home;
+export class AdminOverviewComponent implements OnInit {
+  readonly UsersIcon    = Users;
+  readonly HomeIcon     = Home;
   readonly CalendarIcon = Calendar;
-  readonly DollarSignIcon = DollarSign;
-  readonly StarIcon = Star;
+  readonly StarIcon     = Star;
+  readonly OrderIcon    = ShoppingBag;
+  readonly TrendIcon    = TrendingUp;
 
-  stats = [
-    {
-      title: 'Total utilisateurs',
-      value: '6',
-      change: '+ 12% ce mois',
-      changeType: 'positive',
-      icon: Users,
-      iconColor: '#3B82F6'
-    },
-    {
-      title: 'Logements',
-      value: '6',
-      change: '+ 5 nouveaux',
-      changeType: 'positive',
-      icon: Home,
-      iconColor: '#10B981'
-    },
-    {
-      title: 'Réservations',
-      value: '3',
-      change: '3 en attente',
-      changeType: 'warning',
-      icon: Calendar,
-      iconColor: '#F59E0B'
-    },
-    {
-      title: 'Revenus (FCFA)',
-      value: '40 000',
-      change: '+ 8% ce mois',
-      changeType: 'positive',
-      icon: DollarSign,
-      iconColor: '#8B5CF6'
-    }
-  ];
+  isLoading = true;
+  hasError  = false;
 
-  recentActivities = [
-    {
-      type: 'reservation',
-      title: 'Nouvelle réservation: Cité Universitaire Soa',
-      date: '22/01/2024',
-      icon: CalendarIcon,
-      iconColor: '#EF4444'
-    },
-    {
-      type: 'reservation',
-      title: 'Nouvelle réservation: Résidence Les Palmiers',
-      date: '20/01/2024',
-      icon: CalendarIcon,
-      iconColor: '#EF4444'
-    },
-    {
-      type: 'reservation',
-      title: 'Nouvelle réservation: Studio Ngoa-Ekelle',
-      date: '18/01/2024',
-      icon: CalendarIcon,
-      iconColor: '#EF4444'
-    },
-    {
-      type: 'review',
-      title: 'Nouvel avis de Paul N.',
-      date: '03/01/2024',
-      icon: Star,
-      iconColor: '#F59E0B'
-    },
-    {
-      type: 'review',
-      title: 'Nouvel avis de Sophie M.',
-      date: '02/01/2024',
-      icon: Star,
-      iconColor: '#F59E0B'
-    }
-  ];
+  stats: StatCard[]            = [];
+  recentActivities: Activity[] = [];
+  monthlyReservations: MonthBar[] = [];
+  maxMonthValue = 1;
 
-  monthlyReservations = [
-    { month: 'Jan', value: 12 },
-    { month: 'Fév', value: 15 },
-    { month: 'Mar', value: 10 },
-    { month: 'Avr', value: 18 },
-    { month: 'Mai', value: 20 },
-    { month: 'Juin', value: 22 }
-  ];
+  constructor(private estateService: EstateService) {}
+
+  ngOnInit(): void { this.load(); }
+
+  load(): void {
+    this.isLoading = true;
+    this.hasError  = false;
+
+    this.estateService.getAdminStats()
+      .pipe(catchError(() => { this.hasError = true; return of(null); }))
+      .subscribe(data => {
+        this.isLoading = false;
+        if (!data) return;
+
+        this.stats = [
+          {
+            title: 'Total utilisateurs',
+            value: String(data.total_users ?? 0),
+            change: 'Utilisateurs actifs',
+            changeType: 'positive',
+            icon: Users,
+            iconColor: '#3B82F6'
+          },
+          {
+            title: 'Logements',
+            value: String(data.total_estates ?? 0),
+            change: 'Logements enregistrés',
+            changeType: 'positive',
+            icon: Home,
+            iconColor: '#10B981'
+          },
+          {
+            title: 'Réservations',
+            value: String(data.total_orders ?? 0),
+            change: 'Total des réservations',
+            changeType: 'warning',
+            icon: Calendar,
+            iconColor: '#F59E0B'
+          },
+          {
+            title: 'Avis',
+            value: String(data.total_reviews ?? 0),
+            change: 'Total des avis',
+            changeType: 'positive',
+            icon: Star,
+            iconColor: '#8B5CF6'
+          }
+        ];
+
+        this.recentActivities = (data.recent_activities ?? []).map((a: any) => ({
+          type:      a.type,
+          title:     a.title,
+          date:      this.formatDate(a.created_at),
+          icon:      a.type === 'order' ? Calendar : Star,
+          iconColor: a.type === 'order' ? '#F59E0B' : '#8B5CF6'
+        }));
+
+        this.monthlyReservations = (data.monthly_orders ?? []).map((m: any) => ({
+          month: m.month,
+          value: m.value ?? 0
+        }));
+        this.maxMonthValue = Math.max(1, ...this.monthlyReservations.map(m => m.value));
+      });
+  }
+
+  barHeightPct(value: number): number {
+    return Math.max(4, Math.round((value / this.maxMonthValue) * 100));
+  }
+
+  private formatDate(iso: string): string {
+    if (!iso) return '';
+    try {
+      return new Date(iso).toLocaleDateString('fr-FR', {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      });
+    } catch { return iso; }
+  }
 }
-

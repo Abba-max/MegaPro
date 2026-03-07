@@ -1,3 +1,4 @@
+// src/app/services/auth.interceptor.ts
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
@@ -10,7 +11,6 @@ export const authInterceptor: HttpInterceptorFn = (
   const authService = inject(AuthService);
   const token = authService.getAccessToken();
 
-  
   const authReq = token && req.url.includes('localhost:8000')
     ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
     : req;
@@ -19,7 +19,7 @@ export const authInterceptor: HttpInterceptorFn = (
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401 && !req.url.includes('/api/token/')) {
         return authService.refreshToken().pipe(
-          switchMap(tokens => {
+          switchMap((tokens: { access: string; refresh?: string }) => {
             const retryReq = req.clone({
               setHeaders: { Authorization: `Bearer ${tokens.access}` }
             });

@@ -1,29 +1,317 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LucideAngularModule, Search, Filter, Plus, Home, MapPin, MoreHorizontal, Star } from 'lucide-angular';
+import { FormsModule } from '@angular/forms';
+import {
+  LucideAngularModule,
+  Search, Star, Trash2, Loader, CheckCircle, XCircle, Info, AlertCircle,
+  Globe, EyeOff, Archive, Plus, Pencil, X, Save, Home, Upload
+} from 'lucide-angular';
+import { EstateService, Estate, EstateRaw, EstateImage } from '../../services/estate.service';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { catchError, of } from 'rxjs';
+
+export interface Toast { id: number; type: 'success' | 'error' | 'info' | 'warning'; message: string; }
+
+interface EstateForm {
+  name:        string;
+  location:    string;
+  price:       number;
+  distance:    number;
+  capacity:    number;
+  free:        number;
+  room_size:   '1' | '2' | '3';
+  status:      'draft' | 'published' | 'archived';
+  description: string;
+  wifi:        '0' | '1';
+  generator:   '0' | '1';
+  forage:      '0' | '1';
+  restaurant:  '0' | '1';
+  tv:          '0' | '1';
+  fridge:      '0' | '1';
+}
 
 @Component({
   selector: 'app-admin-logements',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './admin-logements.component.html',
   styleUrl: './admin-logements.component.css'
 })
-export class AdminLogementsComponent {
-  readonly SearchIcon = Search;
-  readonly FilterIcon = Filter;
-  readonly PlusIcon = Plus;
-  readonly HomeIcon = Home;
-  readonly MapPinIcon = MapPin;
-  readonly MoreIcon = MoreHorizontal;
-  readonly StarIcon = Star;
+export class AdminLogementsComponent implements OnInit {
 
-  housings = [
-    { title: 'Résidence Les Palmiers', price: 45000, places: '2/8', rating: 4.5, status: 'Actif' },
-    { title: 'Cité Universitaire Soa', price: 35000, places: '5/20', rating: 4.0, status: 'Actif' },
-    { title: 'Studio Ngoa-Ekelle', price: 55000, places: '1/4', rating: 5.0, status: 'Actif' },
-    { title: 'Résidence Académie', price: 40000, places: '4/12', rating: 3.0, status: 'Actif' },
-    { title: 'Foyer des Étudiants', price: 25000, places: '8/50', rating: 0.0, status: 'Actif' },
-    { title: 'Villa Partagée Melen', price: 60000, places: '2/6', rating: 5.0, status: 'Actif' }
-  ];
+  // Icons
+  readonly SearchIcon      = Search;
+  readonly StarIcon        = Star;
+  readonly TrashIcon       = Trash2;
+  readonly LoaderIcon      = Loader;
+  readonly CheckCircleIcon = CheckCircle;
+  readonly XCircleIcon     = XCircle;
+  readonly InfoIcon        = Info;
+  readonly AlertIcon       = AlertCircle;
+  readonly PublishIcon     = Globe;
+  readonly UnpublishIcon   = EyeOff;
+  readonly ArchiveIcon     = Archive;
+  readonly PlusIcon        = Plus;
+  readonly PencilIcon      = Pencil;
+  readonly CloseIcon       = X;
+  readonly SaveIcon        = Save;
+  readonly HomeIcon        = Home;
+  readonly UploadIcon      = Upload;
+
+  private readonly API = 'http://localhost:8000';
+
+  // List state
+  isLoading    = true;
+  allHousings: Estate[] = [];
+  filtered:    Estate[] = [];
+  searchQuery  = '';
+  filterStatus = '';
+
+  // Modal state
+  showModal  = false;
+  isEditMode = false;
+  isSaving   = false;
+  editId: number | null = null;
+
+  // Delete state
+  showDeleteConfirm = false;
+  estateToDelete: Estate | null = null;
+
+  // Image state
+  selectedFiles:   File[]   = [];
+  previewImages:   string[] = [];
+  existingImages:  EstateImage[] = [];
+  removedImageIds: number[] = [];
+
+  form: EstateForm = this.emptyForm();
+
+  toasts: Toast[]      = [];
+  private toastCounter = 0;
+
+  constructor(
+    private estateService: EstateService,
+    private http: HttpClient
+  ) {}
+
+  ngOnInit(): void { this.load(); }
+
+  load(): void {
+    this.isLoading = true;
+    this.estateService.getEstates()
+      .pipe(catchError(() => { this.showToast('Erreur de chargement.', 'error'); return of([]); }))
+      .subscribe(data => {
+        this.allHousings = data as Estate[];
+        this.applyFilters();
+        this.isLoading = false;
+      });
+  }
+
+  applyFilters(): void {
+    const q = this.searchQuery.trim().toLowerCase();
+    this.filtered = this.allHousings.filter(h => {
+      const matchQ = !q || h.name.toLowerCase().includes(q) || h.location.toLowerCase().includes(q);
+      const matchS = !this.filterStatus || h.status === this.filterStatus;
+      return matchQ && matchS;
+    });
+  }
+
+  // ── Open create ───────────────────────────────────────────
+  openCreate(): void {
+    this.isEditMode      = false;
+    this.editId          = null;
+    this.form            = this.emptyForm();
+    this.selectedFiles   = [];
+    this.previewImages   = [];
+    this.existingImages  = [];
+    this.removedImageIds = [];
+    this.showModal       = true;
+  }
+
+  // ── Open edit ─────────────────────────────────────────────
+  openEdit(estate: Estate): void {
+    this.isEditMode = true;
+    this.editId     = estate.id;
+    this.form = {
+      name:        estate.name,
+      location:    estate.location,
+      price:       estate.price,
+      distance:    estate.distance,
+      capacity:    estate.capacity,
+      free:        estate.free,
+      room_size:   estate.room_size as '1' | '2' | '3',
+      status:      estate.status,
+      description: estate.description,
+      wifi:        estate.wifi       as '0' | '1',
+      generator:   estate.generator  as '0' | '1',
+      forage:      estate.forage     as '0' | '1',
+      restaurant:  estate.restaurant as '0' | '1',
+      tv:          estate.tv         as '0' | '1',
+      fridge:      estate.fridge     as '0' | '1',
+    };
+    this.existingImages  = [...(estate.images ?? [])];
+    this.selectedFiles   = [];
+    this.previewImages   = [];
+    this.removedImageIds = [];
+    this.showModal       = true;
+  }
+
+  closeModal(): void { this.showModal = false; }
+
+  // ── Image handling ────────────────────────────────────────
+  onFilesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files) return;
+    Array.from(input.files).forEach(file => {
+      this.selectedFiles.push(file);
+      const reader = new FileReader();
+      reader.onload = e => this.previewImages.push(e.target!.result as string);
+      reader.readAsDataURL(file);
+    });
+    input.value = '';
+  }
+
+  removePreview(index: number): void {
+    this.selectedFiles.splice(index, 1);
+    this.previewImages.splice(index, 1);
+  }
+
+  removeExisting(index: number): void {
+    const img = this.existingImages.splice(index, 1)[0];
+    if (img?.id) this.removedImageIds.push(img.id);
+  }
+
+  // ── Save (create or update) ───────────────────────────────
+  save(): void {
+    if (!this.form.name.trim())     { this.showToast('Le nom est obligatoire.', 'warning'); return; }
+    if (!this.form.location.trim()) { this.showToast('La localisation est obligatoire.', 'warning'); return; }
+    if (!this.form.price)           { this.showToast('Le prix est obligatoire.', 'warning'); return; }
+    if (!this.form.capacity)        { this.showToast('La capacité est obligatoire.', 'warning'); return; }
+
+    this.isSaving = true;
+
+    // Build payload as plain JSON (images handled separately)
+    const payload: Partial<EstateRaw> = {
+      name:        this.form.name,
+      location:    this.form.location,
+      price:       this.form.price,
+      distance:    this.form.distance,
+      capacity:    this.form.capacity,
+      free:        this.form.free,
+      room_size:   this.form.room_size,
+      status:      this.form.status,
+      description: this.form.description,
+      wifi:        this.form.wifi,
+      generator:   this.form.generator,
+      forage:      this.form.forage,
+      restaurant:  this.form.restaurant,
+      tv:          this.form.tv,
+      fridge:      this.form.fridge,
+    };
+
+    if (this.isEditMode && this.editId) {
+      this.estateService.updateEstate(this.editId, payload)
+        .pipe(catchError(err => {
+          this.showToast(err?.error?.detail ?? 'Erreur de mise à jour.', 'error');
+          this.isSaving = false;
+          return of(null);
+        }))
+        .subscribe(updated => {
+          if (!updated) return;
+          this.isSaving  = false;
+          this.showModal = false;
+          this.showToast(`"${updated.name}" mis à jour.`, 'success');
+          // Upload new images if any
+          if (this.selectedFiles.length) this.uploadImages(this.editId!);
+          this.load();
+        });
+    } else {
+      this.estateService.createEstate(payload)
+        .pipe(catchError(err => {
+          this.showToast(err?.error?.detail ?? 'Erreur de création.', 'error');
+          this.isSaving = false;
+          return of(null);
+        }))
+        .subscribe(created => {
+          if (!created) return;
+          this.isSaving  = false;
+          this.showModal = false;
+          this.showToast(`"${created.name}" créé avec succès.`, 'success');
+          if (this.selectedFiles.length) this.uploadImages(created.id);
+          this.load();
+        });
+    }
+  }
+
+  // ── Upload images separately ──────────────────────────────
+  private uploadImages(estateId: number): void {
+    const token   = localStorage.getItem('access_token') ?? '';
+    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
+    this.selectedFiles.forEach(file => {
+      const fd = new FormData();
+      fd.append('estate', String(estateId));
+      fd.append('image', file);
+      this.http.post(`${this.API}/api/estate-images/`, fd, { headers })
+        .pipe(catchError(() => of(null)))
+        .subscribe(() => this.load());
+    });
+  }
+
+  // ── Toggle publish ────────────────────────────────────────
+  togglePublish(estate: Estate): void {
+    const newStatus = estate.status === 'published' ? 'draft' : 'published';
+    const label     = newStatus === 'published' ? 'publié' : 'repassé en brouillon';
+    this.estateService.updateEstate(estate.id, { status: newStatus } as any)
+      .pipe(catchError(() => { this.showToast('Erreur lors de la mise à jour.', 'error'); return of(null); }))
+      .subscribe(updated => {
+        if (!updated) return;
+        const idx = this.allHousings.findIndex(h => h.id === estate.id);
+        if (idx !== -1) this.allHousings[idx] = { ...this.allHousings[idx], status: newStatus };
+        this.applyFilters();
+        this.showToast(`"${estate.name}" ${label}.`, 'success');
+      });
+  }
+
+  // ── Delete ────────────────────────────────────────────────
+  confirmDelete(estate: Estate): void {
+    this.estateToDelete    = estate;
+    this.showDeleteConfirm = true;
+  }
+
+  cancelDelete(): void {
+    this.estateToDelete    = null;
+    this.showDeleteConfirm = false;
+  }
+
+  deleteConfirmed(): void {
+    if (!this.estateToDelete) return;
+    this.isSaving = true;
+    this.estateService.deleteEstate(this.estateToDelete.id)
+      .pipe(catchError(() => { this.showToast('Erreur lors de la suppression.', 'error'); this.isSaving = false; return of(null); }))
+      .subscribe(() => {
+        this.allHousings = this.allHousings.filter(h => h.id !== this.estateToDelete!.id);
+        this.applyFilters();
+        this.showToast(`"${this.estateToDelete!.name}" supprimé.`, 'info');
+        this.isSaving = false;
+        this.cancelDelete();
+      });
+  }
+
+  getOccupied(e: Estate): number { return Math.max(0, e.capacity - e.free); }
+
+  private emptyForm(): EstateForm {
+    return {
+      name: '', location: '', price: 300000, distance: 500,
+      capacity: 1, free: 1, room_size: '2', status: 'draft',
+      description: '', wifi: '0', generator: '0',
+      forage: '0', restaurant: '0', tv: '0', fridge: '0',
+    };
+  }
+
+  dismissToast(id: number): void { this.toasts = this.toasts.filter(t => t.id !== id); }
+
+  showToast(message: string, type: Toast['type'] = 'success'): void {
+    const id = ++this.toastCounter;
+    this.toasts.push({ id, type, message });
+    setTimeout(() => this.toasts = this.toasts.filter(t => t.id !== id), 4000);
+  }
 }

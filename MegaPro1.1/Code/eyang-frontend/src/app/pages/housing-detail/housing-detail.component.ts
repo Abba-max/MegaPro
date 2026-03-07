@@ -1,4 +1,4 @@
-import { Component, OnInit, HostListener } from '@angular/core';
+import { Component, OnInit, HostListener, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -7,9 +7,10 @@ import {
   LucideAngularModule,
   MapPin, Star, Building, ChevronLeft, ChevronRight, Users, Bed, BedDouble,
   LayoutDashboard, Wifi, Zap, Droplets, Utensils, Calendar,
-  MessageSquare, Send, X, Images, Loader, CheckCircle, XCircle, AlertCircle
+  MessageSquare, Send, X, Images, Loader, CheckCircle, XCircle, AlertCircle,
+  Heart, Tv, Thermometer, Phone, Info
 } from 'lucide-angular';
-import { EstateService, Estate, Review } from '../../services/estate.service';
+import { EstateService, Estate, Review, Conversation } from '../../services/estate.service';
 import { AuthService, User } from '../../services/auth.service';
 
 export interface Toast {
@@ -26,6 +27,8 @@ export interface Toast {
   styleUrl: './housing-detail.component.css'
 })
 export class HousingDetailComponent implements OnInit {
+  @ViewChild('msgScroll') msgScroll!: ElementRef;
+
   readonly ChevronLeftIcon  = ChevronLeft;
   readonly ChevronRightIcon = ChevronRight;
   readonly MapPinIcon       = MapPin;
@@ -48,6 +51,11 @@ export class HousingDetailComponent implements OnInit {
   readonly CheckCircleIcon  = CheckCircle;
   readonly XCircleIcon      = XCircle;
   readonly AlertCircleIcon  = AlertCircle;
+  readonly HeartIcon        = Heart;
+  readonly TvIcon           = Tv;
+  readonly FridgeIcon       = Thermometer;
+  readonly PhoneIcon        = Phone;
+  readonly InfoIcon         = Info;
 
   housing: Estate | null = null;
   photos: string[] = [];
@@ -58,13 +66,23 @@ export class HousingDetailComponent implements OnInit {
   isSubmitting = false;
   submitSuccess = false;
 
-  activePhotoIndex = 0;
-  showLightbox     = false;
-  showContactModal = false;
+  activePhotoIndex   = 0;
+  showLightbox       = false;
+  showContactModal   = false;
+  showMessageModal   = false;
 
   contactForm = { name: '', phone: '', message: '' };
+  messageText = '';
+  isSendingMessage    = false;
+  isLoadingConversation = false;
+  activeConversation: Conversation | null = null;
 
-  // ── Toast ──────────────────────────────────────────────────
+  // ── Review form ──────────────────────────────────────────
+  showReviewForm    = false;
+  isSubmittingReview = false;
+  reviewForm        = { rating: 0, comment: '' };
+  reviewHover       = 0;
+
   toasts: Toast[] = [];
   private toastCounter = 0;
 
@@ -77,13 +95,21 @@ export class HousingDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe(u => this.currentUser = u);
+    this.authService.currentUser$.subscribe(u => {
+      this.currentUser = u;
+      // Pre-fill name from logged-in user if contact form is empty
+      if (u && !this.contactForm.name) {
+        this.contactForm.name = u.name || '';
+      }
+    });
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
       this.loadEstate(Number(id));
       this.loadReviews(Number(id));
     }
   }
+
+  // ── Toast helpers ─────────────────────────────────────────
 
   showToast(message: string, type: Toast['type'] = 'success'): void {
     const id = ++this.toastCounter;
@@ -94,6 +120,8 @@ export class HousingDetailComponent implements OnInit {
   dismissToast(id: number): void {
     this.toasts = this.toasts.filter(t => t.id !== id);
   }
+
+  // ── Data loading ──────────────────────────────────────────
 
   loadEstate(id: number): void {
     this.isLoading = true;
@@ -122,19 +150,157 @@ export class HousingDetailComponent implements OnInit {
 
   private buildEquipments(h: Estate): { name: string; icon: any; color: string }[] {
     const eq: { name: string; icon: any; color: string }[] = [];
-    if (h.wifi === '1')       eq.push({ name: 'WiFi',       icon: this.WifiIcon,     color: 'orange' });
-    if (h.generator === '1')  eq.push({ name: 'Générateur', icon: this.ZapIconRef,   color: 'yellow' });
-    if (h.forage === '1')     eq.push({ name: 'Forage',     icon: this.DropletsIcon, color: 'blue'   });
-    if (h.restaurant === '1') eq.push({ name: 'Restaurant', icon: this.UtensilsIcon, color: 'gray'   });
+    if (h.wifi === '1')       eq.push({ name: 'WiFi',          icon: this.WifiIcon,     color: 'orange' });
+    if (h.generator === '1')  eq.push({ name: 'Générateur',    icon: this.ZapIconRef,   color: 'yellow' });
+    if (h.forage === '1')     eq.push({ name: 'Forage / Eau',  icon: this.DropletsIcon, color: 'blue'   });
+    if (h.restaurant === '1') eq.push({ name: 'Restaurant',    icon: this.UtensilsIcon, color: 'brown'  });
+    if (h.tv === '1')         eq.push({ name: 'Télévision',    icon: this.TvIcon,       color: 'purple' });
+    if (h.fridge === '1')     eq.push({ name: 'Réfrigérateur', icon: this.FridgeIcon,   color: 'teal'   });
     return eq;
   }
+
+  // ── Star helpers ──────────────────────────────────────────
 
   getStarArray(rating: number | string): number[] {
     const n = Math.round(Number(rating));
     return Array(n > 0 ? n : 0).fill(0);
   }
 
+  getEmptyStarArray(rating: number | string): number[] {
+    const n = Math.round(Number(rating));
+    return Array(Math.max(0, 5 - n)).fill(0);
+  }
+
   getRatingAsNumber(rating: string): number { return Number(rating); }
+
+  // ── Review form ───────────────────────────────────────────
+
+  toggleReviewForm(): void {
+    this.showReviewForm = !this.showReviewForm;
+    if (!this.showReviewForm) {
+      this.reviewForm  = { rating: 0, comment: '' };
+      this.reviewHover = 0;
+    }
+  }
+
+  reviewRatingLabel(): string {
+    const labels: Record<number, string> = {
+      1: 'Très mauvais', 2: 'Mauvais', 3: 'Correct', 4: 'Bien', 5: 'Excellent'
+    };
+    return labels[this.reviewForm.rating] || '';
+  }
+
+  submitReview(): void {
+    if (!this.currentUser) {
+      this.showToast('Connectez-vous pour laisser un avis', 'info');
+      return;
+    }
+    if (!this.reviewForm.rating || !this.reviewForm.comment.trim()) {
+      this.showToast('Veuillez choisir une note et écrire un commentaire', 'warning');
+      return;
+    }
+    this.isSubmittingReview = true;
+    this.estateService.createReview({
+      estate:  this.housing!.id,
+      name:    this.currentUser.name || 'Anonyme',
+      rating:  this.reviewForm.rating,
+      comment: this.reviewForm.comment.trim(),
+    }).subscribe({
+      next: () => {
+        this.isSubmittingReview = false;
+        this.showToast('Avis publié avec succès !', 'success');
+        this.showReviewForm = false;
+        this.reviewForm     = { rating: 0, comment: '' };
+        this.loadReviews(this.housing!.id);
+      },
+      error: () => {
+        this.isSubmittingReview = false;
+        this.showToast('Erreur lors de la publication. Réessayez.', 'error');
+      }
+    });
+  }
+
+  // ── Like ──────────────────────────────────────────────────
+
+  likeReview(review: Review, event: Event): void {
+    event.stopPropagation();
+    if (!this.currentUser) {
+      this.showToast('Connectez-vous pour liker un avis', 'info');
+      return;
+    }
+    this.estateService.likeReview(review.id).subscribe({
+      next: (res) => {
+        review.likes_count = res.likes_count;
+        review.liked_by_me = res.liked;
+      },
+      error: () => this.showToast('Erreur lors du like', 'error')
+    });
+  }
+
+  // ── Messaging ─────────────────────────────────────────────
+
+  openMessageModal(): void {
+    if (!this.currentUser) {
+      this.showToast('Connectez-vous pour envoyer un message', 'info');
+      this.openLogin();
+      return;
+    }
+    if (!this.housing?.owner) {
+      this.showToast('Propriétaire introuvable', 'error');
+      return;
+    }
+    this.showMessageModal     = true;
+    this.isLoadingConversation = true;
+    this.activeConversation   = null;
+
+    this.estateService.startConversation(this.housing.id, this.housing.owner.id).subscribe({
+      next: (conv) => {
+        this.activeConversation    = conv;
+        this.isLoadingConversation = false;
+        setTimeout(() => this.scrollMessages(), 100);
+      },
+      error: () => {
+        this.isLoadingConversation = false;
+        this.showToast('Impossible d\'ouvrir la conversation', 'error');
+      }
+    });
+  }
+
+  closeMessageModal(): void {
+    this.showMessageModal      = false;
+    this.messageText           = '';
+    this.activeConversation    = null;
+    this.isLoadingConversation = false;
+  }
+
+  sendMessage(): void {
+    if (!this.messageText.trim() || !this.activeConversation || this.isSendingMessage) return;
+    this.isSendingMessage = true;
+    const text = this.messageText.trim();
+    this.messageText = '';
+
+    this.estateService.sendMessage(this.activeConversation.id, text).subscribe({
+      next: (msg) => {
+        this.activeConversation!.messages.push(msg);
+        this.isSendingMessage = false;
+        setTimeout(() => this.scrollMessages(), 50);
+      },
+      error: () => {
+        this.isSendingMessage = false;
+        this.messageText = text; // restore on failure
+        this.showToast('Erreur lors de l\'envoi', 'error');
+      }
+    });
+  }
+
+  private scrollMessages(): void {
+    try {
+      const el = this.msgScroll?.nativeElement;
+      if (el) el.scrollTop = el.scrollHeight;
+    } catch {}
+  }
+
+  // ── Navigation ────────────────────────────────────────────
 
   @HostListener('document:keydown', ['$event'])
   onKeydown(event: KeyboardEvent) {
@@ -154,28 +320,31 @@ export class HousingDetailComponent implements OnInit {
   closeContact(): void { this.showContactModal = false; }
   openLogin(): void { this.authService.openLogin(); }
 
+  // ── Reservation submit ────────────────────────────────────
+
   handleSendRequest(): void {
-    if (!this.contactForm.name || !this.contactForm.phone || !this.housing) {
+    if (!this.contactForm.name.trim() || !this.contactForm.phone.trim() || !this.housing) {
       this.showToast('Veuillez remplir votre nom et téléphone', 'warning');
       return;
     }
     this.isSubmitting = true;
+    this.submitSuccess = false;
 
     this.estateService.createQuickOrder({
       estate: this.housing.id,
-      name:   this.contactForm.name,
-      phone:  this.contactForm.phone,
+      name:   this.contactForm.name.trim(),
+      phone:  this.contactForm.phone.trim(),
       note:   this.contactForm.message
     }).subscribe({
       next: () => {
-        this.isSubmitting = false;
+        this.isSubmitting  = false;
         this.submitSuccess = true;
-        this.showToast('Demande envoyée avec succès ! Le propriétaire vous contactera bientôt.', 'success');
+        this.showToast('Demande envoyée ! Le propriétaire vous contactera bientôt.', 'success');
         setTimeout(() => {
           this.closeContact();
           this.submitSuccess = false;
-          this.contactForm = { name: '', phone: '', message: '' };
-        }, 2000);
+          this.contactForm   = { name: '', phone: '', message: '' };
+        }, 2200);
       },
       error: () => {
         this.isSubmitting = false;

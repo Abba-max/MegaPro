@@ -1,39 +1,51 @@
-<div class="page-header">
-    <div class="flex justify-between items-center w-full">
-        <div>
-            <h1 class="page-title">Gestion des logements</h1>
-        </div>
-        <button class="btn btn-primary">
-            <lucide-icon [img]="PlusIcon" class="icon-sm mr-2"></lucide-icon>
-            Ajouter
-        </button>
+<!-- Toast -->
+<div class="toast-container">
+    <div *ngFor="let t of toasts" class="toast" [class]="'toast-' + t.type" (click)="dismissToast(t.id)">
+        <lucide-icon [img]="CheckCircleIcon" class="toast-icon" *ngIf="t.type==='success'"></lucide-icon>
+        <lucide-icon [img]="XCircleIcon" class="toast-icon" *ngIf="t.type==='error'"></lucide-icon>
+        <lucide-icon [img]="InfoIcon" class="toast-icon" *ngIf="t.type==='info'"></lucide-icon>
+        <lucide-icon [img]="AlertIcon" class="toast-icon" *ngIf="t.type==='warning'"></lucide-icon>
+        <span class="toast-msg">{{ t.message }}</span>
+        <span class="toast-close">×</span>
     </div>
 </div>
 
-<div class="card mt-8">
-    <div class="p-4 border-b flex justify-between items-center bg-gray-50">
+<!-- Header -->
+<div class="page-header page-header-row">
+    <h1 class="page-title">Gestion des logements</h1>
+    <button class="btn-add" (click)="openCreate()">
+        <lucide-icon [img]="PlusIcon" class="icon-btn-sm"></lucide-icon>
+        Nouveau logement
+    </button>
+    </div>
+<!-- Loading -->
+<div *ngIf="isLoading" class="loader-center mt-8">
+    <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
+    <span>Chargement…</span>
+</div>
+
+<!-- Table Card -->
+<div class="card mt-8" *ngIf="!isLoading">
+    <div class="toolbar">
         <div class="search-input-group">
             <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
-            <input type="text" placeholder="Rechercher par titre, ville..." class="search-input">
+            <input type="text" [(ngModel)]="searchQuery" (input)="applyFilters()" placeholder="Rechercher par nom, ville…"
+                class="search-input">
         </div>
-        <div class="flex gap-4">
-            <select class="select-input">
-                <option>Tous les statuts</option>
-                <option>Disponible</option>
-                <option>Occupé</option>
-                <option>En attente</option>
-            </select>
-            <button class="btn-secondary flex items-center gap-2">
-                <lucide-icon [img]="FilterIcon" class="icon-sm"></lucide-icon>
-                Filtrer
-            </button>
-        </div>
+        <select class="select-input" [(ngModel)]="filterStatus" (change)="applyFilters()">
+            <option value="">Tous les statuts</option>
+            <option value="published">Publié</option>
+            <option value="draft">Brouillon</option>
+            <option value="archived">Archivé</option>
+        </select>
+        <span class="total-counter">{{ filtered.length }} logement{{ filtered.length !== 1 ? 's' : '' }}</span>
     </div>
 
     <table class="table">
         <thead>
             <tr>
                 <th>LOGEMENT</th>
+                <th>PROPRIÉTAIRE</th>
                 <th>PRIX</th>
                 <th>PLACES</th>
                 <th>NOTE</th>
@@ -42,28 +54,245 @@
             </tr>
         </thead>
         <tbody>
-            <tr *ngFor="let l of housings" class="fade-in">
+            <tr *ngFor="let l of filtered" class="fade-in">
                 <td data-label="LOGEMENT">
-                    <span class="housing-title">{{l.title}}</span>
-                </td>
-                <td data-label="PRIX"><span class="font-bold text-sm">{{l.price | number}} FCFA</span></td>
-                <td data-label="PLACES"><span class="text-sm">{{l.places}}</span></td>
-                <td data-label="NOTE">
-                    <div class="rating-cell" *ngIf="l.rating">
-                        <lucide-icon [img]="StarIcon" class="icon-xs gold"></lucide-icon>
-                        <span>{{l.rating}}</span>
+                    <div class="housing-cell">
+                        <div class="housing-thumb" *ngIf="l.images?.length">
+                            <img [src]="l.images[0].image" alt="">
+                        </div>
+                        <div class="housing-thumb placeholder-thumb" *ngIf="!l.images?.length">
+                            <lucide-icon [img]="HomeIcon" class="thumb-icon"></lucide-icon>
+                        </div>
+                        <div class="housing-info">
+                            <span class="housing-title">{{ l.name }}</span>
+                            <span class="location-sub">{{ l.location }}</span>
+                        </div>
                     </div>
-                    <span class="text-sm" *ngIf="!l.rating">-</span>
+                </td>
+                <td data-label="PROPRIÉTAIRE">
+                    <span class="text-sm">{{ l.owner?.username || '–' }}</span>
+                </td>
+                <td data-label="PRIX">
+                    <span class="price-val">{{ l.price | number }} FCFA</span>
+                </td>
+                <td data-label="PLACES">
+                    <span class="text-sm">{{ getOccupied(l) }}/{{ l.capacity }}</span>
+                </td>
+                <td data-label="NOTE">
+                    <div class="rating-cell" *ngIf="+l.rating > 0">
+                        <lucide-icon [img]="StarIcon" class="icon-xs gold"></lucide-icon>
+                        <span>{{ l.rating }}</span>
+                    </div>
+                    <span class="text-sm" *ngIf="+l.rating === 0">–</span>
                 </td>
                 <td data-label="STATUT">
-                    <span class="badge badge-success">
-                        {{l.status}}
+                    <span [class]="'status-lbl status-' + l.status">
+                        {{ l.status === 'published' ? 'Publié' : l.status === 'draft' ? 'Brouillon' : 'Archivé' }}
                     </span>
                 </td>
                 <td class="text-right" data-label="ACTIONS">
-                    <button class="action-link delete-link">Supprimer</button>
+                    <div class="action-buttons">
+                        <!-- Edit -->
+                        <button class="icon-btn" (click)="openEdit(l)" title="Modifier">
+                            <lucide-icon [img]="PencilIcon" class="icon-xs"></lucide-icon>
+                        </button>
+                        <!-- Publish toggle -->
+                        <button class="icon-btn" [class.success]="l.status !== 'published'" [class.warning]="l.status === 'published'"
+                            (click)="togglePublish(l)" [title]="l.status === 'published' ? 'Dépublier' : 'Publier'">
+                            <lucide-icon [img]="l.status === 'published' ? UnpublishIcon : PublishIcon" class="icon-xs"></lucide-icon>
+                        </button>
+                        <!-- Delete -->
+                        <button class="icon-btn danger" (click)="confirmDelete(l)" title="Supprimer">
+                            <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
+                        </button>
+                    </div>
                 </td>
+            </tr>
+            <tr *ngIf="filtered.length === 0">
+                <td colspan="7" class="empty-row">Aucun logement trouvé.</td>
             </tr>
         </tbody>
     </table>
+</div>
+<!-- ══ Create / Edit Modal ══════════════════════════════════════ -->
+<div class="modal-overlay fade-in" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-card modal-card-lg" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="closeModal()">
+            <lucide-icon [img]="CloseIcon" class="icon-xs"></lucide-icon>
+        </button>
+
+        <h2 class="modal-title">
+            {{ isEditMode ? 'Modifier le logement' : 'Nouveau logement' }}
+        </h2>
+
+        <div class="modal-form">
+
+            <!-- Row 1: name + location -->
+            <div class="form-row-modal">
+                <div class="form-group">
+                    <label>Nom <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="form.name" class="input" placeholder="Ex: Résidence Le Campus">
+                </div>
+                <div class="form-group">
+                    <label>Ville / Localisation <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="form.location" class="input" placeholder="Ex: Yaoundé, Ngoa-Ekelle">
+                </div>
+            </div>
+
+            <!-- Row 2: price + distance -->
+            <div class="form-row-modal">
+                <div class="form-group">
+                    <label>Prix mensuel (FCFA) <span class="required">*</span></label>
+                    <input type="number" [(ngModel)]="form.price" class="input" placeholder="300000" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Distance du campus (m)</label>
+                    <input type="number" [(ngModel)]="form.distance" class="input" placeholder="500" min="0">
+                </div>
+            </div>
+
+            <!-- Row 3: capacity + free -->
+            <div class="form-row-modal">
+                <div class="form-group">
+                    <label>Capacité totale <span class="required">*</span></label>
+                    <input type="number" [(ngModel)]="form.capacity" class="input" placeholder="10" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Places libres</label>
+                    <input type="number" [(ngModel)]="form.free" class="input" placeholder="5" min="0">
+                </div>
+            </div>
+
+            <!-- Row 4: type + status -->
+            <div class="form-row-modal">
+                <div class="form-group">
+                    <label>Type de chambre</label>
+                    <select [(ngModel)]="form.room_size" class="select-input full-width">
+                        <option value="1">Villa</option>
+                        <option value="2">Studio</option>
+                        <option value="3">Chambre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Statut</label>
+                    <select [(ngModel)]="form.status" class="select-input full-width">
+                        <option value="draft">Brouillon</option>
+                        <option value="published">Publié</option>
+                        <option value="archived">Archivé</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="form-group">
+                <label>Description</label>
+                <textarea [(ngModel)]="form.description" class="input textarea-field" rows="3"
+                    placeholder="Décrivez le logement…"></textarea>
+            </div>
+
+            <!-- Équipements -->
+            <div class="form-group">
+                <label>Équipements</label>
+                <div class="equipments-grid">
+                    <label class="equip-item" [class.active]="form.wifi === '1'">
+                        <input type="checkbox" [checked]="form.wifi === '1'"
+                            (change)="form.wifi = $any($event.target).checked ? '1' : '0'">
+                        <span class="equip-emoji">📶</span>
+                        <span>Wi-Fi</span>
+                    </label>
+                    <label class="equip-item" [class.active]="form.generator === '1'">
+                        <input type="checkbox" [checked]="form.generator === '1'"
+                            (change)="form.generator = $any($event.target).checked ? '1' : '0'">
+                        <span class="equip-emoji">⚡</span>
+                        <span>Groupe électrogène</span>
+                    </label>
+                    <label class="equip-item" [class.active]="form.forage === '1'">
+                        <input type="checkbox" [checked]="form.forage === '1'"
+                            (change)="form.forage = $any($event.target).checked ? '1' : '0'">
+                        <span class="equip-emoji">💧</span>
+                        <span>Forage</span>
+                    </label>
+                    <label class="equip-item" [class.active]="form.restaurant === '1'">
+                        <input type="checkbox" [checked]="form.restaurant === '1'"
+                            (change)="form.restaurant = $any($event.target).checked ? '1' : '0'">
+                        <span class="equip-emoji">🍽️</span>
+                        <span>Restaurant</span>
+                    </label>
+                    <label class="equip-item" [class.active]="form.tv === '1'">
+                        <input type="checkbox" [checked]="form.tv === '1'"
+                            (change)="form.tv = $any($event.target).checked ? '1' : '0'">
+                        <span class="equip-emoji">📺</span>
+                        <span>TV</span>
+                    </label>
+                    <label class="equip-item" [class.active]="form.fridge === '1'">
+                        <input type="checkbox" [checked]="form.fridge === '1'"
+                            (change)="form.fridge = $any($event.target).checked ? '1' : '0'">
+                        <span class="equip-emoji">🧊</span>
+                        <span>Réfrigérateur</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Image upload -->
+            <div class="form-group">
+                <label>Photos</label>
+                <div class="image-upload-zone" (click)="fileInput.click()" [class.has-files]="previewImages.length > 0">
+                    <input #fileInput type="file" accept="image/*" multiple (change)="onFilesSelected($event)"
+                        style="display:none">
+                    <div class="upload-placeholder" *ngIf="previewImages.length === 0">
+                        <lucide-icon [img]="UploadIcon" class="upload-icon"></lucide-icon>
+                        <span class="upload-text">Cliquez pour ajouter des photos</span>
+                        <span class="upload-hint">JPG, PNG — plusieurs fichiers acceptés</span>
+                    </div>
+                    <div class="preview-grid" *ngIf="previewImages.length > 0" (click)="$event.stopPropagation()">
+                        <div class="preview-item" *ngFor="let img of previewImages; let i = index">
+                            <img [src]="img" alt="preview">
+                            <button class="preview-remove" (click)="removePreview(i)">×</button>
+                        </div>
+                        <div class="preview-add" (click)="fileInput.click()">
+                            <lucide-icon [img]="PlusIcon" class="icon-xs"></lucide-icon>
+                        </div>
+                    </div>
+                </div>
+                <!-- Existing images (edit mode) -->
+                <div class="existing-images" *ngIf="isEditMode && existingImages.length > 0">
+                    <p class="existing-label">Photos existantes :</p>
+                    <div class="preview-grid">
+                        <div class="preview-item" *ngFor="let img of existingImages; let i = index">
+                            <img [src]="img.image" alt="existing">
+                            <button class="preview-remove" (click)="removeExisting(i)">×</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- end modal-form -->
+
+        <div class="modal-actions">
+            <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+            <button class="btn-save-modal" (click)="save()" [disabled]="isSaving">
+                <lucide-icon *ngIf="isSaving" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
+                <lucide-icon *ngIf="!isSaving" [img]="SaveIcon" class="icon-xs"></lucide-icon>
+                {{ isSaving ? 'Enregistrement…' : (isEditMode ? 'Mettre à jour' : 'Créer') }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- ══ Delete Confirm Modal ══════════════════════════════════════ -->
+<div class="modal-overlay fade-in" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+    <div class="modal-card modal-card-sm" (click)="$event.stopPropagation()">
+        <h2 class="modal-title">Confirmer la suppression</h2>
+        <p class="delete-msg">
+            Êtes-vous sûr de vouloir supprimer <strong>{{ estateToDelete?.name }}</strong> ?
+            Cette action est irréversible.
+        </p>
+        <div class="modal-actions">
+            <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
+            <button class="btn-delete" (click)="deleteConfirmed()" [disabled]="isSaving">
+                <lucide-icon *ngIf="isSaving" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
+                {{ isSaving ? 'Suppression…' : 'Supprimer' }}
+            </button>
+        </div>
+    </div>
 </div>

@@ -1,43 +1,126 @@
 <div class="page-header">
-    <h1 class="page-title">Rapports et statistiques</h1>
+<h1 class="page-title">Rapports & Statistiques</h1>
 </div>
 
-<div class="stats-grid mt-8">
-    <!-- Donut Chart Card -->
-    <div class="card p-6 chart-card">
-        <h3 class="card-title">Répartition des utilisateurs</h3>
-        <div class="chart-container">
-            <div class="donut-chart">
-                <div class="donut-inner">
+<div *ngIf="isLoading" class="loader-center">
+    <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
+    <span>Chargement des statistiques…</span>
+</div>
+<ng-container *ngIf="!isLoading && data">
+
+    <div class="reports-summary-grid mt-8">
+        <div class="summary-card blue">
+            <div class="summary-icon"><lucide-icon [img]="UsersIcon" class="summary-icon-inner"></lucide-icon></div>
+            <div class="summary-body">
+                <div class="summary-value">{{ data.total_users }}</div>
+                <div class="summary-label">Utilisateurs</div>
+    </div>
+    </div>
+    <div class="summary-card green">
+        <div class="summary-icon"><lucide-icon [img]="HomeIcon" class="summary-icon-inner"></lucide-icon></div>
+        <div class="summary-body">
+            <div class="summary-value">{{ data.total_estates }}</div>
+            <div class="summary-label">Logements</div>
+        </div>
+    </div>
+    <div class="summary-card orange">
+        <div class="summary-icon"><lucide-icon [img]="CalendarIcon" class="summary-icon-inner"></lucide-icon></div>
+        <div class="summary-body">
+            <div class="summary-value">{{ data.total_orders }}</div>
+            <div class="summary-label">Réservations</div>
+        </div>
+    </div>
+    <div class="summary-card purple">
+        <div class="summary-icon"><lucide-icon [img]="StarIcon" class="summary-icon-inner"></lucide-icon></div>
+        <div class="summary-body">
+            <div class="summary-value">{{ data.total_reviews }}</div>
+            <div class="summary-label">Avis</div>
+        </div>
+    </div>
+    </div>
+
+<div class="reports-grid mt-8">
+
+    <div class="report-card">
+        <h3 class="report-title">📊 Réservations par mois</h3>
+        <ng-container *ngIf="data.monthly_orders.length > 0; else noChartData">
+            <div class="bar-chart">
+                <div class="bar-item" *ngFor="let m of data.monthly_orders">
+                    <span class="bar-val">{{ m.value }}</span>
+                    <div class="bar" [style.height.%]="getBarHeight(m.value)" [title]="m.month + ': ' + m.value"></div>
+                    <span class="bar-lbl">{{ m.month }}</span>
                 </div>
             </div>
-            <div class="chart-legend">
-                <div class="legend-item"><span class="dot blue"></span> Étudiants (50%)</div>
-                <div class="legend-item"><span class="dot green"></span> Parents (30%)</div>
-                <div class="legend-item"><span class="dot orange"></span> Proprios (20%)</div>
+    </ng-container>
+    <ng-template #noChartData>
+        <p class="no-data">Aucune donnée pour les 6 derniers mois.</p>
+    </ng-template>
+    </div>
+
+    <div class="report-card">
+        <h3 class="report-title">📈 Indicateurs clés</h3>
+        <div class="metrics-list">
+            <div class="metric-row">
+                <span class="metric-label">Total logements</span>
+                <span class="metric-value">{{ data.total_estates }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Total utilisateurs</span>
+                <span class="metric-value">{{ data.total_users }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Réservations reçues</span>
+                <span class="metric-value">{{ data.total_orders }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Avis publiés</span>
+                <span class="metric-value">{{ data.total_reviews }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Moy. résas / mois</span>
+                <span class="metric-value">{{ getAvgOrders() }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Pic des résas</span>
+                <span class="metric-value">{{ getPeakMonth() }}</span>
             </div>
         </div>
     </div>
-
-    <!-- Occupancy Card -->
-    <div class="card p-6 chart-card">
-        <h3 class="card-title">Taux d'occupation global</h3>
-        <div class="occupancy-display">
-            <div class="big-percent">75%</div>
-            <div class="occupancy-label">Taux d'occupation moyen</div>
-        </div>
+<div class="report-card full-width">
+    <h3 class="report-title">🕐 Activité récente</h3>
+    <ng-container *ngIf="data.recent_activities.length > 0; else noActivity">
+        <table class="activity-table">
+            <thead>
+                <tr>
+                    <th>TYPE</th>
+                    <th>TITRE</th>
+                    <th>PAR</th>
+                    <th>DATE</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let a of data.recent_activities" class="fade-in">
+                    <td>
+                        <span class="act-badge" [class.act-order]="a.type==='order'"
+                            [class.act-review]="a.type==='review'">
+                            {{ a.type === 'order' ? '📋 Réservation' : '⭐ Avis' }}
+                        </span>
+                    </td>
+                    <td class="act-title">{{ a.title }}</td>
+                    <td class="act-sub">{{ a.subtitle }}</td>
+                    <td class="act-date">{{ a.created_at | date:'dd MMM yyyy' }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </ng-container>
+    <ng-template #noActivity>
+        <p class="no-data">Aucune activité récente.</p>
+    </ng-template>
     </div>
+
 </div>
+</ng-container>
 
-<!-- Revenue Bar Chart -->
-<div class="card p-6 mt-8">
-    <h3 class="card-title">Revenus mensuels estimés</h3>
-    <div class="revenue-chart mt-6">
-        <div class="revenue-labels">
-            <div class="revenue-item" *ngFor="let m of months">
-                <span class="revenue-month">{{m.name}}</span>
-                <span class="revenue-value">{{m.value}}</span>
-            </div>
-        </div>
-    </div>
+<div *ngIf="!isLoading && !data" class="error-state mt-8">
+    <p>Impossible de charger les statistiques.</p>
 </div>

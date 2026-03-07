@@ -556,3 +556,54 @@
     .btn-primary, .btn.btn-primary { padding: 7px 12px; font-size: 12px; }
     .modal-card { max-width: 95%; padding: 1.25rem; border-radius: 16px; }
 }
+/* ── LANGUAGE TOGGLE BUTTON ────────────────────────────────── */
+.lang-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: transparent;
+    border: 1.5px solid #D1D5DB;
+    border-radius: 20px;
+    padding: 5px 13px;
+    color: #374151;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    letter-spacing: 0.04em;
+    transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.lang-btn:hover {
+    background: #EEF3FF;
+    border-color: #2563EB;
+    color: #1D4ED8;
+}
+
+.lang-btn .nav-icon {
+    width: 15px;
+    height: 15px;
+    color: currentColor;
+}
+
+.lang-label {
+    font-size: 0.78rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+}
+
+@media (max-width: 480px) {
+    .lang-label {
+        display: none;
+    }
+
+    .lang-btn {
+        padding: 6px 8px;
+    }
+}
