@@ -10,14 +10,15 @@ class User(AbstractUser):
     user_type = models.CharField(max_length=10, choices=USER_TYPE_CHOICES, default='visitor')
     contact = models.CharField(max_length=13, null=True, blank=True)
     address = models.CharField(max_length=50, null=True, blank=True)
-    
-    # Keeping your specific status categories if needed for visitors
     visitor_category = models.CharField(
         max_length=20,
         default="1",
         choices=(("1", "Student"), ("2", "Parent"), ("3", "Local resident"), ("4", "Visitor")),
         null=True, blank=True
     )
+
+    class Meta(AbstractUser.Meta):
+        db_table = 'auth_user'
 
     def __str__(self):
         return self.username

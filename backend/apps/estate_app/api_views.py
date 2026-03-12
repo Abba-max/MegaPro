@@ -5,9 +5,7 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.contrib.auth.hashers import make_password
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from django.contrib.auth import get_user_model
-User = get_user_model()
-from .models import Estate, EstateImage, Review, QuickOrder, ContactRequest, Conversation, Message
+from .models import Estate, EstateImage, Review, QuickOrder, ContactRequest, Conversation, Message, User
 from .serializers import (
     EstateSerializer, EstateImageSerializer, ReviewSerializer, QuickOrderSerializer,
     ContactRequestSerializer, RegisterSerializer,
