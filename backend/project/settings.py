@@ -28,7 +28,6 @@ INSTALLED_APPS = [
     'apps.estate_app',
     'rest_framework',
     'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
 ]
 
@@ -88,6 +87,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 LOGIN_URL = '/login/'
+AUTH_USER_MODEL = 'estate_app.User'
 
 
 LANGUAGE_CODE = 'fr-fr'
@@ -117,10 +117,10 @@ REST_FRAMEWORK = {
 
 # ── SimpleJWT ──────────────────────────────────────────────────────────────
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME':    timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME':    timedelta(days=7),
     'REFRESH_TOKEN_LIFETIME':   timedelta(days=7),
-    'ROTATE_REFRESH_TOKENS':    True,
-    'BLACKLIST_AFTER_ROTATION': True,
+    'ROTATE_REFRESH_TOKENS':    False,
+    'BLACKLIST_AFTER_ROTATION': False,
     'AUTH_HEADER_TYPES':        ('Bearer',),
     'TOKEN_OBTAIN_SERIALIZER':  'apps.estate_app.serializers.MyTokenObtainPairSerializer',
 }

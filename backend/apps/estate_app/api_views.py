@@ -5,8 +5,9 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.contrib.auth.hashers import make_password
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from django.contrib.auth.models import User as DjangoUser
-from .models import Estate, EstateImage, Review, QuickOrder, ContactRequest, Global_user, Conversation, Message
+from django.contrib.auth import get_user_model
+User = get_user_model()
+from .models import Estate, EstateImage, Review, QuickOrder, ContactRequest, Conversation, Message
 from .serializers import (
     EstateSerializer, EstateImageSerializer, ReviewSerializer, QuickOrderSerializer,
     ContactRequestSerializer, RegisterSerializer,
@@ -42,14 +43,19 @@ def register_view(request):
 def me_view(request):
     user = request.user
     data = UserSerializer(user).data
-    role_map = {'1': 'Student', '2': 'Parent', '3': 'Owner'}
-    try:
-        gu = user.global_user
-        data['role']    = 'Admin' if (user.is_staff or user.is_superuser) else role_map.get(gu.status, 'Student')
-        data['phone']   = gu.contact or ''
-        data['address'] = gu.address or ''
-    except Global_user.DoesNotExist:
-        data['role'] = 'Admin' if (user.is_staff or user.is_superuser) else 'Student'
+    
+    # Direct role access from user_type
+    if user.is_staff or user.is_superuser:
+        data['role'] = 'Admin'
+    elif user.user_type == 'owner':
+        data['role'] = 'Owner'
+    else:
+        role_map = {'1': 'Student', '2': 'Parent', '3': 'Local resident', '4': 'Visitor'}
+        data['role'] = role_map.get(user.visitor_category, 'Student')
+    
+    data['phone']   = user.contact or ''
+    data['address'] = user.address or ''
+    
     full_name        = f"{user.first_name} {user.last_name}".strip() or user.username
     data['name']     = full_name
     data['initials'] = ''.join(w[0].upper() for w in full_name.split()[:2]) or '??'
@@ -294,7 +300,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 def stats_view(request):
     return Response({
         'estates':  Estate.objects.filter(status='published').count(),
-        'users':    DjangoUser.objects.filter(is_active=True).count(),
+        'users':    User.objects.filter(is_active=True).count(),
         'reviews':  Review.objects.count(),
         'campuses': Estate.objects.filter(status='published').values('location').distinct().count(),
         'orders':   QuickOrder.objects.count(),
@@ -467,16 +473,18 @@ def admin_contacts_view(request):
 @api_view(['GET'])
 @permission_classes([permissions.IsAdminUser])
 def admin_users_view(request):
-    users = DjangoUser.objects.all().select_related('global_user').order_by('-date_joined')
-    role_map  = {'1': 'Étudiant', '2': 'Parent', '3': 'Propriétaire'}
+    users = User.objects.all().order_by('-date_joined')
     color_map = {'Étudiant': '#3B82F6', 'Parent': '#8B5CF6', 'Propriétaire': '#10B981', 'Admin': '#EF4444'}
     result = []
     for u in users:
-        role = 'Admin' if (u.is_staff or u.is_superuser) else 'Étudiant'
-        try:
-            role = 'Admin' if (u.is_staff or u.is_superuser) else role_map.get(u.global_user.status, 'Étudiant')
-        except Global_user.DoesNotExist:
-            pass
+        if u.is_staff or u.is_superuser:
+            role = 'Admin'
+        elif u.user_type == 'owner':
+            role = 'Propriétaire'
+        else:
+            role_map = {'1': 'Étudiant', '2': 'Parent', '3': 'Résident', '4': 'Visiteur'}
+            role = role_map.get(u.visitor_category, 'Étudiant')
+            
         name = f"{u.first_name} {u.last_name}".strip() or u.username
         initials = ''.join(w[0].upper() for w in name.split()[:2]) or '??'
         result.append({

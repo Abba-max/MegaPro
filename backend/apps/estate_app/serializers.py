@@ -2,18 +2,14 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Estate, EstateImage, Review, QuickOrder, ContactRequest, Global_user, Conversation, Message
+from .models import Estate, EstateImage, Review, QuickOrder, ContactRequest, User, Conversation, Message
 
 
 def _resolve_role(user) -> str:
     if user.is_staff or user.is_superuser:
         return 'Admin'
-    try:
-        gu = user.global_user
-        if gu.status == '3':
-            return 'Owner'
-    except Global_user.DoesNotExist:
-        pass
+    if user.user_type == 'owner':
+        return 'Owner'
     return 'Student'
 
 
@@ -57,23 +53,24 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         phone = validated_data.pop('phone', '')
         role  = validated_data.pop('role', 'Student')
-        user  = User.objects.create_user(**validated_data)
-        status_map = {'Student': '1', 'Parent': '2', 'Owner': '3'}
-        Global_user.objects.create(
-            user=user,
-            first_name=user.first_name,
-            last_name=user.last_name,
+        
+        # Map frontend role to user_type and visitor_category
+        user_type = 'owner' if role == 'Owner' else 'visitor'
+        visitor_category = '1' if role == 'Student' else ('2' if role == 'Parent' else None)
+        
+        user = User.objects.create_user(
+            **validated_data,
+            user_type=user_type,
             contact=phone,
-            status=status_map.get(role, '1'),
+            visitor_category=visitor_category
         )
         return user
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model  = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name']
-
+        model = User
+        fields = ['id', 'username', 'email', 'user_type', 'contact', 'address']
 
 class EstateImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
