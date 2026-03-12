@@ -267,53 +267,53 @@
 
     <!-- BODY -->
     <div class="card-body">
-        <h3 class="housing-title">{{ h.name }}</h3>
+    <h3 class="housing-title">{{ h.name }}</h3>
 
+    <div class="card-meta-list">
+        <!-- Location -->
+        <div class="card-meta-row" *ngIf="h.location">
+            <lucide-icon [img]="MapPinIcon" class="meta-icon meta-red"></lucide-icon>
+            <span class="meta-text meta-truncate">{{ h.location }}</span>
+        </div>
+        <!-- Distance from campus -->
         <div class="card-meta-row" *ngIf="h.distance">
-            <lucide-icon [img]="MapPinIcon" class="meta-icon red"></lucide-icon>
-            <span>{{ h.distance }} {{ 'detail.distance' | translate }}</span>
+        <lucide-icon [img]="DistanceIcon" class="meta-icon meta-blue"></lucide-icon>
+        <span class="meta-text">{{ h.distance < 1000 ? h.distance + ' m' : ((h.distance / 1000) | number:'1.1-1') + ' km' }} —
+                {{ 'detail.distance' | translate }}</span>
         </div>
-        <div class="card-meta-row published-row" *ngIf="h.publishedAt">
-            <lucide-icon [img]="CheckIcon" class="meta-icon green"></lucide-icon>
-            <span>{{ getTimeAgo(h.publishedAt) }}</span>
+        <!-- Published -->
+        <div class="card-meta-row" *ngIf="h.publishedAt">
+            <lucide-icon [img]="CheckIcon" class="meta-icon meta-green"></lucide-icon>
+            <span class="meta-text">{{ getTimeAgo(h.publishedAt) }}</span>
         </div>
-<div class="card-divider"></div>
+    </div>
 
-        <!-- Feature tags -->
-        <div class="features-tags-row">
-        <div class="feat-tag wifi" *ngIf="h.wifi==='1'">
-            <lucide-icon [img]="WifiIcon" class="feat-icon"></lucide-icon><span>WiFi</span>
-        </div>
-        <div class="feat-tag water" *ngIf="h.forage==='1'">
-            <lucide-icon [img]="DropletsIcon" class="feat-icon"></lucide-icon>
-            <span>{{ 'filters.water' | translate }}</span>
-        </div>
-        <div class="feat-tag gen" *ngIf="h.generator==='1'">
-            <lucide-icon [img]="ZapIcon" class="feat-icon"></lucide-icon>
-            <span>{{ 'filters.generator' | translate }}</span>
-        </div>
-        <div class="feat-tag resto" *ngIf="h.restaurant==='1'">
-            <lucide-icon [img]="CoffeeIcon" class="feat-icon"></lucide-icon>
-            <span>{{ 'filters.restaurant' | translate }}</span>
-        </div>
-        <div class="feat-tag tv-tag" *ngIf="h.tv==='1'">
-            <lucide-icon [img]="TvIcon" class="feat-icon"></lucide-icon><span>TV</span>
-        </div>
-        <div class="feat-tag fridge-tag" *ngIf="h.fridge==='1'">
-            <lucide-icon [img]="FridgeIcon" class="feat-icon"></lucide-icon><span>Frigo</span>
-        </div>
-        </div>
-        
-        <div class="capacity-chip">
-            <lucide-icon [img]="BuildingIcon" class="feat-icon gray"></lucide-icon>
-            <span>{{ h.capacity }} ch.</span>
-        </div>
+    <div class="card-divider"></div>
 
-        <div class="price-row">
-            <span class="price-amount">{{ h.price | number }}</span>
-            <span class="price-currency">FCFA</span>
-            <span class="price-period">{{ 'listings.per_month' | translate }}</span>
+    <!-- Dynamic features: up to 3 active features this estate actually has -->
+    <div class="features-grid" [ngClass]="'cols-' + getTopFeatures(h).length">
+        <div *ngFor="let f of getTopFeatures(h)" class="feat-cell" [ngClass]="'feat-' + f.key">
+            <div class="feat-cell-icon">
+                <lucide-icon *ngIf="f.key==='wifi'" [img]="WifiIcon" class="feat-cell-ico"></lucide-icon>
+                <lucide-icon *ngIf="f.key==='forage'" [img]="DropletsIcon" class="feat-cell-ico"></lucide-icon>
+                <lucide-icon *ngIf="f.key==='generator'" [img]="ZapIcon" class="feat-cell-ico"></lucide-icon>
+                <lucide-icon *ngIf="f.key==='restaurant'" [img]="CoffeeIcon" class="feat-cell-ico"></lucide-icon>
+                <lucide-icon *ngIf="f.key==='tv'" [img]="TvIcon" class="feat-cell-ico"></lucide-icon>
+                <lucide-icon *ngIf="f.key==='fridge'" [img]="FridgeIcon" class="feat-cell-ico"></lucide-icon>
+            </div>
+        <span class="feat-cell-label">{{ f.label | translate }}</span>
         </div>
+        <!-- Placeholder if estate has no features -->
+        <div *ngIf="getTopFeatures(h).length === 0" class="feat-none">
+            {{ 'listings.no_features' | translate }}
+        </div>
+    </div>
+
+    <div class="price-row">
+        <span class="price-amount">{{ h.price | number }}</span>
+        <span class="price-currency">FCFA</span>
+        <span class="price-period">{{ 'listings.per_month' | translate }}</span>
+    </div>
     </div>
     </div>
     </div>

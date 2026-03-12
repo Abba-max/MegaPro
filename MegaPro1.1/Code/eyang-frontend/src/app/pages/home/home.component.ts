@@ -262,6 +262,19 @@ export class HomeComponent implements OnInit {
 
   toggleFaq(index: number): void { this.faqs[index].open = !this.faqs[index].open; }
 
+  /** Returns up to 3 active features for a given estate, in priority order */
+  getTopFeatures(h: Estate): { key: string; label: string }[] {
+    const all: { key: string; label: string; active: boolean }[] = [
+      { key: 'wifi', label: 'filters.wifi_label', active: h.wifi === '1' },
+      { key: 'forage', label: 'filters.water', active: h.forage === '1' },
+      { key: 'generator', label: 'filters.generator', active: h.generator === '1' },
+      { key: 'restaurant', label: 'filters.restaurant', active: h.restaurant === '1' },
+      { key: 'tv', label: 'filters.tv_label', active: h.tv === '1' },
+      { key: 'fridge', label: 'filters.fridge_label', active: h.fridge === '1' },
+    ];
+    return all.filter(f => f.active).slice(0, 3).map(({ key, label }) => ({ key, label }));
+  }
+
   scrollToListings(): void {
     document.querySelector('.listings-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }

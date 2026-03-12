@@ -22,9 +22,12 @@
   "filters": {
     "filters": "Filters",
     "wifi": "WiFi",
+    "wifi_label": "WiFi",
     "restaurant": "Restaurant",
     "generator": "Generator",
-    "water": "Water supply",
+    "water": "Water",
+    "tv_label": "TV",
+    "fridge_label": "Fridge",
     "stars": "Top rated"
   },
   "listings": {
@@ -34,11 +37,12 @@
     "published_today": "Published today",
     "published_days_ago": "Published {{ days }} day(s) ago",
     "published_weeks_ago": "Published {{ weeks }} week(s) ago",
-    "published_months_ago": "Published {{ months }} month(s) ago"
+    "published_months_ago": "Published {{ months }} month(s) ago",
+    "no_features": "No amenities listed"
   },
   "detail": {
     "places": "spots",
-    "distance": "km from campus",
+    "distance": "from campus",
     "back": "Back"
   },
   "why": {

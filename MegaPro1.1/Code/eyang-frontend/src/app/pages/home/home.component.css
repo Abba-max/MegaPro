@@ -196,74 +196,207 @@
 
 /* Card body */
 .card-body { padding: 1rem 1.125rem 1.125rem; }
-.housing-title { font-size: .9375rem; font-weight: 800; color: #0F172A; line-height: 1.4; margin-bottom: 6px; }
-
-/* Meta rows */
-.card-meta-row {
-  display: flex; align-items: center; gap: 5px;
-  font-size: 12.5px; color: #6B7280; font-weight: 500; margin-bottom: 3px;
-}
-.meta-icon { width: 13px; height: 13px; flex-shrink: 0; }
-.meta-icon.red   { color: #ef4444; }
-.meta-icon.green { color: #10b981; }
-
-/* Divider */
-.card-divider { height: 1px; background: #F1F5F9; margin: 10px 0; }
-
-/* Feature tags — coloured by type */
-.features-tags-row { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 8px; }
-.feat-tag {
-  display: inline-flex; align-items: center; gap: 5px;
-  padding: 4px 10px; border-radius: 20px;
-  font-size: 11.5px; font-weight: 600; white-space: nowrap;
-  border: 1px solid transparent;
-}
-.feat-icon { width: 12px; height: 12px; flex-shrink: 0; }
-
-/* WiFi — orange */
-.feat-tag.wifi {
-  background: #fff7ed; border-color: #fed7aa; color: #c2410c;
-}
-.feat-tag.wifi .feat-icon { color: #f97316; }
-
-/* Water / forage — blue */
-.feat-tag.water {
-  background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8;
-}
-.feat-tag.water .feat-icon { color: #3b82f6; }
-
-/* Generator — yellow/amber */
-.feat-tag.gen {
-  background: #fffbeb; border-color: #fde68a; color: #b45309;
-}
-.feat-tag.gen .feat-icon { color: #f59e0b; }
-
-/* Restaurant — brown/coffee */
-.feat-tag.resto {
-  background: #fdf8f0; border-color: #f5d9b5; color: #92400e;
-}
-.feat-tag.resto .feat-icon { color: #92400e; }
-
-/* TV — purple */
-.feat-tag.tv-tag {
-  background: #f5f3ff; border-color: #ddd6fe; color: #6d28d9;
-}
-.feat-tag.tv-tag .feat-icon { color: #7c3aed; }
-
-/* Fridge — teal */
-.feat-tag.fridge-tag {
-  background: #f0fdfa; border-color: #99f6e4; color: #0d9488;
-}
-.feat-tag.fridge-tag .feat-icon { color: #0d9488; }
-
-/* Capacity chip */
-.capacity-chip {
-  display: inline-flex; align-items: center; gap: 5px;
-  background: #F1F5F9; border: 1px solid #e2e8f0; border-radius: 20px;
-  padding: 4px 10px; font-size: 11.5px; font-weight: 600; color: #475569;
+.housing-title {
+  font-size: .9375rem;
+  font-weight: 800;
+  color: #0F172A;
+  line-height: 1.4;
   margin-bottom: 8px;
 }
-.feat-icon.gray { color: #9CA3AF; }
+
+/* Meta list */
+.card-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 4px;
+}
+.card-meta-row {
+  display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #6B7280;
+    min-width: 0;
+    line-height: 1;
+}
+/* Force lucide icons to behave as fixed-size flex boxes */
+.card-meta-row lucide-icon,
+.meta-icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px;
+  min-height: 14px;
+  flex-shrink: 0;
+}
+
+.card-meta-row lucide-icon svg,
+.meta-icon svg {
+  width: 14px !important;
+  height: 14px !important;
+  display: block;
+}
+
+.meta-red {
+  color: #ef4444;
+}
+
+.meta-blue {
+  color: #3b82f6;
+}
+
+.meta-green {
+  color: #10b981;
+}
+
+.meta-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.meta-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Feature grid: 1–3 equal columns based on actual features ── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.features-grid.cols-1 {
+  grid-template-columns: 1fr;
+}
+
+.features-grid.cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.features-grid.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.feat-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 6px 7px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  text-align: center;
+}
+.feat-cell-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.feat-cell-ico {
+  width: 15px;
+  height: 15px;
+}
+
+.feat-cell-label {
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+/* Per-feature colours — keys match Estate fields */
+.feat-wifi {
+  background: #fff7ed;
+  border-color: #fed7aa;
+  color: #c2410c;
+}
+
+.feat-wifi .feat-cell-icon {
+  background: #ffedd5;
+  color: #f97316;
+}
+
+.feat-forage {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.feat-forage .feat-cell-icon {
+  background: #dbeafe;
+  color: #3b82f6;
+}
+
+.feat-generator {
+  background: #fffbeb;
+  border-color: #fde68a;
+  color: #b45309;
+}
+
+.feat-generator .feat-cell-icon {
+  background: #fef3c7;
+  color: #f59e0b;
+}
+
+.feat-restaurant {
+  background: #fdf8f0;
+  border-color: #f5d9b5;
+  color: #92400e;
+}
+
+.feat-restaurant .feat-cell-icon {
+  background: #fef3e2;
+  color: #b45309;
+}
+
+.feat-tv {
+  background: #f5f3ff;
+  border-color: #ddd6fe;
+  color: #6d28d9;
+}
+
+.feat-tv .feat-cell-icon {
+  background: #ede9fe;
+  color: #7c3aed;
+}
+
+.feat-fridge {
+  background: #f0fdfa;
+  border-color: #99f6e4;
+  color: #0d9488;
+}
+
+.feat-fridge .feat-cell-icon {
+  background: #ccfbf1;
+  color: #0d9488;
+}
+
+/* No features fallback */
+.feat-none {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: #CBD5E1;
+  text-align: center;
+  padding: 8px 0;
+  font-style: italic;
+}
 
 /* Price row */
 .price-row {
