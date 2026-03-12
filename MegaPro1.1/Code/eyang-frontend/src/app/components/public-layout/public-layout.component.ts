@@ -43,11 +43,11 @@ import {
                 </li>
                 <li>
                   <lucide-icon [img]="PhoneIcon" class="f-contact-icon"></lucide-icon>
-                  <span>+237 6XX XXX XXX</span>
+                  <span>+237 675193603/652552561/691380083</span>
                 </li>
                 <li>
                   <lucide-icon [img]="MailIcon" class="f-contact-icon"></lucide-icon>
-                  <span>contact&#64;eyangestate.cm</span>
+                  <span>contact@eyangestate.com</span>
                 </li>
               </ul>
             </div>
@@ -111,13 +111,6 @@ import {
         <div class="f-bottom">
           <div class="f-bottom-inner">
             <p class="f-rights">{{ 'footer.rights' | translate }}</p>
-            <div class="f-legal">
-              <a href="#">{{ 'footer.privacy' | translate }}</a>
-              <a href="#">{{ 'footer.terms' | translate }}</a>
-            </div>
-            <button class="f-top-btn" (click)="scrollTop()" [title]="'footer.back_top' | translate">
-              <lucide-icon [img]="ArrowUpIcon" class="f-top-icon"></lucide-icon>
-            </button>
           </div>
         </div>
 
