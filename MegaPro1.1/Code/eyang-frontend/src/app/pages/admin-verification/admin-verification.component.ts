@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, RefreshCw, CheckCircle, X, Eye } from 'lucide-angular';
 import { EstateService } from '../../services/estate.service';
@@ -22,7 +22,7 @@ export class AdminVerificationComponent implements OnInit {
     isLoading = true;
     selectedOwner: any | null = null;
 
-    constructor(private estateService: EstateService) { }
+    constructor(private estateService: EstateService, private cdr: ChangeDetectorRef) { }
 
     ngOnInit(): void {
         this.loadPendingOwners();
@@ -34,6 +34,7 @@ export class AdminVerificationComponent implements OnInit {
             next: (owners) => {
                 this.pendingOwners = owners;
                 this.isLoading = false;
+                this.cdr.detectChanges();
             },
             error: (err) => {
                 console.error('Failed to load pending owners:', err);

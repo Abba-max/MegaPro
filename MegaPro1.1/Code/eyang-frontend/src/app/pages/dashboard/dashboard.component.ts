@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewChecked, ElementRef, ViewChild } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewChecked, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -133,7 +133,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     private authService: AuthService,
     private estateService: EstateService,
     private wsService: WebSocketService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
@@ -155,6 +156,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.subs.push(
       this.wsService.notifications$.subscribe(notif => {
         this.handleRealtimeNotification(notif);
+        this.cdr.detectChanges();
       })
     );
 
@@ -162,6 +164,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.subs.push(
       this.wsService.messages$.subscribe(msg => {
         this.handleRealtimeMessage(msg);
+        this.cdr.detectChanges();
       })
     );
   }
@@ -195,8 +198,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       error: () => { }
     });
     this.estateService.getMyEstates().subscribe({
-      next: e => { this.myEstates = e; this.isLoading = false; },
-      error: () => { this.isLoading = false; }
+      next: e => { this.myEstates = e; this.isLoading = false; this.cdr.detectChanges(); },
+      error: () => { this.isLoading = false; this.cdr.detectChanges(); }
     });
     this.estateService.getMyOrders().subscribe({
       next: o => this.myOrders = o,
@@ -436,6 +439,21 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   handleRealtimeMessage(msg: any): void {
+    const conv = this.conversations.find(c => c.id === msg.conversation_id);
+    if (conv) {
+      conv.last_message = {
+        text: msg.message,
+        created_at: new Date().toISOString(),
+        sender_id: msg.sender_id
+      };
+      if (!this.activeConversation || this.activeConversation.id !== conv.id) {
+        conv.unread_count = (conv.unread_count || 0) + 1;
+      }
+      conv.updated_at = new Date().toISOString();
+      // Sort conversations by updated_at
+      this.conversations.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+    }
+
     if (!this.activeConversation || this.activeConversation.id !== msg.conversation_id) return;
 
     // Check if message is already in list (sent by us via HTTP)
@@ -452,10 +470,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
         read: true,
         conversation: this.activeConversation.id,
         sender_name: msg.sender_name || 'Autre',
-        sender_username: '' // Not essential for display
+        sender_username: ''
       };
       this.activeConversation.messages.push(newMsg);
       this.shouldScroll = true;
+      this.cdr.detectChanges();
     }
   }
 

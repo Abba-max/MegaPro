@@ -1,5 +1,5 @@
 // src/app/services/websocket.service.ts
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, NgZone } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 import { AuthService } from './auth.service';
 
@@ -18,7 +18,7 @@ export class WebSocketService implements OnDestroy {
 
     private readonly WS_BASE = 'ws://localhost:8000/ws';
 
-    constructor(private auth: AuthService) {
+    constructor(private auth: AuthService, private ngZone: NgZone) {
         // Automatically connect to notifications if logged in
         this.auth.currentUser$.subscribe(user => {
             if (user) {
@@ -40,20 +40,26 @@ export class WebSocketService implements OnDestroy {
         this.notificationSocket = new WebSocket(url);
 
         this.notificationSocket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            this.notificationSubject.next(data);
+            this.ngZone.run(() => {
+                const data = JSON.parse(event.data);
+                this.notificationSubject.next(data);
+            });
         };
 
         this.notificationSocket.onerror = (error) => {
-            console.error('Notification WebSocket error:', error);
+            this.ngZone.run(() => {
+                console.error('Notification WebSocket error:', error);
+            });
         };
 
         this.notificationSocket.onclose = () => {
-            this.notificationSocket = null;
-            // Reconnect after delay if still logged in
-            setTimeout(() => {
-                if (this.auth.isLoggedIn()) this.connectNotifications();
-            }, 5000);
+            this.ngZone.run(() => {
+                this.notificationSocket = null;
+                // Reconnect after delay if still logged in
+                setTimeout(() => {
+                    if (this.auth.isLoggedIn()) this.connectNotifications();
+                }, 5000);
+            });
         };
     }
 
@@ -67,16 +73,22 @@ export class WebSocketService implements OnDestroy {
         this.chatSocket = new WebSocket(url);
 
         this.chatSocket.onmessage = (event) => {
-            const data = JSON.parse(event.data);
-            this.messageSubject.next(data);
+            this.ngZone.run(() => {
+                const data = JSON.parse(event.data);
+                this.messageSubject.next(data);
+            });
         };
 
         this.chatSocket.onerror = (error) => {
-            console.error('Chat WebSocket error:', error);
+            this.ngZone.run(() => {
+                console.error('Chat WebSocket error:', error);
+            });
         };
 
         this.chatSocket.onclose = () => {
-            this.chatSocket = null;
+            this.ngZone.run(() => {
+                this.chatSocket = null;
+            });
         };
     }
 

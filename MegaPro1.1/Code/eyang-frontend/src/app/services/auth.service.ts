@@ -1,5 +1,5 @@
 // src/app/services/auth.service.ts
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject, tap, throwError, catchError } from 'rxjs';
 import { Router } from '@angular/router';
@@ -34,7 +34,7 @@ export class AuthService {
   private showLoginModalSubject = new Subject<boolean>();
   showLoginModal$ = this.showLoginModalSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router) {
+  constructor(private http: HttpClient, private router: Router, private ngZone: NgZone) {
     // On app start: if a token exists, restore the session
     if (this.getAccessToken()) {
       this.fetchMe().subscribe({ error: () => this.logout() });
@@ -102,41 +102,34 @@ export class AuthService {
   fetchMe(): Observable<any> {
     return this.http.get<any>(`${this.BASE}/auth/me/`).pipe(
       tap(data => {
-        const name = data.name
-          || `${data.first_name || ''} ${data.last_name || ''}`.trim()
-          || data.username;
-
-        const initials = name
-          .split(' ')
-          .map((w: string) => w[0])
-          .join('')
-          .toUpperCase()
-          .slice(0, 2) || '??';
-
-        // ✅ Normalize role — backend sends 'Admin'|'Owner'|'Student'|'Parent' already capitalised
+        // ... (data mapping logic)
+        const name = data.name || `${data.first_name || ''} ${data.last_name || ''}`.trim() || data.username;
+        const initials = name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2) || '??';
         const rawRole: string = data.role || 'Student';
         const knownRoles: User['role'][] = ['Admin', 'Owner', 'Student', 'Parent'];
         const role = (knownRoles.find(r => r.toLowerCase() === rawRole.toLowerCase()) ?? 'Student') as User['role'];
+        const id_card = data.id_card ? (data.id_card.startsWith('http') ? data.id_card : `http://localhost:8000${data.id_card.startsWith('/') ? '' : '/'}${data.id_card}`) : undefined;
 
         const user: User = {
-          id: data.id,
-          name,
-          initials,
-          email: data.email || data.username,
-          role,
-          user_type: data.user_type || undefined,
+          id: data.id, name, initials, email: data.email || data.username,
+          role, user_type: data.user_type || undefined,
           visitor_category: data.visitor_category || undefined,
-          is_verified: data.is_verified,
-          id_card: data.id_card || undefined,
-          phone: data.phone || '',
-          address: data.address || '',
+          is_verified: data.is_verified, id_card,
+          phone: data.phone || '', address: data.address || '',
         };
 
-        this.currentUserSubject.next(user);
+        this.ngZone.run(() => {
+          this.currentUserSubject.next(user);
+        });
       }),
       catchError(err => {
-        this.clearTokens();
-        this.currentUserSubject.next(null);
+        console.error('fetchMe error:', err);
+        // Only logout automatically on 401 or 403
+        if (err.status === 401 || err.status === 403) {
+          this.ngZone.run(() => {
+            this.logout();
+          });
+        }
         return throwError(() => err);
       })
     );

@@ -86,6 +86,13 @@ export interface EstateFilters {
 
 const ROOM_MAP: Record<string, string> = { '1': 'Villa', '2': 'Studio', '3': 'Chambre' };
 
+export function getAbsoluteUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  if (url.startsWith('http')) return url;
+  const base = 'http://localhost:8000';
+  return url.startsWith('/') ? `${base}${url}` : `${base}/${url}`;
+}
+
 export function enrichEstate(raw: EstateRaw): Estate {
   const features: string[] = [];
   if (raw.wifi === '1') features.push('wifi');
@@ -94,10 +101,21 @@ export function enrichEstate(raw: EstateRaw): Estate {
   if (raw.restaurant === '1') features.push('restaurant');
   if (raw.tv === '1') features.push('tv');
   if (raw.fridge === '1') features.push('fridge');
+
+  const images = (raw.images || []).map(img => ({
+    ...img,
+    image: getAbsoluteUrl(img.image)
+  }));
+
   return {
-    ...raw, tv: raw.tv ?? '0', fridge: raw.fridge ?? '0',
-    title: raw.name, image: raw.images?.[0]?.image ?? '',
-    places: raw.free, type: ROOM_MAP[raw.room_size] ?? 'Chambre',
+    ...raw,
+    images,
+    tv: raw.tv ?? '0',
+    fridge: raw.fridge ?? '0',
+    title: raw.name,
+    image: images[0]?.image ?? '',
+    places: raw.free,
+    type: ROOM_MAP[raw.room_size] ?? 'Chambre',
     features, area: null, minMonths: 2, roomInfo: null, equipments: [],
   };
 }
@@ -147,11 +165,15 @@ export class EstateService {
   }
 
   getMyOrders(): Observable<QuickOrder[]> {
-    return this.http.get<QuickOrder[]>(`${this.BASE}/orders/?mine=1`);
+    return this.http.get<QuickOrder[]>(`${this.BASE}/orders/?mine=1`).pipe(
+      map(list => list.map(o => ({ ...o, estate_image: getAbsoluteUrl(o.estate_image) })))
+    );
   }
 
   getMyReviews(): Observable<Review[]> {
-    return this.http.get<Review[]>(`${this.BASE}/reviews/?mine=1`).pipe(map(list => list.map(enrichReview)));
+    return this.http.get<Review[]>(`${this.BASE}/reviews/?mine=1`).pipe(
+      map(list => list.map(r => ({ ...enrichReview(r), estate_image: getAbsoluteUrl(r.estate_image) })))
+    );
   }
 
   // ── Client dashboard ──────────────────────────────────────
@@ -160,11 +182,15 @@ export class EstateService {
   }
 
   getMyReservations(): Observable<QuickOrder[]> {
-    return this.http.get<QuickOrder[]>(`${this.BASE}/orders/?client=1`);
+    return this.http.get<QuickOrder[]>(`${this.BASE}/orders/?client=1`).pipe(
+      map(list => list.map(o => ({ ...o, estate_image: getAbsoluteUrl(o.estate_image) })))
+    );
   }
 
   getMySubmittedReviews(): Observable<Review[]> {
-    return this.http.get<Review[]>(`${this.BASE}/reviews/?client=1`).pipe(map(list => list.map(enrichReview)));
+    return this.http.get<Review[]>(`${this.BASE}/reviews/?client=1`).pipe(
+      map(list => list.map(r => ({ ...enrichReview(r), estate_image: getAbsoluteUrl(r.estate_image) })))
+    );
   }
 
   getMyContactRequests(): Observable<ContactRequest[]> {
@@ -173,11 +199,15 @@ export class EstateService {
 
   // ── Messaging ─────────────────────────────────────────────
   getConversations(): Observable<Conversation[]> {
-    return this.http.get<Conversation[]>(`${this.BASE}/conversations/`);
+    return this.http.get<Conversation[]>(`${this.BASE}/conversations/`).pipe(
+      map(list => list.map(c => ({ ...c, estate_image: getAbsoluteUrl(c.estate_image) })))
+    );
   }
 
   getConversation(id: number): Observable<Conversation> {
-    return this.http.get<Conversation>(`${this.BASE}/conversations/${id}/`);
+    return this.http.get<Conversation>(`${this.BASE}/conversations/${id}/`).pipe(
+      map(c => ({ ...c, estate_image: getAbsoluteUrl(c.estate_image) }))
+    );
   }
 
   startConversation(estateId: number, ownerId: number): Observable<Conversation> {
@@ -213,7 +243,9 @@ export class EstateService {
 
   // ── Admin: bookings ───────────────────────────────────────
   getAdminBookings(): Observable<QuickOrder[]> {
-    return this.http.get<QuickOrder[]>(`${this.BASE}/admin/bookings/`);
+    return this.http.get<QuickOrder[]>(`${this.BASE}/admin/bookings/`).pipe(
+      map(list => list.map(o => ({ ...o, estate_image: getAbsoluteUrl(o.estate_image) })))
+    );
   }
 
   deleteAdminBooking(id: number): Observable<any> {
@@ -249,7 +281,9 @@ export class EstateService {
 
   // ── Admin: verification ───────────────────────────────────
   getPendingOwners(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.BASE}/admin/users/?pending_only=1`);
+    return this.http.get<any[]>(`${this.BASE}/admin/users/?pending_only=1`).pipe(
+      map(users => users.map(u => ({ ...u, id_card: getAbsoluteUrl(u.id_card) })))
+    );
   }
 
   verifyOwner(userId: number, action: 'approve' | 'reject'): Observable<any> {
