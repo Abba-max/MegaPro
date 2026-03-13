@@ -11,6 +11,7 @@ import {
   Edit, Package, User, Mail, Building
 } from 'lucide-angular';
 import { AuthService, User as AuthUser } from '../../services/auth.service';
+import { WebSocketService } from '../../services/websocket.service';
 import {
   EstateService, Estate, EstateRaw, EstateImage, QuickOrder, Review, ContactRequest,
   Conversation, ChatMessage, OwnerDashboardStats, ClientDashboardStats,
@@ -38,38 +39,38 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   private shouldScroll = false;
 
   // ── Icons ─────────────────────────────────────────────────
-  readonly HomeIcon     = Home;
+  readonly HomeIcon = Home;
   readonly BarChartIcon = BarChart3;
-  readonly ClockIcon    = Clock;
-  readonly StarIcon     = Star;
-  readonly PlusIcon     = Plus;
-  readonly TrashIcon    = Trash2;
-  readonly XIcon        = X;
-  readonly WifiIcon     = Wifi;
+  readonly ClockIcon = Clock;
+  readonly StarIcon = Star;
+  readonly PlusIcon = Plus;
+  readonly TrashIcon = Trash2;
+  readonly XIcon = X;
+  readonly WifiIcon = Wifi;
   readonly UtensilsIcon = Utensils;
-  readonly ZapIcon      = Zap;
+  readonly ZapIcon = Zap;
   readonly DropletsIcon = Droplets;
-  readonly TvIcon       = Tv;
-  readonly FridgeIcon   = Thermometer;
-  readonly MessageIcon  = MessageSquare;
-  readonly FileIcon     = FileText;
-  readonly PhoneIcon    = Phone;
-  readonly MapPinIcon   = MapPin;
+  readonly TvIcon = Tv;
+  readonly FridgeIcon = Thermometer;
+  readonly MessageIcon = MessageSquare;
+  readonly FileIcon = FileText;
+  readonly PhoneIcon = Phone;
+  readonly MapPinIcon = MapPin;
   readonly CalendarIcon = Calendar;
-  readonly CheckIcon    = CheckCircle;
-  readonly AlertIcon    = AlertCircle;
-  readonly InfoIcon     = Info;
-  readonly SendIcon     = Send;
-  readonly BackIcon     = ArrowLeft;
-  readonly EditIcon     = Edit;
-  readonly PackageIcon  = Package;
-  readonly UserIcon     = User;
-  readonly MailIcon     = Mail;
+  readonly CheckIcon = CheckCircle;
+  readonly AlertIcon = AlertCircle;
+  readonly InfoIcon = Info;
+  readonly SendIcon = Send;
+  readonly BackIcon = ArrowLeft;
+  readonly EditIcon = Edit;
+  readonly PackageIcon = Package;
+  readonly UserIcon = User;
+  readonly MailIcon = Mail;
   readonly BuildingIcon = Building;
 
   // ── State ─────────────────────────────────────────────────
   currentUser: AuthUser | null = null;
-  isOwner   = false;
+  isOwner = false;
   isLoading = true;
   activeTab = 'overview';
 
@@ -80,29 +81,29 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   ownerStats: OwnerDashboardStats = {
     total_estates: 0, occupancy_pct: 0, pending_orders: 0, avg_rating: 0
   };
-  myEstates: Estate[]   = [];
-  myOrders:  QuickOrder[] = [];
-  myReviews: Review[]   = [];
+  myEstates: Estate[] = [];
+  myOrders: QuickOrder[] = [];
+  myReviews: Review[] = [];
 
-  showEstateModal  = false;
-  isEditMode       = false;
+  showEstateModal = false;
+  isEditMode = false;
   editingId: number | null = null;
-  isSavingEstate   = false;
-  estateForm: any  = {};
-  distanceDisplay  = '';
+  isSavingEstate = false;
+  estateForm: any = {};
+  distanceDisplay = '';
 
   /** Files chosen by the owner for upload */
-  newImageFiles:    File[]   = [];
+  newImageFiles: File[] = [];
   /** Base64 previews of newImageFiles */
   newImagePreviews: string[] = [];
 
   availableEquipments = [
-    { key: 'wifi',       label: 'WiFi',         icon: Wifi        },
-    { key: 'restaurant', label: 'Restaurant',    icon: Utensils    },
-    { key: 'generator',  label: 'Générateur',    icon: Zap         },
-    { key: 'forage',     label: 'Forage',        icon: Droplets    },
-    { key: 'tv',         label: 'Télévision',    icon: Tv          },
-    { key: 'fridge',     label: 'Réfrigérateur', icon: Thermometer },
+    { key: 'wifi', label: 'WiFi', icon: Wifi },
+    { key: 'restaurant', label: 'Restaurant', icon: Utensils },
+    { key: 'generator', label: 'Générateur', icon: Zap },
+    { key: 'forage', label: 'Forage', icon: Droplets },
+    { key: 'tv', label: 'Télévision', icon: Tv },
+    { key: 'fridge', label: 'Réfrigérateur', icon: Thermometer },
   ];
 
   // ── Owner messaging ───────────────────────────────────────
@@ -112,33 +113,34 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   clientStats: ClientDashboardStats = {
     total_reservations: 0, total_reviews: 0, total_messages: 0, total_contacts: 0
   };
-  myReservations:      QuickOrder[]     = [];
-  mySubmittedReviews:  Review[]         = [];
-  myContacts:          ContactRequest[] = [];
-  conversations:       Conversation[]   = [];
+  myReservations: QuickOrder[] = [];
+  mySubmittedReviews: Review[] = [];
+  myContacts: ContactRequest[] = [];
+  conversations: Conversation[] = [];
 
   activeConversation: Conversation | null = null;
   newMessage = '';
   private pollSub?: Subscription;
 
   showReviewModal = false;
-  reviewForm      = { estate: 0, rating: 0, comment: '' };
-  hoverRating     = 0;
-  allEstates:     Estate[] = [];
+  reviewForm = { estate: 0, rating: 0, comment: '' };
+  hoverRating = 0;
+  allEstates: Estate[] = [];
 
   private subs: Subscription[] = [];
 
   constructor(
     private authService: AuthService,
     private estateService: EstateService,
+    private wsService: WebSocketService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const sub = this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
       if (!user) { this.router.navigate(['/']); return; }
-      this.isOwner  = user.role === 'Owner';
+      this.isOwner = user.role === 'Owner';
       this.activeTab = this.isOwner ? 'overview' : 'reservations';
       this.isLoading = true;
       if (this.isOwner) {
@@ -148,6 +150,20 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       }
     });
     this.subs.push(sub);
+
+    // Listen for real-time notifications
+    this.subs.push(
+      this.wsService.notifications$.subscribe(notif => {
+        this.handleRealtimeNotification(notif);
+      })
+    );
+
+    // Listen for real-time chat messages
+    this.subs.push(
+      this.wsService.messages$.subscribe(msg => {
+        this.handleRealtimeMessage(msg);
+      })
+    );
   }
 
   ngOnDestroy(): void {
@@ -166,7 +182,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     try {
       const el = this.ownerViewport?.nativeElement;
       if (el) el.scrollTop = el.scrollHeight;
-    } catch {}
+    } catch { }
   }
 
   // ══════════════════════════════════════════════════════════
@@ -175,20 +191,20 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   loadOwnerData(): void {
     this.estateService.getOwnerStats().subscribe({
-      next: s  => this.ownerStats = s,
-      error: () => {}
+      next: s => this.ownerStats = s,
+      error: () => { }
     });
     this.estateService.getMyEstates().subscribe({
-      next: e  => { this.myEstates = e; this.isLoading = false; },
+      next: e => { this.myEstates = e; this.isLoading = false; },
       error: () => { this.isLoading = false; }
     });
     this.estateService.getMyOrders().subscribe({
-      next: o  => this.myOrders = o,
-      error: () => {}
+      next: o => this.myOrders = o,
+      error: () => { }
     });
     this.estateService.getMyReviews().subscribe({
-      next: r  => this.myReviews = r,
-      error: () => {}
+      next: r => this.myReviews = r,
+      error: () => { }
     });
   }
 
@@ -198,7 +214,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.ownerConversationsLoading = true;
     this.estateService.getConversations().subscribe({
       next: convs => { this.conversations = convs; this.ownerConversationsLoading = false; },
-      error: ()   => { this.ownerConversationsLoading = false; }
+      error: () => { this.ownerConversationsLoading = false; }
     });
   }
 
@@ -220,22 +236,22 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   openAddModal(): void {
     this.isEditMode = false;
-    this.editingId  = null;
+    this.editingId = null;
     this.estateForm = {
       name: '', location: '', price: '', capacity: '', free: '',
       description: '', status: 'published', room_size: '3',
       wifi: '0', restaurant: '0', generator: '0', forage: '0', tv: '0', fridge: '0',
       existingImages: []
     };
-    this.distanceDisplay  = '';
-    this.newImageFiles    = [];
+    this.distanceDisplay = '';
+    this.newImageFiles = [];
     this.newImagePreviews = [];
-    this.showEstateModal  = true;
+    this.showEstateModal = true;
   }
 
   openEditModal(estate: Estate): void {
     this.isEditMode = true;
-    this.editingId  = estate.id;
+    this.editingId = estate.id;
     this.estateForm = {
       name: estate.name, location: estate.location,
       price: estate.price, capacity: estate.capacity,
@@ -246,15 +262,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       tv: estate.tv, fridge: estate.fridge,
       existingImages: [...(estate.images ?? [])]
     };
-    this.distanceDisplay  = String(estate.distance);
-    this.newImageFiles    = [];
+    this.distanceDisplay = String(estate.distance);
+    this.newImageFiles = [];
     this.newImagePreviews = [];
-    this.showEstateModal  = true;
+    this.showEstateModal = true;
   }
 
   closeEstateModal(): void {
-    this.showEstateModal  = false;
-    this.newImageFiles    = [];
+    this.showEstateModal = false;
+    this.newImageFiles = [];
     this.newImagePreviews = [];
   }
 
@@ -362,28 +378,28 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   loadClientData(): void {
     this.estateService.getClientStats().subscribe({
-      next: s  => this.clientStats = s,
-      error: () => {}
+      next: s => this.clientStats = s,
+      error: () => { }
     });
     this.estateService.getMyReservations().subscribe({
-      next: r  => { this.myReservations = r; this.isLoading = false; },
+      next: r => { this.myReservations = r; this.isLoading = false; },
       error: () => { this.isLoading = false; }
     });
     this.estateService.getMySubmittedReviews().subscribe({
-      next: r  => this.mySubmittedReviews = r,
-      error: () => {}
+      next: r => this.mySubmittedReviews = r,
+      error: () => { }
     });
     this.estateService.getMyContactRequests().subscribe({
-      next: c  => this.myContacts = c,
-      error: () => {}
+      next: c => this.myContacts = c,
+      error: () => { }
     });
     this.estateService.getConversations().subscribe({
-      next: c  => this.conversations = c,
-      error: () => {}
+      next: c => this.conversations = c,
+      error: () => { }
     });
     this.estateService.getEstates({ status: 'published' }).subscribe({
-      next: e  => this.allEstates = e,
-      error: () => {}
+      next: e => this.allEstates = e,
+      error: () => { }
     });
   }
 
@@ -393,7 +409,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.activeConversation = conv;
     this.estateService.markConversationRead(conv.id).subscribe({
       next: () => { conv.unread_count = 0; },
-      error: () => {}
+      error: () => { }
     });
     // Load full messages
     this.estateService.getConversation(conv.id).subscribe({
@@ -401,31 +417,61 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.activeConversation = full;
         this.shouldScroll = true;
       },
-      error: () => {}
+      error: () => { }
     });
-    this.startPolling(conv.id);
+
+    // Connect to WebSocket chat
+    this.wsService.connectChat(conv.id);
   }
 
   closeConversation(): void {
     this.activeConversation = null;
-    this.pollSub?.unsubscribe();
+    this.wsService.disconnectChat();
     // Refresh list to reflect read counts
     if (this.isOwner) {
       this.loadOwnerConversations();
     } else {
-      this.estateService.getConversations().subscribe({ next: c => this.conversations = c, error: () => {} });
+      this.estateService.getConversations().subscribe({ next: c => this.conversations = c, error: () => { } });
     }
   }
 
-  startPolling(convId: number): void {
-    this.pollSub?.unsubscribe();
-    this.pollSub = interval(5000).pipe(
-      switchMap(() => this.estateService.getConversation(convId))
-    ).subscribe(conv => {
-      const prevCount = this.activeConversation?.messages.length ?? 0;
-      this.activeConversation = conv;
-      if (conv.messages.length > prevCount) this.shouldScroll = true;
-    });
+  handleRealtimeMessage(msg: any): void {
+    if (!this.activeConversation || this.activeConversation.id !== msg.conversation_id) return;
+
+    // Check if message is already in list (sent by us via HTTP)
+    const exists = this.activeConversation.messages.some(m =>
+      m.text === msg.message && m.sender === msg.sender_id
+    );
+
+    if (!exists) {
+      const newMsg: ChatMessage = {
+        id: 0,
+        sender: msg.sender_id,
+        text: msg.message,
+        created_at: new Date().toISOString(),
+        read: true,
+        conversation: this.activeConversation.id,
+        sender_name: msg.sender_name || 'Autre',
+        sender_username: '' // Not essential for display
+      };
+      this.activeConversation.messages.push(newMsg);
+      this.shouldScroll = true;
+    }
+  }
+
+  handleRealtimeNotification(notif: any): void {
+    if (notif.type === 'new_message') {
+      // If we are not in the active conversation, show a toast
+      if (!this.activeConversation || this.activeConversation.id !== notif.conversation_id) {
+        this.showToast(`${notif.sender_name}: ${notif.message.substring(0, 30)}...`, 'info');
+        // Increment unread count in the list
+        const conv = this.conversations.find(c => c.id === notif.conversation_id);
+        if (conv) conv.unread_count = (conv.unread_count || 0) + 1;
+      }
+    } else if (notif.type === 'verification_status') {
+      this.showToast(notif.message, 'success');
+      if (this.currentUser) this.currentUser.is_verified = true;
+    }
   }
 
   sendMessage(): void {
@@ -471,16 +517,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   // ── Review modal ──────────────────────────────────────────
 
   openReviewModal(): void {
-    this.reviewForm  = { estate: 0, rating: 0, comment: '' };
+    this.reviewForm = { estate: 0, rating: 0, comment: '' };
     this.hoverRating = 0;
     this.showReviewModal = true;
   }
 
   closeReviewModal(): void { this.showReviewModal = false; }
 
-  setRating(r: number): void  { this.reviewForm.rating = r; }
-  setHover(r: number):  void  { this.hoverRating = r; }
-  clearHover():         void  { this.hoverRating = 0; }
+  setRating(r: number): void { this.reviewForm.rating = r; }
+  setHover(r: number): void { this.hoverRating = r; }
+  clearHover(): void { this.hoverRating = 0; }
 
   submitReview(): void {
     if (!this.reviewForm.estate || !this.reviewForm.rating || !this.reviewForm.comment.trim()) {

@@ -15,7 +15,7 @@ def send_user_notification(user_id, data):
         }
     )
 
-def broadcast_chat_message(conv_id, message, sender_id):
+def broadcast_chat_message(conv_id, message, sender_id, sender_name):
     """
     Broadcasts a chat message to all participants of a conversation.
     """
@@ -26,6 +26,8 @@ def broadcast_chat_message(conv_id, message, sender_id):
         {
             'type': 'chat_message',
             'message': message,
-            'sender_id': sender_id
+            'sender_id': sender_id,
+            'sender_name': sender_name,
+            'conversation_id': conv_id
         }
     )

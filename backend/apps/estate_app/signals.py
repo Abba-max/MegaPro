@@ -6,11 +6,13 @@ from .ws_utils import broadcast_chat_message, send_user_notification
 @receiver(post_save, sender=Message)
 def message_post_save(sender, instance, created, **kwargs):
     if created:
+        sender_name = f"{instance.sender.first_name} {instance.sender.last_name}".strip() or instance.sender.username
         # Broadcast the message to the conversation group
         broadcast_chat_message(
             conv_id=instance.conversation_id,
             message=instance.text,
-            sender_id=instance.sender_id
+            sender_id=instance.sender_id,
+            sender_name=sender_name
         )
         
         # Also send a notification to the recipient of the message
