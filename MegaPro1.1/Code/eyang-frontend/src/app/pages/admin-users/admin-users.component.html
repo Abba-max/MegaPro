@@ -29,14 +29,14 @@
     <div class="toolbar">
         <div class="search-input-group">
             <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
-    <input type="text" [(ngModel)]="searchQuery" (input)="applyFilter()" placeholder="Rechercher par nom ou email…"
-        class="search-input">
-    </div>
-    <select class="select-input" [(ngModel)]="filterType" (change)="applyFilter()">
+            <input type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)" placeholder="Rechercher par nom ou email…"
+                class="search-input">
+        </div>
+    <select class="select-input" [ngModel]="filterType()" (ngModelChange)="onFilter($event)">
         <option value="">Tous les rôles</option>
         <option *ngFor="let t of userTypes" [value]="t">{{ t }}</option>
     </select>
-    <span class="total-counter">{{ filtered.length }} utilisateur{{ filtered.length !== 1 ? 's' : '' }}</span>
+    <span class="total-counter">{{ filtered().length }} utilisateur{{ filtered().length !== 1 ? 's' : '' }}</span>
 </div>
 
 <table class="table">
@@ -51,7 +51,7 @@
         </tr>
         </thead>
         <tbody>
-    <tr *ngFor="let u of filtered" class="fade-in">
+    <tr *ngFor="let u of pagedUsers()" class="fade-in">
         <td data-label="UTILISATEUR">
             <div class="user-cell">
             <div class="user-avatar" [style.background]="u.color">{{ u.initials }}</div>
@@ -86,11 +86,28 @@
             </div>
         </td>
         </tr>
-    <tr *ngIf="filtered.length === 0">
-        <td colspan="6" class="empty-row">Aucun utilisateur trouvé.</td>
-    </tr>
+        <tr *ngIf="filtered().length === 0">
+            <td colspan="6" class="empty-row">Aucun utilisateur trouvé.</td>
+        </tr>
     </tbody>
-    </table>
+</table>
+
+<!-- Pagination -->
+<div class="pagination-footer" *ngIf="totalPages() > 1">
+    <div class="page-info">
+        Page <b>{{ currentPage() }}</b> sur <b>{{ totalPages() }}</b>
+    </div>
+    <div class="pagination-actions">
+        <button class="pagination-btn" [disabled]="currentPage() === 1" (click)="prevPage()">
+            <lucide-icon [img]="PrevIcon" class="icon-btn-sm"></lucide-icon>
+            Précédent
+        </button>
+        <button class="pagination-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+            Suivant
+            <lucide-icon [img]="NextIcon" class="icon-btn-sm"></lucide-icon>
+        </button>
+    </div>
+</div>
 </div>
 <!-- ══ Create / Edit Modal ══════════════════════════════════════ -->
 <div class="modal-overlay fade-in" *ngIf="showModal" (click)="closeModal()">

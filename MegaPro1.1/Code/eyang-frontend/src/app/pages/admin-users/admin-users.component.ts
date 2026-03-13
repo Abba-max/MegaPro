@@ -1,10 +1,10 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   LucideAngularModule, Users, Search, Loader,
   ToggleLeft, ToggleRight, CheckCircle, XCircle, Info, AlertCircle,
-  Plus, Pencil, Trash2, X, Save, Eye, EyeOff
+  Plus, Pencil, Trash2, X, Save, Eye, EyeOff, ChevronLeft, ChevronRight
 } from 'lucide-angular';
 import { EstateService, AdminUser } from '../../services/estate.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -45,14 +45,36 @@ export class AdminUsersComponent implements OnInit {
   readonly SaveIcon        = Save;
   readonly EyeIcon         = Eye;
   readonly EyeOffIcon      = EyeOff;
+  readonly PrevIcon        = ChevronLeft;
+  readonly NextIcon        = ChevronRight;
 
   private readonly API = 'http://localhost:8000';
 
   isLoading   = signal(true);
-  allUsers:  AdminUser[] = [];
-  filtered:  AdminUser[] = [];
-  searchQuery = '';
-  filterType  = '';
+  allUsers    = signal<AdminUser[]>([]);
+  searchQuery = signal('');
+  filterType  = signal('');
+
+  // Pagination state
+  currentPage = signal(1);
+  pageSize    = signal(10);
+
+  filtered = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    const t = this.filterType();
+    return this.allUsers().filter(u => {
+      const matchQ = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
+      const matchT = !t || u.type === t;
+      return matchQ && matchT;
+    });
+  });
+
+  totalPages = computed(() => Math.ceil(this.filtered().length / this.pageSize()));
+
+  pagedUsers = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.filtered().slice(start, start + this.pageSize());
+  });
 
   // Modal state
   showModal    = false;
@@ -82,20 +104,27 @@ export class AdminUsersComponent implements OnInit {
     this.estateService.getAdminUsers()
       .pipe(catchError(() => { this.showToast('Erreur de chargement.', 'error'); return of([]); }))
       .subscribe(data => {
-        this.allUsers = data as AdminUser[];
-        this.applyFilter();
+        this.allUsers.set(data as AdminUser[]);
         this.isLoading.set(false);
       });
   }
 
-  applyFilter(): void {
-    const q = this.searchQuery.trim().toLowerCase();
-    this.filtered = this.allUsers.filter(u => {
-      const matchQ = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
-      const matchT = !this.filterType || u.type === this.filterType;
-      return matchQ && matchT;
-    });
+  onSearch(val: string): void {
+    this.searchQuery.set(val);
+    this.currentPage.set(1);
   }
+
+  onFilter(val: string): void {
+    this.filterType.set(val);
+    this.currentPage.set(1);
+  }
+
+  setPage(p: number): void {
+    if (p >= 1 && p <= this.totalPages()) this.currentPage.set(p);
+  }
+
+  nextPage(): void { if (this.currentPage() < this.totalPages()) this.currentPage.update(n => n + 1); }
+  prevPage(): void { if (this.currentPage() > 1) this.currentPage.update(n => n - 1); }
 
   // ── Toggle active ──────────────────────────────────────────────────────
   toggle(user: AdminUser): void {
@@ -224,15 +253,14 @@ export class AdminUsersComponent implements OnInit {
       }))
       .subscribe(res => {
         if (res === null && !this.toasts.find(t => t.type === 'error')) return;
-        this.allUsers    = this.allUsers.filter(u => u.id !== this.userToDelete!.id);
-        this.applyFilter();
+        this.allUsers.update(list => list.filter(u => u.id !== this.userToDelete!.id));
         this.showToast(`${this.userToDelete!.name} supprimé.`, 'success');
         this.cancelDelete();
       });
   }
 
   get userTypes(): string[] {
-    return [...new Set(this.allUsers.map(u => u.type))];
+    return [...new Set(this.allUsers().map(u => u.type))];
   }
 
   private emptyForm(): UserForm {

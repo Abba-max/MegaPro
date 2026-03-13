@@ -1,8 +1,8 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { LucideAngularModule, Plus, Search, Home, MoreVertical, Edit2, Trash2, CheckCircle, XCircle, Info, AlertCircle, Upload, X, MapPin, Ruler, Users, Check, Globe, LayoutGrid, FileText, Settings, LogOut, ChevronRight, Menu, Eye, EyeOff, Star, Filter, ArrowUpDown, Clock, Building2, Package, Mail, RefreshCw, Loader, Archive, Pencil, Save } from 'lucide-angular';
+import { LucideAngularModule, Plus, Search, Home, MoreVertical, Edit2, Trash2, CheckCircle, XCircle, Info, AlertCircle, Upload, X, MapPin, Ruler, Users, Check, Globe, LayoutGrid, FileText, Settings, LogOut, ChevronRight, Menu, Eye, EyeOff, Star, Filter, ArrowUpDown, Clock, Building2, Package, Mail, RefreshCw, Loader, Archive, Pencil, Save, ChevronLeft } from 'lucide-angular';
 import { EstateService, Estate, EstateRaw, EstateImage } from '../../services/estate.service';
 import { catchError, of, forkJoin, Observable, finalize } from 'rxjs';
 
@@ -53,15 +53,37 @@ export class AdminLogementsComponent implements OnInit {
   readonly SaveIcon        = Save;
   readonly HomeIcon        = Home;
   readonly UploadIcon      = Upload;
+  readonly PrevIcon        = ChevronLeft;
+  readonly NextIcon        = ChevronRight;
 
   private readonly API = 'http://localhost:8000';
 
   // List state
   isLoading    = signal(true);
-  allHousings: Estate[] = [];
-  filtered:    Estate[] = [];
-  searchQuery  = '';
-  filterStatus = '';
+  allHousings  = signal<Estate[]>([]);
+  searchQuery  = signal('');
+  filterStatus = signal('');
+
+  // Pagination state
+  currentPage = signal(1);
+  pageSize    = signal(10);
+
+  filtered = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    const s = this.filterStatus();
+    return this.allHousings().filter(h => {
+      const matchQ = !q || h.name.toLowerCase().includes(q) || h.location.toLowerCase().includes(q);
+      const matchS = !s || h.status === s;
+      return matchQ && matchS;
+    });
+  });
+
+  totalPages = computed(() => Math.ceil(this.filtered().length / this.pageSize()));
+
+  pagedHousings = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.filtered().slice(start, start + this.pageSize());
+  });
 
   // Modal state
   showModal  = false;
@@ -96,20 +118,27 @@ export class AdminLogementsComponent implements OnInit {
     this.estateService.getEstates()
       .pipe(catchError(() => { this.showToast('Erreur de chargement.', 'error'); return of([]); }))
       .subscribe(data => {
-        this.allHousings = data as Estate[];
-        this.applyFilters();
+        this.allHousings.set(data as Estate[]);
         this.isLoading.set(false);
       });
   }
 
-  applyFilters(): void {
-    const q = this.searchQuery.trim().toLowerCase();
-    this.filtered = this.allHousings.filter(h => {
-      const matchQ = !q || h.name.toLowerCase().includes(q) || h.location.toLowerCase().includes(q);
-      const matchS = !this.filterStatus || h.status === this.filterStatus;
-      return matchQ && matchS;
-    });
+  onSearch(val: string): void {
+    this.searchQuery.set(val);
+    this.currentPage.set(1);
   }
+
+  onFilter(val: string): void {
+    this.filterStatus.set(val);
+    this.currentPage.set(1);
+  }
+
+  setPage(p: number): void {
+    if (p >= 1 && p <= this.totalPages()) this.currentPage.set(p);
+  }
+
+  nextPage(): void { if (this.currentPage() < this.totalPages()) this.currentPage.update(n => n + 1); }
+  prevPage(): void { if (this.currentPage() > 1) this.currentPage.update(n => n - 1); }
 
   // ── Open create ───────────────────────────────────────────
   openCreate(): void {
@@ -289,9 +318,11 @@ export class AdminLogementsComponent implements OnInit {
       .pipe(catchError(() => { this.showToast('Erreur lors de la mise à jour.', 'error'); return of(null); }))
       .subscribe(updated => {
         if (!updated) return;
-        const idx = this.allHousings.findIndex(h => h.id === estate.id);
-        if (idx !== -1) this.allHousings[idx] = { ...this.allHousings[idx], status: newStatus };
-        this.applyFilters();
+        this.allHousings.update(list => {
+          const idx = list.findIndex(h => h.id === estate.id);
+          if (idx !== -1) list[idx] = { ...list[idx], status: newStatus };
+          return [...list];
+        });
         this.showToast(`"${estate.name}" ${label}.`, 'success');
       });
   }
@@ -313,8 +344,7 @@ export class AdminLogementsComponent implements OnInit {
     this.estateService.deleteEstate(this.estateToDelete.id)
       .pipe(catchError(() => { this.showToast('Erreur lors de la suppression.', 'error'); this.isSaving.set(false); return of(null); }))
       .subscribe(() => {
-        this.allHousings = this.allHousings.filter(h => h.id !== this.estateToDelete!.id);
-        this.applyFilters();
+        this.allHousings.update(list => list.filter(h => h.id !== this.estateToDelete!.id));
         this.showToast(`"${this.estateToDelete!.name}" supprimé.`, 'info');
         this.isSaving.set(false);
         this.cancelDelete();
