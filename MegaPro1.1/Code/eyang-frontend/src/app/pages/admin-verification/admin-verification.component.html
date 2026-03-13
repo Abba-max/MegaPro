@@ -4,18 +4,18 @@
         <p class="page-subtitle">Examinez les pièces d'identité et approuvez les nouveaux propriétaires.</p>
     </div>
 
-    <div *ngIf="isLoading" class="loading-spinner">
+    <div *ngIf="isLoading()" class="loading-spinner">
         <lucide-icon [img]="RefreshIcon" class="icon-lg animate-spin"></lucide-icon>
         <p>Chargement des demandes...</p>
     </div>
 
-    <div *ngIf="!isLoading && pendingOwners.length === 0" class="empty-state">
+    <div *ngIf="!isLoading() && pendingOwners.length === 0" class="empty-state">
         <lucide-icon [img]="CheckCircleIcon" class="empty-icon"></lucide-icon>
         <h3>Tout est à jour !</h3>
         <p>Aucune demande de vérification en attente pour le moment.</p>
     </div>
 
-    <div *ngIf="!isLoading && pendingOwners.length > 0" class="verification-grid">
+    <div *ngIf="!isLoading() && pendingOwners.length > 0" class="verification-grid">
         <div class="verification-card" *ngFor="let owner of pendingOwners">
             <div class="card-header">
                 <div class="user-avatar">{{ getInitials(owner.name) }}</div>

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Star, Trash2, Search, Loader, CheckCircle, XCircle, Info, AlertCircle } from 'lucide-angular';
@@ -24,7 +24,7 @@ export class AdminReviewsComponent implements OnInit {
   readonly InfoIcon        = Info;
   readonly AlertIcon       = AlertCircle;
 
-  isLoading    = true;
+  isLoading    = signal(true);
   allReviews:  Review[] = [];
   filtered:    Review[] = [];
   searchQuery  = '';
@@ -38,13 +38,13 @@ export class AdminReviewsComponent implements OnInit {
   ngOnInit(): void { this.load(); }
 
   load(): void {
-    this.isLoading = true;
+    this.isLoading.set(true);
     this.estateService.getAdminReviews()
       .pipe(catchError(() => of([])))
       .subscribe(data => {
         this.allReviews = data as Review[];
         this.applyFilter();
-        this.isLoading = false;
+        this.isLoading.set(false);
       });
   }
 

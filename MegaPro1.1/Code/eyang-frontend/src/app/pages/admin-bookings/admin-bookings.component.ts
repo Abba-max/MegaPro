@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Calendar, Loader, Phone, Trash2, Search, CheckCircle, XCircle, Info, AlertCircle } from 'lucide-angular';
@@ -25,7 +25,7 @@ export class AdminBookingsComponent implements OnInit {
   readonly InfoIcon        = Info;
   readonly AlertIcon       = AlertCircle;
 
-  isLoading    = true;
+  isLoading    = signal(true);
   allBookings: QuickOrder[] = [];
   filtered:    QuickOrder[] = [];
   searchQuery  = '';
@@ -38,14 +38,14 @@ export class AdminBookingsComponent implements OnInit {
   ngOnInit(): void { this.load(); }
 
   load(): void {
-    this.isLoading = true;
+    this.isLoading.set(true);
     // Uses the admin endpoint — returns ALL bookings, not just owner's
     this.estateService.getAdminBookings()
       .pipe(catchError(() => of([])))
       .subscribe(data => {
         this.allBookings = data as QuickOrder[];
         this.applyFilter();
-        this.isLoading = false;
+        this.isLoading.set(false);
       });
   }
 

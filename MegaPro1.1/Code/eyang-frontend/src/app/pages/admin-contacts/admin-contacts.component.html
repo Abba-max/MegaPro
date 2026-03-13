@@ -13,12 +13,12 @@
     <h1 class="page-title">Demandes de contact</h1>
 </div>
 
-<div *ngIf="isLoading" class="loader-center">
+<div *ngIf="isLoading()" class="loader-center">
     <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
     <span>Chargement…</span>
 </div>
 
-<ng-container *ngIf="!isLoading">
+<ng-container *ngIf="!isLoading()">
     <div class="toolbar-bar">
         <div class="search-input-group">
             <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>

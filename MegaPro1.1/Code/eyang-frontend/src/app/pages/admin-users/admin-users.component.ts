@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -48,7 +48,7 @@ export class AdminUsersComponent implements OnInit {
 
   private readonly API = 'http://localhost:8000';
 
-  isLoading   = true;
+  isLoading   = signal(true);
   allUsers:  AdminUser[] = [];
   filtered:  AdminUser[] = [];
   searchQuery = '';
@@ -57,7 +57,7 @@ export class AdminUsersComponent implements OnInit {
   // Modal state
   showModal    = false;
   isEditMode   = false;
-  isSaving     = false;
+  isSaving     = signal(false);
   showPassword = false;
   editUserId: number | null = null;
 
@@ -78,13 +78,13 @@ export class AdminUsersComponent implements OnInit {
   ngOnInit(): void { this.load(); }
 
   load(): void {
-    this.isLoading = true;
+    this.isLoading.set(true);
     this.estateService.getAdminUsers()
       .pipe(catchError(() => { this.showToast('Erreur de chargement.', 'error'); return of([]); }))
       .subscribe(data => {
         this.allUsers = data as AdminUser[];
         this.applyFilter();
-        this.isLoading = false;
+        this.isLoading.set(false);
       });
   }
 
@@ -148,7 +148,7 @@ export class AdminUsersComponent implements OnInit {
       this.showToast('Mot de passe obligatoire pour un nouvel utilisateur.', 'warning'); return;
     }
 
-    this.isSaving = true;
+    this.isSaving.set(true);
     const token   = localStorage.getItem('access_token') ?? '';
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
@@ -164,12 +164,12 @@ export class AdminUsersComponent implements OnInit {
       this.http.patch(`${this.API}/api/admin/users/${this.editUserId}/update/`, payload, { headers })
         .pipe(catchError(err => {
           this.showToast(err?.error?.detail ?? 'Erreur de mise à jour.', 'error');
-          this.isSaving = false;
+          this.isSaving.set(false);
           return of(null);
         }))
         .subscribe(res => {
           if (!res) return;
-          this.isSaving = false;
+          this.isSaving.set(false);
           this.showModal = false;
           this.showToast('Utilisateur mis à jour.', 'success');
           this.load();
@@ -188,12 +188,12 @@ export class AdminUsersComponent implements OnInit {
         .pipe(catchError(err => {
           const msg = err?.error?.email?.[0] ?? err?.error?.username?.[0] ?? 'Erreur de création.';
           this.showToast(msg, 'error');
-          this.isSaving = false;
+          this.isSaving.set(false);
           return of(null);
         }))
         .subscribe(res => {
           if (!res) return;
-          this.isSaving = false;
+          this.isSaving.set(false);
           this.showModal = false;
           this.showToast('Utilisateur créé avec succès.', 'success');
           this.load();

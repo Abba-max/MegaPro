@@ -3,19 +3,19 @@
 </div>
 
 <!-- Loading -->
-<div *ngIf="isLoading" class="loader-center mt-8">
+<div *ngIf="isLoading()" class="loader-center mt-8">
     <lucide-icon [img]="TrendIcon" class="spin-icon"></lucide-icon>
     <span>Chargement des données…</span>
 </div>
 
 <!-- Error -->
-<div *ngIf="!isLoading && hasError" class="error-banner mt-8">
+<div *ngIf="!isLoading() && hasError()" class="error-banner mt-8">
     <span>⚠️ Impossible de charger les données. Vérifiez la connexion au serveur.</span>
     <button class="btn-retry" (click)="load()">Réessayer</button>
 </div>
 
 <!-- Stats Cards -->
-<div class="stats-cards-grid mt-8" *ngIf="!isLoading && !hasError">
+<div class="stats-cards-grid mt-8" *ngIf="!isLoading() && !hasError()">
     <div class="stat-card" *ngFor="let stat of stats">
         <div class="stat-icon" [style.background]="stat.iconColor + '20'">
             <lucide-icon [img]="stat.icon" [style.color]="stat.iconColor"></lucide-icon>
@@ -32,7 +32,7 @@
 </div>
 
 <!-- Bottom Section -->
-<div class="bottom-section mt-8" *ngIf="!isLoading && !hasError">
+<div class="bottom-section mt-8" *ngIf="!isLoading() && !hasError()">
 
     <!-- Recent Activity -->
     <div class="activity-card card">

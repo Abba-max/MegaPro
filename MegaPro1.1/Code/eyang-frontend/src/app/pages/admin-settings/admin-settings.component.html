@@ -98,8 +98,8 @@
     </div>
 </div>
 
-<button class="btn-save" (click)="save()" [disabled]="isSaving">
-    <lucide-icon *ngIf="isSaving" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
-    <lucide-icon *ngIf="!isSaving" [img]="SaveIcon" class="icon-sm-btn"></lucide-icon>
-    {{ isSaving ? 'Enregistrement…' : 'Enregistrer et appliquer' }}
+<button class="btn-save" (click)="save()" [disabled]="isSaving()">
+    <lucide-icon *ngIf="isSaving()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
+    <lucide-icon *ngIf="!isSaving()" [img]="SaveIcon" class="icon-sm-btn"></lucide-icon>
+    {{ isSaving() ? 'Enregistrement…' : 'Enregistrer et appliquer' }}
 </button>

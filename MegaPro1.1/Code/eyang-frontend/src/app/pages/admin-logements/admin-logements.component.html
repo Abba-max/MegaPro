@@ -19,13 +19,13 @@
     </button>
     </div>
 <!-- Loading -->
-<div *ngIf="isLoading" class="loader-center mt-8">
+<div *ngIf="isLoading()" class="loader-center mt-8">
     <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
     <span>Chargement…</span>
 </div>
 
 <!-- Table Card -->
-<div class="card mt-8" *ngIf="!isLoading">
+<div class="card mt-8" *ngIf="!isLoading()">
     <div class="toolbar">
         <div class="search-input-group">
             <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
@@ -58,7 +58,7 @@
                 <td data-label="LOGEMENT">
                     <div class="housing-cell">
                         <div class="housing-thumb" *ngIf="l.images?.length">
-                            <img [src]="l.images[0].image" alt="">
+                            <img [src]="getImageUrl(l.images[0].image)" alt="">
                         </div>
                         <div class="housing-thumb placeholder-thumb" *ngIf="!l.images?.length">
                             <lucide-icon [img]="HomeIcon" class="thumb-icon"></lucide-icon>
@@ -259,7 +259,7 @@
                     <p class="existing-label">Photos existantes :</p>
                     <div class="preview-grid">
                         <div class="preview-item" *ngFor="let img of existingImages; let i = index">
-                            <img [src]="img.image" alt="existing">
+                            <img [src]="getImageUrl(img.image)" alt="existing">
                             <button class="preview-remove" (click)="removeExisting(i)">×</button>
                         </div>
                     </div>
@@ -270,10 +270,10 @@
 
         <div class="modal-actions">
             <button class="btn-cancel" (click)="closeModal()">Annuler</button>
-            <button class="btn-save-modal" (click)="save()" [disabled]="isSaving">
-                <lucide-icon *ngIf="isSaving" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
-                <lucide-icon *ngIf="!isSaving" [img]="SaveIcon" class="icon-xs"></lucide-icon>
-                {{ isSaving ? 'Enregistrement…' : (isEditMode ? 'Mettre à jour' : 'Créer') }}
+            <button class="btn-save-modal" (click)="save()" [disabled]="isSaving()">
+                <lucide-icon *ngIf="isSaving()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
+                <lucide-icon *ngIf="!isSaving()" [img]="SaveIcon" class="icon-xs"></lucide-icon>
+                {{ isSaving() ? 'Enregistrement…' : (isEditMode ? 'Mettre à jour' : 'Créer') }}
             </button>
         </div>
     </div>
@@ -289,9 +289,9 @@
         </p>
         <div class="modal-actions">
             <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
-            <button class="btn-delete" (click)="deleteConfirmed()" [disabled]="isSaving">
-                <lucide-icon *ngIf="isSaving" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
-                {{ isSaving ? 'Suppression…' : 'Supprimer' }}
+            <button class="btn-delete" (click)="deleteConfirmed()" [disabled]="isSaving()">
+                <lucide-icon *ngIf="isSaving()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
+                {{ isSaving() ? 'Suppression…' : 'Supprimer' }}
             </button>
         </div>
     </div>

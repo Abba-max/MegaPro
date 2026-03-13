@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { LucideAngularModule, BarChart3, Users, Home, Star, Calendar, Loader } from 'lucide-angular';
 import { EstateService, AdminStats } from '../../services/estate.service';
@@ -19,9 +19,9 @@ export class AdminReportsComponent implements OnInit {
   readonly CalendarIcon = Calendar;
   readonly LoaderIcon   = Loader;
 
-  isLoading = true;
-  data: AdminStats | null = null;
-  chartMax  = 1;
+  isLoading = signal(true);
+  data     = signal<AdminStats | null>(null);
+  chartMax = signal(1);
 
   constructor(private estateService: EstateService) {}
 
@@ -29,25 +29,27 @@ export class AdminReportsComponent implements OnInit {
     this.estateService.getAdminStats()
       .pipe(catchError(() => of(null)))
       .subscribe(d => {
-        this.data     = d as AdminStats | null;
-        this.chartMax = Math.max(...(d?.monthly_orders?.map(m => m.value) ?? [1]), 1);
-        this.isLoading = false;
+        this.data.set(d as AdminStats | null);
+        this.chartMax.set(Math.max(...(d?.monthly_orders?.map(m => m.value) ?? [1]), 1));
+        this.isLoading.set(false);
       });
   }
 
   getBarHeight(value: number): number {
-    return Math.round((value / this.chartMax) * 100);
+    return Math.round((value / this.chartMax()) * 100);
   }
 
   getAvgOrders(): string {
-    if (!this.data || this.data.monthly_orders.length === 0) return '–';
-    const total = this.data.monthly_orders.reduce((acc, m) => acc + m.value, 0);
-    return (total / this.data.monthly_orders.length).toFixed(1);
+    const d = this.data();
+    if (!d || d.monthly_orders.length === 0) return '–';
+    const total = d.monthly_orders.reduce((acc, m) => acc + m.value, 0);
+    return (total / d.monthly_orders.length).toFixed(1);
   }
 
   getPeakMonth(): string {
-    if (!this.data || this.data.monthly_orders.length === 0) return '–';
-    const peak = this.data.monthly_orders.reduce((a, b) => a.value > b.value ? a : b);
+    const d = this.data();
+    if (!d || d.monthly_orders.length === 0) return '–';
+    const peak = d.monthly_orders.reduce((a, b) => a.value > b.value ? a : b);
     return `${peak.month} (${peak.value})`;
   }
 }

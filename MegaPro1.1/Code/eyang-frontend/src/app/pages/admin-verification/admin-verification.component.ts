@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, RefreshCw, CheckCircle, X, Eye } from 'lucide-angular';
 import { EstateService } from '../../services/estate.service';
@@ -19,26 +19,25 @@ export class AdminVerificationComponent implements OnInit {
     readonly EyeIcon = Eye;
 
     pendingOwners: any[] = [];
-    isLoading = true;
+    isLoading = signal(true);
     selectedOwner: any | null = null;
 
-    constructor(private estateService: EstateService, private cdr: ChangeDetectorRef) { }
+    constructor(private estateService: EstateService) { }
 
     ngOnInit(): void {
         this.loadPendingOwners();
     }
 
     loadPendingOwners(): void {
-        this.isLoading = true;
+        this.isLoading.set(true);
         this.estateService.getPendingOwners().subscribe({
             next: (owners) => {
                 this.pendingOwners = owners;
-                this.isLoading = false;
-                this.cdr.detectChanges();
+                this.isLoading.set(false);
             },
             error: (err) => {
                 console.error('Failed to load pending owners:', err);
-                this.isLoading = false;
+                this.isLoading.set(false);
             }
         });
     }

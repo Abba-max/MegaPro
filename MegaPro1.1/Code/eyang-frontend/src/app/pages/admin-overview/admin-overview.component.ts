@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   LucideAngularModule, Users, Home, Calendar, Star,
@@ -33,8 +33,8 @@ export class AdminOverviewComponent implements OnInit {
   readonly OrderIcon    = ShoppingBag;
   readonly TrendIcon    = TrendingUp;
 
-  isLoading = true;
-  hasError  = false;
+  isLoading = signal(true);
+  hasError  = signal(false);
 
   stats: StatCard[]            = [];
   recentActivities: Activity[] = [];
@@ -46,13 +46,13 @@ export class AdminOverviewComponent implements OnInit {
   ngOnInit(): void { this.load(); }
 
   load(): void {
-    this.isLoading = true;
-    this.hasError  = false;
+    this.isLoading.set(true);
+    this.hasError.set(false);
 
     this.estateService.getAdminStats()
-      .pipe(catchError(() => { this.hasError = true; return of(null); }))
+      .pipe(catchError(() => { this.hasError.set(true); return of(null); }))
       .subscribe(data => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         if (!data) return;
 
         this.stats = [

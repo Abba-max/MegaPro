@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Save, Loader, CheckCircle, XCircle, Info, AlertCircle, Globe } from 'lucide-angular';
@@ -23,7 +23,7 @@ export class AdminSettingsComponent implements OnInit {
   readonly AlertIcon       = AlertCircle;
   readonly GlobeIcon       = Globe;
 
-  isSaving = false;
+  isSaving = signal(false);
 
   // Working copy — edited by the form
   siteSettings = {
@@ -69,7 +69,7 @@ export class AdminSettingsComponent implements OnInit {
   }
 
   save(): void {
-    this.isSaving = true;
+    this.isSaving.set(true);
 
     // Build new settings object
     const updated: SiteSettings = {
@@ -88,7 +88,7 @@ export class AdminSettingsComponent implements OnInit {
     localStorage.setItem('lang', this.selectedLang);
 
     setTimeout(() => {
-      this.isSaving = false;
+      this.isSaving.set(false);
       this.showToast('Paramètres enregistrés et appliqués !', 'success');
     }, 600);
   }

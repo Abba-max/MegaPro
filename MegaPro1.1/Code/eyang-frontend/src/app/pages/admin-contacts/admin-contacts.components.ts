@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
@@ -28,7 +28,7 @@ export class AdminContactsComponent implements OnInit {
   readonly InfoIcon        = Info;
   readonly AlertIcon       = AlertCircle;
 
-  isLoading    = true;
+  isLoading    = signal(true);
   allContacts: ContactRequest[] = [];
   filtered:    ContactRequest[] = [];
   searchQuery  = '';
@@ -41,13 +41,13 @@ export class AdminContactsComponent implements OnInit {
   ngOnInit(): void { this.load(); }
 
   load(): void {
-    this.isLoading = true;
+    this.isLoading.set(true);
     this.estateService.getAdminContacts()
       .pipe(catchError(() => of([])))
       .subscribe(data => {
         this.allContacts = data as ContactRequest[];
         this.applyFilter();
-        this.isLoading = false;
+        this.isLoading.set(false);
       });
   }
 

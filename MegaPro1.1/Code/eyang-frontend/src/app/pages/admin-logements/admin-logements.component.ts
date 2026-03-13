@@ -1,14 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import {
-  LucideAngularModule,
-  Search, Star, Trash2, Loader, CheckCircle, XCircle, Info, AlertCircle,
-  Globe, EyeOff, Archive, Plus, Pencil, X, Save, Home, Upload
-} from 'lucide-angular';
-import { EstateService, Estate, EstateRaw, EstateImage } from '../../services/estate.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { catchError, of } from 'rxjs';
+import { LucideAngularModule, Plus, Search, Home, MoreVertical, Edit2, Trash2, CheckCircle, XCircle, Info, AlertCircle, Upload, X, MapPin, Ruler, Users, Check, Globe, LayoutGrid, FileText, Settings, LogOut, ChevronRight, Menu, Eye, EyeOff, Star, Filter, ArrowUpDown, Clock, Building2, Package, Mail, RefreshCw, Loader, Archive, Pencil, Save } from 'lucide-angular';
+import { EstateService, Estate, EstateRaw, EstateImage } from '../../services/estate.service';
+import { catchError, of, forkJoin, Observable, finalize } from 'rxjs';
 
 export interface Toast { id: number; type: 'success' | 'error' | 'info' | 'warning'; message: string; }
 
@@ -61,7 +57,7 @@ export class AdminLogementsComponent implements OnInit {
   private readonly API = 'http://localhost:8000';
 
   // List state
-  isLoading    = true;
+  isLoading    = signal(true);
   allHousings: Estate[] = [];
   filtered:    Estate[] = [];
   searchQuery  = '';
@@ -70,7 +66,7 @@ export class AdminLogementsComponent implements OnInit {
   // Modal state
   showModal  = false;
   isEditMode = false;
-  isSaving   = false;
+  isSaving   = signal(false);
   editId: number | null = null;
 
   // Delete state
@@ -96,13 +92,13 @@ export class AdminLogementsComponent implements OnInit {
   ngOnInit(): void { this.load(); }
 
   load(): void {
-    this.isLoading = true;
+    this.isLoading.set(true);
     this.estateService.getEstates()
       .pipe(catchError(() => { this.showToast('Erreur de chargement.', 'error'); return of([]); }))
       .subscribe(data => {
         this.allHousings = data as Estate[];
         this.applyFilters();
-        this.isLoading = false;
+        this.isLoading.set(false);
       });
   }
 
@@ -187,7 +183,7 @@ export class AdminLogementsComponent implements OnInit {
     if (!this.form.price)           { this.showToast('Le prix est obligatoire.', 'warning'); return; }
     if (!this.form.capacity)        { this.showToast('La capacité est obligatoire.', 'warning'); return; }
 
-    this.isSaving = true;
+    this.isSaving.set(true);
 
     // Build payload as plain JSON (images handled separately)
     const payload: Partial<EstateRaw> = {
@@ -212,48 +208,77 @@ export class AdminLogementsComponent implements OnInit {
       this.estateService.updateEstate(this.editId, payload)
         .pipe(catchError(err => {
           this.showToast(err?.error?.detail ?? 'Erreur de mise à jour.', 'error');
-          this.isSaving = false;
+          this.isSaving.set(false);
           return of(null);
         }))
         .subscribe(updated => {
           if (!updated) return;
-          this.isSaving  = false;
-          this.showModal = false;
           this.showToast(`"${updated.name}" mis à jour.`, 'success');
-          // Upload new images if any
-          if (this.selectedFiles.length) this.uploadImages(this.editId!);
-          this.load();
+          
+          if (this.selectedFiles.length) {
+            this.uploadImages(this.editId!).subscribe(() => {
+              this.isSaving.set(false);
+              this.showModal = false;
+              this.load();
+            });
+          } else {
+            this.isSaving.set(false);
+            this.showModal = false;
+            this.load();
+          }
         });
     } else {
       this.estateService.createEstate(payload)
         .pipe(catchError(err => {
           this.showToast(err?.error?.detail ?? 'Erreur de création.', 'error');
-          this.isSaving = false;
+          this.isSaving.set(false);
           return of(null);
         }))
         .subscribe(created => {
           if (!created) return;
-          this.isSaving  = false;
-          this.showModal = false;
           this.showToast(`"${created.name}" créé avec succès.`, 'success');
-          if (this.selectedFiles.length) this.uploadImages(created.id);
-          this.load();
+          
+          if (this.selectedFiles.length) {
+            this.uploadImages(created.id).subscribe(() => {
+              this.isSaving.set(false);
+              this.showModal = false;
+              this.load();
+            });
+          } else {
+            this.isSaving.set(false);
+            this.showModal = false;
+            this.load();
+          }
         });
     }
   }
 
   // ── Upload images separately ──────────────────────────────
-  private uploadImages(estateId: number): void {
+  private uploadImages(estateId: number): Observable<any> {
+    if (this.selectedFiles.length === 0) return of([]);
+
     const token   = localStorage.getItem('access_token') ?? '';
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    this.selectedFiles.forEach(file => {
+    
+    const uploads = this.selectedFiles.map(file => {
       const fd = new FormData();
       fd.append('estate', String(estateId));
       fd.append('image', file);
-      this.http.post(`${this.API}/api/estate-images/`, fd, { headers })
-        .pipe(catchError(() => of(null)))
-        .subscribe(() => this.load());
+      return this.http.post(`${this.API}/api/estate-images/`, fd, { headers }).pipe(
+        catchError(err => {
+          console.error('Image upload failed:', err);
+          return of(null);
+        })
+      );
     });
+
+    return forkJoin(uploads);
+  }
+
+  getImageUrl(url: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `${this.API}${url.startsWith('/') ? '' : '/'}${url}`;
   }
 
   // ── Toggle publish ────────────────────────────────────────
@@ -284,14 +309,14 @@ export class AdminLogementsComponent implements OnInit {
 
   deleteConfirmed(): void {
     if (!this.estateToDelete) return;
-    this.isSaving = true;
+    this.isSaving.set(true);
     this.estateService.deleteEstate(this.estateToDelete.id)
-      .pipe(catchError(() => { this.showToast('Erreur lors de la suppression.', 'error'); this.isSaving = false; return of(null); }))
+      .pipe(catchError(() => { this.showToast('Erreur lors de la suppression.', 'error'); this.isSaving.set(false); return of(null); }))
       .subscribe(() => {
         this.allHousings = this.allHousings.filter(h => h.id !== this.estateToDelete!.id);
         this.applyFilters();
         this.showToast(`"${this.estateToDelete!.name}" supprimé.`, 'info');
-        this.isSaving = false;
+        this.isSaving.set(false);
         this.cancelDelete();
       });
   }

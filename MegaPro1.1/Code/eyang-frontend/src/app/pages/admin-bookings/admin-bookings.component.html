@@ -13,12 +13,12 @@
 <div class="page-header">
 <h1 class="page-title">Gestion des réservations</h1>
 </div>
-<div *ngIf="isLoading" class="loader-center">
+<div *ngIf="isLoading()" class="loader-center">
     <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
     <span>Chargement…</span>
 </div>
 
-<div class="card mt-8" *ngIf="!isLoading">
+<div class="card mt-8" *ngIf="!isLoading()">
     <div class="toolbar">
         <div class="search-input-group">
             <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
