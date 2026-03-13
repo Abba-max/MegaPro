@@ -12,14 +12,15 @@ from django.core.asgi import get_asgi_application
 from channels.routing import ProtocolTypeRouter, URLRouter
 
 from apps.estate_app.middleware import JWTAuthMiddleware
+from apps.estate_app.routing import websocket_urlpatterns
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'project.settings')
 
 application = ProtocolTypeRouter({
     "http": get_asgi_application(),
     "websocket": JWTAuthMiddleware(
-        URLRouter([
-            # Handled by our apps.estate_app.routing
-        ])
+        URLRouter(
+            websocket_urlpatterns
+        )
     ),
 })
