@@ -7,10 +7,10 @@ export interface EstateImage { id: number; image: string; }
 export interface EstateRaw {
   id: number; name: string; location: string; capacity: number; free: number;
   rating: string; price: number; distance: number;
-  wifi: '0'|'1'; restaurant: '0'|'1'; generator: '0'|'1';
-  room_size: '1'|'2'|'3'; forage: '0'|'1'; tv: '0'|'1'; fridge: '0'|'1';
+  wifi: '0' | '1'; restaurant: '0' | '1'; generator: '0' | '1';
+  room_size: '1' | '2' | '3'; forage: '0' | '1'; tv: '0' | '1'; fridge: '0' | '1';
   description: string; publishedAt: string;
-  status: 'draft'|'published'|'archived';
+  status: 'draft' | 'published' | 'archived';
   images: EstateImage[];
   owner?: { id: number; username: string; email: string; first_name: string; last_name: string; };
   occupied_count: number; reviews_count: number; orders_count: number;
@@ -52,7 +52,7 @@ export interface ChatMessage {
 export interface Conversation {
   id: number;
   client: { id: number; username: string; email: string; first_name: string; last_name: string; };
-  owner:  { id: number; username: string; email: string; first_name: string; last_name: string; };
+  owner: { id: number; username: string; email: string; first_name: string; last_name: string; };
   estate: number; estate_name: string; estate_image?: string;
   last_message?: { text: string; created_at: string; sender_id: number } | null;
   unread_count: number; messages: ChatMessage[];
@@ -88,12 +88,12 @@ const ROOM_MAP: Record<string, string> = { '1': 'Villa', '2': 'Studio', '3': 'Ch
 
 export function enrichEstate(raw: EstateRaw): Estate {
   const features: string[] = [];
-  if (raw.wifi === '1')       features.push('wifi');
-  if (raw.generator === '1')  features.push('zap');
-  if (raw.forage === '1')     features.push('droplets');
+  if (raw.wifi === '1') features.push('wifi');
+  if (raw.generator === '1') features.push('zap');
+  if (raw.forage === '1') features.push('droplets');
   if (raw.restaurant === '1') features.push('restaurant');
-  if (raw.tv === '1')         features.push('tv');
-  if (raw.fridge === '1')     features.push('fridge');
+  if (raw.tv === '1') features.push('tv');
+  if (raw.fridge === '1') features.push('fridge');
   return {
     ...raw, tv: raw.tv ?? '0', fridge: raw.fridge ?? '0',
     title: raw.name, image: raw.images?.[0]?.image ?? '',
@@ -114,7 +114,7 @@ export function enrichReview(r: Review): Review {
 export class EstateService {
   private readonly BASE = 'http://localhost:8000/api';
 
-  constructor(public http: HttpClient) {}
+  constructor(public http: HttpClient) { }
 
   private buildParams(f?: EstateFilters): HttpParams {
     let p = new HttpParams();
@@ -247,6 +247,15 @@ export class EstateService {
     return this.http.patch<{ id: number; active: boolean }>(`${this.BASE}/admin/users/${userId}/toggle/`, {});
   }
 
+  // ── Admin: verification ───────────────────────────────────
+  getPendingOwners(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.BASE}/admin/users/?pending_only=1`);
+  }
+
+  verifyOwner(userId: number, action: 'approve' | 'reject'): Observable<any> {
+    return this.http.post(`${this.BASE}/admin/users/${userId}/verify/`, { action });
+  }
+
   // ── CRUD estates ──────────────────────────────────────────
   createEstate(data: Partial<EstateRaw>): Observable<Estate> {
     return this.http.post<EstateRaw>(`${this.BASE}/estates/`, data).pipe(map(enrichEstate));
@@ -267,7 +276,7 @@ export class EstateService {
     return this.http.get<Review[]>(`${this.BASE}/reviews/`, { params: p }).pipe(map(list => list.map(enrichReview)));
   }
 
-  createReview(data: Omit<Review, 'id'|'created_at'>): Observable<Review> {
+  createReview(data: Omit<Review, 'id' | 'created_at'>): Observable<Review> {
     return this.http.post<Review>(`${this.BASE}/reviews/`, data).pipe(map(enrichReview));
   }
 

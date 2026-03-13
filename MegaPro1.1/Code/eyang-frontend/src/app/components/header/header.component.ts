@@ -62,7 +62,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     email: '',
     phone: '',
     password: '',
-    accountType: 'Student' as 'Student' | 'Parent' | 'Owner'
+    accountType: 'Student' as 'Student' | 'Parent' | 'Owner',
+    idCard: null as File | null
   };
   signupError = '';
 
@@ -172,6 +173,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   handleSignup(): void {
     this.signupError = '';
     const f = this.signupForm;
+
     if (!f.firstName || !f.lastName || !f.email || !f.password) {
       this.signupError = this.currentLang === 'fr'
         ? 'Veuillez remplir tous les champs obligatoires.'
@@ -179,15 +181,29 @@ export class HeaderComponent implements OnInit, OnDestroy {
       return;
     }
 
+    if (f.accountType === 'Owner' && !f.idCard) {
+      this.signupError = this.currentLang === 'fr'
+        ? 'Veuillez télécharger votre carte d\'identité.'
+        : 'Please upload your ID card.';
+      return;
+    }
+
     this.isSigningUp = true;
-    this.authService.register({
-      email: f.email,
-      password: f.password,
-      firstName: f.firstName,
-      lastName: f.lastName,
-      phone: f.phone,
-      accountType: f.accountType,
-    }).subscribe({
+
+    // Use FormData for multipart/form-data
+    const formData = new FormData();
+    formData.append('username', f.email);
+    formData.append('email', f.email);
+    formData.append('password', f.password);
+    formData.append('first_name', f.firstName);
+    formData.append('last_name', f.lastName);
+    formData.append('phone', f.phone);
+    formData.append('role', f.accountType);
+    if (f.idCard) {
+      formData.append('id_card', f.idCard, f.idCard.name);
+    }
+
+    this.authService.register(formData).subscribe({
       next: () => {
         this.closeSignup();
         this.authService.currentUser$.pipe(
@@ -199,10 +215,30 @@ export class HeaderComponent implements OnInit, OnDestroy {
         });
       },
       error: (err: any) => {
+        console.error('Registration failed:', err);
         this.isSigningUp = false;
-        const msg = err?.error?.email?.[0]
-          ?? err?.error?.username?.[0]
-          ?? (this.currentLang === 'fr' ? 'Erreur lors de l\'inscription.' : 'Registration error.');
+
+        let msg = '';
+        if (err?.error) {
+          if (typeof err.error === 'string') {
+            msg = err.error;
+          } else if (typeof err.error === 'object') {
+            const parts: string[] = [];
+            for (const key in err.error) {
+              const val = err.error[key];
+              const message = Array.isArray(val) ? val.join(', ') : val;
+              parts.push(`${key}: ${message}`);
+            }
+            msg = parts.join(' | ');
+          }
+        }
+
+        if (!msg) {
+          msg = this.currentLang === 'fr'
+            ? 'Erreur lors de l\'inscription. Veuillez réessayer.'
+            : 'Registration error. Please try again.';
+        }
+
         this.signupError = msg;
       }
     });
@@ -232,7 +268,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private resetSignupForm(): void {
     this.signupForm = {
       firstName: '', lastName: '', email: '',
-      phone: '', password: '', accountType: 'Student'
+      phone: '', password: '', accountType: 'Student',
+      idCard: null
     };
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.signupForm.idCard = file;
+    }
   }
 }

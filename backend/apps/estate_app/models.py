@@ -16,6 +16,8 @@ class User(AbstractUser):
         choices=(("1", "Student"), ("2", "Parent"), ("3", "Local resident"), ("4", "Visitor")),
         null=True, blank=True
     )
+    is_verified = models.BooleanField(default=False)
+    id_card = models.ImageField(upload_to='id_cards/', null=True, blank=True)
 
     class Meta(AbstractUser.Meta):
         db_table = 'auth_user'

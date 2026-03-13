@@ -11,7 +11,8 @@ import {
   BarChart2,
   Settings,
   LogOut,
-  Globe
+  Globe,
+  ShieldCheck
 } from 'lucide-angular';
 
 @Component({
@@ -31,4 +32,5 @@ export class SidebarComponent {
   readonly SettingsIcon = Settings;
   readonly LogOutIcon = LogOut;
   readonly GlobeIcon = Globe;
+  readonly ShieldIcon = ShieldCheck;
 }

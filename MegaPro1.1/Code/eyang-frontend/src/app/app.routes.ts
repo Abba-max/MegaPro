@@ -58,6 +58,10 @@ export const routes: Routes = [
         loadComponent: () => import('./pages/admin-users/admin-users.component').then(c => c.AdminUsersComponent)
       },
       {
+        path: 'verification',
+        loadComponent: () => import('./pages/admin-verification/admin-verification.component').then(c => c.AdminVerificationComponent)
+      },
+      {
         path: 'logements',
         loadComponent: () => import('./pages/admin-logements/admin-logements.component').then(c => c.AdminLogementsComponent)
       },

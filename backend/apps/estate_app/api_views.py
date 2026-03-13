@@ -1,5 +1,5 @@
 from rest_framework import viewsets, permissions, status
-from rest_framework.decorators import api_view, permission_classes, action
+from rest_framework.decorators import api_view, permission_classes, action, parser_classes
 from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.contrib.auth.hashers import make_password
@@ -12,6 +12,7 @@ from .serializers import (
     MyTokenObtainPairSerializer, UserSerializer,
     ConversationSerializer, MessageSerializer,
 )
+from .permissions import IsVerifiedOwner
 
 
 # ══════════════════════════════════════════════════════════════
@@ -24,9 +25,11 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 def register_view(request):
     serializer = RegisterSerializer(data=request.data)
     if not serializer.is_valid():
+        print(f"DEBUG: Register validation failed: {serializer.errors}")
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     user = serializer.save()
     refresh = MyTokenObtainPairSerializer.get_token(user)
@@ -96,6 +99,11 @@ class EstateViewSet(viewsets.ModelViewSet):
         return ctx
 
     def perform_create(self, serializer):
+        # Additional check for owners
+        if self.request.user.user_type == 'owner' and not self.request.user.is_verified:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("Votre compte n'est pas encore vérifié. Vous ne pouvez pas publier d'annonces.")
+            
         owner = self.request.user if self.request.user.is_authenticated else None
         serializer.save(owner=owner)
 
@@ -262,8 +270,8 @@ class ConversationViewSet(viewsets.ModelViewSet):
             return Response({'error': 'estate_id and owner_id are required.'}, status=400)
         try:
             estate = Estate.objects.get(pk=estate_id)
-            owner  = DjangoUser.objects.get(pk=owner_id)
-        except (Estate.DoesNotExist, DjangoUser.DoesNotExist):
+            owner  = User.objects.get(pk=owner_id)
+        except (Estate.DoesNotExist, User.DoesNotExist):
             return Response({'error': 'Estate or owner not found.'}, status=404)
         conv, created = Conversation.objects.get_or_create(
             client=request.user, owner=owner, estate=estate,
@@ -343,7 +351,7 @@ def client_stats_view(request):
 @api_view(['GET'])
 @permission_classes([permissions.IsAdminUser])
 def admin_stats_view(request):
-    total_users   = DjangoUser.objects.filter(is_active=True).count()
+    total_users   = User.objects.filter(is_active=True).count()
     total_estates = Estate.objects.count()
     total_orders  = QuickOrder.objects.count()
     total_reviews = Review.objects.count()
@@ -472,6 +480,12 @@ def admin_contacts_view(request):
 @permission_classes([permissions.IsAdminUser])
 def admin_users_view(request):
     users = User.objects.all().order_by('-date_joined')
+    
+    # Filter for verification queue
+    pending_only = request.query_params.get('pending_only') == '1'
+    if pending_only:
+        users = users.filter(user_type='owner', is_verified=False).exclude(id_card='')
+        
     color_map = {'Étudiant': '#3B82F6', 'Parent': '#8B5CF6', 'Propriétaire': '#10B981', 'Admin': '#EF4444'}
     result = []
     for u in users:
@@ -490,28 +504,63 @@ def admin_users_view(request):
             'type': role, 'active': u.is_active, 'initials': initials,
             'color': color_map.get(role, '#64748B'),
             'joined': u.date_joined.strftime('%d/%m/%Y'),
+            'is_verified': u.is_verified,
+            'id_card': request.build_absolute_uri(u.id_card.url) if u.id_card else None,
+            'phone': u.contact
         })
     return Response(result)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.IsAdminUser])
+def admin_verify_owner_view(request, user_id):
+    """POST /api/admin/users/<id>/verify/  — Approve or reject owner"""
+    try:
+        user = User.objects.get(pk=user_id, user_type='owner')
+    except User.DoesNotExist:
+        return Response({'error': 'Compte bailleur introuvable.'}, status=404)
+
+    action = request.data.get('action') # 'approve' or 'reject'
+    if action == 'approve':
+        user.is_verified = True
+        user.save()
+        return Response({'id': user.id, 'is_verified': True})
+    elif action == 'reject':
+        user.is_verified = False
+        # Optional: delete the ID card to allow re-upload
+        if user.id_card:
+            user.id_card.delete(save=False)
+        user.save()
+        return Response({'id': user.id, 'is_verified': False, 'rejected': True})
+    
+    return Response({'error': 'Action invalide.'}, status=400)
 
 
 @api_view(['PATCH'])
 @permission_classes([permissions.IsAdminUser])
 def admin_toggle_user_view(request, user_id):
     try:
-        user = DjangoUser.objects.get(pk=user_id)
-    except DjangoUser.DoesNotExist:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
         return Response({'error': 'Utilisateur introuvable.'}, status=404)
     user.is_active = not user.is_active
     user.save()
     return Response({'id': user.id, 'active': user.is_active})
+
+    if user == request.user:
+        return Response({'error': 'Vous ne pouvez pas supprimer votre propre compte.'}, status=400)
+
+    user.delete()
+    return Response({'deleted': True, 'id': user_id})
+
 
 @api_view(['PATCH'])
 @permission_classes([permissions.IsAdminUser])
 def admin_update_user_view(request, user_id):
     """PATCH /api/admin/users/<id>/update/  — update name, email, password"""
     try:
-        user = DjangoUser.objects.get(pk=user_id)
-    except DjangoUser.DoesNotExist:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
         return Response({'error': 'Utilisateur introuvable.'}, status=404)
 
     if 'first_name' in request.data:
@@ -537,8 +586,8 @@ def admin_update_user_view(request, user_id):
 def admin_delete_user_view(request, user_id):
     """DELETE /api/admin/users/<id>/delete/"""
     try:
-        user = DjangoUser.objects.get(pk=user_id)
-    except DjangoUser.DoesNotExist:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
         return Response({'error': 'Utilisateur introuvable.'}, status=404)
 
     if user == request.user:

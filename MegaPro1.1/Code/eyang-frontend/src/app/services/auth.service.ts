@@ -11,6 +11,8 @@ export interface User {
   role: 'Admin' | 'Student' | 'Owner' | 'Parent';
   user_type?: 'visitor' | 'owner';
   visitor_category?: string;
+  is_verified?: boolean;
+  id_card?: string;
   initials: string;
   phone?: string;
   address?: string;
@@ -73,30 +75,12 @@ export class AuthService {
     );
   }
 
-  register(data: {
-    username?: string;
-    email: string;
-    password: string;
-    first_name?: string;
-    last_name?: string;
-    firstName?: string;
-    lastName?: string;
-    phone?: string;
-    role?: string;
-    accountType?: 'Student' | 'Parent' | 'Owner';
-  }): Observable<any> {
-    const payload = {
-      username: data.username ?? data.email,
-      email: data.email,
-      password: data.password,
-      first_name: data.first_name ?? data.firstName ?? '',
-      last_name: data.last_name ?? data.lastName ?? '',
-      phone: data.phone ?? '',
-      role: data.role ?? data.accountType ?? 'Student',
-    };
-    return this.http.post(`${this.BASE}/auth/register/`, payload).pipe(
-      tap((res: any) => {
-        if (res.access && res.refresh) {
+  /** Sign up — handles both JSON and FormData (multipart) */
+  register(userData: any): Observable<any> {
+    const url = `${this.BASE}/auth/register/`;
+    return this.http.post<any>(url, userData).pipe(
+      tap(res => {
+        if (res.access) {
           this.storeTokens(res.access, res.refresh);
           this.fetchMe().subscribe();
         }
@@ -142,6 +126,8 @@ export class AuthService {
           role,
           user_type: data.user_type || undefined,
           visitor_category: data.visitor_category || undefined,
+          is_verified: data.is_verified,
+          id_card: data.id_card || undefined,
           phone: data.phone || '',
           address: data.address || '',
         };

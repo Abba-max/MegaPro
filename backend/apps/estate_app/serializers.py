@@ -29,15 +29,25 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, validators=[validate_password])
+    password = serializers.CharField(write_only=True)
     phone    = serializers.CharField(write_only=True, required=False, allow_blank=True, default='')
     role     = serializers.ChoiceField(
         choices=['Student', 'Parent', 'Owner'], write_only=True, default='Student'
     )
+    id_card  = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model  = User
-        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'phone', 'role']
+        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'phone', 'role', 'id_card']
+
+    def validate_password(self, value):
+        from django.contrib.auth.password_validation import validate_password
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            validate_password(value)
+        except DjangoValidationError as e:
+            raise serializers.ValidationError(list(e.messages))
+        return value
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
@@ -61,7 +71,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             **validated_data,
             user_type=user_type,
             contact=phone,
-            visitor_category=visitor_category
+            visitor_category=visitor_category,
+            is_verified=False  # Always false on registration
         )
         return user
 
@@ -69,7 +80,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'user_type', 'contact', 'address']
+        fields = ['id', 'username', 'email', 'user_type', 'contact', 'address', 'is_verified', 'id_card']
 
 class EstateImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()

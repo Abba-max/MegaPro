@@ -10,7 +10,7 @@ from .api_views import (
     admin_stats_view,
     admin_bookings_view, admin_reviews_view,
     admin_contacts_view, admin_users_view,
-    admin_toggle_user_view,admin_update_user_view, admin_delete_user_view,
+    admin_toggle_user_view, admin_verify_owner_view, admin_update_user_view, admin_delete_user_view,
 )
 
 router = DefaultRouter()
@@ -44,7 +44,8 @@ urlpatterns = [
     path('api/admin/reviews/',  admin_reviews_view,     name='admin-reviews'),
     path('api/admin/contacts/', admin_contacts_view,    name='admin-contacts'),
     path('api/admin/users/',    admin_users_view,        name='admin-users'),
+    path('api/admin/users/<int:user_id>/toggle/', admin_toggle_user_view, name='admin-toggle-user'),
+    path('api/admin/users/<int:user_id>/verify/', admin_verify_owner_view, name='admin-verify-owner'), # New verification endpoint
     path('api/admin/users/<int:user_id>/update/', admin_update_user_view, name='admin-update-user'),
     path('api/admin/users/<int:user_id>/delete/', admin_delete_user_view, name='admin-delete-user'),
-    path('api/admin/users/<int:user_id>/toggle/', admin_toggle_user_view, name='admin-toggle-user'),
 ]

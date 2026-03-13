@@ -1,0 +1,69 @@
+<div class="admin-verification">
+    <div class="page-header">
+        <h1 class="page-title">Vérification des Propriétaires</h1>
+        <p class="page-subtitle">Examinez les pièces d'identité et approuvez les nouveaux propriétaires.</p>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-spinner">
+        <lucide-icon [img]="RefreshIcon" class="icon-lg animate-spin"></lucide-icon>
+        <p>Chargement des demandes...</p>
+    </div>
+
+    <div *ngIf="!isLoading && pendingOwners.length === 0" class="empty-state">
+        <lucide-icon [img]="CheckCircleIcon" class="empty-icon"></lucide-icon>
+        <h3>Tout est à jour !</h3>
+        <p>Aucune demande de vérification en attente pour le moment.</p>
+    </div>
+
+    <div *ngIf="!isLoading && pendingOwners.length > 0" class="verification-grid">
+        <div class="verification-card" *ngFor="let owner of pendingOwners">
+            <div class="card-header">
+                <div class="user-avatar">{{ getInitials(owner.name) }}</div>
+                <div class="user-info">
+                    <span class="user-name">{{ owner.name }}</span>
+                    <span class="user-email">{{ owner.email }}</span>
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div class="detail-row">
+                    <span class="detail-label">Rôle :</span>
+                    <span class="detail-value">Bailleur</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Inscrit le :</span>
+                    <span class="detail-value">{{ formatDate(owner.joined) }}</span>
+                </div>
+
+                <div class="id-preview-box mt-4" (click)="viewIdCard(owner)">
+                    <lucide-icon [img]="EyeIcon" class="icon-xs"></lucide-icon>
+                    Voir la pièce d'identité
+                </div>
+            </div>
+
+            <div class="card-actions">
+                <button class="btn-approve" (click)="verifyOwner(owner.id, 'approve')">
+                    Approuver
+                </button>
+                <button class="btn-reject" (click)="verifyOwner(owner.id, 'reject')">
+                    Rejeter
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: ID Card Viewer -->
+<div class="modal-overlay" *ngIf="selectedOwner" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2 class="modal-title">Pièce d'identité : {{ selectedOwner.name }}</h2>
+            <button class="btn-close" (click)="closeModal()">
+                <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
+            </button>
+        </div>
+        <div class="modal-body">
+            <img [src]="selectedOwner.id_card" alt="ID Card" class="id-card-full">
+        </div>
+    </div>
+</div>

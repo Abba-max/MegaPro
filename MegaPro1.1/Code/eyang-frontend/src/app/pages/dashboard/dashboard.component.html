@@ -12,218 +12,248 @@
      OWNER DASHBOARD
 ══════════════════════════════════════════════════════ -->
 <ng-container *ngIf="isOwner">
-<!-- Header -->
-<div class="page-header">
-    <div>
-    <h1 class="page-title">Tableau de bord propriétaire</h1>
-    <p class="page-subtitle">Bienvenue, {{ currentUser?.name }}</p>
-    </div>
-    <button class="btn-primary-action" (click)="openAddModal()">
-        <lucide-icon [img]="PlusIcon" class="icon-sm"></lucide-icon>
-        Ajouter un logement
-    </button>
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Tableau de bord propriétaire</h1>
+            <p class="page-subtitle">Bienvenue, {{ currentUser?.name }}</p>
+
+            <!-- Verification Badge -->
+            <div class="verification-status mt-1">
+                <span *ngIf="currentUser?.is_verified" class="pill-published flex-row-inline">
+                    <lucide-icon [img]="CheckIcon" class="icon-xs"></lucide-icon> Compte vérifié
+                </span>
+                <span *ngIf="!currentUser?.is_verified" class="pill-draft flex-row-inline">
+                    <lucide-icon [img]="ClockIcon" class="icon-xs"></lucide-icon> En attente de vérification
+                </span>
+            </div>
+        </div>
+        <button class="btn-primary-action" (click)="openAddModal()" [disabled]="!currentUser?.is_verified"
+            [title]="!currentUser?.is_verified ? 'Vérification requise' : ''">
+            <lucide-icon [img]="PlusIcon" class="icon-sm"></lucide-icon>
+            Ajouter un logement
+        </button>
     </div>
 
-<!-- Stats -->
-<div class="stats-grid">
-    <div class="stat-card" (click)="activeTab='logements'">
-        <div class="stat-icon blue"><lucide-icon [img]="HomeIcon" class="stat-icon-inner"></lucide-icon></div>
-        <div class="stat-content">
-        <div class="stat-value">{{ ownerStats.total_estates }}</div>
-        <div class="stat-label">Logements</div>
+    <!-- Verification Warning Banner -->
+    <div class="alert-banner warning mt-4 mb-4" *ngIf="!currentUser?.is_verified">
+        <lucide-icon [img]="AlertIcon" class="alert-icon"></lucide-icon>
+        <div class="alert-content">
+            <p class="alert-title">Vérification en attente</p>
+            <p class="alert-text">
+                Votre compte doit être vérifié par un administrateur avant que vous ne puissiez ajouter de nouveaux
+                logements.
+                Veuillez patienter pendant que nous examinons votre pièce d'identité.
+            </p>
         </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card" (click)="activeTab='logements'">
+            <div class="stat-icon blue"><lucide-icon [img]="HomeIcon" class="stat-icon-inner"></lucide-icon></div>
+            <div class="stat-content">
+                <div class="stat-value">{{ ownerStats.total_estates }}</div>
+                <div class="stat-label">Logements</div>
+            </div>
         </div>
         <div class="stat-card">
-    <div class="stat-icon green"><lucide-icon [img]="BarChartIcon" class="stat-icon-inner"></lucide-icon></div>
-    <div class="stat-content">
-        <div class="stat-value">{{ ownerStats.occupancy_pct }}%</div>
-        <div class="stat-label">Taux d'occupation</div>
+            <div class="stat-icon green"><lucide-icon [img]="BarChartIcon" class="stat-icon-inner"></lucide-icon></div>
+            <div class="stat-content">
+                <div class="stat-value">{{ ownerStats.occupancy_pct }}%</div>
+                <div class="stat-label">Taux d'occupation</div>
+            </div>
         </div>
+        <div class="stat-card" (click)="activeTab='reservations'">
+            <div class="stat-icon orange"><lucide-icon [img]="PackageIcon" class="stat-icon-inner"></lucide-icon></div>
+            <div class="stat-content">
+                <div class="stat-value">{{ ownerStats.pending_orders }}</div>
+                <div class="stat-label">Réservations reçues</div>
+            </div>
         </div>
-    <div class="stat-card" (click)="activeTab='reservations'">
-        <div class="stat-icon orange"><lucide-icon [img]="PackageIcon" class="stat-icon-inner"></lucide-icon></div>
-        <div class="stat-content">
-        <div class="stat-value">{{ ownerStats.pending_orders }}</div>
-        <div class="stat-label">Réservations reçues</div>
+        <div class="stat-card" (click)="activeTab='avis'">
+            <div class="stat-icon purple"><lucide-icon [img]="StarIcon" class="stat-icon-inner"></lucide-icon></div>
+            <div class="stat-content">
+                <div class="stat-value">{{ ownerStats.avg_rating || '–' }}</div>
+                <div class="stat-label">Note moyenne</div>
+            </div>
         </div>
-        </div>
-    <div class="stat-card" (click)="activeTab='avis'">
-        <div class="stat-icon purple"><lucide-icon [img]="StarIcon" class="stat-icon-inner"></lucide-icon></div>
-        <div class="stat-content">
-        <div class="stat-value">{{ ownerStats.avg_rating || '–' }}</div>
-        <div class="stat-label">Note moyenne</div>
-        </div>
-        </div>
-        </div>
+    </div>
 
-<!-- Tabs -->
-<div class="tabs">
-    <div class="tab" [class.active]="activeTab==='overview'" (click)="activeTab='overview'">Vue d'ensemble</div>
-    <div class="tab" [class.active]="activeTab==='logements'" (click)="activeTab='logements'">Mes logements</div>
-    <div class="tab" [class.active]="activeTab==='reservations'" (click)="activeTab='reservations'">Réservations</div>
-    <div class="tab" [class.active]="activeTab==='avis'" (click)="activeTab='avis'">Avis reçus</div>
-    <div class="tab" [class.active]="activeTab==='messages'" (click)="activeTab='messages'; loadOwnerConversations()">
-        Messages
-        <span class="tab-badge" *ngIf="getTotalUnread() > 0">{{ getTotalUnread() }}</span>
-    </div>
-</div>
-<!-- ── Overview ──────────────────────────────────────── -->
-<div *ngIf="activeTab==='overview'" class="fade-in">
-    <p class="section-title">Activité récente</p>
-    <div *ngIf="myOrders.length===0 && myReviews.length===0" class="empty-state">
-        <lucide-icon [img]="BarChartIcon" class="empty-icon"></lucide-icon>
-        <p>Aucune activité récente pour le moment.</p>
-    </div>
-    <div class="activity-list">
-        <div class="activity-item" *ngFor="let o of myOrders.slice(0,5)">
-            <div class="activity-dot orange"></div>
-            <div class="activity-body">
-                <div class="activity-title">Réservation — {{ o.estate_name }}</div>
-                <div class="activity-sub">{{ o.name }} · {{ o.phone }} · {{ formatDate(o.created_at) }}</div>
-                <div class="activity-note" *ngIf="o.note">{{ o.note }}</div>
-            </div>
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab" [class.active]="activeTab==='overview'" (click)="activeTab='overview'">Vue d'ensemble</div>
+        <div class="tab" [class.active]="activeTab==='logements'" (click)="activeTab='logements'">Mes logements</div>
+        <div class="tab" [class.active]="activeTab==='reservations'" (click)="activeTab='reservations'">Réservations
         </div>
-        <div class="activity-item" *ngFor="let r of myReviews.slice(0,5)">
-            <div class="activity-dot purple"></div>
-            <div class="activity-body">
-                <div class="activity-title">Avis — {{ r.estate_name }}</div>
-                <div class="activity-sub">
-                    {{ r.name }} ·
-                    <span *ngFor="let s of getStars(r.rating)" class="star-sm">★</span>
-                    · {{ r.date }}
-                </div>
-                <div class="activity-note">{{ r.comment }}</div>
-            </div>
+        <div class="tab" [class.active]="activeTab==='avis'" (click)="activeTab='avis'">Avis reçus</div>
+        <div class="tab" [class.active]="activeTab==='messages'"
+            (click)="activeTab='messages'; loadOwnerConversations()">
+            Messages
+            <span class="tab-badge" *ngIf="getTotalUnread() > 0">{{ getTotalUnread() }}</span>
         </div>
     </div>
-</div>
-
-<!-- ── Logements ─────────────────────────────────────── -->
-<div *ngIf="activeTab==='logements'" class="fade-in">
-    <div *ngIf="isLoading" class="loading-state">Chargement…</div>
-    <div *ngIf="!isLoading && myEstates.length===0" class="empty-state">
-        <lucide-icon [img]="HomeIcon" class="empty-icon"></lucide-icon>
-        <p>Aucun logement. Cliquez sur "Ajouter" pour commencer.</p>
-    </div>
-    <div class="housings-grid" *ngIf="!isLoading && myEstates.length>0">
-        <div class="housing-card" *ngFor="let e of myEstates">
-            <div class="housing-image">
-        <img *ngIf="getEstateImage(e)" [src]="getEstateImage(e)" alt="" class="housing-img">
-        <div *ngIf="!getEstateImage(e)" class="housing-img-placeholder">
-            <lucide-icon [img]="HomeIcon" class="placeholder-icon"></lucide-icon>
+    <!-- ── Overview ──────────────────────────────────────── -->
+    <div *ngIf="activeTab==='overview'" class="fade-in">
+        <p class="section-title">Activité récente</p>
+        <div *ngIf="myOrders.length===0 && myReviews.length===0" class="empty-state">
+            <lucide-icon [img]="BarChartIcon" class="empty-icon"></lucide-icon>
+            <p>Aucune activité récente pour le moment.</p>
         </div>
-        <span class="status-pill" [class]="'pill-'+e.status">
-            {{ e.status==='published' ? 'Publié' : e.status==='draft' ? 'Brouillon' : 'Archivé' }}
-        </span>
-        </div>
-        <div class="housing-body">
-        <h3 class="housing-name">{{ e.name }}</h3>
-        <div class="housing-location">
-            <lucide-icon [img]="MapPinIcon" class="icon-xs"></lucide-icon> {{ e.location }}
-        </div>
-        <div class="housing-price">
-            {{ formatPrice(e.price) }}<span class="price-unit">/mois</span>
-        </div>
-        <div class="housing-row">
-            <span class="hbadge">
-                <lucide-icon [img]="UserIcon" class="icon-xs"></lucide-icon> {{ e.free }} libres / {{ e.capacity }}
-            </span>
-            <span class="hbadge star">
-                <lucide-icon [img]="StarIcon" class="icon-xs"></lucide-icon> {{ e.rating }}
-            </span>
-        </div>
-        <div class="housing-actions">
-            <button class="btn-edit" (click)="openEditModal(e)">
-                <lucide-icon [img]="EditIcon" class="icon-xs"></lucide-icon> Modifier
-            </button>
-            <button class="btn-delete" (click)="deleteEstate(e)">
-                <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
-            </button>
-            </div>
-            </div>
-            </div>
-            </div>
-</div>
-<!-- ── Reservations ──────────────────────────────────── -->
-<div *ngIf="activeTab==='reservations'" class="fade-in">
-    <div *ngIf="myOrders.length===0" class="empty-state">
-        <lucide-icon [img]="PackageIcon" class="empty-icon"></lucide-icon>
-        <p>Aucune réservation reçue pour le moment.</p>
-    </div>
-    <div class="data-list" *ngIf="myOrders.length>0">
-        <div class="data-row" *ngFor="let o of myOrders">
-            <div class="dr-col">
-                <div class="dr-primary">{{ o.estate_name }}</div>
-                <div class="dr-secondary">{{ formatDate(o.created_at) }}</div>
-            </div>
-            <div class="dr-col">
-                <div class="dr-primary">{{ o.name }}</div>
-                <div class="dr-secondary flex-row">
-                    <lucide-icon [img]="PhoneIcon" class="icon-xs"></lucide-icon> {{ o.phone }}
+        <div class="activity-list">
+            <div class="activity-item" *ngFor="let o of myOrders.slice(0,5)">
+                <div class="activity-dot orange"></div>
+                <div class="activity-body">
+                    <div class="activity-title">Réservation — {{ o.estate_name }}</div>
+                    <div class="activity-sub">{{ o.name }} · {{ o.phone }} · {{ formatDate(o.created_at) }}</div>
+                    <div class="activity-note" *ngIf="o.note">{{ o.note }}</div>
                 </div>
             </div>
-            <div class="dr-note" *ngIf="o.note">{{ o.note }}</div>
-        </div>
-    </div>
-    </div>
-
-<!-- ── Avis ──────────────────────────────────────────── -->
-<div *ngIf="activeTab==='avis'" class="fade-in">
-    <div *ngIf="myReviews.length===0" class="empty-state">
-        <lucide-icon [img]="StarIcon" class="empty-icon"></lucide-icon>
-        <p>Aucun avis reçu pour le moment.</p>
-    </div>
-    <div class="reviews-list" *ngIf="myReviews.length>0">
-        <div class="review-card" *ngFor="let r of myReviews">
-            <div class="review-header">
-                <div class="review-avatar">{{ r.initials }}</div>
-                <div class="review-meta">
-                    <div class="review-author">{{ r.name }}</div>
-                    <div class="review-sub">{{ r.estate_name }} · {{ r.date }}</div>
-                </div>
-                <div class="star-row ml-auto">
-                    <span *ngFor="let s of getStars(5)" [class]="s<=r.rating?'star-on':'star-off'">★</span>
+            <div class="activity-item" *ngFor="let r of myReviews.slice(0,5)">
+                <div class="activity-dot purple"></div>
+                <div class="activity-body">
+                    <div class="activity-title">Avis — {{ r.estate_name }}</div>
+                    <div class="activity-sub">
+                        {{ r.name }} ·
+                        <span *ngFor="let s of getStars(r.rating)" class="star-sm">★</span>
+                        · {{ r.date }}
+                    </div>
+                    <div class="activity-note">{{ r.comment }}</div>
                 </div>
             </div>
-            <p class="review-comment">{{ r.comment }}</p>
         </div>
     </div>
+
+    <!-- ── Logements ─────────────────────────────────────── -->
+    <div *ngIf="activeTab==='logements'" class="fade-in">
+        <div *ngIf="isLoading" class="loading-state">Chargement…</div>
+        <div *ngIf="!isLoading && myEstates.length===0" class="empty-state">
+            <lucide-icon [img]="HomeIcon" class="empty-icon"></lucide-icon>
+            <p>Aucun logement. Cliquez sur "Ajouter" pour commencer.</p>
+        </div>
+        <div class="housings-grid" *ngIf="!isLoading && myEstates.length>0">
+            <div class="housing-card" *ngFor="let e of myEstates">
+                <div class="housing-image">
+                    <img *ngIf="getEstateImage(e)" [src]="getEstateImage(e)" alt="" class="housing-img">
+                    <div *ngIf="!getEstateImage(e)" class="housing-img-placeholder">
+                        <lucide-icon [img]="HomeIcon" class="placeholder-icon"></lucide-icon>
+                    </div>
+                    <span class="status-pill" [class]="'pill-'+e.status">
+                        {{ e.status==='published' ? 'Publié' : e.status==='draft' ? 'Brouillon' : 'Archivé' }}
+                    </span>
+                </div>
+                <div class="housing-body">
+                    <h3 class="housing-name">{{ e.name }}</h3>
+                    <div class="housing-location">
+                        <lucide-icon [img]="MapPinIcon" class="icon-xs"></lucide-icon> {{ e.location }}
+                    </div>
+                    <div class="housing-price">
+                        {{ formatPrice(e.price) }}<span class="price-unit">/mois</span>
+                    </div>
+                    <div class="housing-row">
+                        <span class="hbadge">
+                            <lucide-icon [img]="UserIcon" class="icon-xs"></lucide-icon> {{ e.free }} libres / {{
+                            e.capacity }}
+                        </span>
+                        <span class="hbadge star">
+                            <lucide-icon [img]="StarIcon" class="icon-xs"></lucide-icon> {{ e.rating }}
+                        </span>
+                    </div>
+                    <div class="housing-actions">
+                        <button class="btn-edit" (click)="openEditModal(e)">
+                            <lucide-icon [img]="EditIcon" class="icon-xs"></lucide-icon> Modifier
+                        </button>
+                        <button class="btn-delete" (click)="deleteEstate(e)">
+                            <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- ── Reservations ──────────────────────────────────── -->
+    <div *ngIf="activeTab==='reservations'" class="fade-in">
+        <div *ngIf="myOrders.length===0" class="empty-state">
+            <lucide-icon [img]="PackageIcon" class="empty-icon"></lucide-icon>
+            <p>Aucune réservation reçue pour le moment.</p>
+        </div>
+        <div class="data-list" *ngIf="myOrders.length>0">
+            <div class="data-row" *ngFor="let o of myOrders">
+                <div class="dr-col">
+                    <div class="dr-primary">{{ o.estate_name }}</div>
+                    <div class="dr-secondary">{{ formatDate(o.created_at) }}</div>
+                </div>
+                <div class="dr-col">
+                    <div class="dr-primary">{{ o.name }}</div>
+                    <div class="dr-secondary flex-row">
+                        <lucide-icon [img]="PhoneIcon" class="icon-xs"></lucide-icon> {{ o.phone }}
+                    </div>
+                </div>
+                <div class="dr-note" *ngIf="o.note">{{ o.note }}</div>
+            </div>
+        </div>
     </div>
 
-<!-- ── Messages (Owner) ───────────────────────────────── -->
-<div *ngIf="activeTab==='messages'" class="fade-in">
-    <div class="owner-messages">
+    <!-- ── Avis ──────────────────────────────────────────── -->
+    <div *ngIf="activeTab==='avis'" class="fade-in">
+        <div *ngIf="myReviews.length===0" class="empty-state">
+            <lucide-icon [img]="StarIcon" class="empty-icon"></lucide-icon>
+            <p>Aucun avis reçu pour le moment.</p>
+        </div>
+        <div class="reviews-list" *ngIf="myReviews.length>0">
+            <div class="review-card" *ngFor="let r of myReviews">
+                <div class="review-header">
+                    <div class="review-avatar">{{ r.initials }}</div>
+                    <div class="review-meta">
+                        <div class="review-author">{{ r.name }}</div>
+                        <div class="review-sub">{{ r.estate_name }} · {{ r.date }}</div>
+                    </div>
+                    <div class="star-row ml-auto">
+                        <span *ngFor="let s of getStars(5)" [class]="s<=r.rating?'star-on':'star-off'">★</span>
+                    </div>
+                </div>
+                <p class="review-comment">{{ r.comment }}</p>
+            </div>
+        </div>
+    </div>
 
-        <!-- Sidebar -->
-        <aside class="msg-sidebar">
-            <div class="msg-sidebar-header">
-                <lucide-icon [img]="MessageIcon" class="icon-sm"></lucide-icon>
-                Conversations
-                <span class="tab-badge" *ngIf="getTotalUnread() > 0">{{ getTotalUnread() }}</span>
-            </div>
-        <div class="msg-conv-list">
-            <div *ngIf="ownerConversationsLoading" style="padding:1rem;color:#94A3B8;font-size:13px">Chargement…</div>
-            <div *ngIf="!ownerConversationsLoading && conversations.length===0" class="msg-sidebar-empty">
-                Aucune conversation pour le moment.
-            </div>
-        <div *ngFor="let c of conversations" class="msg-conv-item" [class.active]="activeConversation?.id === c.id"
-            (click)="openConversation(c)">
-            <div class="msg-conv-avatar" [style.background]="getOwnerConvColor(c)">{{ getConvInitials(c) }}</div>
-            <div class="msg-conv-info">
-                <div class="msg-conv-name">{{ getClientName(c) }}</div>
-                <div class="msg-conv-estate">
-                    <lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon>{{ c.estate_name }}
-            </div>
-            <div class="msg-conv-last" *ngIf="c.last_message">{{ c.last_message.text }}</div>
-            </div>
-            <div class="msg-conv-meta">
-                <span class="msg-conv-time" *ngIf="c.last_message">{{ formatMsgTime(c.last_message.created_at) }}</span>
-                <span class="msg-unread-pill" *ngIf="c.unread_count > 0">{{ c.unread_count }}</span>
-            </div>
-            </div>
-            </div>
+    <!-- ── Messages (Owner) ───────────────────────────────── -->
+    <div *ngIf="activeTab==='messages'" class="fade-in">
+        <div class="owner-messages">
+
+            <!-- Sidebar -->
+            <aside class="msg-sidebar">
+                <div class="msg-sidebar-header">
+                    <lucide-icon [img]="MessageIcon" class="icon-sm"></lucide-icon>
+                    Conversations
+                    <span class="tab-badge" *ngIf="getTotalUnread() > 0">{{ getTotalUnread() }}</span>
+                </div>
+                <div class="msg-conv-list">
+                    <div *ngIf="ownerConversationsLoading" style="padding:1rem;color:#94A3B8;font-size:13px">Chargement…
+                    </div>
+                    <div *ngIf="!ownerConversationsLoading && conversations.length===0" class="msg-sidebar-empty">
+                        Aucune conversation pour le moment.
+                    </div>
+                    <div *ngFor="let c of conversations" class="msg-conv-item"
+                        [class.active]="activeConversation?.id === c.id" (click)="openConversation(c)">
+                        <div class="msg-conv-avatar" [style.background]="getOwnerConvColor(c)">{{ getConvInitials(c) }}
+                        </div>
+                        <div class="msg-conv-info">
+                            <div class="msg-conv-name">{{ getClientName(c) }}</div>
+                            <div class="msg-conv-estate">
+                                <lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon>{{ c.estate_name }}
+                            </div>
+                            <div class="msg-conv-last" *ngIf="c.last_message">{{ c.last_message.text }}</div>
+                        </div>
+                        <div class="msg-conv-meta">
+                            <span class="msg-conv-time" *ngIf="c.last_message">{{
+                                formatMsgTime(c.last_message.created_at) }}</span>
+                            <span class="msg-unread-pill" *ngIf="c.unread_count > 0">{{ c.unread_count }}</span>
+                        </div>
+                    </div>
+                </div>
             </aside>
-            
+
             <!-- Chat panel -->
             <div class="msg-chat-panel">
                 <div *ngIf="!activeConversation" class="msg-chat-empty">
@@ -237,17 +267,20 @@
                         <div>
                             <div class="msg-chat-name">{{ getClientName(activeConversation) }}</div>
                             <div class="msg-chat-estate">
-                                <lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon>{{ activeConversation.estate_name }}
+                                <lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon>{{
+                                activeConversation.estate_name }}
                             </div>
                         </div>
                     </div>
                     <div class="msg-viewport" #ownerViewport>
                         <div class="msg-system-label">{{ activeConversation.estate_name }}</div>
-                        <div *ngIf="activeConversation.messages.length===0" class="msg-no-messages">Démarrez la conversation 👋
+                        <div *ngIf="activeConversation.messages.length===0" class="msg-no-messages">Démarrez la
+                            conversation 👋
                         </div>
                         <ng-container *ngFor="let m of activeConversation.messages">
                             <div class="msg-row received" *ngIf="!isMine(m)">
-                                <div class="msg-row-avatar" [style.background]="getOwnerConvColor(activeConversation)">{{
+                                <div class="msg-row-avatar" [style.background]="getOwnerConvColor(activeConversation)">
+                                    {{
                                     getConvInitials(activeConversation) }}</div>
                                 <div class="msg-bubble received">
                                     <p>{{ m.text }}</p><span class="msg-time">{{ formatMsgTime(m.created_at) }}</span>
@@ -257,255 +290,260 @@
                                 <div class="msg-bubble sent">
                                     <p>{{ m.text }}</p><span class="msg-time">{{ formatMsgTime(m.created_at) }}</span>
                                 </div>
+                            </div>
+                        </ng-container>
+                    </div>
+                    <div class="msg-chat-footer">
+                        <div class="msg-input-row">
+                            <input class="msg-text-input" [(ngModel)]="newMessage" placeholder="Écrivez votre réponse…"
+                                (keydown.enter)="sendMessage()">
+                            <button class="msg-send-btn" (click)="sendMessage()" [class.active]="newMessage.trim()"
+                                [disabled]="!newMessage.trim()">
+                                <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
+                            </button>
+                        </div>
+                    </div>
+                </ng-container>
             </div>
-            </ng-container>
-        </div>
-        <div class="msg-chat-footer">
-            <div class="msg-input-row">
-                <input class="msg-text-input" [(ngModel)]="newMessage" placeholder="Écrivez votre réponse…"
-                    (keydown.enter)="sendMessage()">
-                <button class="msg-send-btn" (click)="sendMessage()" [class.active]="newMessage.trim()"
-                    [disabled]="!newMessage.trim()">
-                    <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
-                </button>
-            </div>
-        </div>
-        </ng-container>
-        </div>
 
+        </div>
     </div>
-    </div>
-    
-    </ng-container>
-    
-    <!-- ══════════════════════════════════════════════════════
+
+</ng-container>
+
+<!-- ══════════════════════════════════════════════════════
          CLIENT / STUDENT DASHBOARD
     ══════════════════════════════════════════════════════ -->
 <ng-container *ngIf="!isOwner">
-<!-- Header -->
-<div class="page-header">
-    <div>
-        <h1 class="page-title">Mon espace</h1>
-        <p class="page-subtitle">Bienvenue, {{ currentUser?.name }}</p>
-    </div>
-    <button class="btn-primary-action" (click)="openReviewModal()">
-        <lucide-icon [img]="StarIcon" class="icon-sm"></lucide-icon>
-        Laisser un avis
-    </button>
+    <!-- Header -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Mon espace</h1>
+            <p class="page-subtitle">Bienvenue, {{ currentUser?.name }}</p>
+        </div>
+        <button class="btn-primary-action" (click)="openReviewModal()">
+            <lucide-icon [img]="StarIcon" class="icon-sm"></lucide-icon>
+            Laisser un avis
+        </button>
     </div>
 
-<!-- Stats -->
-<div class="stats-grid">
-    <div class="stat-card" style="cursor:pointer" (click)="activeTab='reservations'">
-        <div class="stat-icon blue"><lucide-icon [img]="PackageIcon" class="stat-icon-inner"></lucide-icon></div>
-        <div class="stat-content">
-            <div class="stat-value">{{ clientStats.total_reservations }}</div>
-            <div class="stat-label">Réservations</div>
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card" style="cursor:pointer" (click)="activeTab='reservations'">
+            <div class="stat-icon blue"><lucide-icon [img]="PackageIcon" class="stat-icon-inner"></lucide-icon></div>
+            <div class="stat-content">
+                <div class="stat-value">{{ clientStats.total_reservations }}</div>
+                <div class="stat-label">Réservations</div>
+            </div>
+        </div>
+        <div class="stat-card" style="cursor:pointer" (click)="activeTab='avis'">
+            <div class="stat-icon purple"><lucide-icon [img]="StarIcon" class="stat-icon-inner"></lucide-icon></div>
+            <div class="stat-content">
+                <div class="stat-value">{{ clientStats.total_reviews }}</div>
+                <div class="stat-label">Mes avis</div>
+            </div>
+        </div>
+        <div class="stat-card" style="cursor:pointer" (click)="activeTab='messages'">
+            <div class="stat-icon green"><lucide-icon [img]="MessageIcon" class="stat-icon-inner"></lucide-icon></div>
+            <div class="stat-content">
+                <div class="stat-value">{{ clientStats.total_messages }}</div>
+                <div class="stat-label">Messages envoyés</div>
+            </div>
+        </div>
+        <div class="stat-card" style="cursor:pointer" (click)="activeTab='contacts'">
+            <div class="stat-icon orange"><lucide-icon [img]="MailIcon" class="stat-icon-inner"></lucide-icon></div>
+            <div class="stat-content">
+                <div class="stat-value">{{ clientStats.total_contacts }}</div>
+                <div class="stat-label">Contacts envoyés</div>
+            </div>
         </div>
     </div>
-    <div class="stat-card" style="cursor:pointer" (click)="activeTab='avis'">
-        <div class="stat-icon purple"><lucide-icon [img]="StarIcon" class="stat-icon-inner"></lucide-icon></div>
-        <div class="stat-content">
-            <div class="stat-value">{{ clientStats.total_reviews }}</div>
-            <div class="stat-label">Mes avis</div>
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab" [class.active]="activeTab==='reservations'" (click)="activeTab='reservations'">Réservations
         </div>
+        <div class="tab" [class.active]="activeTab==='avis'" (click)="activeTab='avis'">Mes avis</div>
+        <div class="tab" [class.active]="activeTab==='messages'" (click)="activeTab='messages'">Messages</div>
+        <div class="tab" [class.active]="activeTab==='contacts'" (click)="activeTab='contacts'">Contacts</div>
     </div>
-    <div class="stat-card" style="cursor:pointer" (click)="activeTab='messages'">
-        <div class="stat-icon green"><lucide-icon [img]="MessageIcon" class="stat-icon-inner"></lucide-icon></div>
-        <div class="stat-content">
-            <div class="stat-value">{{ clientStats.total_messages }}</div>
-            <div class="stat-label">Messages envoyés</div>
-        </div>
-    </div>
-    <div class="stat-card" style="cursor:pointer" (click)="activeTab='contacts'">
-        <div class="stat-icon orange"><lucide-icon [img]="MailIcon" class="stat-icon-inner"></lucide-icon></div>
-        <div class="stat-content">
-            <div class="stat-value">{{ clientStats.total_contacts }}</div>
-            <div class="stat-label">Contacts envoyés</div>
-        </div>
-    </div>
-    </div>
-<!-- Tabs -->
-<div class="tabs">
-    <div class="tab" [class.active]="activeTab==='reservations'" (click)="activeTab='reservations'">Réservations</div>
-    <div class="tab" [class.active]="activeTab==='avis'" (click)="activeTab='avis'">Mes avis</div>
-    <div class="tab" [class.active]="activeTab==='messages'" (click)="activeTab='messages'">Messages</div>
-    <div class="tab" [class.active]="activeTab==='contacts'" (click)="activeTab='contacts'">Contacts</div>
-</div>
 
-<!-- ── Réservations ───────────────────────────────────── -->
-<div *ngIf="activeTab==='reservations'" class="fade-in">
-    <div *ngIf="isLoading" class="loading-state">Chargement…</div>
-    <div *ngIf="!isLoading && myReservations.length===0" class="empty-state">
-        <lucide-icon [img]="PackageIcon" class="empty-icon"></lucide-icon>
-        <p>Aucune réservation effectuée.</p>
-        <a routerLink="/" class="btn-goto">Chercher un logement</a>
-    </div>
-    <div class="res-list" *ngIf="!isLoading && myReservations.length>0">
-        <div class="res-card" *ngFor="let r of myReservations">
-            <div class="res-thumb" *ngIf="r.estate_image">
-                <img [src]="r.estate_image" alt="" class="res-img">
-            </div>
-            <div class="res-thumb placeholder-thumb" *ngIf="!r.estate_image">
-                <lucide-icon [img]="HomeIcon" class="icon-sm"></lucide-icon>
-            </div>
-        <div class="res-body">
-            <div class="res-name">{{ r.estate_name }}</div>
-            <div class="res-meta">
-                <span *ngIf="r.estate_location">
-                    <lucide-icon [img]="MapPinIcon" class="icon-xs"></lucide-icon> {{ r.estate_location }}
-                </span>
-                <span *ngIf="r.estate_price">
-                    <lucide-icon [img]="FileIcon" class="icon-xs"></lucide-icon> {{ formatPrice(r.estate_price!) }}
-                </span>
-            </div>
-        <div class="res-contact">
-            <lucide-icon [img]="PhoneIcon" class="icon-xs"></lucide-icon> {{ r.phone }}
-            <span *ngIf="r.note"> · {{ r.note }}</span>
+    <!-- ── Réservations ───────────────────────────────────── -->
+    <div *ngIf="activeTab==='reservations'" class="fade-in">
+        <div *ngIf="isLoading" class="loading-state">Chargement…</div>
+        <div *ngIf="!isLoading && myReservations.length===0" class="empty-state">
+            <lucide-icon [img]="PackageIcon" class="empty-icon"></lucide-icon>
+            <p>Aucune réservation effectuée.</p>
+            <a routerLink="/" class="btn-goto">Chercher un logement</a>
         </div>
-        <div class="res-date">
-            <lucide-icon [img]="CalendarIcon" class="icon-xs"></lucide-icon> {{ formatDate(r.created_at) }}
-        </div>
-        </div>
-        </div>
-        </div>
-        </div>
-        
-        <!-- ── Avis ──────────────────────────────────────────── -->
-        <div *ngIf="activeTab==='avis'" class="fade-in">
-            <div class="tab-actions">
-                <button class="btn-secondary-action" (click)="openReviewModal()">
-                    <lucide-icon [img]="PlusIcon" class="icon-xs"></lucide-icon> Nouvel avis
-                </button>
-            </div>
-            <div *ngIf="mySubmittedReviews.length===0" class="empty-state">
-                <lucide-icon [img]="StarIcon" class="empty-icon"></lucide-icon>
-                <p>Vous n'avez encore laissé aucun avis.</p>
-            </div>
-            <div class="reviews-list" *ngIf="mySubmittedReviews.length>0">
-                <div class="review-card" *ngFor="let r of mySubmittedReviews">
-                    <div class="review-header">
-                        <div class="review-estate-row">
-                            <img *ngIf="r.estate_image" [src]="r.estate_image" alt="" class="review-estate-thumb">
-                            <div>
-                                <div class="review-author">{{ r.estate_name }}</div>
-                                <div class="review-sub">{{ r.date }}</div>
-                            </div>
-                        </div>
-                        <div class="star-row ml-auto">
-                            <span *ngFor="let s of getStars(5)" [class]="s<=r.rating?'star-on':'star-off'">★</span>
-                        </div>
+        <div class="res-list" *ngIf="!isLoading && myReservations.length>0">
+            <div class="res-card" *ngFor="let r of myReservations">
+                <div class="res-thumb" *ngIf="r.estate_image">
+                    <img [src]="r.estate_image" alt="" class="res-img">
+                </div>
+                <div class="res-thumb placeholder-thumb" *ngIf="!r.estate_image">
+                    <lucide-icon [img]="HomeIcon" class="icon-sm"></lucide-icon>
+                </div>
+                <div class="res-body">
+                    <div class="res-name">{{ r.estate_name }}</div>
+                    <div class="res-meta">
+                        <span *ngIf="r.estate_location">
+                            <lucide-icon [img]="MapPinIcon" class="icon-xs"></lucide-icon> {{ r.estate_location }}
+                        </span>
+                        <span *ngIf="r.estate_price">
+                            <lucide-icon [img]="FileIcon" class="icon-xs"></lucide-icon> {{ formatPrice(r.estate_price!)
+                            }}
+                        </span>
                     </div>
-                    <p class="review-comment">{{ r.comment }}</p>
-                    <button class="btn-danger-text" (click)="deleteReview(r)">
-                        <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon> Supprimer
-                    </button>
+                    <div class="res-contact">
+                        <lucide-icon [img]="PhoneIcon" class="icon-xs"></lucide-icon> {{ r.phone }}
+                        <span *ngIf="r.note"> · {{ r.note }}</span>
+                    </div>
+                    <div class="res-date">
+                        <lucide-icon [img]="CalendarIcon" class="icon-xs"></lucide-icon> {{ formatDate(r.created_at) }}
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <!-- ── Messages ──────────────────────────────────────── -->
-        <div *ngIf="activeTab==='messages'" class="fade-in">
-            <div class="owner-messages">
-        
-                <!-- Sidebar -->
-                <aside class="msg-sidebar">
-                    <div class="msg-sidebar-header">
-                        <lucide-icon [img]="MessageIcon" class="icon-sm"></lucide-icon>
-                        Conversations
-                    </div>
-                    <div class="msg-conv-list">
-                        <div *ngIf="conversations.length===0" class="msg-sidebar-empty">
-                            Aucune conversation.<br>Contactez un propriétaire depuis la fiche d'un logement.
-                        </div>
-                        <div *ngFor="let c of conversations" class="msg-conv-item"
-                            [class.active]="activeConversation?.id === c.id" (click)="openConversation(c)">
-                            <div class="msg-conv-avatar" style="background:#3B82F6">{{ getConvInitials(c) }}</div>
-                            <div class="msg-conv-info">
-                                <div class="msg-conv-name">{{ getConvPartner(c) }}</div>
-                                <div class="msg-conv-estate">
-                                    <lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon>{{ c.estate_name }}
-                                </div>
-                                <div class="msg-conv-last" *ngIf="c.last_message">{{ c.last_message.text }}</div>
-                            </div>
-                            <div class="msg-conv-meta">
-                                <span class="msg-conv-time" *ngIf="c.last_message">{{ formatMsgTime(c.last_message.created_at)
-                                    }}</span>
-                                <span class="msg-unread-pill" *ngIf="c.unread_count > 0">{{ c.unread_count }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </aside>
-        
-                <!-- Chat panel -->
-                <div class="msg-chat-panel">
-                    <div *ngIf="!activeConversation" class="msg-chat-empty">
-                        <div class="msg-chat-empty-icon">💬</div>
-                        <span>Sélectionnez une conversation</span>
-                    </div>
-                    <ng-container *ngIf="activeConversation">
-                        <div class="msg-chat-header">
-                            <div class="msg-chat-avatar" style="background:#3B82F6">{{ getConvInitials(activeConversation) }}
-                            </div>
-                            <div>
-                                <div class="msg-chat-name">{{ getConvPartner(activeConversation) }}</div>
-                                <div class="msg-chat-estate">
-                                    <lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon>{{
-                                    activeConversation.estate_name }}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="msg-viewport">
-                            <div class="msg-system-label">{{ activeConversation.estate_name }}</div>
-                            <div *ngIf="activeConversation.messages.length===0" class="msg-no-messages">Démarrez la conversation
-                                👋</div>
-                            <ng-container *ngFor="let m of activeConversation.messages">
-                                <div class="msg-row received" *ngIf="!isMine(m)">
-                                    <div class="msg-row-avatar" style="background:#3B82F6">{{
-                                        getConvInitials(activeConversation) }}</div>
-                                    <div class="msg-bubble received">
-                                        <p>{{ m.text }}</p><span class="msg-time">{{ formatMsgTime(m.created_at) }}</span>
-                                    </div>
-                                </div>
-                                <div class="msg-row sent" *ngIf="isMine(m)">
-                                    <div class="msg-bubble sent">
-                                        <p>{{ m.text }}</p><span class="msg-time">{{ formatMsgTime(m.created_at) }}</span>
-                                    </div>
-                                </div>
-                            </ng-container>
-                        </div>
-                        <div class="msg-chat-footer">
-                            <div class="msg-input-row">
-                                <input class="msg-text-input" [(ngModel)]="newMessage" placeholder="Écrivez votre message…"
-                                    (keydown.enter)="sendMessage()">
-                                <button class="msg-send-btn" (click)="sendMessage()" [class.active]="newMessage.trim()"
-                                    [disabled]="!newMessage.trim()">
-                                    <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
-                                </button>
-            </div>
-            </div>
-        </ng-container>
-        </div>
-</div>
-</div>
+    </div>
 
-<!-- ── Contacts ───────────────────────────────────────── -->
-<div *ngIf="activeTab==='contacts'" class="fade-in">
-    <div *ngIf="myContacts.length===0" class="empty-state">
-        <lucide-icon [img]="MailIcon" class="empty-icon"></lucide-icon>
-        <p>Aucune demande de contact envoyée.</p>
-    </div>
-    <div class="data-list" *ngIf="myContacts.length>0">
-        <div class="contact-card" *ngFor="let c of myContacts">
-            <div class="contact-header">
-                <span class="contact-estate" *ngIf="c.estate_name">
-                    <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon> {{ c.estate_name }}
-                </span>
-                <span class="contact-date">{{ formatDate(c.submitted_at) }}</span>
+    <!-- ── Avis ──────────────────────────────────────────── -->
+    <div *ngIf="activeTab==='avis'" class="fade-in">
+        <div class="tab-actions">
+            <button class="btn-secondary-action" (click)="openReviewModal()">
+                <lucide-icon [img]="PlusIcon" class="icon-xs"></lucide-icon> Nouvel avis
+            </button>
+        </div>
+        <div *ngIf="mySubmittedReviews.length===0" class="empty-state">
+            <lucide-icon [img]="StarIcon" class="empty-icon"></lucide-icon>
+            <p>Vous n'avez encore laissé aucun avis.</p>
+        </div>
+        <div class="reviews-list" *ngIf="mySubmittedReviews.length>0">
+            <div class="review-card" *ngFor="let r of mySubmittedReviews">
+                <div class="review-header">
+                    <div class="review-estate-row">
+                        <img *ngIf="r.estate_image" [src]="r.estate_image" alt="" class="review-estate-thumb">
+                        <div>
+                            <div class="review-author">{{ r.estate_name }}</div>
+                            <div class="review-sub">{{ r.date }}</div>
+                        </div>
+                    </div>
+                    <div class="star-row ml-auto">
+                        <span *ngFor="let s of getStars(5)" [class]="s<=r.rating?'star-on':'star-off'">★</span>
+                    </div>
+                </div>
+                <p class="review-comment">{{ r.comment }}</p>
+                <button class="btn-danger-text" (click)="deleteReview(r)">
+                    <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon> Supprimer
+                </button>
             </div>
-            <p class="review-comment">{{ c.message }}</p>
         </div>
     </div>
+
+    <!-- ── Messages ──────────────────────────────────────── -->
+    <div *ngIf="activeTab==='messages'" class="fade-in">
+        <div class="owner-messages">
+
+            <!-- Sidebar -->
+            <aside class="msg-sidebar">
+                <div class="msg-sidebar-header">
+                    <lucide-icon [img]="MessageIcon" class="icon-sm"></lucide-icon>
+                    Conversations
+                </div>
+                <div class="msg-conv-list">
+                    <div *ngIf="conversations.length===0" class="msg-sidebar-empty">
+                        Aucune conversation.<br>Contactez un propriétaire depuis la fiche d'un logement.
+                    </div>
+                    <div *ngFor="let c of conversations" class="msg-conv-item"
+                        [class.active]="activeConversation?.id === c.id" (click)="openConversation(c)">
+                        <div class="msg-conv-avatar" style="background:#3B82F6">{{ getConvInitials(c) }}</div>
+                        <div class="msg-conv-info">
+                            <div class="msg-conv-name">{{ getConvPartner(c) }}</div>
+                            <div class="msg-conv-estate">
+                                <lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon>{{ c.estate_name }}
+                            </div>
+                            <div class="msg-conv-last" *ngIf="c.last_message">{{ c.last_message.text }}</div>
+                        </div>
+                        <div class="msg-conv-meta">
+                            <span class="msg-conv-time" *ngIf="c.last_message">{{
+                                formatMsgTime(c.last_message.created_at)
+                                }}</span>
+                            <span class="msg-unread-pill" *ngIf="c.unread_count > 0">{{ c.unread_count }}</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Chat panel -->
+            <div class="msg-chat-panel">
+                <div *ngIf="!activeConversation" class="msg-chat-empty">
+                    <div class="msg-chat-empty-icon">💬</div>
+                    <span>Sélectionnez une conversation</span>
+                </div>
+                <ng-container *ngIf="activeConversation">
+                    <div class="msg-chat-header">
+                        <div class="msg-chat-avatar" style="background:#3B82F6">{{ getConvInitials(activeConversation)
+                            }}
+                        </div>
+                        <div>
+                            <div class="msg-chat-name">{{ getConvPartner(activeConversation) }}</div>
+                            <div class="msg-chat-estate">
+                                <lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon>{{
+                                activeConversation.estate_name }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="msg-viewport">
+                        <div class="msg-system-label">{{ activeConversation.estate_name }}</div>
+                        <div *ngIf="activeConversation.messages.length===0" class="msg-no-messages">Démarrez la
+                            conversation
+                            👋</div>
+                        <ng-container *ngFor="let m of activeConversation.messages">
+                            <div class="msg-row received" *ngIf="!isMine(m)">
+                                <div class="msg-row-avatar" style="background:#3B82F6">{{
+                                    getConvInitials(activeConversation) }}</div>
+                                <div class="msg-bubble received">
+                                    <p>{{ m.text }}</p><span class="msg-time">{{ formatMsgTime(m.created_at) }}</span>
+                                </div>
+                            </div>
+                            <div class="msg-row sent" *ngIf="isMine(m)">
+                                <div class="msg-bubble sent">
+                                    <p>{{ m.text }}</p><span class="msg-time">{{ formatMsgTime(m.created_at) }}</span>
+                                </div>
+                            </div>
+                        </ng-container>
+                    </div>
+                    <div class="msg-chat-footer">
+                        <div class="msg-input-row">
+                            <input class="msg-text-input" [(ngModel)]="newMessage" placeholder="Écrivez votre message…"
+                                (keydown.enter)="sendMessage()">
+                            <button class="msg-send-btn" (click)="sendMessage()" [class.active]="newMessage.trim()"
+                                [disabled]="!newMessage.trim()">
+                                <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
+                            </button>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Contacts ───────────────────────────────────────── -->
+    <div *ngIf="activeTab==='contacts'" class="fade-in">
+        <div *ngIf="myContacts.length===0" class="empty-state">
+            <lucide-icon [img]="MailIcon" class="empty-icon"></lucide-icon>
+            <p>Aucune demande de contact envoyée.</p>
+        </div>
+        <div class="data-list" *ngIf="myContacts.length>0">
+            <div class="contact-card" *ngFor="let c of myContacts">
+                <div class="contact-header">
+                    <span class="contact-estate" *ngIf="c.estate_name">
+                        <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon> {{ c.estate_name }}
+                    </span>
+                    <span class="contact-date">{{ formatDate(c.submitted_at) }}</span>
+                </div>
+                <p class="review-comment">{{ c.message }}</p>
+            </div>
+        </div>
     </div>
 
 </ng-container>
@@ -518,45 +556,45 @@
         <button class="modal-close" (click)="closeEstateModal()">
             <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
         </button>
-    <h2 class="modal-title">{{ isEditMode ? 'Modifier le logement' : 'Ajouter un logement' }}</h2>
+        <h2 class="modal-title">{{ isEditMode ? 'Modifier le logement' : 'Ajouter un logement' }}</h2>
 
-    <div class="form-group">
-    <label>Nom *</label>
-    <input class="input" [(ngModel)]="estateForm.name" placeholder="Ex: Résidence Les Palmiers">
-    </div>
-    <div class="form-row">
         <div class="form-group">
-        <label>Localisation *</label>
-        <input class="input" [(ngModel)]="estateForm.location" placeholder="Ex: Yaoundé, Soa">
+            <label>Nom *</label>
+            <input class="input" [(ngModel)]="estateForm.name" placeholder="Ex: Résidence Les Palmiers">
         </div>
-        <div class="form-group">
-        <label>Prix (FCFA/mois) *</label>
-        <input class="input" type="number" [(ngModel)]="estateForm.price" placeholder="35000">
+        <div class="form-row">
+            <div class="form-group">
+                <label>Localisation *</label>
+                <input class="input" [(ngModel)]="estateForm.location" placeholder="Ex: Yaoundé, Soa">
+            </div>
+            <div class="form-group">
+                <label>Prix (FCFA/mois) *</label>
+                <input class="input" type="number" [(ngModel)]="estateForm.price" placeholder="35000">
+            </div>
         </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Capacité totale</label>
+                <input class="input" type="number" [(ngModel)]="estateForm.capacity" placeholder="10">
+            </div>
+            <div class="form-group">
+                <label>Places libres</label>
+                <input class="input" type="number" [(ngModel)]="estateForm.free" placeholder="5">
+            </div>
         </div>
-    <div class="form-row">
-        <div class="form-group">
-        <label>Capacité totale</label>
-        <input class="input" type="number" [(ngModel)]="estateForm.capacity" placeholder="10">
-        </div>
-        <div class="form-group">
-        <label>Places libres</label>
-        <input class="input" type="number" [(ngModel)]="estateForm.free" placeholder="5">
-        </div>
-        </div>
-    <div class="form-row">
-        <div class="form-group">
-        <label>Distance campus (m)</label>
-        <input class="input" [(ngModel)]="distanceDisplay" placeholder="500">
-        </div>
-        <div class="form-group">
-            <label>Type de chambre</label>
-            <select class="input" [(ngModel)]="estateForm.room_size">
-                <option value="1">Villa</option>
-                <option value="2">Studio</option>
-                <option value="3">Chambre</option>
-            </select>
-        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>Distance campus (m)</label>
+                <input class="input" [(ngModel)]="distanceDisplay" placeholder="500">
+            </div>
+            <div class="form-group">
+                <label>Type de chambre</label>
+                <select class="input" [(ngModel)]="estateForm.room_size">
+                    <option value="1">Villa</option>
+                    <option value="2">Studio</option>
+                    <option value="3">Chambre</option>
+                </select>
+            </div>
         </div>
         <div class="form-group">
             <label>Statut</label>
@@ -567,59 +605,61 @@
             </select>
         </div>
         <div class="form-group">
-    <label>Équipements</label>
-    <div class="equip-grid">
-        <label class="equip-item" *ngFor="let eq of availableEquipments">
-            <input type="checkbox" [checked]="estateForm[eq.key]==='1'" (change)="toggleEquipment(eq.key)">
-            <lucide-icon [img]="eq.icon" class="icon-xs"></lucide-icon>
-            <span>{{ eq.label }}</span>
-        </label>
-    </div>
-    </div>
-    <div class="form-group">
-        <label>Description</label>
-        <textarea class="textarea" [(ngModel)]="estateForm.description" rows="3"
-            placeholder="Description du logement…"></textarea>
-    </div>
+            <label>Équipements</label>
+            <div class="equip-grid">
+                <label class="equip-item" *ngFor="let eq of availableEquipments">
+                    <input type="checkbox" [checked]="estateForm[eq.key]==='1'" (change)="toggleEquipment(eq.key)">
+                    <lucide-icon [img]="eq.icon" class="icon-xs"></lucide-icon>
+                    <span>{{ eq.label }}</span>
+                </label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            <textarea class="textarea" [(ngModel)]="estateForm.description" rows="3"
+                placeholder="Description du logement…"></textarea>
+        </div>
 
-    <!-- ── Image upload section ── -->
-    <div class="form-group">
-    <label>Photos du logement</label>
-    
-    <!-- Existing images (edit mode) -->
-    <div class="image-preview-grid" *ngIf="isEditMode && estateForm.existingImages?.length > 0">
-        <div class="image-preview-item" *ngFor="let img of estateForm.existingImages">
-            <img [src]="img.image" alt="photo" class="preview-thumb">
-            <button class="img-delete-btn" (click)="removeExistingImage(img)" title="Supprimer">
-                <lucide-icon [img]="XIcon" class="icon-xs"></lucide-icon>
-            </button>
+        <!-- ── Image upload section ── -->
+        <div class="form-group">
+            <label>Photos du logement</label>
+
+            <!-- Existing images (edit mode) -->
+            <div class="image-preview-grid" *ngIf="isEditMode && estateForm.existingImages?.length > 0">
+                <div class="image-preview-item" *ngFor="let img of estateForm.existingImages">
+                    <img [src]="img.image" alt="photo" class="preview-thumb">
+                    <button class="img-delete-btn" (click)="removeExistingImage(img)" title="Supprimer">
+                        <lucide-icon [img]="XIcon" class="icon-xs"></lucide-icon>
+                    </button>
+                </div>
+            </div>
+
+            <!-- New images preview -->
+            <div class="image-preview-grid" *ngIf="newImagePreviews.length > 0">
+                <div class="image-preview-item" *ngFor="let p of newImagePreviews; let i = index">
+                    <img [src]="p" alt="nouveau" class="preview-thumb">
+                    <button class="img-delete-btn" (click)="removeNewImage(i)" title="Retirer">
+                        <lucide-icon [img]="XIcon" class="icon-xs"></lucide-icon>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Drop zone / file picker -->
+            <label class="img-dropzone" for="imgFileInput">
+                <lucide-icon [img]="PlusIcon" class="icon-sm"></lucide-icon>
+                <span>Cliquer ou glisser-déposer des images</span>
+                <span class="img-hint">JPG, PNG, WEBP — max 5 Mo chacune</span>
+            </label>
+            <input id="imgFileInput" type="file" accept="image/*" multiple style="display:none"
+                (change)="onImagesSelected($event)">
         </div>
+
+        <button class="btn-submit" (click)="saveEstate()" [disabled]="isSavingEstate">
+            <span *ngIf="!isSavingEstate">{{ isEditMode ? 'Enregistrer les modifications' : 'Ajouter le logement'
+                }}</span>
+            <span *ngIf="isSavingEstate">Enregistrement…</span>
+        </button>
     </div>
-    
-    <!-- New images preview -->
-    <div class="image-preview-grid" *ngIf="newImagePreviews.length > 0">
-        <div class="image-preview-item" *ngFor="let p of newImagePreviews; let i = index">
-            <img [src]="p" alt="nouveau" class="preview-thumb">
-            <button class="img-delete-btn" (click)="removeNewImage(i)" title="Retirer">
-                <lucide-icon [img]="XIcon" class="icon-xs"></lucide-icon>
-            </button>
-        </div>
-    </div>
-    
-    <!-- Drop zone / file picker -->
-    <label class="img-dropzone" for="imgFileInput">
-        <lucide-icon [img]="PlusIcon" class="icon-sm"></lucide-icon>
-        <span>Cliquer ou glisser-déposer des images</span>
-        <span class="img-hint">JPG, PNG, WEBP — max 5 Mo chacune</span>
-    </label>
-    <input id="imgFileInput" type="file" accept="image/*" multiple style="display:none" (change)="onImagesSelected($event)">
-    </div>
-    
-    <button class="btn-submit" (click)="saveEstate()" [disabled]="isSavingEstate">
-        <span *ngIf="!isSavingEstate">{{ isEditMode ? 'Enregistrer les modifications' : 'Ajouter le logement' }}</span>
-        <span *ngIf="isSavingEstate">Enregistrement…</span>
-    </button>
-</div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════
@@ -632,27 +672,28 @@
         </button>
         <h2 class="modal-title">Laisser un avis</h2>
 
-    <div class="form-group">
-    <label>Logement *</label>
-    <select class="input" [(ngModel)]="reviewForm.estate">
-        <option [value]="0" disabled>Choisir un logement…</option>
-        <option *ngFor="let e of allEstates" [value]="e.id">{{ e.name }}</option>
-    </select>
-    </div>
-
-    <div class="form-group">
-        <label>Note *</label>
-        <div class="star-picker">
-            <span *ngFor="let s of getStars(5)" class="star-pick" [class.active]="s<=(hoverRating || reviewForm.rating)"
-                (mouseenter)="setHover(s)" (mouseleave)="clearHover()" (click)="setRating(s)">★</span>
+        <div class="form-group">
+            <label>Logement *</label>
+            <select class="input" [(ngModel)]="reviewForm.estate">
+                <option [value]="0" disabled>Choisir un logement…</option>
+                <option *ngFor="let e of allEstates" [value]="e.id">{{ e.name }}</option>
+            </select>
         </div>
-    </div>
-<div class="form-group">
-    <label>Commentaire *</label>
-    <textarea class="textarea" [(ngModel)]="reviewForm.comment" rows="4"
-        placeholder="Partagez votre expérience…"></textarea>
-    </div>
 
-    <button class="btn-submit" (click)="submitReview()">Publier l'avis</button>
+        <div class="form-group">
+            <label>Note *</label>
+            <div class="star-picker">
+                <span *ngFor="let s of getStars(5)" class="star-pick"
+                    [class.active]="s<=(hoverRating || reviewForm.rating)" (mouseenter)="setHover(s)"
+                    (mouseleave)="clearHover()" (click)="setRating(s)">★</span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Commentaire *</label>
+            <textarea class="textarea" [(ngModel)]="reviewForm.comment" rows="4"
+                placeholder="Partagez votre expérience…"></textarea>
+        </div>
+
+        <button class="btn-submit" (click)="submitReview()">Publier l'avis</button>
     </div>
-    </div>
+</div>
