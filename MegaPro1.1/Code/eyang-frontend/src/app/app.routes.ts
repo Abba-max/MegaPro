@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { LayoutComponent } from './components/layout/layout.component';
 import { PublicLayoutComponent } from './components/public-layout/public-layout.component';
-import { authGuard, adminGuard } from './services/auth.guard';
+import { authGuard, adminGuard, ownerGuard } from './services/auth.guard';
 
 export const routes: Routes = [
   // ── Public routes (no auth required) ──────────────────────────────
@@ -28,7 +28,9 @@ export const routes: Routes = [
     ]
   },
 
-  // ── Authenticated routes (any logged-in user) ──────────────────────
+  // ── Authenticated routes (any logged-in user) ─────────────────────
+  // Both owners and visitors land here; DashboardComponent branches
+  // internally using user.role === 'Owner' to show the correct view.
   {
     path: '',
     component: LayoutComponent,

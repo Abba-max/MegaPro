@@ -9,6 +9,8 @@ export interface User {
   name: string;
   email: string;
   role: 'Admin' | 'Student' | 'Owner' | 'Parent';
+  user_type?: 'visitor' | 'owner';
+  visitor_category?: string;
   initials: string;
   phone?: string;
   address?: string;
@@ -17,7 +19,7 @@ export interface User {
 export type CurrentUser = User;
 export type UserRole = 'Admin' | 'Student' | 'Owner' | 'Parent';
 
-const ACCESS_KEY  = 'access_token';
+const ACCESS_KEY = 'access_token';
 const REFRESH_KEY = 'refresh_token';
 
 @Injectable({ providedIn: 'root' })
@@ -84,13 +86,13 @@ export class AuthService {
     accountType?: 'Student' | 'Parent' | 'Owner';
   }): Observable<any> {
     const payload = {
-      username:   data.username ?? data.email,
-      email:      data.email,
-      password:   data.password,
+      username: data.username ?? data.email,
+      email: data.email,
+      password: data.password,
       first_name: data.first_name ?? data.firstName ?? '',
-      last_name:  data.last_name  ?? data.lastName  ?? '',
-      phone:      data.phone ?? '',
-      role:       data.role ?? data.accountType ?? 'Student',
+      last_name: data.last_name ?? data.lastName ?? '',
+      phone: data.phone ?? '',
+      role: data.role ?? data.accountType ?? 'Student',
     };
     return this.http.post(`${this.BASE}/auth/register/`, payload).pipe(
       tap((res: any) => {
@@ -127,17 +129,20 @@ export class AuthService {
           .toUpperCase()
           .slice(0, 2) || '??';
 
-        // ✅ Normalize role: accept both capitalised and lowercase from backend
-        const rawRole = data.role || 'Student';
-        const role = (rawRole.charAt(0).toUpperCase() + rawRole.slice(1).toLowerCase()) as User['role'];
+        // ✅ Normalize role — backend sends 'Admin'|'Owner'|'Student'|'Parent' already capitalised
+        const rawRole: string = data.role || 'Student';
+        const knownRoles: User['role'][] = ['Admin', 'Owner', 'Student', 'Parent'];
+        const role = (knownRoles.find(r => r.toLowerCase() === rawRole.toLowerCase()) ?? 'Student') as User['role'];
 
         const user: User = {
-          id:      data.id,
+          id: data.id,
           name,
           initials,
-          email:   data.email   || data.username,
+          email: data.email || data.username,
           role,
-          phone:   data.phone   || '',
+          user_type: data.user_type || undefined,
+          visitor_category: data.visitor_category || undefined,
+          phone: data.phone || '',
           address: data.address || '',
         };
 
@@ -175,20 +180,20 @@ export class AuthService {
 
   // ── Role helpers ──────────────────────────────────────────────────────
 
-  get isAdminUser(): boolean  { return this.currentUser?.role === 'Admin';  }
-  get isOwnerUser(): boolean  { return this.currentUser?.role === 'Owner';  }
+  get isAdminUser(): boolean { return this.currentUser?.role === 'Admin'; }
+  get isOwnerUser(): boolean { return this.currentUser?.role === 'Owner'; }
   get isClientUser(): boolean {
     const r = this.currentUser?.role;
     return r === 'Student' || r === 'Parent';
   }
 
-  canActivateAdmin(): boolean  { return this.isAdminUser; }
-  canActivateOwner(): boolean  { return this.isAdminUser || this.isOwnerUser; }
+  canActivateAdmin(): boolean { return this.isAdminUser; }
+  canActivateOwner(): boolean { return this.isAdminUser || this.isOwnerUser; }
   canActivateClient(): boolean { return this.isClientUser || this.isAdminUser; }
 
   // ── Modal control ─────────────────────────────────────────────────────
 
-  openLogin():  void { this.showLoginModalSubject.next(true);  }
+  openLogin(): void { this.showLoginModalSubject.next(true); }
   closeLogin(): void { this.showLoginModalSubject.next(false); }
 
   // ── Legacy compat ──────────────────────────────────────────────────────
