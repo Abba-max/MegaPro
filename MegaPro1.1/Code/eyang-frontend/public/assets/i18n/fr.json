@@ -22,9 +22,12 @@
   "filters": {
     "filters": "Filtres",
     "wifi": "WiFi",
+    "wifi_label": "WiFi",
     "restaurant": "Restaurant",
-    "generator": "Groupe électrogène",
+    "generator": "Groupe élec.",
     "water": "Forage",
+    "tv_label": "TV",
+    "fridge_label": "Frigo",
     "stars": "Bien notés"
   },
   "listings": {
@@ -34,11 +37,12 @@
     "published_today": "Publié aujourd'hui",
     "published_days_ago": "Publié il y a {{ days }} jour(s)",
     "published_weeks_ago": "Publié il y a {{ weeks }} semaine(s)",
-    "published_months_ago": "Publié il y a {{ months }} mois"
+    "published_months_ago": "Publié il y a {{ months }} mois",
+    "no_features": "Aucun équipement renseigné"
   },
   "detail": {
     "places": "places",
-    "distance": "km du campus",
+    "distance": "du campus",
     "back": "Retour"
   },
   "why": {
@@ -150,7 +154,7 @@
     "create_account": "Créer un compte",
     "lang_title": "Langue",
     "follow_us": "Nous suivre",
-    "rights": "© 2024 Eyang Estate. Tous droits réservés.",
+    "rights": "© 2026 Eyang Estate. Tous droits réservés.",
     "privacy": "Confidentialité",
     "terms": "Conditions d'utilisation",
     "back_top": "Retour en haut"

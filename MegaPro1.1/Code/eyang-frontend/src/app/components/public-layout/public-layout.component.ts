@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -43,11 +43,11 @@ import {
                 </li>
                 <li>
                   <lucide-icon [img]="PhoneIcon" class="f-contact-icon"></lucide-icon>
-                  <span>+237 6XX XXX XXX</span>
+                  <span>+237 675193603/652552561/691380083</span>
                 </li>
                 <li>
                   <lucide-icon [img]="MailIcon" class="f-contact-icon"></lucide-icon>
-                  <span>contact&#64;eyangestate.cm</span>
+                  <span>contact@eyangestate.com</span>
                 </li>
               </ul>
             </div>
@@ -111,17 +111,21 @@ import {
         <div class="f-bottom">
           <div class="f-bottom-inner">
             <p class="f-rights">{{ 'footer.rights' | translate }}</p>
-            <div class="f-legal">
-              <a href="#">{{ 'footer.privacy' | translate }}</a>
-              <a href="#">{{ 'footer.terms' | translate }}</a>
-            </div>
-            <button class="f-top-btn" (click)="scrollTop()" [title]="'footer.back_top' | translate">
-              <lucide-icon [img]="ArrowUpIcon" class="f-top-icon"></lucide-icon>
-            </button>
           </div>
         </div>
 
       </footer>
+
+      <!-- ════ FLOATING SCROLL-TO-TOP ════ -->
+      <button
+        class="scroll-top-fab"
+        [class.visible]="showScrollTop"
+        (click)="scrollTop()"
+        [title]="'footer.back_top' | translate"
+        aria-label="Scroll to top">
+        <lucide-icon [img]="ArrowUpIcon" class="fab-icon"></lucide-icon>
+      </button>
+
     </div>
   `,
   styles: [`
@@ -163,7 +167,7 @@ import {
       margin-bottom: 1rem;
     }
     .f-logo-img {
-      height:        40px;
+      height:        60px;
       width:         auto;
       object-fit:    contain;
       border-radius: 8px;
@@ -194,12 +198,22 @@ import {
       gap:         8px;
       color:       rgba(255,255,255,0.65);
       font-size:   13px;
+      line-height: 1.4;
     }
     .f-contact-icon {
-      width:       15px;
-      height:      15px;
-      color:       #60A5FA;
-      flex-shrink: 0;
+      display:         inline-flex !important;
+      align-items:     center;
+      justify-content: center;
+      width:           15px !important;
+      height:          15px !important;
+      min-width:       15px;
+      flex-shrink:     0;
+      color:           #60A5FA;
+    }
+    .f-contact-icon svg {
+      width:   15px !important;
+      height:  15px !important;
+      display: block;
     }
 
     /* ── LINK COLUMNS ─────────────────────────────────────────── */
@@ -281,7 +295,18 @@ import {
       color:        #fff;
       transform:    translateY(-3px);
     }
-    .f-social-icon { width: 16px; height: 16px; }
+    .f-social-icon {
+      display:         inline-flex !important;
+      align-items:     center;
+      justify-content: center;
+      width:           16px !important;
+      height:          16px !important;
+    }
+    .f-social-icon svg {
+      width:   16px !important;
+      height:  16px !important;
+      display: block;
+    }
 
     /* ── DIVIDER ──────────────────────────────────────────────── */
     .f-divider {
@@ -322,7 +347,7 @@ import {
       background:      rgba(37,99,235,0.2);
       border:          1px solid rgba(59,130,246,0.35);
       color:           #93C5FD;
-      display:         flex;
+      display:         inline-flex;
       align-items:     center;
       justify-content: center;
       cursor:          pointer;
@@ -330,7 +355,62 @@ import {
       flex-shrink:     0;
     }
     .f-top-btn:hover { background: rgba(37,99,235,0.4); transform: translateY(-2px); }
-    .f-top-icon { width: 15px; height: 15px; }
+    .f-top-icon {
+      display:         inline-flex !important;
+      align-items:     center;
+      justify-content: center;
+      width:           15px !important;
+      height:          15px !important;
+    }
+    .f-top-icon svg { width: 15px !important; height: 15px !important; display: block; }
+
+    /* ── FLOATING SCROLL-TO-TOP FAB ───────────────────────────── */
+    .scroll-top-fab {
+      position:        fixed;
+      bottom:          2rem;
+      right:           2rem;
+      z-index:         999;
+      width:           46px;
+      height:          46px;
+      border-radius:   50%;
+      background:      linear-gradient(135deg, #2563EB, #1D4ED8);
+      border:          none;
+      color:           #fff;
+      display:         inline-flex;
+      align-items:     center;
+      justify-content: center;
+      cursor:          pointer;
+      box-shadow:      0 4px 20px rgba(37,99,235,0.45);
+      opacity:         0;
+      transform:       translateY(16px) scale(0.85);
+      pointer-events:  none;
+      transition:      opacity 0.3s cubic-bezier(.4,0,.2,1),
+                       transform 0.3s cubic-bezier(.4,0,.2,1),
+                       background 0.2s, box-shadow 0.2s;
+    }
+    .scroll-top-fab.visible {
+      opacity:        1;
+      transform:      translateY(0) scale(1);
+      pointer-events: auto;
+    }
+    .scroll-top-fab:hover {
+      background:  linear-gradient(135deg, #1D4ED8, #1E40AF);
+      box-shadow:  0 6px 28px rgba(37,99,235,0.6);
+      transform:   translateY(-3px) scale(1.05);
+    }
+    .scroll-top-fab:active { transform: translateY(0) scale(0.96); }
+    .fab-icon {
+      display:         inline-flex !important;
+      align-items:     center;
+      justify-content: center;
+      width:           20px !important;
+      height:          20px !important;
+    }
+    .fab-icon svg { width: 20px !important; height: 20px !important; display: block; }
+
+    @media (max-width: 480px) {
+      .scroll-top-fab { bottom: 1.25rem; right: 1.25rem; width: 40px; height: 40px; }
+    }
 
     /* ── RESPONSIVE ───────────────────────────────────────────── */
     @media (max-width: 1024px) {
@@ -369,6 +449,12 @@ export class PublicLayoutComponent implements OnInit {
   readonly ArrowUpIcon   = ArrowUp;
 
   currentLang = 'fr';
+  showScrollTop = false;
+
+  @HostListener('window:scroll')
+  onWindowScroll(): void {
+    this.showScrollTop = window.scrollY > 300;
+  }
 
   constructor(private translate: TranslateService) {}
 
