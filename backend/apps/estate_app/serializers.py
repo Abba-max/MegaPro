@@ -78,9 +78,20 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    id_card = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = ['id', 'username', 'email', 'user_type', 'contact', 'address', 'is_verified', 'id_card']
+
+    def get_id_card(self, obj):
+        request = self.context.get('request')
+        if obj.id_card:
+            url = obj.id_card.url
+            if request:
+                return request.build_absolute_uri(url)
+            return f"http://localhost:8000{url}"
+        return None
 
 class EstateImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
@@ -91,8 +102,12 @@ class EstateImageSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         request = self.context.get('request')
-        if obj.image and request:
-            return request.build_absolute_uri(obj.image.url)
+        if obj.image:
+            url = obj.image.url
+            if request:
+                return request.build_absolute_uri(url)
+            # Fallback for when request is missing
+            return f"http://localhost:8000{url}"
         return None
 
 
@@ -137,8 +152,11 @@ class ReviewSerializer(serializers.ModelSerializer):
     def get_estate_image(self, obj):
         request = self.context.get('request')
         first_image = obj.estate.images.first()
-        if first_image and request:
-            return request.build_absolute_uri(first_image.image.url)
+        if first_image:
+            url = first_image.image.url
+            if request:
+                return request.build_absolute_uri(url)
+            return f"http://localhost:8000{url}"
         return None
 
     def get_likes_count(self, obj):
@@ -172,8 +190,11 @@ class QuickOrderSerializer(serializers.ModelSerializer):
     def get_estate_image(self, obj):
         request = self.context.get('request')
         first_image = obj.estate.images.first()
-        if first_image and request:
-            return request.build_absolute_uri(first_image.image.url)
+        if first_image:
+            url = first_image.image.url
+            if request:
+                return request.build_absolute_uri(url)
+            return f"http://localhost:8000{url}"
         return None
 
     def create(self, validated_data):
@@ -233,8 +254,11 @@ class ConversationSerializer(serializers.ModelSerializer):
     def get_estate_image(self, obj):
         request = self.context.get('request')
         first_image = obj.estate.images.first()
-        if first_image and request:
-            return request.build_absolute_uri(first_image.image.url)
+        if first_image:
+            url = first_image.image.url
+            if request:
+                return request.build_absolute_uri(url)
+            return f"http://localhost:8000{url}"
         return None
 
     def get_last_message(self, obj):

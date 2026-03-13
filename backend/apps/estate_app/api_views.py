@@ -43,7 +43,7 @@ def register_view(request):
 @permission_classes([permissions.IsAuthenticated])
 def me_view(request):
     user = request.user
-    data = UserSerializer(user).data
+    data = UserSerializer(user, context={'request': request}).data
     
     # Direct role access from user_type
     if user.is_staff or user.is_superuser:
