@@ -9,10 +9,12 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
   LucideAngularModule,
   Search, Bell, MessageSquare, ChevronDown, ChevronRight,
-  Home, Settings, LayoutDashboard, LogOut, X,
-  GraduationCap, Users, Building, Globe
+  Home, Settings, LayoutDashboard, X,
+  GraduationCap, Users, Building, Globe,
+  CheckCheck, Trash2, MessageCircle, Star, Calendar, Shield, Info
 } from 'lucide-angular';
 import { AuthService, User } from '../../services/auth.service';
+import { NotificationService, AppNotification } from '../../services/notification.service';
 
 @Component({
   selector: 'app-header',
@@ -34,21 +36,33 @@ export class HeaderComponent implements OnInit, OnDestroy {
   readonly HomeIcon = Home;
   readonly SettingsIcon = Settings;
   readonly DashboardIcon = LayoutDashboard;
-  readonly LogOutIcon = LogOut;
   readonly XIcon = X;
   readonly GraduationCapIcon = GraduationCap;
   readonly UsersIcon = Users;
   readonly BuildingIcon = Building;
   readonly GlobeIcon = Globe;
+  readonly CheckCheckIcon = CheckCheck;
+  readonly Trash2Icon = Trash2;
+  readonly MessageCircleIcon = MessageCircle;
+  readonly StarIcon = Star;
+  readonly CalendarIcon = Calendar;
+  readonly ShieldIcon = Shield;
+  readonly InfoIcon = Info;
 
-  // State
+  // User state
   currentUser: User | null = null;
   showMenu = false;
   showLoginModal = false;
   showSignupModal = false;
+  showMobileMenu = false;
+  showNotifPanel = false;
   isLoggingIn = false;
   isSigningUp = false;
   currentLang = 'fr';
+
+  // Notifications
+  notifications: AppNotification[] = [];
+  unreadCount = 0;
 
   // Login form
   loginEmail = '';
@@ -57,13 +71,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   // Signup form
   signupForm = {
-    firstName: '',
-    lastName: '',
-    email: '',
-    phone: '',
-    password: '',
-    accountType: 'Student' as 'Student' | 'Parent' | 'Owner',
-    idCard: null as File | null
+    firstName: '', lastName: '', email: '',
+    phone: '', password: '',
+    accountType: 'Student' as 'Student' | 'Parent' | 'Owner'
   };
   signupError = '';
 
@@ -71,6 +81,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   constructor(
     private authService: AuthService,
+    private notifService: NotificationService,
     private router: Router,
     private translate: TranslateService
   ) { }
@@ -81,26 +92,23 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.translate.use(saved);
 
     this.subs.push(
-      this.authService.currentUser$.subscribe(user => {
-        this.currentUser = user;
-      })
-    );
+      this.authService.currentUser$.subscribe(u => { this.currentUser = u; }),
 
-    this.subs.push(
       this.authService.showLoginModal$.subscribe(show => {
         this.showLoginModal = show;
-        if (!show) {
-          this.loginError = '';
-          this.loginEmail = '';
-          this.loginPassword = '';
-        }
+        if (!show) { this.loginError = ''; this.loginEmail = ''; this.loginPassword = ''; }
+      }),
+
+      this.notifService.notifications$.subscribe(n => {
+        this.notifications = n;
+        this.unreadCount = this.notifService.unreadCount;
       })
     );
   }
 
   ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
 
-  // ── Language ──────────────────────────────────────────────────────────
+  // ── Language ───────────────────────────────────────────────────
   toggleLang(): void {
     this.currentLang = this.currentLang === 'fr' ? 'en' : 'fr';
     this.translate.use(this.currentLang);
@@ -111,22 +119,65 @@ export class HeaderComponent implements OnInit, OnDestroy {
     document.querySelector('.' + id + '-section')?.scrollIntoView({ behavior: 'smooth' });
   }
 
-  toggleMenu(): void { this.showMenu = !this.showMenu; }
+  toggleMenu(): void {
+    this.showMenu = !this.showMenu;
+    this.showNotifPanel = false;
+  }
+
+  toggleNotifPanel(): void {
+    this.showNotifPanel = !this.showNotifPanel;
+    this.showMenu = false;
+    if (this.showNotifPanel) this.notifService.markAllRead();
+  }
+
+  toggleMobileMenu(): void { this.showMobileMenu = !this.showMobileMenu; }
+  closeMobileMenu(): void { this.showMobileMenu = false; }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(e: Event): void {
-    if (!(e.target as HTMLElement).closest('.user-profile-container')) {
-      this.showMenu = false;
+    const t = e.target as HTMLElement;
+    if (!t.closest('.user-profile-container')) this.showMenu = false;
+    if (!t.closest('.notif-container')) this.showNotifPanel = false;
+    if (!t.closest('.hamburger-btn') && !t.closest('.mobile-nav-drawer')) {
+      this.showMobileMenu = false;
     }
   }
 
+  // ── Notifications ──────────────────────────────────────────────
+  onNotifClick(n: AppNotification): void {
+    this.notifService.markRead(n.id);
+    this.showNotifPanel = false;
+    if (n.link) this.router.navigate([n.link]);
+  }
+
+  clearAllNotifs(): void { this.notifService.clearAll(); }
+
+  getNotifIcon(type: AppNotification['type']): string {
+    const map: Record<string, string> = {
+      new_message: '💬', new_booking: '📋',
+      new_review: '⭐', verification_status: '🛡️',
+      new_contact: '📩', info: 'ℹ️'
+    };
+    return map[type] ?? 'ℹ️';
+  }
+
+  formatNotifTime(dateStr: string): string {
+    const d = new Date(dateStr);
+    const diff = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (diff < 1) return 'À l\'instant';
+    if (diff < 60) return `Il y a ${diff} min`;
+    const h = Math.floor(diff / 60);
+    if (h < 24) return `Il y a ${h}h`;
+    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  }
+
+  // ── Auth ───────────────────────────────────────────────────────
   onLogout(): void {
     this.authService.logout();
     this.showMenu = false;
     this.router.navigate(['/']);
   }
 
-  // ── Modal controls ────────────────────────────────────────────────────
   openLogin(): void { this.authService.openLogin(); }
   closeLogin(): void { this.authService.closeLogin(); }
   openSignup(): void { this.showSignupModal = true; this.authService.closeLogin(); }
@@ -134,127 +185,62 @@ export class HeaderComponent implements OnInit, OnDestroy {
   switchToSignup(): void { this.closeLogin(); this.openSignup(); }
   switchToLogin(): void { this.closeSignup(); this.openLogin(); }
 
-  // ── Login — wait for fetchMe() to complete before redirecting ─────────
   handleLogin(): void {
     this.loginError = '';
     if (!this.loginEmail || !this.loginPassword) {
       this.loginError = this.currentLang === 'fr'
-        ? 'Veuillez remplir tous les champs.'
-        : 'Please fill in all fields.';
+        ? 'Veuillez remplir tous les champs.' : 'Please fill in all fields.';
       return;
     }
-
     this.isLoggingIn = true;
     this.authService.login(this.loginEmail, this.loginPassword).subscribe({
       next: () => {
         this.authService.closeLogin();
-        this.loginEmail = '';
-        this.loginPassword = '';
-
-        // Wait for fetchMe() to resolve, then route based on role
-        this.authService.currentUser$.pipe(
-          filter(user => user !== null),
-          take(1)
-        ).subscribe(user => {
+        this.loginEmail = ''; this.loginPassword = '';
+        this.authService.currentUser$.pipe(filter(u => u !== null), take(1)).subscribe(user => {
           this.isLoggingIn = false;
-          this.navigateByRole(user!.role);
+          this.notifService.success('Connexion réussie', `Bienvenue, ${user!.name} !`);
+          this.router.navigate([user!.role === 'Admin' ? '/admin/overview' : '/dashboard']);
         });
       },
       error: () => {
         this.isLoggingIn = false;
         this.loginError = this.currentLang === 'fr'
-          ? 'Email ou mot de passe incorrect.'
-          : 'Invalid email or password.';
+          ? 'Email ou mot de passe incorrect.' : 'Invalid email or password.';
       }
     });
   }
 
-  // ── Sign up ───────────────────────────────────────────────────────────
   handleSignup(): void {
     this.signupError = '';
     const f = this.signupForm;
-
     if (!f.firstName || !f.lastName || !f.email || !f.password) {
       this.signupError = this.currentLang === 'fr'
         ? 'Veuillez remplir tous les champs obligatoires.'
         : 'Please fill in all required fields.';
       return;
     }
-
-    if (f.accountType === 'Owner' && !f.idCard) {
-      this.signupError = this.currentLang === 'fr'
-        ? 'Veuillez télécharger votre carte d\'identité.'
-        : 'Please upload your ID card.';
-      return;
-    }
-
     this.isSigningUp = true;
-
-    // Use FormData for multipart/form-data
-    const formData = new FormData();
-    formData.append('username', f.email);
-    formData.append('email', f.email);
-    formData.append('password', f.password);
-    formData.append('first_name', f.firstName);
-    formData.append('last_name', f.lastName);
-    formData.append('phone', f.phone);
-    formData.append('role', f.accountType);
-    if (f.idCard) {
-      formData.append('id_card', f.idCard, f.idCard.name);
-    }
-
-    this.authService.register(formData).subscribe({
+    this.authService.register({
+      email: f.email, password: f.password,
+      firstName: f.firstName, lastName: f.lastName,
+      phone: f.phone, accountType: f.accountType
+    }).subscribe({
       next: () => {
         this.closeSignup();
-        this.authService.currentUser$.pipe(
-          filter(user => user !== null),
-          take(1)
-        ).subscribe(user => {
+        this.authService.currentUser$.pipe(filter(u => u !== null), take(1)).subscribe(user => {
           this.isSigningUp = false;
-          this.navigateByRole(user!.role);
+          this.notifService.success('Compte créé !', `Bienvenue, ${user!.name} !`);
+          this.router.navigate([user!.role === 'Admin' ? '/admin/overview' : '/dashboard']);
         });
       },
       error: (err: any) => {
-        console.error('Registration failed:', err);
         this.isSigningUp = false;
-
-        let msg = '';
-        if (err?.error) {
-          if (typeof err.error === 'string') {
-            msg = err.error;
-          } else if (typeof err.error === 'object') {
-            const parts: string[] = [];
-            for (const key in err.error) {
-              const val = err.error[key];
-              const message = Array.isArray(val) ? val.join(', ') : val;
-              parts.push(`${key}: ${message}`);
-            }
-            msg = parts.join(' | ');
-          }
-        }
-
-        if (!msg) {
-          msg = this.currentLang === 'fr'
-            ? 'Erreur lors de l\'inscription. Veuillez réessayer.'
-            : 'Registration error. Please try again.';
-        }
-
-        this.signupError = msg;
+        this.signupError = err?.error?.email?.[0]
+          ?? err?.error?.username?.[0]
+          ?? (this.currentLang === 'fr' ? 'Erreur lors de l\'inscription.' : 'Registration error.');
       }
     });
-  }
-
-  // ── Helpers ───────────────────────────────────────────────────────────
-
-  /** Route the user to the correct dashboard based on their role */
-  private navigateByRole(role: string): void {
-    if (role === 'Admin') {
-      this.router.navigate(['/admin/overview']);
-    } else {
-      // Owner → /dashboard shows owner management view
-      // Student / Parent → /dashboard shows client/visitor view
-      this.router.navigate(['/dashboard']);
-    }
   }
 
   getRoleLabel(role: string): string {
@@ -268,15 +254,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private resetSignupForm(): void {
     this.signupForm = {
       firstName: '', lastName: '', email: '',
-      phone: '', password: '', accountType: 'Student',
-      idCard: null
+      phone: '', password: '', accountType: 'Student'
     };
-  }
-
-  onFileSelected(event: any): void {
-    const file = event.target.files[0];
-    if (file) {
-      this.signupForm.idCard = file;
-    }
   }
 }

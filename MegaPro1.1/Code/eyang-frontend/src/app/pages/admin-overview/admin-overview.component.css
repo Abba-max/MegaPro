@@ -409,8 +409,7 @@
 @media (max-width: 1024px) {
     .bottom-section {
         grid-template-columns: 1fr;
-    }
-
+    
         .stats-cards-grid {
             grid-template-columns: repeat(2, 1fr);
     
@@ -418,13 +417,11 @@
 @media (max-width: 768px) {
     .stats-cards-grid {
         grid-template-columns: 1fr;
-    }
-
+    
     .bottom-section {
         grid-template-columns: 1fr;
         margin-top: 1.5rem;
-    }
-
+    
     .chart-area {
         height: 160px;
     }
@@ -436,6 +433,4 @@
         align-items: center;
         text-align: center;
     
-}
-}
 }

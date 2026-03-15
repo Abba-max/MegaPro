@@ -330,16 +330,9 @@ import {
       color:     rgba(255,255,255,0.38);
       font-size: 12px;
       margin:    0;
+      align-items: center;
+      justify-content: center;
     }
-    .f-legal { display: flex; gap: 1.5rem; }
-    .f-legal a {
-      color:           rgba(255,255,255,0.42);
-      font-size:       12px;
-      text-decoration: none;
-      transition:      color 0.2s;
-    }
-    .f-legal a:hover { color: rgba(255,255,255,0.8); }
-
     .f-top-btn {
       width:           34px;
       height:          34px;

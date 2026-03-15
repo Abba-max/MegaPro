@@ -198,8 +198,19 @@ export class HomeComponent implements OnInit {
     this.loadEstates();
   }
 
-  // ── Advanced drawer ───────────────────────────────────────
-  toggleAdvanced(): void  { this.showAdvanced = !this.showAdvanced; }
+  toggleAdvanced(): void {
+    this.showAdvanced = !this.showAdvanced;
+    if (this.showAdvanced) {
+      setTimeout(() => {
+        const el = document.querySelector('.filter-bar-container');
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      }, 50);
+    }
+  }
+
+
   closeAdvanced(): void   { this.showAdvanced = false; }
 
   setMaxPrice(val: number): void {

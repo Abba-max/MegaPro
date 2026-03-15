@@ -1,0 +1,18 @@
+<!-- src/app/components/toast/toast.component.html -->
+<div class="toast-container" aria-live="polite">
+  <div
+    *ngFor="let t of toasts$ | async; trackBy: trackById"
+    class="toast toast-{{ t.type }}"
+    role="alert">
+    <span class="toast-icon" *ngIf="t.icon">{{ t.icon }}</span>
+    <div class="toast-body">
+      <span class="toast-title">{{ t.title }}</span>
+      <span class="toast-msg" *ngIf="t.message">{{ t.message }}</span>
+    </div>
+    <button class="toast-close" (click)="dismiss(t.id)" aria-label="Fermer">×</button>
+    <div class="toast-progress"
+      *ngIf="t.duration && t.duration > 0"
+      [style.animation-duration.ms]="t.duration">
+    </div>
+  </div>
+</div>
