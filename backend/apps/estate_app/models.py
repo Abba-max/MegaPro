@@ -29,19 +29,12 @@ class User(AbstractUser):
 class Estate(models.Model):
     name = models.CharField(max_length=255)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='estates', limit_choices_to={'user_type': 'owner'})
-    capacity = models.IntegerField(default=1)
     location = models.CharField(max_length=255, default="Yaounde")
-    free = models.IntegerField(default=1)
     rating = models.CharField(max_length=10, default="0.0")
-    price = models.IntegerField(default=300000)
     distance = models.IntegerField(default=100)
-    wifi = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
     restaurant = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
     generator = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
-    room_size = models.CharField(max_length=1, choices=(('1', 'Large'), ('2', 'Medium'), ('3', 'Small')), default='2')
     forage = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
-    tv = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
-    fridge = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
     description = models.TextField(blank=True, default="")
     publishedAt = models.DateTimeField(auto_now=True)
     status = models.CharField(
@@ -51,6 +44,41 @@ class Estate(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class RoomCategory(models.Model):
+    estate = models.ForeignKey(Estate, related_name='room_categories', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100) # e.g., "Standard Single Room", "Deluxe Double Room"
+    
+    OCCUPANCY_CHOICES = (
+        ('single', 'Single Person'),
+        ('double', 'Two Persons'),
+        ('shared', 'Shared/Multiple Persons')
+    )
+    occupancy = models.CharField(max_length=10, choices=OCCUPANCY_CHOICES, default='single')
+    
+    price = models.IntegerField(default=300000)
+    quantity_available = models.IntegerField(default=1)
+    
+    # Category-Specific Amenities
+    wifi = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
+    tv = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
+    fridge = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
+    room_size = models.CharField(max_length=1, choices=(('1', 'Large'), ('2', 'Medium'), ('3', 'Small')), default='2')
+    
+    description = models.TextField(blank=True, default="")
+
+    def __str__(self):
+        return f"{self.name} at {self.estate.name}"
+
+
+class RoomImage(models.Model):
+    room_category = models.ForeignKey(RoomCategory, related_name='images', on_delete=models.CASCADE)
+    image  = models.ImageField(upload_to='estates/rooms/images/')
+    caption = models.CharField(max_length=100, blank=True)
+
+    def __str__(self):
+        return f"Image for {self.room_category.name}"
 
 
 class EstateImage(models.Model):
@@ -80,6 +108,7 @@ class Review(models.Model):
 
 class QuickOrder(models.Model):
     estate     = models.ForeignKey(Estate, on_delete=models.CASCADE, related_name='quick_orders')
+    room_category = models.ForeignKey(RoomCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='quick_orders')
     user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='quick_orders')
     name       = models.CharField(max_length=100)
     phone      = models.CharField(max_length=20)

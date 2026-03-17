@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Estate, QuickOrder, Review, ContactRequest, EstateImage
+from .models import User, Estate, QuickOrder, Review, ContactRequest, EstateImage, RoomCategory, RoomImage
 
 
 class CustomUserAdmin(UserAdmin):
@@ -16,18 +16,29 @@ class CustomUserAdmin(UserAdmin):
     list_filter  = UserAdmin.list_filter + ('user_type',)
 
 
+class RoomImageInline(admin.TabularInline):
+    model = RoomImage
+    extra = 1
+
+class RoomCategoryAdmin(admin.ModelAdmin):
+    inlines = [RoomImageInline]
+    list_display = ['name', 'estate', 'occupancy', 'price', 'quantity_available']
+    list_filter = ['occupancy', 'wifi', 'tv', 'fridge', 'room_size']
+    search_fields = ['name', 'estate__name', 'description']
+
 class EstateImageInline(admin.TabularInline):
     model = EstateImage
     extra = 1
 
 class EstateAdmin(admin.ModelAdmin):
     inlines = [EstateImageInline]
-    list_display = ['name', 'location', 'price', 'status', 'owner']
-    list_filter = ['status', 'location', 'wifi', 'restaurant', 'generator']
+    list_display = ['name', 'location', 'status', 'owner']
+    list_filter = ['status', 'location', 'restaurant', 'generator']
     search_fields = ['name', 'location', 'description']
 
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Estate, EstateAdmin)
+admin.site.register(RoomCategory, RoomCategoryAdmin)
 admin.site.register(QuickOrder)
 admin.site.register(ContactRequest)
 admin.site.register(Review)
