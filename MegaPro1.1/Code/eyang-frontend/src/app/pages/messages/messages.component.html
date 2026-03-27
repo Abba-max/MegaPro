@@ -1,84 +1,115 @@
 <div class="messages-page">
 
-<!-- ═══ SIDEBAR: Conversations List ═══ -->
+<!-- ═══════════════════════════════════════
+       SIDEBAR — Conversation list
+  ═══════════════════════════════════════ -->
 <aside class="conv-sidebar" [class.hidden-mobile]="!showSidebar">
 
+    <!-- Header -->
     <div class="conv-sidebar-header">
-        <h2 class="conv-title">Messages
-            <span class="unread-badge" *ngIf="getTotalUnread() > 0">{{ getTotalUnread() }}</span>
-        </h2>
-        <div class="conv-search-bar">
-            <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
-            <input type="text" [(ngModel)]="searchQuery" placeholder="Rechercher une conversation..."
-                class="conv-search-input">
+    <div class="conv-title-row">
+        <h2 class="conv-title">Messages</h2>
+        <span class="unread-badge" *ngIf="getTotalUnread() > 0">{{ getTotalUnread() }}</span>
+    </div>
+    <div class="conv-search-bar">
+        <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
+        <input type="text" [(ngModel)]="searchQuery" placeholder="Rechercher…" class="conv-search-input">
         </div>
     </div>
 
+    <!-- List -->
     <div class="conv-list">
-<!-- Loading state -->
+<!-- Skeleton loader -->
 <div *ngIf="isLoading" class="conv-loading">
-    <div class="conv-skeleton" *ngFor="let i of [1,2,3]"></div>
-</div>
-<!-- Empty -->
-<div *ngIf="!isLoading && filteredConversations.length === 0" class="conv-empty">
-    <span *ngIf="conversations.length === 0">Aucune conversation pour le moment.<br>
-        Contactez un propriétaire depuis la fiche d'un logement.</span>
-    <span *ngIf="conversations.length > 0">Aucun résultat pour "{{ searchQuery }}"</span>
-</div>
+        <div class="conv-skeleton" *ngFor="let i of [1,2,3,4]"></div>
+        </div>
 
-<!-- Conversation items -->
-<div *ngFor="let conv of filteredConversations" class="conv-item" [class.active]="activeConversation?.id === conv.id"
-    (click)="selectConversation(conv)">
-    <div class="conv-avatar" [style.background]="getPartnerColor(conv)">
-        {{ getPartnerInitials(conv) }}
-    </div>
-    <div class="conv-info">
-        <div class="conv-top">
+    <!-- Empty -->
+    <div *ngIf="!isLoading && filteredConversations.length === 0" class="conv-empty">
+        <lucide-icon [img]="MessageSquareIcon" class="conv-empty-icon"></lucide-icon>
+        <p *ngIf="conversations.length === 0">
+            Aucune conversation.<br>
+            <span class="conv-empty-hint">Contactez un propriétaire depuis une fiche logement.</span>
+        </p>
+        <p *ngIf="conversations.length > 0">
+            Aucun résultat pour <strong>"{{ searchQuery }}"</strong>
+        </p>
+        </div>
+
+    <!-- Conversation items -->
+    <div *ngFor="let conv of filteredConversations" class="conv-item" [class.active]="activeConversation?.id === conv.id"
+        (click)="selectConversation(conv)">
+<!-- Avatar with online dot -->
+<div class="conv-avatar-wrap">
+        <div class="conv-avatar" [style.background]="getPartnerColor(conv)">
+            {{ getPartnerInitials(conv) }}
+        </div>
+        <span class="online-dot" [class.online]="isPartnerOnline(conv)"></span>
+        </div>
+
+        <div class="conv-info">
+            <div class="conv-top">
             <span class="conv-name">{{ getPartnerName(conv) }}</span>
             <span class="conv-time">{{ formatTime(conv.last_message?.created_at) }}</span>
-            </div>
-            <div class="conv-bottom">
-            <div class="conv-estate">
-            <lucide-icon [img]="HomeIcon" class="estate-icon"></lucide-icon>
-            {{ conv.estate_name }}
-            </div>
-            <span class="unread-pill" *ngIf="conv.unread_count > 0">{{ conv.unread_count }}</span>
-            </div>
-        <div class="conv-last-msg">{{ conv.last_message?.text || 'Démarrez la conversation…' }}</div>
         </div>
-    </div>
+<div class="conv-estate-row">
+            <lucide-icon [img]="HomeIcon" class="estate-icon"></lucide-icon>
+            <span class="conv-estate-name">{{ conv.estate_name }}</span>
+            </div>
+<div class="conv-preview-row">
+    <span class="conv-last-msg">{{ getLastMessagePreview(conv) }}</span>
+            <span class="unread-pill" *ngIf="conv.unread_count > 0">{{ conv.unread_count }}</span>
+        </div>
+        </div>
 
+    </div>
     </div>
 </aside>
 
-<!-- ═══ CHAT AREA ═══ -->
+<!-- ═══════════════════════════════════════
+       CHAT AREA
+  ═══════════════════════════════════════ -->
 <main class="chat-area" [class.hidden-mobile]="showSidebar">
 
-    <!-- Empty state -->
+    <!-- ── Empty state ── -->
     <div *ngIf="!activeConversation" class="chat-empty">
-    <div class="chat-empty-icon">💬</div>
-    <h3>Sélectionnez une conversation</h3>
-    <p>Choisissez une conversation dans la liste pour commencer à échanger.</p>
+    <div class="chat-empty-illustration">
+        <div class="chat-empty-circle">💬</div>
+    </div>
+    <h3>Vos messages</h3>
+    <p>Sélectionnez une conversation à gauche pour commencer à échanger.</p>
     </div>
 
-    <!-- Active conversation -->
+    <!-- ── Active conversation ── -->
     <ng-container *ngIf="activeConversation">
 
-    <!-- Chat Header -->
+    <!-- ── Header ── -->
     <header class="chat-header">
         <button class="back-mobile-btn" (click)="backToList()">
         <lucide-icon [img]="ArrowLeftIcon" class="icon-sm"></lucide-icon>
         </button>
+<div class="chat-avatar-wrap">
         <div class="chat-avatar" [style.background]="getPartnerColor(activeConversation)">
             {{ getPartnerInitials(activeConversation) }}
         </div>
+        <span class="online-dot-lg" [class.online]="isPartnerOnline(activeConversation)"></span>
+        </div>
+
         <div class="chat-header-info">
         <div class="chat-contact-name">{{ getPartnerName(activeConversation) }}</div>
-        <div class="chat-estate-badge">
-            <lucide-icon [img]="HomeIcon" class="estate-icon-sm"></lucide-icon>
-            {{ activeConversation.estate_name }}
-            </div>
+        <div class="chat-status-row">
+            <span class="status-dot" [class.online]="isPartnerOnline(activeConversation)"></span>
+            <span class="chat-status-text" [class.online-text]="isPartnerOnline(activeConversation)">
+                {{ getOnlineStatus(activeConversation) }}
+            </span>
         </div>
+        </div>
+        
+        <div class="chat-estate-pill">
+            <lucide-icon [img]="HomeIcon" class="estate-icon-sm"></lucide-icon>
+        <span>{{ activeConversation.estate_name }}</span>
+        </div>
+
         <div class="chat-header-actions">
         <button class="hdr-btn" title="Appeler">
             <lucide-icon [img]="PhoneIcon" class="icon-sm"></lucide-icon>
@@ -89,73 +120,88 @@
         </div>
     </header>
 
-    <!-- Messages viewport -->
+    <!-- ── Messages viewport ── -->
     <div class="messages-viewport" #messagesViewport>
 
-        <!-- System message -->
-        <div class="system-msg">
-        Conversation à propos de « {{ activeConversation.estate_name }} »
+        <!-- System banner -->
+        <div class="system-banner">
+            <lucide-icon [img]="HomeIcon" class="sys-icon"></lucide-icon>
+            Conversation à propos de <strong>« {{ activeConversation.estate_name }} »</strong>
         </div>
-        
+
         <!-- Empty conversation -->
         <div class="conv-start-hint" *ngIf="activeConversation.messages.length === 0">
-            Démarrez la conversation ci-dessous 👇
+        Démarrez la conversation ci-dessous 👇
         </div>
 
-        <!-- Message bubbles -->
-        <ng-container *ngFor="let msg of activeConversation.messages">
+        <!-- Grouped messages with date separators -->
+        <ng-container *ngFor="let item of groupedMessages">
+        
+            <!-- Date separator -->
+            <div *ngIf="item.type === 'separator'" class="date-separator">
+                <span class="date-separator-label">{{ item.label }}</span>
+            </div>
 
-        <!-- Received (other party) -->
-        <div class="msg-row received" *ngIf="!isMine(msg)">
+        <!-- Received message -->
+        <div *ngIf="item.type === 'message' && item.msg && !isMine(item.msg)" class="msg-row received">
             <div class="msg-avatar-sm" [style.background]="getPartnerColor(activeConversation)">
-                {{ getPartnerInitials(activeConversation) }}
+            {{ getPartnerInitials(activeConversation) }}
             </div>
             <div class="msg-bubble received-bubble">
-                <p class="msg-text">{{ msg.text }}</p>
-            <span class="msg-time">{{ formatTime(msg.created_at) }}</span>
+            <p class="msg-text">{{ item.msg.text }}</p>
+            <div class="msg-meta">
+                <span class="msg-time">{{ formatTime(item.msg.created_at) }}</span>
             </div>
             </div>
+        </div>
 
-        <!-- Sent (me) -->
-        <div class="msg-row sent" *ngIf="isMine(msg)">
+        <!-- Sent message -->
+        <div *ngIf="item.type === 'message' && item.msg && isMine(item.msg)" class="msg-row sent">
             <div class="msg-bubble sent-bubble">
-                <p class="msg-text">{{ msg.text }}</p>
-                <div class="msg-footer">
-                <span class="msg-time">{{ formatTime(msg.created_at) }}</span>
-                <lucide-icon [img]="CheckCheckIcon" class="read-icon" [class.read]="msg.read"></lucide-icon>
-                </div>
-                </div>
-                </div>
+            <p class="msg-text">{{ item.msg.text }}</p>
+            <div class="msg-meta sent-meta">
+                <span class="msg-time">{{ formatTime(item.msg.created_at) }}</span>
+                <span class="ticks" [class.read]="item.msg.read">
+                    <lucide-icon *ngIf="!item.msg.read" [img]="CheckIcon" class="tick-icon single"></lucide-icon>
+                    <lucide-icon *ngIf="item.msg.read" [img]="CheckCheckIcon" class="tick-icon double"></lucide-icon>
+                </span>
+            </div>
+            <div class="read-label" *ngIf="item.msg.read && isLastSentMessage(item.msg)">
+                {{ getReadReceiptLabel(item.msg) }}
+            </div>
+            </div>
+            </div>
 
         </ng-container>
-<!-- Sending indicator -->
+<!-- Sending optimistic bubble -->
 <div class="msg-row sent" *ngIf="isSending">
     <div class="msg-bubble sent-bubble sending-bubble">
         <p class="msg-text">{{ newMessage || '…' }}</p>
-        <span class="msg-time">Envoi…</span>
-    </div>
-</div>
+            <div class="msg-meta sent-meta">
+            <span class="msg-time">Envoi…</span>
+            <lucide-icon [img]="ClockIcon" class="tick-icon single"></lucide-icon>
+            </div>
+        </div>
+        </div>
 
     </div>
 
-    <!-- Chat Input -->
+    <!-- ── Chat input footer ── -->
     <footer class="chat-footer">
-        <div class="input-row">
-        <button class="attach-btn" title="Joindre un fichier">
+        <div class="input-row" [class.focused]="newMessage.length > 0">
+            <button class="attach-btn" title="Joindre">
             <lucide-icon [img]="PaperclipIcon" class="icon-sm"></lucide-icon>
         </button>
-        <div class="input-wrapper">
-            <input type="text" [(ngModel)]="newMessage" (keydown)="onKeydown($event)" placeholder="Écrivez votre message..."
-                class="chat-input" [disabled]="isSending">
-            </div>
-        <button class="send-btn" (click)="sendMessage()" [class.active]="newMessage.trim() && !isSending"
-            [disabled]="isSending || !newMessage.trim()">
+        <input type="text" [(ngModel)]="newMessage" (keydown)="onKeydown($event)" placeholder="Écrivez un message…"
+            class="chat-input" [disabled]="isSending">
+        <button class="send-btn" [class.active]="newMessage.trim() && !isSending" [disabled]="isSending || !newMessage.trim()"
+            (click)="sendMessage()">
             <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
         </button>
         </div>
     </footer>
 
     </ng-container>
-    </main>
+</main>
 
 </div>

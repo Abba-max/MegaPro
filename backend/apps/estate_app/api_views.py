@@ -6,14 +6,21 @@ from django.db.models import Q
 from django.contrib.auth.hashers import make_password
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .models import Estate, EstateImage, Review, QuickOrder, ContactRequest, Conversation, Message, User
+from .models import Estate, EstateImage, Review, QuickOrder, ContactRequest, Conversation, Message, User, RoomCategory, RoomImage
 from .serializers import (
     EstateSerializer, EstateImageSerializer, ReviewSerializer, QuickOrderSerializer,
     ContactRequestSerializer, RegisterSerializer,
     MyTokenObtainPairSerializer, UserSerializer,
     ConversationSerializer, MessageSerializer,
+    RoomCategorySerializer, RoomImageSerializer,
 )
 from .permissions import IsVerifiedOwner
+from django.utils import timezone
+from django.db.models import Sum, Avg
+
+
+
+
 
 
 # ══════════════════════════════════════════════════════════════
@@ -80,15 +87,9 @@ class EstateViewSet(viewsets.ModelViewSet):
         p  = self.request.query_params
         if loc  := p.get('location'):   qs = qs.filter(location__icontains=loc)
         if st   := p.get('status'):     qs = qs.filter(status=st)
-        if wifi := p.get('wifi'):       qs = qs.filter(wifi=wifi)
         if gen  := p.get('generator'):  qs = qs.filter(generator=gen)
         if fog  := p.get('forage'):     qs = qs.filter(forage=fog)
         if rst  := p.get('restaurant'): qs = qs.filter(restaurant=rst)
-        if tv   := p.get('tv'):         qs = qs.filter(tv=tv)
-        if fri  := p.get('fridge'):     qs = qs.filter(fridge=fri)
-        if mn   := p.get('min_price'):  qs = qs.filter(price__gte=mn)
-        if mx   := p.get('max_price'):  qs = qs.filter(price__lte=mx)
-        if rs   := p.get('room_size'):  qs = qs.filter(room_size=rs)
         if mxd  := p.get('max_dist'):   qs = qs.filter(distance__lte=mxd)
         if p.get('mine') == '1' and self.request.user.is_authenticated:
             qs = qs.filter(owner=self.request.user)
@@ -149,6 +150,37 @@ class EstateViewSet(viewsets.ModelViewSet):
         img.image.delete(save=False)   # remove file from disk
         img.delete()
         return Response(status=204)
+
+
+# ══════════════════════════════════════════════════════════════
+#  Rooms
+# ══════════════════════════════════════════════════════════════
+
+class RoomCategoryViewSet(viewsets.ModelViewSet):
+    queryset = RoomCategory.objects.all().prefetch_related('images')
+    serializer_class = RoomCategorySerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_queryset(self):
+        qs = RoomCategory.objects.all().prefetch_related('images')
+        eid = self.request.query_params.get('estate')
+        if eid:
+            qs = qs.filter(estate_id=eid)
+        return qs
+
+    def perform_create(self, serializer):
+        # Optional: check if request.user is owner of estate
+        serializer.save()
+
+    @action(detail=True, methods=['post'], url_path='images', parser_classes=[MultiPartParser, FormParser])
+    def upload_images(self, request, pk=None):
+        room_cat = self.get_object()
+        files = request.FILES.getlist('images')
+        created = []
+        for f in files:
+            img = RoomImage.objects.create(room_category=room_cat, image=f)
+            created.append(RoomImageSerializer(img, context={'request': request}).data)
+        return Response(created, status=201)
 
 
 # ══════════════════════════════════════════════════════════════
@@ -317,14 +349,28 @@ def stats_view(request):
 def owner_stats_view(request):
     estates = Estate.objects.filter(owner=request.user)
     orders  = QuickOrder.objects.filter(estate__owner=request.user)
-    total_cap  = sum(e.capacity for e in estates)
-    total_free = sum(e.free     for e in estates)
-    occupied   = total_cap - total_free
-    occ_pct    = round((occupied / total_cap) * 100) if total_cap > 0 else 0
+    
+    # Simple stats from Estates
+    total_estates = estates.count()
+    
+    # Room-based stats
+    room_stats = RoomCategory.objects.filter(estate__owner=request.user).aggregate(
+        total_qty=Sum('quantity_available'),
+        avg_price=Avg('price')
+    )
+    total_cap = room_stats['total_qty'] or 0
+    
+    # Since we don't have a 'current_bookings' count in DB, we'll use orders count as placeholder
+    # or just assume 80% occupancy if total_cap > 0 for demo purposes, 
+    # but let's keep it 0 if no real booking logic exists yet.
+    occupied = min(total_cap, orders.count()) 
+    occ_pct  = round((occupied / total_cap) * 100) if total_cap > 0 else 0
+    
     ratings    = [float(e.rating) for e in estates if e.rating and float(e.rating) > 0]
     avg_rating = round(sum(ratings) / len(ratings), 1) if ratings else 0
+    
     return Response({
-        'total_estates':  estates.count(),
+        'total_estates':  total_estates,
         'occupancy_pct':  occ_pct,
         'pending_orders': orders.count(),
         'avg_rating':     avg_rating,
@@ -341,6 +387,13 @@ def client_stats_view(request):
         'total_messages':     Message.objects.filter(sender=user).count(),
         'total_contacts':     ContactRequest.objects.filter(user=user).count(),
     })
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def online_users_view(request):
+    from .consumers import ONLINE_USERS
+    return Response({'online_user_ids': list(ONLINE_USERS)})
 
 
 # ══════════════════════════════════════════════════════════════
@@ -374,7 +427,7 @@ def admin_stats_view(request):
     from django.db.models import Count
     from django.db.models.functions import TruncMonth
     from datetime import datetime, timedelta
-    six_months_ago = datetime.now() - timedelta(days=180)
+    six_months_ago = timezone.now() - timedelta(days=180)
     monthly = (
         QuickOrder.objects.filter(created_at__gte=six_months_ago)
         .annotate(month=TruncMonth('created_at'))
@@ -545,12 +598,6 @@ def admin_toggle_user_view(request, user_id):
     user.is_active = not user.is_active
     user.save()
     return Response({'id': user.id, 'active': user.is_active})
-
-    if user == request.user:
-        return Response({'error': 'Vous ne pouvez pas supprimer votre propre compte.'}, status=400)
-
-    user.delete()
-    return Response({'deleted': True, 'id': user_id})
 
 
 @api_view(['PATCH'])

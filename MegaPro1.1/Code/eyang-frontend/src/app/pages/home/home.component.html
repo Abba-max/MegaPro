@@ -56,10 +56,11 @@
     <div class="filter-bar">
         <div class="filter-items">
     <button class="filter-item filter-adv-btn" [class.filter-adv-active]="showAdvanced || activeFilterCount > 0"
-        (click)="toggleAdvanced()">
+        (click)="toggleAdvanced()" [attr.aria-expanded]="showAdvanced" title="Ouvrir les filtres avancés">
         <lucide-icon [img]="FilterIcon" class="filter-icon"></lucide-icon>
-        <span>{{ 'filters.filters' | translate }}</span>
+        <span>Filtres avancés</span>
         <span class="filter-badge" *ngIf="activeFilterCount > 0">{{ activeFilterCount }}</span>
+        <span class="adv-btn-arrow" [class.rotated]="showAdvanced">▾</span>
     </button>
     <button class="filter-item" [class.filter-on]="filterWifi==='1'"
         (click)="filterWifi=filterWifi==='1'?'':'1'; applyFilters()">
@@ -94,135 +95,6 @@
     </div>
     </div>
 
-<!-- ════ ADVANCED FILTER DRAWER ════ -->
-<div class="adv-drawer-backdrop" *ngIf="showAdvanced" (click)="closeAdvanced()"></div>
-<div class="adv-drawer" [class.adv-drawer-open]="showAdvanced">
-    <div class="adv-drawer-header">
-        <h3 class="adv-drawer-title">
-            <lucide-icon [img]="FilterIcon" class="adv-title-icon"></lucide-icon>
-            Filtres avancés
-        </h3>
-        <button class="adv-close-btn" (click)="closeAdvanced()">
-            <lucide-icon [img]="XIcon"></lucide-icon>
-        </button>
-    </div>
-    <div class="adv-drawer-body">
-        <!-- Type -->
-        <div class="adv-section">
-            <label class="adv-label">Type de logement</label>
-            <div class="adv-chip-group">
-                <button class="adv-chip" [class.adv-chip-on]="filterRoomSize===''"
-                    (click)="filterRoomSize=''">Tous</button>
-                <button class="adv-chip" [class.adv-chip-on]="filterRoomSize==='3'"
-                    (click)="filterRoomSize=filterRoomSize==='3'?'':'3'">
-                    <lucide-icon [img]="BedIcon" class="chip-icon"></lucide-icon> Chambre individuelle
-                </button>
-                <button class="adv-chip" [class.adv-chip-on]="filterRoomSize==='1'"
-                    (click)="filterRoomSize=filterRoomSize==='1'?'':'1'">
-                    <lucide-icon [img]="BedDoubleIcon" class="chip-icon"></lucide-icon> Chambre double
-                </button>
-                <button class="adv-chip" [class.adv-chip-on]="filterRoomSize==='2'"
-                    (click)="filterRoomSize=filterRoomSize==='2'?'':'2'">
-                    <lucide-icon [img]="BuildingIcon" class="chip-icon"></lucide-icon> Studio
-                </button>
-            </div>
-        </div>
-        <!-- Équipements -->
-        <div class="adv-section">
-            <label class="adv-label">Équipements</label>
-            <div class="adv-equip-grid">
-                <button class="adv-equip-btn" [class.adv-equip-on]="filterWifi==='1'"
-                    (click)="filterWifi=filterWifi==='1'?'':'1'">
-                    <lucide-icon [img]="WifiIcon" class="equip-icon orange"></lucide-icon><span>WiFi</span>
-                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterWifi==='1'"></lucide-icon>
-                </button>
-                <button class="adv-equip-btn" [class.adv-equip-on]="filterGenerator==='1'"
-                    (click)="filterGenerator=filterGenerator==='1'?'':'1'">
-                    <lucide-icon [img]="ZapIcon" class="equip-icon yellow"></lucide-icon><span>Groupe électrogène</span>
-                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterGenerator==='1'"></lucide-icon>
-                </button>
-                <button class="adv-equip-btn" [class.adv-equip-on]="filterForage==='1'"
-                    (click)="filterForage=filterForage==='1'?'':'1'">
-                    <lucide-icon [img]="DropletsIcon" class="equip-icon blue"></lucide-icon><span>Forage / Eau</span>
-                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterForage==='1'"></lucide-icon>
-                </button>
-                <button class="adv-equip-btn" [class.adv-equip-on]="filterRestaurant==='1'"
-                    (click)="filterRestaurant=filterRestaurant==='1'?'':'1'">
-                    <lucide-icon [img]="CoffeeIcon" class="equip-icon brown"></lucide-icon><span>Restaurant</span>
-                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterRestaurant==='1'"></lucide-icon>
-                </button>
-                <button class="adv-equip-btn" [class.adv-equip-on]="filterTv==='1'"
-                    (click)="filterTv=filterTv==='1'?'':'1'">
-                    <lucide-icon [img]="TvIcon" class="equip-icon purple"></lucide-icon><span>Télévision</span>
-                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterTv==='1'"></lucide-icon>
-                </button>
-                <button class="adv-equip-btn" [class.adv-equip-on]="filterFridge==='1'"
-                    (click)="filterFridge=filterFridge==='1'?'':'1'">
-                    <lucide-icon [img]="FridgeIcon" class="equip-icon teal"></lucide-icon><span>Réfrigérateur</span>
-                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterFridge==='1'"></lucide-icon>
-                </button>
-            </div>
-        </div>
-        <!-- Prix -->
-        <div class="adv-section">
-            <label class="adv-label">Budget mensuel (FCFA)</label>
-            <div class="adv-price-presets">
-                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===50000" (click)="setMaxPrice(50000)">≤ 50
-                    000</button>
-                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===100000" (click)="setMaxPrice(100000)">≤
-                    100 000</button>
-                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===200000" (click)="setMaxPrice(200000)">≤
-                    200 000</button>
-                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===500000" (click)="setMaxPrice(500000)">≤
-                    500 000</button>
-            </div>
-            <div class="adv-price-inputs">
-                <div class="adv-input-wrap">
-                    <label class="adv-input-label">Min</label>
-                    <input class="adv-input" type="number" placeholder="0" [(ngModel)]="filterMinPrice" min="0">
-                </div>
-                <span class="adv-price-sep">–</span>
-                <div class="adv-input-wrap">
-                    <label class="adv-input-label">Max</label>
-                    <input class="adv-input" type="number" placeholder="Illimité" [(ngModel)]="filterMaxPrice" min="0">
-                </div>
-            </div>
-        </div>
-        <!-- Distance -->
-        <div class="adv-section">
-            <label class="adv-label">Distance max du campus (m)</label>
-            <div class="adv-chip-group">
-                <button class="adv-chip" [class.adv-chip-on]="filterMaxDist===200"
-                    (click)="filterMaxDist=filterMaxDist===200?null:200">≤ 200 m</button>
-                <button class="adv-chip" [class.adv-chip-on]="filterMaxDist===500"
-                    (click)="filterMaxDist=filterMaxDist===500?null:500">≤ 500 m</button>
-                <button class="adv-chip" [class.adv-chip-on]="filterMaxDist===1000"
-                    (click)="filterMaxDist=filterMaxDist===1000?null:1000">≤ 1 km</button>
-                <button class="adv-chip" [class.adv-chip-on]="filterMaxDist===2000"
-                    (click)="filterMaxDist=filterMaxDist===2000?null:2000">≤ 2 km</button>
-            </div>
-            <div class="adv-input-wrap mt-3">
-                <input class="adv-input" type="number" placeholder="Saisir distance max" [(ngModel)]="filterMaxDist"
-                    min="0">
-            </div>
-        </div>
-        <!-- Places -->
-        <div class="adv-section">
-            <label class="adv-label">Places libres minimum : <strong>{{ filterMinFree }}</strong></label>
-            <input class="adv-range" type="range" min="0" max="20" [(ngModel)]="filterMinFree">
-            <div class="adv-range-labels"><span>0</span><span>10</span><span>20+</span></div>
-        </div>
-    </div>
-    <div class="adv-drawer-footer">
-        <button class="adv-btn-reset" (click)="resetFilters()">
-            <lucide-icon [img]="XIcon" class="btn-icon-sm"></lucide-icon> Réinitialiser
-        </button>
-        <button class="adv-btn-apply" (click)="applyFiltersAndClose()">
-            <lucide-icon [img]="SearchIcon" class="btn-icon-sm"></lucide-icon>
-            Appliquer ({{ activeFilterCount }} filtre{{ activeFilterCount !== 1 ? 's' : '' }})
-        </button>
-    </div>
-</div>
 
 <!-- ════ LISTINGS ════ -->
 <section class="listings-section">
@@ -245,9 +117,9 @@
 
     <!-- IMAGE -->
     <div class="card-image-area">
-        <div class="image-wrapper" [class.no-image]="!h.images?.length">
-            <img *ngIf="h.images?.length" [src]="getFirstImage(h)" [alt]="h.name" loading="lazy">
-            <div class="placeholder-content" *ngIf="!h.images?.length">
+        <div class="image-wrapper" [class.no-image]="!h.images.length">
+            <img *ngIf="h.images.length" [src]="getFirstImage(h)" [alt]="h.name" loading="lazy">
+            <div class="placeholder-content" *ngIf="!h.images.length">
                 <lucide-icon [img]="BuildingIcon" class="icon-building"></lucide-icon>
             </div>
         </div>
@@ -467,4 +339,135 @@
     </div>
     </section>
 
+</div>
+<!-- ════ ADVANCED FILTER MODAL — outside home-container so position:fixed works ════ -->
+<!-- ════ ADVANCED FILTER DRAWER ════ -->
+<!-- Backdrop: clicking outside closes the panel -->
+<div class="adv-drawer-backdrop" *ngIf="showAdvanced" (click)="closeAdvanced()" aria-label="Fermer les filtres"></div>
+<div class="adv-drawer" [class.adv-drawer-open]="showAdvanced">
+    <div class="adv-drawer-header">
+        <h3 class="adv-drawer-title">
+            <lucide-icon [img]="FilterIcon" class="adv-title-icon"></lucide-icon>
+            Filtres avancés
+        </h3>
+        <button class="adv-close-btn" (click)="closeAdvanced()">
+            <lucide-icon [img]="XIcon"></lucide-icon>
+        </button>
+    </div>
+    <div class="adv-drawer-body">
+        <!-- Type -->
+        <div class="adv-section">
+            <label class="adv-label">Type de logement</label>
+            <div class="adv-chip-group">
+                <button class="adv-chip" [class.adv-chip-on]="filterRoomSize===''"
+                    (click)="filterRoomSize=''">Tous</button>
+                <button class="adv-chip" [class.adv-chip-on]="filterRoomSize==='3'"
+                    (click)="filterRoomSize=filterRoomSize==='3'?'':'3'">
+                    <lucide-icon [img]="BedIcon" class="chip-icon"></lucide-icon> Chambre individuelle
+                </button>
+                <button class="adv-chip" [class.adv-chip-on]="filterRoomSize==='1'"
+                    (click)="filterRoomSize=filterRoomSize==='1'?'':'1'">
+                    <lucide-icon [img]="BedDoubleIcon" class="chip-icon"></lucide-icon> Chambre double
+                </button>
+                <button class="adv-chip" [class.adv-chip-on]="filterRoomSize==='2'"
+                    (click)="filterRoomSize=filterRoomSize==='2'?'':'2'">
+                    <lucide-icon [img]="BuildingIcon" class="chip-icon"></lucide-icon> Studio
+                </button>
+            </div>
+        </div>
+        <!-- Équipements -->
+        <div class="adv-section">
+            <label class="adv-label">Équipements</label>
+            <div class="adv-equip-grid">
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterWifi==='1'"
+                    (click)="filterWifi=filterWifi==='1'?'':'1'">
+                    <lucide-icon [img]="WifiIcon" class="equip-icon orange"></lucide-icon><span>WiFi</span>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterWifi==='1'"></lucide-icon>
+                </button>
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterGenerator==='1'"
+                    (click)="filterGenerator=filterGenerator==='1'?'':'1'">
+                    <lucide-icon [img]="ZapIcon" class="equip-icon yellow"></lucide-icon><span>Groupe électrogène</span>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterGenerator==='1'"></lucide-icon>
+                </button>
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterForage==='1'"
+                    (click)="filterForage=filterForage==='1'?'':'1'">
+                    <lucide-icon [img]="DropletsIcon" class="equip-icon blue"></lucide-icon><span>Forage / Eau</span>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterForage==='1'"></lucide-icon>
+                </button>
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterRestaurant==='1'"
+                    (click)="filterRestaurant=filterRestaurant==='1'?'':'1'">
+                    <lucide-icon [img]="CoffeeIcon" class="equip-icon brown"></lucide-icon><span>Restaurant</span>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterRestaurant==='1'"></lucide-icon>
+                </button>
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterTv==='1'"
+                    (click)="filterTv=filterTv==='1'?'':'1'">
+                    <lucide-icon [img]="TvIcon" class="equip-icon purple"></lucide-icon><span>Télévision</span>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterTv==='1'"></lucide-icon>
+                </button>
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterFridge==='1'"
+                    (click)="filterFridge=filterFridge==='1'?'':'1'">
+                    <lucide-icon [img]="FridgeIcon" class="equip-icon teal"></lucide-icon><span>Réfrigérateur</span>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterFridge==='1'"></lucide-icon>
+                </button>
+            </div>
+        </div>
+        <!-- Prix -->
+        <div class="adv-section">
+            <label class="adv-label">Budget mensuel (FCFA)</label>
+            <div class="adv-price-presets">
+                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===50000" (click)="setMaxPrice(50000)">≤ 50
+                    000</button>
+                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===100000" (click)="setMaxPrice(100000)">≤
+                    100 000</button>
+                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===200000" (click)="setMaxPrice(200000)">≤
+                    200 000</button>
+                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===500000" (click)="setMaxPrice(500000)">≤
+                    500 000</button>
+            </div>
+            <div class="adv-price-inputs">
+                <div class="adv-input-wrap">
+                    <label class="adv-input-label">Min</label>
+                    <input class="adv-input" type="number" placeholder="0" [(ngModel)]="filterMinPrice" min="0">
+                </div>
+                <span class="adv-price-sep">–</span>
+                <div class="adv-input-wrap">
+                    <label class="adv-input-label">Max</label>
+                    <input class="adv-input" type="number" placeholder="Illimité" [(ngModel)]="filterMaxPrice" min="0">
+                </div>
+            </div>
+        </div>
+        <!-- Distance -->
+        <div class="adv-section">
+            <label class="adv-label">Distance max du campus (m)</label>
+            <div class="adv-chip-group">
+                <button class="adv-chip" [class.adv-chip-on]="filterMaxDist===200"
+                    (click)="filterMaxDist=filterMaxDist===200?null:200">≤ 200 m</button>
+                <button class="adv-chip" [class.adv-chip-on]="filterMaxDist===500"
+                    (click)="filterMaxDist=filterMaxDist===500?null:500">≤ 500 m</button>
+                <button class="adv-chip" [class.adv-chip-on]="filterMaxDist===1000"
+                    (click)="filterMaxDist=filterMaxDist===1000?null:1000">≤ 1 km</button>
+                <button class="adv-chip" [class.adv-chip-on]="filterMaxDist===2000"
+                    (click)="filterMaxDist=filterMaxDist===2000?null:2000">≤ 2 km</button>
+            </div>
+            <div class="adv-input-wrap mt-3">
+                <input class="adv-input" type="number" placeholder="Saisir distance max" [(ngModel)]="filterMaxDist"
+                    min="0">
+            </div>
+        </div>
+        <!-- Places -->
+        <div class="adv-section">
+            <label class="adv-label">Places libres minimum : <strong>{{ filterMinFree }}</strong></label>
+            <input class="adv-range" type="range" min="0" max="20" [(ngModel)]="filterMinFree">
+            <div class="adv-range-labels"><span>0</span><span>10</span><span>20+</span></div>
+        </div>
+    </div>
+    <div class="adv-drawer-footer">
+        <button class="adv-btn-reset" (click)="resetFilters()">
+            <lucide-icon [img]="XIcon" class="btn-icon-sm"></lucide-icon> Réinitialiser
+        </button>
+        <button class="adv-btn-apply" (click)="applyFiltersAndClose()">
+            <lucide-icon [img]="SearchIcon" class="btn-icon-sm"></lucide-icon>
+            Appliquer ({{ activeFilterCount }} filtre{{ activeFilterCount !== 1 ? 's' : '' }})
+        </button>
+    </div>
 </div>

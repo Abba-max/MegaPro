@@ -7,6 +7,7 @@ import {
   Plus, Pencil, Trash2, X, Save, Eye, EyeOff, ChevronLeft, ChevronRight
 } from 'lucide-angular';
 import { EstateService, AdminUser } from '../../services/estate.service';
+import { environment } from '../../../environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, of } from 'rxjs';
 
@@ -48,7 +49,7 @@ export class AdminUsersComponent implements OnInit {
   readonly PrevIcon        = ChevronLeft;
   readonly NextIcon        = ChevronRight;
 
-  private readonly API = 'http://localhost:8000';
+  private readonly API = environment.apiUrl;
 
   isLoading   = signal(true);
   allUsers    = signal<AdminUser[]>([]);

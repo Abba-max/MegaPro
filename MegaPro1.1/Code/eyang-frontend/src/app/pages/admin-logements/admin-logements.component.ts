@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { LucideAngularModule, Plus, Search, Home, MoreVertical, Edit2, Trash2, CheckCircle, XCircle, Info, AlertCircle, Upload, X, MapPin, Ruler, Users, Check, Globe, LayoutGrid, FileText, Settings, LogOut, ChevronRight, Menu, Eye, EyeOff, Star, Filter, ArrowUpDown, Clock, Building2, Package, Mail, RefreshCw, Loader, Archive, Pencil, Save, ChevronLeft } from 'lucide-angular';
-import { EstateService, Estate, EstateRaw, EstateImage } from '../../services/estate.service';
+import { EstateService, Estate, EstateRaw, EstateImage, RoomCategory, RoomImage } from '../../services/estate.service';
+import { environment } from '../../../environments/environment';
 import { catchError, of, forkJoin, Observable, finalize } from 'rxjs';
 
 export interface Toast { id: number; type: 'success' | 'error' | 'info' | 'warning'; message: string; }
@@ -11,19 +12,12 @@ export interface Toast { id: number; type: 'success' | 'error' | 'info' | 'warni
 interface EstateForm {
   name:        string;
   location:    string;
-  price:       number;
   distance:    number;
-  capacity:    number;
-  free:        number;
-  room_size:   '1' | '2' | '3';
   status:      'draft' | 'published' | 'archived';
   description: string;
-  wifi:        '0' | '1';
   generator:   '0' | '1';
   forage:      '0' | '1';
   restaurant:  '0' | '1';
-  tv:          '0' | '1';
-  fridge:      '0' | '1';
 }
 
 @Component({
@@ -55,8 +49,9 @@ export class AdminLogementsComponent implements OnInit {
   readonly UploadIcon      = Upload;
   readonly PrevIcon        = ChevronLeft;
   readonly NextIcon        = ChevronRight;
+  readonly BuildingIcon    = Building2;
 
-  private readonly API = 'http://localhost:8000';
+  private readonly API = environment.apiUrl;
 
   // List state
   isLoading    = signal(true);
@@ -105,6 +100,26 @@ export class AdminLogementsComponent implements OnInit {
 
   toasts: Toast[]      = [];
   private toastCounter = 0;
+
+  // ── Room management state ───────────────────────────────
+  showRoomModal = false;
+  selectedEstateForRooms: Estate | null = null;
+  isLoadingRooms = signal(false);
+  roomCategories = signal<RoomCategory[]>([]);
+  
+  isRoomEditMode = false;
+  isSavingRoom = signal(false);
+  roomEditId: number | null = null;
+  roomForm: Partial<RoomCategory> = this.emptyRoomForm();
+  
+  roomSelectedFiles: File[] = [];
+  roomPreviewImages: string[] = [];
+  roomExistingImages: RoomImage[] = [];
+  roomRemovedImageIds: number[] = [];
+
+  emptyRoomForm(): Partial<RoomCategory> {
+    return { name: '', price: 300000, occupancy: 'single', quantity_available: 1, wifi: '0', tv: '0', fridge: '0', room_size: '2', description: '' };
+  }
 
   constructor(
     private estateService: EstateService,
@@ -159,25 +174,27 @@ export class AdminLogementsComponent implements OnInit {
     this.form = {
       name:        estate.name,
       location:    estate.location,
-      price:       estate.price,
       distance:    estate.distance,
-      capacity:    estate.capacity,
-      free:        estate.free,
-      room_size:   estate.room_size as '1' | '2' | '3',
       status:      estate.status,
       description: estate.description,
-      wifi:        estate.wifi       as '0' | '1',
       generator:   estate.generator  as '0' | '1',
       forage:      estate.forage     as '0' | '1',
       restaurant:  estate.restaurant as '0' | '1',
-      tv:          estate.tv         as '0' | '1',
-      fridge:      estate.fridge     as '0' | '1',
     };
     this.existingImages  = [...(estate.images ?? [])];
     this.selectedFiles   = [];
     this.previewImages   = [];
     this.removedImageIds = [];
     this.showModal       = true;
+  }
+  
+  switchToRoomManagerFromEdit(): void {
+      if (!this.editId) return;
+      const est = this.allHousings().find(h => h.id === this.editId);
+      if (est) {
+          this.closeModal();
+          this.openManageRooms(est);
+      }
   }
 
   closeModal(): void { this.showModal = false; }
@@ -209,8 +226,6 @@ export class AdminLogementsComponent implements OnInit {
   save(): void {
     if (!this.form.name.trim())     { this.showToast('Le nom est obligatoire.', 'warning'); return; }
     if (!this.form.location.trim()) { this.showToast('La localisation est obligatoire.', 'warning'); return; }
-    if (!this.form.price)           { this.showToast('Le prix est obligatoire.', 'warning'); return; }
-    if (!this.form.capacity)        { this.showToast('La capacité est obligatoire.', 'warning'); return; }
 
     this.isSaving.set(true);
 
@@ -218,19 +233,12 @@ export class AdminLogementsComponent implements OnInit {
     const payload: Partial<EstateRaw> = {
       name:        this.form.name,
       location:    this.form.location,
-      price:       this.form.price,
       distance:    this.form.distance,
-      capacity:    this.form.capacity,
-      free:        this.form.free,
-      room_size:   this.form.room_size,
       status:      this.form.status,
       description: this.form.description,
-      wifi:        this.form.wifi,
       generator:   this.form.generator,
       forage:      this.form.forage,
       restaurant:  this.form.restaurant,
-      tv:          this.form.tv,
-      fridge:      this.form.fridge,
     };
 
     if (this.isEditMode && this.editId) {
@@ -265,18 +273,20 @@ export class AdminLogementsComponent implements OnInit {
         }))
         .subscribe(created => {
           if (!created) return;
-          this.showToast(`"${created.name}" créé avec succès.`, 'success');
+          this.showToast(`"${created.name}" créé avec succès. Veuillez maintenant configurer les chambres.`, 'success');
           
-          if (this.selectedFiles.length) {
-            this.uploadImages(created.id).subscribe(() => {
-              this.isSaving.set(false);
-              this.showModal = false;
-              this.load();
-            });
-          } else {
+          const finalizeCreation = () => {
             this.isSaving.set(false);
             this.showModal = false;
             this.load();
+            // Automatically switch to room manager!
+            this.openManageRooms(created);
+          };
+
+          if (this.selectedFiles.length) {
+            this.uploadImages(created.id).subscribe(() => finalizeCreation());
+          } else {
+            finalizeCreation();
           }
         });
     }
@@ -307,7 +317,8 @@ export class AdminLogementsComponent implements OnInit {
   getImageUrl(url: string | null): string {
     if (!url) return '';
     if (url.startsWith('http')) return url;
-    return `${this.API}${url.startsWith('/') ? '' : '/'}${url}`;
+    const base = this.API.replace('/api', '');
+    return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
   }
 
   // ── Toggle publish ────────────────────────────────────────
@@ -351,15 +362,126 @@ export class AdminLogementsComponent implements OnInit {
       });
   }
 
-  getOccupied(e: Estate): number { return Math.max(0, e.capacity - e.free); }
+  getOccupied(e: Estate): number { return 0; } // Placeholder since free moved to RoomCategory
 
   private emptyForm(): EstateForm {
     return {
-      name: '', location: '', price: 300000, distance: 500,
-      capacity: 1, free: 1, room_size: '2', status: 'draft',
-      description: '', wifi: '0', generator: '0',
-      forage: '0', restaurant: '0', tv: '0', fridge: '0',
+      name: '', location: '', distance: 500,
+      status: 'draft', description: '',
+      generator: '0', forage: '0', restaurant: '0'
     };
+  }
+
+  // ── Room Category Methods ────────────────────────────────────────────────
+  openManageRooms(estate: Estate): void {
+    this.selectedEstateForRooms = estate;
+    this.showRoomModal = true;
+    this.isRoomEditMode = false;
+    this.loadRooms(estate.id);
+  }
+
+  closeRoomModal(): void {
+    this.showRoomModal = false;
+    this.selectedEstateForRooms = null;
+  }
+
+  loadRooms(estateId: number): void {
+    this.isLoadingRooms.set(true);
+    this.estateService.getRoomCategories(estateId).subscribe({
+      next: (rooms) => {
+        this.roomCategories.set(rooms);
+        this.isLoadingRooms.set(false);
+      },
+      error: () => {
+        this.showToast('Erreur chargement chambres.', 'error');
+        this.isLoadingRooms.set(false);
+      }
+    });
+  }
+
+  openCreateRoom(): void {
+    this.isRoomEditMode = true;
+    this.roomEditId = null;
+    this.roomForm = this.emptyRoomForm();
+    this.roomSelectedFiles = [];
+    this.roomPreviewImages = [];
+    this.roomExistingImages = [];
+    this.roomRemovedImageIds = [];
+  }
+
+  openEditRoom(room: RoomCategory): void {
+    this.isRoomEditMode = true;
+    this.roomEditId = room.id;
+    this.roomForm = { ...room };
+    this.roomExistingImages = [...(room.images || [])];
+    this.roomSelectedFiles = [];
+    this.roomPreviewImages = [];
+    this.roomRemovedImageIds = [];
+  }
+
+  deleteRoom(room: RoomCategory): void {
+    if (confirm(`Supprimer la catégorie "${room.name}" ?`)) {
+      this.estateService.deleteRoomCategory(room.id).subscribe(() => {
+        this.showToast('Chambre supprimée.', 'info');
+        if (this.selectedEstateForRooms) this.loadRooms(this.selectedEstateForRooms.id);
+      });
+    }
+  }
+
+  saveRoom(): void {
+    if (!this.selectedEstateForRooms) return;
+    if (!this.roomForm.name) { this.showToast('Le nom est obligatoire.', 'warning'); return; }
+    
+    this.isSavingRoom.set(true);
+    const payload = { ...this.roomForm, estate: this.selectedEstateForRooms.id };
+    
+    const req = this.roomEditId 
+      ? this.estateService.updateRoomCategory(this.roomEditId, payload)
+      : this.estateService.createRoomCategory(payload);
+      
+    req.subscribe({
+      next: (saved) => {
+        const afterSave = () => {
+          this.isSavingRoom.set(false);
+          this.isRoomEditMode = false;
+          this.showToast(`Chambre ${this.roomEditId ? 'mise à jour' : 'ajoutée'}.`, 'success');
+          this.loadRooms(this.selectedEstateForRooms!.id);
+        };
+        
+        if (this.roomSelectedFiles.length > 0) {
+          this.estateService.uploadRoomImages(saved.id, this.roomSelectedFiles).subscribe(afterSave);
+        } else {
+          afterSave();
+        }
+      },
+      error: () => {
+        this.showToast('Erreur lors de l’enregistrement de la chambre.', 'error');
+        this.isSavingRoom.set(false);
+      }
+    });
+  }
+
+  onRoomFilesSelected(e: Event): void {
+    const input = e.target as HTMLInputElement;
+    if (input.files) {
+      Array.from(input.files).forEach(f => {
+        this.roomSelectedFiles.push(f);
+        const reader = new FileReader();
+        reader.onload = ev => this.roomPreviewImages.push(ev.target!.result as string);
+        reader.readAsDataURL(f);
+      });
+    }
+    input.value = '';
+  }
+
+  removeRoomPreview(idx: number): void {
+    this.roomSelectedFiles.splice(idx, 1);
+    this.roomPreviewImages.splice(idx, 1);
+  }
+
+  removeExistingRoomImage(idx: number): void {
+    const img = this.roomExistingImages.splice(idx, 1)[0];
+    if (img.id) this.roomRemovedImageIds.push(img.id);
   }
 
   dismissToast(id: number): void { this.toasts = this.toasts.filter(t => t.id !== id); }

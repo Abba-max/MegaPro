@@ -1,14 +1,14 @@
 <div class="app-layout">
     <!-- Mobile Sidebar Overlay (Admin only) -->
     <div class="sidebar-overlay" *ngIf="isAdmin && sidebarOpen" (click)="closeSidebar()"></div>
-    
+
     <!-- Sidebar (Admin only) -->
     <aside class="sidebar" [class.open]="isAdmin && sidebarOpen" *ngIf="isAdmin">
-        <app-sidebar></app-sidebar>
+        <app-sidebar [isOpen]="sidebarOpen"></app-sidebar>
     </aside>
-    
+
     <div class="main-wrapper" [class.with-sidebar]="isAdmin">
-        <!-- Mobile Menu Toggle Button (Admin only) -->
+        <!-- Mobile Menu Toggle (Admin only) -->
         <button class="mobile-menu-toggle" (click)="toggleSidebar()" *ngIf="isAdmin && !sidebarOpen">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="3" y1="6" x2="21" y2="6"></line>
@@ -16,8 +16,10 @@
                 <line x1="3" y1="18" x2="21" y2="18"></line>
             </svg>
         </button>
-        
-        <app-header [isAdmin]="isAdmin" [isPublic]="!isAdmin"></app-header>
+
+        <!-- isPublic is route-based: false on /dashboard and /admin/* -->
+        <app-header [isAdmin]="isAdmin" [isPublic]="isPublic"></app-header>
+
         <main class="content-area">
             <router-outlet></router-outlet>
         </main>

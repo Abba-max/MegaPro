@@ -1,3 +1,4 @@
+
 import { Component, OnInit, OnDestroy, AfterViewChecked, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,13 +14,13 @@ import {
 import { AuthService, User as AuthUser } from '../../services/auth.service';
 import { WebSocketService } from '../../services/websocket.service';
 import {
-  EstateService, Estate, EstateRaw, EstateImage, QuickOrder, Review, ContactRequest,
+  EstateService, Estate, EstateRaw, EstateImage, RoomCategory, RoomImage, QuickOrder, Review, ContactRequest,
   Conversation, ChatMessage, OwnerDashboardStats, ClientDashboardStats,
   enrichReview
 } from '../../services/estate.service';
 import { Subscription, interval } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-
+import { TranslateModule } from '@ngx-translate/core';
 export interface Toast {
   id: number;
   type: 'success' | 'error' | 'info' | 'warning';
@@ -29,7 +30,7 @@ export interface Toast {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, RouterModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, RouterModule, TranslateModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -92,18 +93,35 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   estateForm: any = {};
   distanceDisplay = '';
 
+  // ── Room management state ───────────────────────────────
+  showRoomModal = false;
+  selectedEstateForRooms: Estate | null = null;
+  isLoadingRooms = false;
+  roomCategories: RoomCategory[] = [];
+  
+  isRoomEditMode = false;
+  isSavingRoom = false;
+  roomEditId: number | null = null;
+  roomForm: Partial<RoomCategory> = this.emptyRoomForm();
+  
+  roomSelectedFiles: File[] = [];
+  roomPreviewImages: string[] = [];
+  roomExistingImages: RoomImage[] = [];
+  roomRemovedImageIds: number[] = [];
+
+  emptyRoomForm(): Partial<RoomCategory> {
+    return { name: '', price: 300000, occupancy: 'single', quantity_available: 1, wifi: '0', tv: '0', fridge: '0', room_size: '2', description: '' };
+  }
+
   /** Files chosen by the owner for upload */
   newImageFiles: File[] = [];
   /** Base64 previews of newImageFiles */
   newImagePreviews: string[] = [];
 
   availableEquipments = [
-    { key: 'wifi', label: 'WiFi', icon: Wifi },
     { key: 'restaurant', label: 'Restaurant', icon: Utensils },
     { key: 'generator', label: 'Générateur', icon: Zap },
     { key: 'forage', label: 'Forage', icon: Droplets },
-    { key: 'tv', label: 'Télévision', icon: Tv },
-    { key: 'fridge', label: 'Réfrigérateur', icon: Thermometer },
   ];
 
   // ── Owner messaging ───────────────────────────────────────
@@ -117,6 +135,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   mySubmittedReviews: Review[] = [];
   myContacts: ContactRequest[] = [];
   conversations: Conversation[] = [];
+  onlineUsers: Set<number> = new Set();
 
   activeConversation: Conversation | null = null;
   newMessage = '';
@@ -149,6 +168,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       } else {
         this.loadClientData();
       }
+      this.refreshOnlineUsers();
     });
     this.subs.push(sub);
 
@@ -167,6 +187,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.cdr.detectChanges();
       })
     );
+
+    // Poll online users every 30 seconds
+    const sPoll = interval(30000).subscribe(() => this.refreshOnlineUsers());
+    this.subs.push(sPoll);
   }
 
   ngOnDestroy(): void {
@@ -241,9 +265,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.isEditMode = false;
     this.editingId = null;
     this.estateForm = {
-      name: '', location: '', price: '', capacity: '', free: '',
-      description: '', status: 'published', room_size: '3',
-      wifi: '0', restaurant: '0', generator: '0', forage: '0', tv: '0', fridge: '0',
+      name: '', location: '',
+      description: '', status: 'published',
+      restaurant: '0', generator: '0', forage: '0',
       existingImages: []
     };
     this.distanceDisplay = '';
@@ -257,12 +281,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.editingId = estate.id;
     this.estateForm = {
       name: estate.name, location: estate.location,
-      price: estate.price, capacity: estate.capacity,
-      free: estate.free, description: estate.description,
-      status: estate.status, room_size: estate.room_size,
-      wifi: estate.wifi, restaurant: estate.restaurant,
+      description: estate.description,
+      status: estate.status,
+      restaurant: estate.restaurant,
       generator: estate.generator, forage: estate.forage,
-      tv: estate.tv, fridge: estate.fridge,
       existingImages: [...(estate.images ?? [])]
     };
     this.distanceDisplay = String(estate.distance);
@@ -316,16 +338,140 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 
+  // ── Room Category Methods ────────────────────────────────────────────────
+  openManageRooms(estate: Estate): void {
+    this.selectedEstateForRooms = estate;
+    this.showRoomModal = true;
+    this.isRoomEditMode = false;
+    this.loadRooms(estate.id);
+  }
+
+  closeRoomModal(): void {
+    this.showRoomModal = false;
+    this.selectedEstateForRooms = null;
+  }
+
+  loadRooms(estateId: number): void {
+    this.isLoadingRooms = true;
+    this.estateService.getRoomCategories(estateId).subscribe({
+      next: (rooms) => {
+        this.roomCategories = rooms;
+        this.isLoadingRooms = false;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.showToast('Erreur chargement chambres.', 'error');
+        this.isLoadingRooms = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  openCreateRoom(): void {
+    this.isRoomEditMode = true;
+    this.roomEditId = null;
+    this.roomForm = this.emptyRoomForm();
+    this.roomSelectedFiles = [];
+    this.roomPreviewImages = [];
+    this.roomExistingImages = [];
+    this.roomRemovedImageIds = [];
+  }
+
+  openEditRoom(room: RoomCategory): void {
+    this.isRoomEditMode = true;
+    this.roomEditId = room.id;
+    this.roomForm = { ...room };
+    this.roomExistingImages = [...(room.images || [])];
+    this.roomSelectedFiles = [];
+    this.roomPreviewImages = [];
+    this.roomRemovedImageIds = [];
+  }
+
+  deleteRoom(room: RoomCategory): void {
+    if (confirm(`Supprimer la catégorie "${room.name}" ?`)) {
+      this.estateService.deleteRoomCategory(room.id).subscribe(() => {
+        this.showToast('Chambre supprimée.', 'info');
+        if (this.selectedEstateForRooms) this.loadRooms(this.selectedEstateForRooms.id);
+      });
+    }
+  }
+
+  saveRoom(): void {
+    if (!this.selectedEstateForRooms) return;
+    if (!this.roomForm.name) { this.showToast('Le nom est obligatoire.', 'warning'); return; }
+    
+    this.isSavingRoom = true;
+    const payload = { ...this.roomForm, estate: this.selectedEstateForRooms.id };
+    
+    const req = this.roomEditId 
+      ? this.estateService.updateRoomCategory(this.roomEditId, payload)
+      : this.estateService.createRoomCategory(payload);
+      
+    req.subscribe({
+      next: (saved) => {
+        const afterSave = () => {
+          this.isSavingRoom = false;
+          this.isRoomEditMode = false;
+          this.showToast(`Chambre ${this.roomEditId ? 'mise à jour' : 'ajoutée'}.`, 'success');
+          this.loadRooms(this.selectedEstateForRooms!.id);
+        };
+        
+        if (this.roomSelectedFiles.length > 0) {
+          this.estateService.uploadRoomImages(saved.id, this.roomSelectedFiles).subscribe(afterSave);
+        } else {
+          afterSave();
+        }
+      },
+      error: () => {
+        this.showToast('Erreur lors de l’enregistrement de la chambre.', 'error');
+        this.isSavingRoom = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  onRoomFilesSelected(e: Event): void {
+    const input = e.target as HTMLInputElement;
+    if (input.files) {
+      Array.from(input.files).forEach(f => {
+        this.roomSelectedFiles.push(f);
+        const reader = new FileReader();
+        reader.onload = ev => { this.roomPreviewImages.push(ev.target!.result as string); this.cdr.detectChanges(); };
+        reader.readAsDataURL(f);
+      });
+    }
+    input.value = '';
+  }
+
+  removeRoomPreview(idx: number): void {
+    this.roomSelectedFiles.splice(idx, 1);
+    this.roomPreviewImages.splice(idx, 1);
+  }
+
+  removeExistingRoomImage(idx: number): void {
+    const img = this.roomExistingImages.splice(idx, 1)[0];
+    if (img.id) this.roomRemovedImageIds.push(img.id);
+  }
+
+  switchToRoomManagerFromEdit(): void {
+      if (!this.editingId) return;
+      const est = this.myEstates.find(h => h.id === this.editingId);
+      if (est) {
+          this.closeEstateModal();
+          this.openManageRooms(est);
+      }
+  }
+
   // ── Save estate (create or update, then upload images) ────
 
   saveEstate(): void {
-    if (!this.estateForm.name || !this.estateForm.price) {
-      this.showToast('Veuillez remplir les champs obligatoires.', 'error');
+    if (!this.estateForm.name || !this.estateForm.location) {
+      this.showToast('Veuillez remplir le nom et la localisation du logement.', 'error');
       return;
     }
     this.isSavingEstate = true;
     const payload = { ...this.estateForm, distance: parseFloat(this.distanceDisplay) || 0 };
-    delete payload.existingImages; // not a backend field
+    delete payload.existingImages; 
 
     const req$ = this.isEditMode && this.editingId
       ? this.estateService.updateEstate(this.editingId, payload)
@@ -334,26 +480,25 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     req$.subscribe({
       next: (savedEstate) => {
         const estateId = savedEstate.id;
-        if (this.newImageFiles.length > 0) {
-          this.estateService.uploadEstateImages(estateId, this.newImageFiles).subscribe({
-            next: () => {
-              this.isSavingEstate = false;
-              this.showToast(this.isEditMode ? 'Logement mis à jour.' : 'Logement ajouté.', 'success');
-              this.closeEstateModal();
-              this.loadOwnerData();
-            },
-            error: () => {
-              this.isSavingEstate = false;
-              this.showToast('Logement sauvegardé mais les images n\'ont pas pu être uploadées.', 'warning');
-              this.closeEstateModal();
-              this.loadOwnerData();
-            }
-          });
-        } else {
+        
+        const finalizeCreation = () => {
           this.isSavingEstate = false;
-          this.showToast(this.isEditMode ? 'Logement mis à jour.' : 'Logement ajouté.', 'success');
+          this.showToast(this.isEditMode ? 'Logement mis à jour.' : 'Logement créé avec succès. Veuillez configurer les chambres.', 'success');
           this.closeEstateModal();
           this.loadOwnerData();
+          if (!this.isEditMode) {
+             // Immediately switch to Room Manager for new estate!
+             this.openManageRooms(savedEstate);
+          }
+        };
+
+        if (this.newImageFiles.length > 0) {
+          this.estateService.uploadEstateImages(estateId, this.newImageFiles).subscribe({
+            next: () => finalizeCreation(),
+            error: () => finalizeCreation()
+          });
+        } else {
+          finalizeCreation();
         }
       },
       error: () => {
@@ -533,6 +678,14 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     return name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2) || '??';
   }
 
+  getConvPartnerId(conv: Conversation): number {
+    return this.isOwner ? conv.client.id : conv.owner.id;
+  }
+
+  isPartnerOnline(conv: Conversation): boolean {
+    return this.onlineUsers.has(this.getConvPartnerId(conv));
+  }
+
   // ── Review modal ──────────────────────────────────────────
 
   openReviewModal(): void {
@@ -603,5 +756,40 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   dismissToast(id: number): void {
     this.toasts = this.toasts.filter(t => t.id !== id);
+  }
+
+  // ── Grouped messages with date separators ─────────────────
+
+  getGroupedMessages(messages: ChatMessage[]): { type: 'separator' | 'message'; label?: string; msg?: ChatMessage }[] {
+    const result: { type: 'separator' | 'message'; label?: string; msg?: ChatMessage }[] = [];
+    let lastDate = '';
+    for (const msg of messages) {
+      const key = new Date(msg.created_at).toDateString();
+      if (key !== lastDate) {
+        result.push({ type: 'separator', label: this.msgDateLabel(msg.created_at) });
+        lastDate = key;
+      }
+      result.push({ type: 'message', msg });
+    }
+    return result;
+  }
+
+  private msgDateLabel(dateStr: string): string {
+    const d = new Date(dateStr);
+    const diff = Math.floor((Date.now() - d.getTime()) / 86_400_000);
+    if (diff === 0) return "Aujourd'hui";
+    if (diff === 1) return 'Hier';
+    if (diff < 7) return d.toLocaleDateString('fr-FR', { weekday: 'long' });
+    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+
+  refreshOnlineUsers(): void {
+    this.estateService.getOnlineUsers().subscribe({
+      next: data => {
+        this.onlineUsers = new Set(data.online_user_ids);
+        this.cdr.detectChanges();
+      },
+      error: () => { }
+    });
   }
 }

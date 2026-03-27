@@ -46,8 +46,7 @@
             <tr>
                 <th>LOGEMENT</th>
                 <th>PROPRIÉTAIRE</th>
-                <th>PRIX</th>
-                <th>PLACES</th>
+                <th>NOTE</th>
                 <th>NOTE</th>
                 <th>STATUT</th>
                 <th class="text-right">ACTIONS</th>
@@ -57,10 +56,10 @@
             <tr *ngFor="let l of pagedHousings()" class="fade-in">
                 <td data-label="LOGEMENT">
                     <div class="housing-cell">
-                        <div class="housing-thumb" *ngIf="l.images?.length">
+                        <div class="housing-thumb" *ngIf="l.images.length">
                             <img [src]="getImageUrl(l.images[0].image)" alt="">
                         </div>
-                        <div class="housing-thumb placeholder-thumb" *ngIf="!l.images?.length">
+                        <div class="housing-thumb placeholder-thumb" *ngIf="!l.images.length">
                             <lucide-icon [img]="HomeIcon" class="thumb-icon"></lucide-icon>
                         </div>
                         <div class="housing-info">
@@ -71,12 +70,6 @@
                 </td>
                 <td data-label="PROPRIÉTAIRE">
                     <span class="text-sm">{{ l.owner?.username || '–' }}</span>
-                </td>
-                <td data-label="PRIX">
-                    <span class="price-val">{{ l.price | number }} FCFA</span>
-                </td>
-                <td data-label="PLACES">
-                    <span class="text-sm">{{ getOccupied(l) }}/{{ l.capacity }}</span>
                 </td>
                 <td data-label="NOTE">
                     <div class="rating-cell" *ngIf="+l.rating > 0">
@@ -100,6 +93,10 @@
                         <button class="icon-btn" [class.success]="l.status !== 'published'" [class.warning]="l.status === 'published'"
                             (click)="togglePublish(l)" [title]="l.status === 'published' ? 'Dépublier' : 'Publier'">
                             <lucide-icon [img]="l.status === 'published' ? UnpublishIcon : PublishIcon" class="icon-xs"></lucide-icon>
+                        </button>
+                        <!-- Manage Rooms -->
+                        <button class="icon-btn info" (click)="openManageRooms(l)" title="Gérer les chambres">
+                            <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon>
                         </button>
                         <!-- Delete -->
                         <button class="icon-btn danger" (click)="confirmDelete(l)" title="Supprimer">
@@ -156,39 +153,11 @@
                 </div>
             </div>
 
-            <!-- Row 2: price + distance -->
+            <!-- Row 2: distance + status -->
             <div class="form-row-modal">
-                <div class="form-group">
-                    <label>Prix mensuel (FCFA) <span class="required">*</span></label>
-                    <input type="number" [(ngModel)]="form.price" class="input" placeholder="300000" min="0">
-                </div>
                 <div class="form-group">
                     <label>Distance du campus (m)</label>
                     <input type="number" [(ngModel)]="form.distance" class="input" placeholder="500" min="0">
-                </div>
-            </div>
-
-            <!-- Row 3: capacity + free -->
-            <div class="form-row-modal">
-                <div class="form-group">
-                    <label>Capacité totale <span class="required">*</span></label>
-                    <input type="number" [(ngModel)]="form.capacity" class="input" placeholder="10" min="1">
-                </div>
-                <div class="form-group">
-                    <label>Places libres</label>
-                    <input type="number" [(ngModel)]="form.free" class="input" placeholder="5" min="0">
-                </div>
-            </div>
-
-            <!-- Row 4: type + status -->
-            <div class="form-row-modal">
-                <div class="form-group">
-                    <label>Type de chambre</label>
-                    <select [(ngModel)]="form.room_size" class="select-input full-width">
-                        <option value="1">Villa</option>
-                        <option value="2">Studio</option>
-                        <option value="3">Chambre</option>
-                    </select>
                 </div>
                 <div class="form-group">
                     <label>Statut</label>
@@ -199,6 +168,7 @@
                     </select>
                 </div>
             </div>
+
 
             <!-- Description -->
             <div class="form-group">
@@ -211,12 +181,6 @@
             <div class="form-group">
                 <label>Équipements</label>
                 <div class="equipments-grid">
-                    <label class="equip-item" [class.active]="form.wifi === '1'">
-                        <input type="checkbox" [checked]="form.wifi === '1'"
-                            (change)="form.wifi = $any($event.target).checked ? '1' : '0'">
-                        <span class="equip-emoji">📶</span>
-                        <span>Wi-Fi</span>
-                    </label>
                     <label class="equip-item" [class.active]="form.generator === '1'">
                         <input type="checkbox" [checked]="form.generator === '1'"
                             (change)="form.generator = $any($event.target).checked ? '1' : '0'">
@@ -234,18 +198,6 @@
                             (change)="form.restaurant = $any($event.target).checked ? '1' : '0'">
                         <span class="equip-emoji">🍽️</span>
                         <span>Restaurant</span>
-                    </label>
-                    <label class="equip-item" [class.active]="form.tv === '1'">
-                        <input type="checkbox" [checked]="form.tv === '1'"
-                            (change)="form.tv = $any($event.target).checked ? '1' : '0'">
-                        <span class="equip-emoji">📺</span>
-                        <span>TV</span>
-                    </label>
-                    <label class="equip-item" [class.active]="form.fridge === '1'">
-                        <input type="checkbox" [checked]="form.fridge === '1'"
-                            (change)="form.fridge = $any($event.target).checked ? '1' : '0'">
-                        <span class="equip-emoji">🧊</span>
-                        <span>Réfrigérateur</span>
                     </label>
                 </div>
             </div>
@@ -285,13 +237,20 @@
 
         </div><!-- end modal-form -->
 
-        <div class="modal-actions">
-            <button class="btn-cancel" (click)="closeModal()">Annuler</button>
-            <button class="btn-save-modal" (click)="save()" [disabled]="isSaving()">
-                <lucide-icon *ngIf="isSaving()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
-                <lucide-icon *ngIf="!isSaving()" [img]="SaveIcon" class="icon-xs"></lucide-icon>
-                {{ isSaving() ? 'Enregistrement…' : (isEditMode ? 'Mettre à jour' : 'Créer') }}
-            </button>
+        <div class="modal-actions" style="justify-content: space-between;">
+            <div style="display: flex; gap: 0.5rem;">
+                <button *ngIf="isEditMode" class="btn-secondary" (click)="switchToRoomManagerFromEdit()">
+                    <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon> Gérer les chambres (Catégories)
+                </button>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+                <button class="btn-save-modal" (click)="save()" [disabled]="isSaving()">
+                    <lucide-icon *ngIf="isSaving()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
+                    <lucide-icon *ngIf="!isSaving()" [img]="SaveIcon" class="icon-xs"></lucide-icon>
+                    {{ isSaving() ? 'Enregistrement…' : (isEditMode ? 'Mettre à jour' : 'Créer & Ajouter des chambres') }}
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -311,5 +270,174 @@
                 {{ isSaving() ? 'Suppression…' : 'Supprimer' }}
             </button>
         </div>
+    </div>
+</div>
+
+<!-- ══ Room Management Modal ══════════════════════════════════════ -->
+<div class="modal-overlay fade-in" *ngIf="showRoomModal" (click)="closeRoomModal()">
+    <div class="modal-card modal-card-lg" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="closeRoomModal()">
+            <lucide-icon [img]="CloseIcon" class="icon-xs"></lucide-icon>
+        </button>
+
+        <h2 class="modal-title">
+            Chambres pour {{ selectedEstateForRooms?.name }}
+        </h2>
+
+        <!-- Room List View -->
+        <div *ngIf="!isRoomEditMode">
+            <button class="btn-add mb-4" (click)="openCreateRoom()">
+                <lucide-icon [img]="PlusIcon" class="icon-btn-sm"></lucide-icon>
+                Ajouter une chambre
+            </button>
+            <div *ngIf="isLoadingRooms()" class="loader-center my-4">
+                <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
+                <span>Chargement…</span>
+            </div>
+            <table class="table" *ngIf="!isLoadingRooms()">
+                <thead>
+                    <tr>
+                        <th>TYPE</th>
+                        <th>PRIX</th>
+                        <th>QUANTITÉ</th>
+                        <th class="text-right">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let rm of roomCategories()">
+                        <td data-label="TYPE">
+                            <div class="housing-cell">
+                                <div class="housing-thumb" *ngIf="rm.images && rm.images.length">
+                                    <img [src]="getImageUrl(rm.images[0].image)" alt="">
+                                </div>
+                                <div class="housing-thumb placeholder-thumb" *ngIf="!rm.images || !rm.images.length">
+                                    <lucide-icon [img]="BuildingIcon" class="thumb-icon"></lucide-icon>
+                                </div>
+                                <div class="housing-info">
+                                    <span class="housing-title">{{ rm.name }}</span>
+                                    <span class="location-sub">{{ rm.occupancy }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td data-label="PRIX">{{ rm.price }} FCFA</td>
+                        <td data-label="QUANTITÉ">{{ rm.quantity_available }}</td>
+                        <td class="text-right" data-label="ACTIONS">
+                            <div class="action-buttons">
+                                <button class="icon-btn" (click)="openEditRoom(rm)" title="Modifier">
+                                    <lucide-icon [img]="PencilIcon" class="icon-xs"></lucide-icon>
+                                </button>
+                                <button class="icon-btn danger" (click)="deleteRoom(rm)" title="Supprimer">
+                                    <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr *ngIf="roomCategories().length === 0">
+                        <td colspan="4" class="empty-row">Aucune chambre trouvée pour ce logement.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Room Edit Mode -->
+        <div *ngIf="isRoomEditMode" class="modal-form">
+            <div class="form-row-modal">
+                <div class="form-group">
+                    <label>Nom <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="roomForm.name" class="input" placeholder="Ex: Chambre VIP">
+                </div>
+                <div class="form-group">
+                    <label>Prix (FCFA) <span class="required">*</span></label>
+                    <input type="number" [(ngModel)]="roomForm.price" class="input" min="0">
+                </div>
+            </div>
+
+            <div class="form-row-modal">
+                <div class="form-group">
+                    <label>Capacité (Occupants)</label>
+                    <select [(ngModel)]="roomForm.occupancy" class="select-input full-width">
+                        <option value="single">1 Personne</option>
+                        <option value="double">2 Personnes</option>
+                        <option value="shared">Partagée</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Quantité disponible</label>
+                    <input type="number" [(ngModel)]="roomForm.quantity_available" class="input" min="1">
+                </div>
+            </div>
+
+            <div class="form-row-modal">
+                <div class="form-group">
+                    <label>Taille de la pièce</label>
+                    <select [(ngModel)]="roomForm.room_size" class="select-input full-width">
+                        <option value="1">Grande</option>
+                        <option value="2">Moyenne</option>
+                        <option value="3">Petite</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Description (Optionnel)</label>
+                    <textarea [(ngModel)]="roomForm.description" class="input textarea-field" rows="2"></textarea>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Équipements de la chambre</label>
+                <div class="equipments-grid">
+                    <label class="equip-item" [class.active]="roomForm.wifi === '1'">
+                        <input type="checkbox" [checked]="roomForm.wifi === '1'" (change)="roomForm.wifi = $any($event.target).checked ? '1' : '0'">
+                        <span class="equip-emoji">📶</span> <span>WiFi</span>
+                    </label>
+                    <label class="equip-item" [class.active]="roomForm.tv === '1'">
+                        <input type="checkbox" [checked]="roomForm.tv === '1'" (change)="roomForm.tv = $any($event.target).checked ? '1' : '0'">
+                        <span class="equip-emoji">📺</span> <span>TV</span>
+                    </label>
+                    <label class="equip-item" [class.active]="roomForm.fridge === '1'">
+                        <input type="checkbox" [checked]="roomForm.fridge === '1'" (change)="roomForm.fridge = $any($event.target).checked ? '1' : '0'">
+                        <span class="equip-emoji">❄️</span> <span>Réfrigérateur</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Photos de la chambre</label>
+                <div class="image-upload-zone" (click)="roomFileInput.click()" [class.has-files]="roomPreviewImages.length > 0">
+                    <input #roomFileInput type="file" accept="image/*" multiple (change)="onRoomFilesSelected($event)" style="display:none">
+                    <div class="upload-placeholder" *ngIf="roomPreviewImages.length === 0">
+                        <lucide-icon [img]="UploadIcon" class="upload-icon"></lucide-icon>
+                        <span class="upload-text">Cliquez pour ajouter des photos</span>
+                    </div>
+                    <div class="preview-grid" *ngIf="roomPreviewImages.length > 0" (click)="$event.stopPropagation()">
+                        <div class="preview-item" *ngFor="let img of roomPreviewImages; let i = index">
+                            <img [src]="img" alt="preview">
+                            <button class="preview-remove" (click)="removeRoomPreview(i)">×</button>
+                        </div>
+                        <div class="preview-add" (click)="roomFileInput.click()">
+                            <lucide-icon [img]="PlusIcon" class="icon-xs"></lucide-icon>
+                        </div>
+                    </div>
+                </div>
+                <div class="existing-images" *ngIf="roomEditId && roomExistingImages.length > 0">
+                    <p class="existing-label">Photos existantes :</p>
+                    <div class="preview-grid">
+                        <div class="preview-item" *ngFor="let img of roomExistingImages; let i = index">
+                            <img [src]="getImageUrl(img.image)" alt="existing">
+                            <button class="preview-remove" (click)="removeExistingRoomImage(i)">×</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-actions mt-4">
+                <button class="btn-cancel" (click)="isRoomEditMode = false">Annuler</button>
+                <button class="btn-save-modal" (click)="saveRoom()" [disabled]="isSavingRoom()">
+                    <lucide-icon *ngIf="isSavingRoom()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
+                    <lucide-icon *ngIf="!isSavingRoom()" [img]="SaveIcon" class="icon-xs"></lucide-icon>
+                    {{ isSavingRoom() ? 'Enregistrement…' : (roomEditId ? 'Mettre à jour' : 'Créer') }}
+                </button>
+            </div>
+        </div>
+
     </div>
 </div>

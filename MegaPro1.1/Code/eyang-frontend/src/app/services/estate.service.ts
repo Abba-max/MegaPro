@@ -1,25 +1,37 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface EstateImage { id: number; image: string; }
 
 export interface EstateRaw {
-  id: number; name: string; location: string; capacity: number; free: number;
-  rating: string; price: number; distance: number;
-  wifi: '0' | '1'; restaurant: '0' | '1'; generator: '0' | '1';
-  room_size: '1' | '2' | '3'; forage: '0' | '1'; tv: '0' | '1'; fridge: '0' | '1';
+  id: number; name: string; location: string;
+  rating: string; distance: number;
+  restaurant: '0' | '1'; generator: '0' | '1';
+  forage: '0' | '1';
   description: string; publishedAt: string;
   status: 'draft' | 'published' | 'archived';
   images: EstateImage[];
   owner?: { id: number; username: string; email: string; first_name: string; last_name: string; };
-  occupied_count: number; reviews_count: number; orders_count: number;
+  reviews_count: number; orders_count: number;
+  price: number; capacity: number; free: number;
+  wifi: '0' | '1'; tv: '0' | '1'; fridge: '0' | '1';
+}
+
+export interface RoomImage { id: number; image: string; caption: string; }
+
+export interface RoomCategory {
+  id: number; estate: number; name: string; occupancy: string;
+  price: number; quantity_available: number;
+  wifi: '0' | '1'; tv: '0' | '1'; fridge: '0' | '1';
+  room_size: '1' | '2' | '3'; description: string;
+  images: RoomImage[];
 }
 
 export interface Estate extends EstateRaw {
-  title: string; image: string; places: number; type: string;
+  title: string; image: string; type: string;
   features: string[]; area: number | null; minMonths: number;
-  roomInfo: { single: number; double: number } | null;
   equipments: { name: string; icon: any; color: string }[];
 }
 
@@ -89,18 +101,15 @@ const ROOM_MAP: Record<string, string> = { '1': 'Villa', '2': 'Studio', '3': 'Ch
 export function getAbsoluteUrl(url: string | null | undefined): string {
   if (!url) return '';
   if (url.startsWith('http')) return url;
-  const base = 'http://localhost:8000';
+  const base = environment.apiUrl.replace('/api', '');
   return url.startsWith('/') ? `${base}${url}` : `${base}/${url}`;
 }
 
 export function enrichEstate(raw: EstateRaw): Estate {
   const features: string[] = [];
-  if (raw.wifi === '1') features.push('wifi');
   if (raw.generator === '1') features.push('zap');
   if (raw.forage === '1') features.push('droplets');
   if (raw.restaurant === '1') features.push('restaurant');
-  if (raw.tv === '1') features.push('tv');
-  if (raw.fridge === '1') features.push('fridge');
 
   const images = (raw.images || []).map(img => ({
     ...img,
@@ -110,13 +119,10 @@ export function enrichEstate(raw: EstateRaw): Estate {
   return {
     ...raw,
     images,
-    tv: raw.tv ?? '0',
-    fridge: raw.fridge ?? '0',
     title: raw.name,
     image: images[0]?.image ?? '',
-    places: raw.free,
-    type: ROOM_MAP[raw.room_size] ?? 'Chambre',
-    features, area: null, minMonths: 2, roomInfo: null, equipments: [],
+    type: 'Logement', // Placeholder since room_size moved to RoomCategory
+    features, area: null, minMonths: 2, equipments: [],
   };
 }
 
@@ -130,7 +136,7 @@ export function enrichReview(r: Review): Review {
 
 @Injectable({ providedIn: 'root' })
 export class EstateService {
-  private readonly BASE = 'http://localhost:8000/api';
+  private readonly BASE = environment.apiUrl;
 
   constructor(public http: HttpClient) { }
 
@@ -303,6 +309,11 @@ export class EstateService {
     return this.http.delete<void>(`${this.BASE}/estates/${id}/`);
   }
 
+  // ── Quick Orders ──────────────────────────────────────────
+  createQuickOrder(data: Partial<QuickOrder>): Observable<QuickOrder> {
+    return this.http.post<QuickOrder>(`${this.BASE}/orders/`, data);
+  }
+
   // ── Reviews ───────────────────────────────────────────────
   getReviews(estateId?: number): Observable<Review[]> {
     let p = new HttpParams();
@@ -322,13 +333,37 @@ export class EstateService {
     return this.http.post<{ liked: boolean; likes_count: number }>(`${this.BASE}/reviews/${id}/like/`, {});
   }
 
-  // ── Orders ────────────────────────────────────────────────
-  createQuickOrder(data: QuickOrder): Observable<QuickOrder> {
-    return this.http.post<QuickOrder>(`${this.BASE}/orders/`, data);
+  // ── Room Categories ──────────────────────────────────────
+  getRoomCategories(estateId: number): Observable<RoomCategory[]> {
+    return this.http.get<RoomCategory[]>(`${this.BASE}/room-categories/`, {
+      params: new HttpParams().set('estate', estateId.toString())
+    }).pipe(
+      map(list => list.map(rc => ({
+        ...rc,
+        images: (rc.images || []).map(img => ({ ...img, image: getAbsoluteUrl(img.image) }))
+      })))
+    );
   }
 
-  // ── Contact ───────────────────────────────────────────────
-  sendContact(data: ContactRequest): Observable<any> {
-    return this.http.post(`${this.BASE}/contact-requests/`, data);
+  createRoomCategory(data: Partial<RoomCategory>): Observable<RoomCategory> {
+    return this.http.post<RoomCategory>(`${this.BASE}/room-categories/`, data);
+  }
+
+  updateRoomCategory(id: number, data: Partial<RoomCategory>): Observable<RoomCategory> {
+    return this.http.patch<RoomCategory>(`${this.BASE}/room-categories/${id}/`, data);
+  }
+
+  deleteRoomCategory(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/room-categories/${id}/`);
+  }
+
+  uploadRoomImages(categoryId: number, files: File[]): Observable<RoomImage[]> {
+    const fd = new FormData();
+    files.forEach(f => fd.append('images', f, f.name));
+    return this.http.post<RoomImage[]>(`${this.BASE}/room-categories/${categoryId}/images/`, fd);
+  }
+
+  getOnlineUsers(): Observable<{ online_user_ids: number[] }> {
+    return this.http.get<{ online_user_ids: number[] }>(`${this.BASE}/online-users/`);
   }
 }

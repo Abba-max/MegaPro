@@ -3,6 +3,7 @@ import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse } from
 import { inject, Injector } from '@angular/core';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from './auth.service';
+import { environment } from '../../environments/environment';
 
 export const authInterceptor: HttpInterceptorFn = (
   req: HttpRequest<unknown>,
@@ -12,8 +13,8 @@ export const authInterceptor: HttpInterceptorFn = (
   // ⚠️ Direct localStorage access to avoid circular dependency with AuthService at startup
   const token = localStorage.getItem('access_token');
 
-  // Broaden check for local development environments
-  const isApiUrl = req.url.includes('localhost:8000') || req.url.includes('127.0.0.1:8000');
+  // Check if the request is going to our backend API
+  const isApiUrl = req.url.startsWith(environment.apiUrl);
 
   const authReq = token && isApiUrl
     ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })

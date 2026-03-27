@@ -82,7 +82,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'user_type', 'contact', 'address', 'is_verified', 'id_card']
+        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'user_type', 'contact', 'address', 'is_verified', 'id_card']
 
     def get_id_card(self, obj):
         request = self.context.get('request')
@@ -114,22 +114,50 @@ class EstateImageSerializer(serializers.ModelSerializer):
 class EstateSerializer(serializers.ModelSerializer):
     owner          = UserSerializer(read_only=True)
     images         = EstateImageSerializer(many=True, read_only=True)
-    occupied_count = serializers.SerializerMethodField()
-    reviews_count  = serializers.SerializerMethodField()
-    orders_count   = serializers.SerializerMethodField()
+    capacity      = serializers.SerializerMethodField()
+    free          = serializers.SerializerMethodField()
+    price         = serializers.SerializerMethodField()
+    wifi          = serializers.SerializerMethodField()
+    tv            = serializers.SerializerMethodField()
+    fridge        = serializers.SerializerMethodField()
+    reviews_count = serializers.SerializerMethodField()
+    orders_count  = serializers.SerializerMethodField()
 
     class Meta:
         model  = Estate
         fields = [
-            'id', 'owner', 'name', 'location', 'capacity', 'free',
-            'rating', 'price', 'distance', 'wifi', 'restaurant',
-            'generator', 'room_size', 'forage', 'tv', 'fridge',
+            'id', 'owner', 'name', 'location',
+            'rating', 'distance', 'restaurant',
+            'generator', 'forage',
             'description', 'publishedAt', 'status', 'images',
-            'occupied_count', 'reviews_count', 'orders_count',
+            'capacity', 'free', 'price',
+            'wifi', 'tv', 'fridge',
+            'reviews_count', 'orders_count',
         ]
 
-    def get_occupied_count(self, obj) -> int:
-        return max(0, obj.capacity - obj.free)
+    def get_capacity(self, obj) -> int:
+        total = 0
+        for rc in obj.room_categories.all():
+            multiplier = {'single': 1, 'double': 2, 'shared': 4}.get(rc.occupancy, 1)
+            total += (rc.quantity_available * multiplier)
+        return total
+
+    def get_free(self, obj) -> int:
+        from django.db.models import Sum
+        return obj.room_categories.aggregate(total=Sum('quantity_available'))['total'] or 0
+
+    def get_price(self, obj) -> int:
+        from django.db.models import Min
+        return obj.room_categories.aggregate(min_p=Min('price'))['min_p'] or 0
+
+    def get_wifi(self, obj) -> str:
+        return '1' if obj.room_categories.filter(wifi='1').exists() else '0'
+
+    def get_tv(self, obj) -> str:
+        return '1' if obj.room_categories.filter(tv='1').exists() else '0'
+
+    def get_fridge(self, obj) -> str:
+        return '1' if obj.room_categories.filter(fridge='1').exists() else '0'
 
     def get_reviews_count(self, obj) -> int:
         return obj.reviews.count()
@@ -185,7 +213,7 @@ class QuickOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model  = QuickOrder
         fields = ['id', 'estate', 'estate_name', 'estate_image', 'estate_location',
-                  'estate_price', 'name', 'phone', 'note', 'created_at']
+                  'name', 'phone', 'note', 'created_at']
 
     def get_estate_image(self, obj):
         request = self.context.get('request')
@@ -218,6 +246,27 @@ class ContactRequestSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             validated_data['user'] = request.user
         return super().create(validated_data)
+
+
+# ── New Room Serializers ──────────────────────────────────────────────────
+
+from .models import RoomCategory, RoomImage
+
+class RoomImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoomImage
+        fields = ['id', 'room_category', 'image', 'caption']
+
+class RoomCategorySerializer(serializers.ModelSerializer):
+    images = RoomImageSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = RoomCategory
+        fields = [
+            'id', 'estate', 'name', 'occupancy', 'price', 
+            'quantity_available', 'wifi', 'tv', 'fridge', 
+            'room_size', 'description', 'images'
+        ]
 
 
 # ── Messaging ────────────────────────────────────────────────
@@ -271,4 +320,4 @@ class ConversationSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             return obj.messages.filter(read=False).exclude(sender=request.user).count()
-        return
+        return 0

@@ -325,7 +325,10 @@
 
 @media (max-width: 640px) {
   .content-area { padding: .75rem; }
-  .gallery-main { height: 260px; border-radius: 12px; }
+  .gallery-main {
+     height: 240px;
+     border-radius: 12px;
+  }
   .housing-title { font-size: 1.4rem; }
   .action-row { flex-direction: column; }
   .action-btn { width: 100%; }
@@ -338,4 +341,45 @@
   .star-pick { font-size: 1.5rem; }
   .review-form-actions { justify-content: stretch; }
   .review-cancel-btn, .review-submit-btn { flex: 1; justify-content: center; }
+}
+@media (max-width: 480px) {
+   .gallery-main {
+      height: 200px;
+   }
+
+   .gallery-nav {
+      width: 36px;
+      height: 36px;
+   }
+
+   .gallery-nav-icon {
+      width: 16px;
+      height: 16px;
+   }
+
+   .housing-title {
+      font-size: 1.2rem;
+   }
+
+   .modal-info-grid {
+      grid-template-columns: 1fr 1fr;
+   }
+
+   .equip-grid {
+      grid-template-columns: 1fr 1fr;
+   }
+
+   .price-amount {
+      font-size: 1.5rem;
+   }
+
+   .toast {
+      min-width: unset;
+      max-width: calc(100vw - 2rem);
+   }
+
+   .toast-container {
+      right: 1rem;
+      left: 1rem;
+   }
 }

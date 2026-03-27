@@ -16,6 +16,8 @@ export class LayoutComponent implements OnInit {
   sidebarOpen = false;
   currentUser: User | null = null;
   isAdmin = false;
+  // Always false for authenticated layout — full nav hidden, only Home link shown
+  readonly isPublic = false;
 
   constructor(private authService: AuthService) {}
 
@@ -28,16 +30,9 @@ export class LayoutComponent implements OnInit {
 
   @HostListener('window:resize')
   onResize() {
-    if (window.innerWidth > 1024) {
-      this.sidebarOpen = false;
-    }
+    if (window.innerWidth > 1024) this.sidebarOpen = false;
   }
 
-  toggleSidebar() {
-    this.sidebarOpen = !this.sidebarOpen;
-  }
-
-  closeSidebar() {
-    this.sidebarOpen = false;
-  }
+  toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; }
+  closeSidebar() { this.sidebarOpen = false; }
 }

@@ -1,8 +1,9 @@
 // src/app/services/auth.service.ts
-import { Injectable, NgZone } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject, tap, throwError, catchError } from 'rxjs';
 import { Router } from '@angular/router';
+import { environment } from '../../environments/environment';
 
 export interface User {
   id?: number;
@@ -26,7 +27,7 @@ const REFRESH_KEY = 'refresh_token';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private readonly BASE = 'http://localhost:8000/api';
+  private readonly BASE = environment.apiUrl;
 
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
@@ -34,14 +35,26 @@ export class AuthService {
   private showLoginModalSubject = new Subject<boolean>();
   showLoginModal$ = this.showLoginModalSubject.asObservable();
 
-  constructor(private http: HttpClient, private router: Router, private ngZone: NgZone) {
-    // On app start: if a token exists, restore the session
+  constructor(private http: HttpClient, private router: Router) {
+  // FIX: Restore session on page reload.
+  // If a token is stored, call fetchMe() to rebuild the user object.
+  // We no longer use NgZone here — with provideZoneChangeDetection()
+  // HTTP observables run inside the zone automatically.
     if (this.getAccessToken()) {
-      this.fetchMe().subscribe({ error: () => this.logout() });
+      this.fetchMe().subscribe({
+        error: (err) => {
+          // Only force-logout on explicit auth errors (401/403).
+          // Network errors, 500s, etc. should NOT clear the session so the
+          // user isn't kicked out just because the backend is momentarily down.
+          if (err.status === 401 || err.status === 403) {
+            this.logout();
+          }
+        }
+      });
     }
   }
 
-  // ── Token helpers ─────────────────────────────────────────────────────
+  // ── Token helpers ──────────────────────────────────────────────────────
 
   getAccessToken(): string | null {
     return localStorage.getItem(ACCESS_KEY);
@@ -61,24 +74,24 @@ export class AuthService {
     localStorage.removeItem(REFRESH_KEY);
   }
 
-  // ── Auth actions ──────────────────────────────────────────────────────
+  // ── Auth actions ───────────────────────────────────────────────────────
 
   login(email: string, password: string): Observable<any> {
-    return this.http.post<{ access: string; refresh: string }>(
-      `${this.BASE}/token/`, { username: email, password }
-    ).pipe(
-      tap(tokens => {
-        this.storeTokens(tokens.access, tokens.refresh);
-        // fetchMe() sets currentUser$ — callers should wait on currentUser$
-        this.fetchMe().subscribe();
-      })
-    );
+    return this.http
+      .post<{ access: string; refresh: string }>(
+        `${this.BASE}/token/`,
+        { username: email, password }
+      )
+      .pipe(
+        tap(tokens => {
+          this.storeTokens(tokens.access, tokens.refresh);
+          this.fetchMe().subscribe();
+        })
+      );
   }
 
-  /** Sign up — handles both JSON and FormData (multipart) */
   register(userData: any): Observable<any> {
-    const url = `${this.BASE}/auth/register/`;
-    return this.http.post<any>(url, userData).pipe(
+    return this.http.post<any>(`${this.BASE}/auth/register/`, userData).pipe(
       tap(res => {
         if (res.access) {
           this.storeTokens(res.access, res.refresh);
@@ -89,46 +102,65 @@ export class AuthService {
   }
 
   refreshToken(): Observable<{ access: string; refresh?: string }> {
-    return this.http.post<{ access: string; refresh?: string }>(
-      `${this.BASE}/token/refresh/`, { refresh: this.getRefreshToken() }
-    ).pipe(
-      tap(tokens => {
-        localStorage.setItem(ACCESS_KEY, tokens.access);
-        if (tokens.refresh) localStorage.setItem(REFRESH_KEY, tokens.refresh);
-      })
-    );
+    return this.http
+      .post<{ access: string; refresh?: string }>(
+        `${this.BASE}/token/refresh/`,
+        { refresh: this.getRefreshToken() }
+      )
+      .pipe(
+        tap(tokens => {
+          localStorage.setItem(ACCESS_KEY, tokens.access);
+          if (tokens.refresh) localStorage.setItem(REFRESH_KEY, tokens.refresh);
+        })
+      );
   }
 
   fetchMe(): Observable<any> {
     return this.http.get<any>(`${this.BASE}/auth/me/`).pipe(
       tap(data => {
-        // ... (data mapping logic)
-        const name = data.name || `${data.first_name || ''} ${data.last_name || ''}`.trim() || data.username;
-        const initials = name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2) || '??';
+        const name =
+          data.name ||
+          `${data.first_name || ''} ${data.last_name || ''}`.trim() ||
+          data.username;
+        const initials = name
+          .split(' ')
+          .map((w: string) => w[0])
+          .join('')
+          .toUpperCase()
+          .slice(0, 2) || '??';
+
         const rawRole: string = data.role || 'Student';
         const knownRoles: User['role'][] = ['Admin', 'Owner', 'Student', 'Parent'];
-        const role = (knownRoles.find(r => r.toLowerCase() === rawRole.toLowerCase()) ?? 'Student') as User['role'];
-        const id_card = data.id_card ? (data.id_card.startsWith('http') ? data.id_card : `http://localhost:8000${data.id_card.startsWith('/') ? '' : '/'}${data.id_card}`) : undefined;
+        const role = (
+          knownRoles.find(r => r.toLowerCase() === rawRole.toLowerCase()) ?? 'Student'
+        ) as User['role'];
+
+        const id_card = data.id_card
+          ? data.id_card.startsWith('http')
+            ? data.id_card
+            : `${environment.apiUrl.replace('/api', '')}${data.id_card.startsWith('/') ? '' : '/'}${data.id_card}`
+          : undefined;
 
         const user: User = {
-          id: data.id, name, initials, email: data.email || data.username,
-          role, user_type: data.user_type || undefined,
+          id: data.id,
+          name,
+          initials,
+          email: data.email || data.username,
+          role,
+          user_type: data.user_type || undefined,
           visitor_category: data.visitor_category || undefined,
-          is_verified: data.is_verified, id_card,
-          phone: data.phone || '', address: data.address || '',
+          is_verified: data.is_verified,
+          id_card,
+          phone: data.phone || '',
+          address: data.address || '',
         };
 
-        this.ngZone.run(() => {
-          this.currentUserSubject.next(user);
-        });
+        // No NgZone.run() needed — HTTP runs inside the zone with zone-based CD
+        this.currentUserSubject.next(user);
       }),
       catchError(err => {
-        console.error('fetchMe error:', err);
-        // Only logout automatically on 401 or 403
         if (err.status === 401 || err.status === 403) {
-          this.ngZone.run(() => {
-            this.logout();
-          });
+          this.logout();
         }
         return throwError(() => err);
       })
@@ -138,17 +170,15 @@ export class AuthService {
   logout(): void {
     this.clearTokens();
     this.currentUserSubject.next(null);
-    this.router.navigate(['/']);
+    window.location.href = '/';
   }
 
-  // ── State helpers ─────────────────────────────────────────────────────
+  // ── State helpers ──────────────────────────────────────────────────────
 
-  /** True if a token exists in storage (user object may still be loading) */
   isAuthenticated(): boolean {
     return !!this.getAccessToken();
   }
 
-  /** True only when token exists AND user profile is loaded */
   isLoggedIn(): boolean {
     return !!this.getAccessToken() && this.currentUserSubject.value !== null;
   }
@@ -157,7 +187,7 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
-  // ── Role helpers ──────────────────────────────────────────────────────
+  // ── Role helpers ───────────────────────────────────────────────────────
 
   get isAdminUser(): boolean { return this.currentUser?.role === 'Admin'; }
   get isOwnerUser(): boolean { return this.currentUser?.role === 'Owner'; }
@@ -170,12 +200,10 @@ export class AuthService {
   canActivateOwner(): boolean { return this.isAdminUser || this.isOwnerUser; }
   canActivateClient(): boolean { return this.isClientUser || this.isAdminUser; }
 
-  // ── Modal control ─────────────────────────────────────────────────────
+  // ── Modal control ──────────────────────────────────────────────────────
 
   openLogin(): void { this.showLoginModalSubject.next(true); }
   closeLogin(): void { this.showLoginModalSubject.next(false); }
-
-  // ── Legacy compat ──────────────────────────────────────────────────────
 
   setUser(user: User): void { this.currentUserSubject.next(user); }
 }

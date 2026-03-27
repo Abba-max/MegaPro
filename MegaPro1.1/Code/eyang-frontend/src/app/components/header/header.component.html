@@ -1,13 +1,11 @@
 <header class="header" [class.is-public]="isPublic">
 
-  <!-- LEFT: Logo + Nav Links -->
   <div class="header-left">
     <div class="logo-section" routerLink="/">
-      <!-- Replace with your actual logo img tag -->
-      <img src="assets/images/logo.png" alt="Eyang Estate" class="logo-img">
+      <img src="/assets/images/logo.png" alt="Eyang Estate" class="logo-img">
     </div>
 
-    <!-- Navigation Links - visible for public visitors -->
+    <!-- Public nav: full menu -->
     <nav class="nav-links" *ngIf="isPublic">
       <a class="nav-link" (click)="scrollTo('listings')">
         <span>{{ 'nav.listings' | translate }}</span>
@@ -22,37 +20,82 @@
         <span>{{ 'nav.contact' | translate }}</span>
       </a>
     </nav>
+
+    <!-- Dashboard/Private: Back to menu button only -->
+    <a class="btn-back-menu" routerLink="/" *ngIf="!isPublic">
+      <lucide-icon [img]="ArrowLeftIcon" class="btn-back-menu-icon"></lucide-icon>
+      <span>{{ 'nav.back_menu' | translate }}</span>
+    </a>
   </div>
 
   <!-- RIGHT: Actions -->
   <div class="nav-actions">
-<!-- ── Language Toggle ── -->
-<button class="lang-btn" (click)="toggleLang()"
-  [title]="currentLang === 'fr' ? 'Switch to English' : 'Passer en français'">
-  <lucide-icon [img]="GlobeIcon" class="nav-icon"></lucide-icon>
-  <span class="lang-label">{{ currentLang === 'fr' ? 'EN' : 'FR' }}</span>
-</button>
+    <!-- Language Toggle -->
+    <button class="lang-btn" (click)="toggleLang()"
+      [title]="currentLang === 'fr' ? 'Switch to English' : 'Passer en français'">
+      <lucide-icon [img]="GlobeIcon" class="nav-icon"></lucide-icon>
+      <span class="lang-label">{{ currentLang === 'fr' ? 'EN' : 'FR' }}</span>
+    </button>
 
+    <!-- Logged-in actions -->
     <ng-container *ngIf="currentUser; else authButtons">
-      <a routerLink="/contact" class="icon-btn" [title]="'nav.contact' | translate">
+      <!-- Messages link -->
+      <a routerLink="/messages" class="icon-btn" [title]="'nav.messages' | translate">
         <lucide-icon [img]="MessageIcon" class="nav-icon"></lucide-icon>
       </a>
-      <button class="icon-btn">
-        <lucide-icon [img]="BellIcon" class="nav-icon"></lucide-icon>
-      </button>
 
+      <!-- Notification Bell -->
+      <div class="notif-container">
+        <button class="icon-btn notif-btn" (click)="toggleNotifPanel(); $event.stopPropagation()"
+          [class.has-unread]="unreadCount > 0" title="Notifications">
+          <lucide-icon [img]="BellIcon" class="nav-icon"></lucide-icon>
+          <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+        </button>
+
+        <!-- Notification Panel -->
+        <div class="notif-panel fade-in" *ngIf="showNotifPanel" (click)="$event.stopPropagation()">
+          <div class="notif-panel-header">
+            <span class="notif-panel-title">Notifications</span>
+            <div class="notif-panel-actions">
+              <button class="notif-action-btn" (click)="clearAllNotifs()" title="Tout effacer" *ngIf="notifications.length > 0">
+                <lucide-icon [img]="Trash2Icon" style="width:14px;height:14px;"></lucide-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="notif-empty" *ngIf="notifications.length === 0">
+            <span class="notif-empty-icon">🔔</span>
+            <p>Aucune notification</p>
+            <span class="notif-empty-hint">Les événements importants apparaîtront ici.</span>
+          </div>
+
+          <div class="notif-list" *ngIf="notifications.length > 0">
+            <div *ngFor="let n of notifications" class="notif-item" [class.unread]="!n.read" (click)="onNotifClick(n)">
+              <span class="notif-item-icon">{{ n.icon || getNotifIcon(n.type) }}</span>
+              <div class="notif-item-body">
+                <span class="notif-item-title">{{ n.title }}</span>
+                <span class="notif-item-body-text">{{ n.body }}</span>
+                <span class="notif-item-time">{{ formatNotifTime(n.created_at) }}</span>
+              </div>
+              <span class="notif-unread-dot" *ngIf="!n.read"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Profile -->
       <div class="user-profile-container">
         <div class="user-profile" (click)="toggleMenu()">
           <div class="avatar" [class.blue-bg]="currentUser.role === 'Student'">
-            {{currentUser.initials}}
+            {{ currentUser.initials }}
           </div>
           <lucide-icon [img]="ChevronDownIcon" class="chevron-icon"></lucide-icon>
         </div>
 
         <div class="dropdown-menu fade-in" *ngIf="showMenu">
           <div class="user-info">
-            <span class="user-name">{{currentUser.name}}</span>
-            <span class="user-email">{{currentUser.email}}</span>
+            <span class="user-name">{{ currentUser.name }}</span>
+            <span class="user-email">{{ currentUser.email }}</span>
             <span class="badge mt-2"
               [class.badge-blue]="currentUser.role === 'Admin'"
               [class.badge-success]="currentUser.role === 'Student' || currentUser.role === 'Parent'"
@@ -64,11 +107,12 @@
           <ul class="menu-links">
             <li>
               <a routerLink="/dashboard" (click)="showMenu = false">
-                <span>• {{ 'nav.dashboard' | translate }}</span>
+                <lucide-icon [img]="DashboardIcon" class="menu-icon"></lucide-icon>
+                <span>{{ 'nav.dashboard' | translate }}</span>
               </a>
             </li>
             <li *ngIf="currentUser.role === 'Admin'">
-              <a routerLink="/admin/reports" (click)="showMenu = false">
+              <a routerLink="/admin/overview" (click)="showMenu = false">
                 <lucide-icon [img]="SettingsIcon" class="menu-icon"></lucide-icon>
                 <span>{{ 'nav.admin' | translate }}</span>
               </a>
@@ -83,26 +127,49 @@
       </div>
     </ng-container>
 
+    <!-- Auth buttons (guest) -->
     <ng-template #authButtons>
-      <div class="auth-buttons">
+      <div class="auth-buttons desktop-auth">
         <span class="connexion-link" (click)="openLogin()">{{ 'nav.login' | translate }}</span>
         <button class="btn btn-primary" (click)="openSignup()">{{ 'nav.signup' | translate }}</button>
       </div>
     </ng-template>
+
+    <!-- Hamburger (mobile, guest, public only) -->
+    <button class="hamburger-btn" *ngIf="!currentUser && isPublic" (click)="toggleMobileMenu()"
+      [class.hamburger-open]="showMobileMenu" aria-label="Menu">
+      <span class="ham-bar"></span>
+      <span class="ham-bar"></span>
+      <span class="ham-bar"></span>
+    </button>
   </div>
 </header>
 
-<!-- ══ Login Modal ══════════════════════════════════════════════ -->
+<!-- Mobile nav overlay -->
+<div class="mobile-nav-overlay" *ngIf="showMobileMenu" (click)="closeMobileMenu()"></div>
+<div class="mobile-nav-drawer" [class.mobile-nav-open]="showMobileMenu" *ngIf="!currentUser && isPublic">
+  <nav class="mobile-nav-links">
+    <a class="mobile-nav-link" (click)="scrollTo('listings'); closeMobileMenu()">{{ 'nav.listings' | translate }}</a>
+    <a class="mobile-nav-link" (click)="scrollTo('why'); closeMobileMenu()">{{ 'nav.why' | translate }}</a>
+    <a class="mobile-nav-link" (click)="scrollTo('faq'); closeMobileMenu()">{{ 'nav.faq' | translate }}</a>
+    <a class="mobile-nav-link" routerLink="/contact" (click)="closeMobileMenu()">{{ 'nav.contact' | translate }}</a>
+  </nav>
+  <div class="mobile-nav-divider"></div>
+  <div class="mobile-auth-btns">
+    <button class="mobile-login-btn" (click)="openLogin(); closeMobileMenu()">{{ 'nav.login' | translate }}</button>
+    <button class="mobile-signup-btn" (click)="openSignup(); closeMobileMenu()">{{ 'nav.signup' | translate }}</button>
+  </div>
+</div>
+
+<!-- ══ Login Modal ══ -->
 <div class="modal-overlay fade-in" *ngIf="showLoginModal" (click)="closeLogin()">
   <div class="modal-card" (click)="$event.stopPropagation()">
     <button class="close-btn" (click)="closeLogin()">
       <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
     </button>
-
     <div class="modal-header">
       <h2>{{ 'auth.login_title' | translate }}</h2>
     </div>
-
     <div class="modal-body">
       <div class="form-group">
         <label>{{ 'auth.email' | translate }}</label>
@@ -113,25 +180,18 @@
         <input type="password" [(ngModel)]="loginPassword" [placeholder]="'auth.password_placeholder' | translate"
           class="input">
       </div>
-
-      <!-- Test credentials box -->
       <div class="login-info-box">
-        <div class="info-header">
-          <span>🔑 {{ 'auth.test_credentials' | translate }}</span>
-        </div>
+        <div class="info-header"><span>🔑 {{ 'auth.test_credentials' | translate }}</span></div>
         <div class="info-content">
           <div class="info-item"><b>• Admin:</b> admin@test.com / admin123</div>
           <div class="info-item"><b>• {{ 'auth.owner' | translate }}:</b> owner@test.com / owner123</div>
           <div class="info-item"><b>• {{ 'auth.student' | translate }}:</b> student@test.com / student123</div>
         </div>
       </div>
-
-      <div class="error-msg" *ngIf="loginError">{{loginError}}</div>
-
-      <button class="btn btn-primary w-full mt-4 py-4" (click)="handleLogin()">
-        {{ 'auth.login_btn' | translate }}
+      <div class="error-msg" *ngIf="loginError">{{ loginError }}</div>
+      <button class="btn btn-primary w-full mt-4 py-4" (click)="handleLogin()" [disabled]="isLoggingIn">
+        {{ isLoggingIn ? '…' : ('auth.login_btn' | translate) }}
       </button>
-
       <p class="auth-footer mt-6">
         {{ 'auth.no_account' | translate }}
         <span class="link" (click)="switchToSignup()">{{ 'auth.register_link' | translate }}</span>
@@ -140,17 +200,15 @@
   </div>
 </div>
 
-<!-- ══ Signup Modal ═════════════════════════════════════════════ -->
+<!-- ══ Signup Modal ══ -->
 <div class="modal-overlay fade-in" *ngIf="showSignupModal" (click)="closeSignup()">
   <div class="modal-card signup-modal" (click)="$event.stopPropagation()">
     <button class="close-btn" (click)="closeSignup()">
       <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
     </button>
-
     <div class="modal-header">
       <h2>{{ 'auth.signup_title' | translate }}</h2>
     </div>
-
     <div class="modal-body">
       <div class="form-row">
         <div class="form-group">
@@ -164,69 +222,43 @@
             class="input">
         </div>
       </div>
-
       <div class="form-group mt-4">
         <label>{{ 'auth.email' | translate }}</label>
         <input type="email" [(ngModel)]="signupForm.email" [placeholder]="'auth.email_placeholder' | translate" class="input">
       </div>
-
       <div class="form-group mt-4">
         <label>{{ 'auth.phone' | translate }}</label>
         <input type="tel" [(ngModel)]="signupForm.phone" [placeholder]="'auth.phone_placeholder' | translate" class="input">
       </div>
-
       <div class="form-group mt-4">
         <label>{{ 'auth.password' | translate }}</label>
         <input type="password" [(ngModel)]="signupForm.password" [placeholder]="'auth.password_placeholder' | translate"
           class="input">
       </div>
-
-      <div class="form-group mt-4" *ngIf="signupForm.accountType === 'Owner'">
-        <label>{{ 'auth.id_card' | translate }} <span class="required">*</span></label>
-        <div class="file-upload">
-          <input type="file" (change)="onFileSelected($event)" accept="image/*" id="id-card-input" class="hidden-input">
-          <label for="id-card-input" class="file-label">
-            <lucide-icon [img]="GlobeIcon" class="file-icon"></lucide-icon>
-            <span>{{ signupForm.idCard ? signupForm.idCard.name : ('auth.upload_id_card' | translate) }}</span>
-          </label>
-        </div>
-        <p class="help-text">{{ 'auth.id_card_help' | translate }}</p>
-      </div>
-
-      <!-- Account type selector: Client / Owner (Admin is created via backend) -->
       <div class="form-group mt-4">
         <label>{{ 'auth.account_type' | translate }}</label>
         <div class="account-type-selector">
-          <button
-            class="account-type-btn"
-            [class.active]="signupForm.accountType === 'Student'"
+          <button class="account-type-btn" [class.active]="signupForm.accountType === 'Student'"
             (click)="signupForm.accountType = 'Student'">
             <lucide-icon [img]="GraduationCapIcon" class="account-icon"></lucide-icon>
             <span>{{ 'auth.student' | translate }}</span>
           </button>
-          <button
-            class="account-type-btn"
-            [class.active]="signupForm.accountType === 'Parent'"
+          <button class="account-type-btn" [class.active]="signupForm.accountType === 'Parent'"
             (click)="signupForm.accountType = 'Parent'">
             <lucide-icon [img]="UsersIcon" class="account-icon"></lucide-icon>
             <span>{{ 'auth.parent' | translate }}</span>
           </button>
-          <button
-            class="account-type-btn owner-btn"
-            [class.active]="signupForm.accountType === 'Owner'"
+          <button class="account-type-btn owner-btn" [class.active]="signupForm.accountType === 'Owner'"
             (click)="signupForm.accountType = 'Owner'">
             <lucide-icon [img]="BuildingIcon" class="account-icon"></lucide-icon>
             <span>{{ 'auth.owner' | translate }}</span>
           </button>
         </div>
       </div>
-
-      <div class="error-msg" *ngIf="signupError">{{signupError}}</div>
-
-      <button class="btn btn-primary w-full mt-6 py-4" (click)="handleSignup()">
-        {{ 'auth.signup_btn' | translate }}
+      <div class="error-msg" *ngIf="signupError">{{ signupError }}</div>
+      <button class="btn btn-primary w-full mt-6 py-4" (click)="handleSignup()" [disabled]="isSigningUp">
+        {{ isSigningUp ? '…' : ('auth.signup_btn' | translate) }}
       </button>
-
       <p class="auth-footer mt-6">
         {{ 'auth.already_account' | translate }}
         <span class="link" (click)="switchToLogin()">{{ 'auth.login_link' | translate }}</span>

@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { TranslateModule } from '@ngx-translate/core';
 import {
   LucideAngularModule,
   LayoutDashboard,
@@ -14,15 +15,18 @@ import {
   Globe,
   ShieldCheck
 } from 'lucide-angular';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, TranslateModule],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent {
+  @Input() isOpen = false;
+
   readonly DashboardIcon = LayoutDashboard;
   readonly UsersIcon = Users;
   readonly HomeIcon = Home;
@@ -33,4 +37,11 @@ export class SidebarComponent {
   readonly LogOutIcon = LogOut;
   readonly GlobeIcon = Globe;
   readonly ShieldIcon = ShieldCheck;
+
+  constructor(private authService: AuthService, private router: Router) { }
+
+  onLogout(): void {
+    this.authService.logout();
+    this.router.navigate(['/']);
+  }
 }

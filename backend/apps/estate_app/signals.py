@@ -27,7 +27,9 @@ def message_post_save(sender, instance, created, **kwargs):
                 'type': 'new_message',
                 'message': instance.text,
                 'sender_name': sender_name,
-                'conversation_id': instance.conversation_id
+                'sender_id': instance.sender_id,
+                'conversation_id': instance.conversation_id,
+                'created_at': instance.created_at.isoformat()
             })
         except Exception as e:
             print(f"Error in message_post_save signal: {e}")

@@ -3,11 +3,11 @@ from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenRefreshView
 from .api_views import (
     EstateViewSet, ReviewViewSet, QuickOrderViewSet,
-    ContactRequestViewSet, ConversationViewSet,
+    ContactRequestViewSet, ConversationViewSet, RoomCategoryViewSet,
     MyTokenObtainPairView,
     register_view, me_view, stats_view,
     owner_stats_view, client_stats_view,
-    admin_stats_view,
+    admin_stats_view, online_users_view,
     admin_bookings_view, admin_reviews_view,
     admin_contacts_view, admin_users_view,
     admin_toggle_user_view, admin_verify_owner_view, admin_update_user_view, admin_delete_user_view,
@@ -19,15 +19,15 @@ router.register(r'reviews',          ReviewViewSet)
 router.register(r'orders',           QuickOrderViewSet)
 router.register(r'contact-requests', ContactRequestViewSet)
 router.register(r'conversations',    ConversationViewSet, basename='conversation')
+router.register(r'room-categories', RoomCategoryViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),
 
     # ── Auth ──────────────────────────────────────────────────
-    path('api/token/',         MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(),      name='token_refresh'),
     path('api/auth/register/', register_view,                   name='register'),
     path('api/auth/me/',       me_view,                         name='me'),
+    path('api/online-users/',  online_users_view,               name='online-users'),
 
     # ── Public stats ──────────────────────────────────────────
     path('api/stats/',         stats_view,        name='stats'),
