@@ -10,7 +10,7 @@
     <div *ngIf="!isLoading && errorMessage" class="error-state">
       <p>{{ errorMessage }}</p>
       <button class="back-btn" (click)="goBack()">← Retour</button>
-      </div>
+    </div>
 
     <ng-container *ngIf="!isLoading && housing">
 
@@ -18,13 +18,13 @@
       <div class="toast-container">
         <div *ngFor="let t of toasts" class="toast" [class]="'toast-' + t.type" (click)="dismissToast(t.id)">
           <lucide-icon *ngIf="t.type==='success'" [img]="CheckCircleIcon" class="toast-icon"></lucide-icon>
-          <lucide-icon *ngIf="t.type==='error'" [img]="XCircleIcon" class="toast-icon"></lucide-icon>
-          <lucide-icon *ngIf="t.type==='info'" [img]="InfoIcon" class="toast-icon"></lucide-icon>
+          <lucide-icon *ngIf="t.type==='error'"   [img]="XCircleIcon"     class="toast-icon"></lucide-icon>
+          <lucide-icon *ngIf="t.type==='info'"    [img]="InfoIcon"        class="toast-icon"></lucide-icon>
           <lucide-icon *ngIf="t.type==='warning'" [img]="AlertCircleIcon" class="toast-icon"></lucide-icon>
           <span class="toast-msg">{{ t.message }}</span>
           <span class="toast-close">×</span>
-          </div>
-          </div>
+        </div>
+      </div>
 
       <!-- ══ BACK ══ -->
       <div class="header-nav">
@@ -32,7 +32,7 @@
           <lucide-icon [img]="ChevronLeftIcon" class="icon-sm"></lucide-icon>
           <span>{{ 'detail.back' | translate }}</span>
         </button>
-        </div>
+      </div>
 
       <!-- ══ PHOTO GALLERY ══ -->
       <div class="gallery-hero">
@@ -53,8 +53,8 @@
           </div>
         </div>
         <div class="gallery-thumbs" *ngIf="photos.length > 1">
-          <div class="gallery-thumb" *ngFor="let photo of photos; let i = index" [class.active]="i === activePhotoIndex"
-            (click)="setActivePhoto(i)">
+          <div class="gallery-thumb" *ngFor="let photo of photos; let i = index"
+            [class.active]="i === activePhotoIndex" (click)="setActivePhoto(i)">
             <img [src]="photo" [alt]="housing!.name + ' ' + (i+1)">
           </div>
         </div>
@@ -65,7 +65,7 @@
 
         <!-- LEFT COLUMN -->
         <div class="detail-main">
-        
+
           <!-- Title + Meta -->
           <div class="detail-title-block">
             <div class="detail-type-badge">
@@ -89,25 +89,26 @@
               </div>
             </div>
           </div>
-          
+
           <!-- Auth-gated details -->
           <ng-container *ngIf="currentUser">
-          
+
             <!-- Description -->
             <div class="detail-card" *ngIf="housing!.description">
               <h3 class="detail-card-title">Description</h3>
               <p class="detail-text">{{ housing!.description }}</p>
             </div>
-          
-            <!-- Equipments -->
+
+            <!-- ══ EQUIPMENTS — matching home page feat-cell style ══ -->
             <div class="detail-card" *ngIf="housing!.equipments.length > 0">
               <h3 class="detail-card-title">Équipements</h3>
-              <div class="equip-grid">
-                <div class="equip-item" *ngFor="let eq of housing!.equipments">
-                  <div class="equip-icon-wrap" [ngClass]="'eq-bg-' + eq.color">
-                    <lucide-icon [img]="eq.icon" class="equip-icon" [ngClass]="'eq-' + eq.color"></lucide-icon>
+              <div class="features-grid" [ngClass]="'cols-' + housing!.equipments.length">
+                <div *ngFor="let eq of housing!.equipments"
+                     class="feat-cell" [ngClass]="'feat-' + eq.colorKey">
+                  <div class="feat-cell-icon">
+                    <lucide-icon [img]="eq.icon" class="feat-cell-ico" [ngClass]="'eq-' + eq.color"></lucide-icon>
                   </div>
-                  <span class="equip-name">{{ eq.name }}</span>
+                  <span class="feat-cell-label">{{ eq.name }}</span>
                 </div>
               </div>
             </div>
@@ -127,35 +128,36 @@
                 Contacter
               </button>
             </div>
-</ng-container>
+          </ng-container>
 
-<!-- Unauth CTA -->
-<div class="auth-cta" *ngIf="!currentUser">
-  <div class="auth-cta-inner">
-    <lucide-icon [img]="InfoIcon" class="auth-cta-icon"></lucide-icon>
-    <div>
-      <p class="auth-cta-title">Connectez-vous pour voir tous les détails</p>
-      <p class="auth-cta-sub">Description complète, équipements, et options de réservation</p>
-    </div>
+          <!-- Unauth CTA -->
+          <div class="auth-cta" *ngIf="!currentUser">
+            <div class="auth-cta-inner">
+              <lucide-icon [img]="InfoIcon" class="auth-cta-icon"></lucide-icon>
+              <div>
+                <p class="auth-cta-title">Connectez-vous pour voir tous les détails</p>
+                <p class="auth-cta-sub">Description complète, équipements, et options de réservation</p>
+              </div>
             </div>
             <button class="btn-primary auth-cta-btn" (click)="openLogin()">Se connecter</button>
-            </div>
-<!-- ══ REVIEWS ══ -->
-<div class="reviews-block">
-  <div class="reviews-header">
-    <h2 class="reviews-title">Avis clients ({{ reviews.length }})</h2>
-    <div class="rating-summary" *ngIf="getRatingAsNumber(housing!.rating) > 0">
-      <span class="rating-big">{{ housing!.rating }}</span>
-      <div class="rating-stars">
-        <lucide-icon [img]="StarIcon" class="icon-xs gold"
-          *ngFor="let s of getStarArray(housing!.rating)"></lucide-icon>
-        <lucide-icon [img]="StarIcon" class="icon-xs gray-star"
-          *ngFor="let s of getEmptyStarArray(housing!.rating)"></lucide-icon>
-      </div>
-    </div>
-  </div>
+          </div>
 
-            <!-- ── Add Review Form (logged-in users: both client & owner) ── -->
+          <!-- ══ REVIEWS ══ -->
+          <div class="reviews-block">
+            <div class="reviews-header">
+              <h2 class="reviews-title">Avis clients ({{ reviews.length }})</h2>
+              <div class="rating-summary" *ngIf="getRatingAsNumber(housing!.rating) > 0">
+                <span class="rating-big">{{ housing!.rating }}</span>
+                <div class="rating-stars">
+                  <lucide-icon [img]="StarIcon" class="icon-xs gold"
+                    *ngFor="let s of getStarArray(housing!.rating)"></lucide-icon>
+                  <lucide-icon [img]="StarIcon" class="icon-xs gray-star"
+                    *ngFor="let s of getEmptyStarArray(housing!.rating)"></lucide-icon>
+                </div>
+              </div>
+            </div>
+
+            <!-- Add Review Form -->
             <div class="add-review-block" *ngIf="currentUser">
               <div class="add-review-toggle" *ngIf="!showReviewForm">
                 <button class="add-review-btn" (click)="toggleReviewForm()">
@@ -166,25 +168,19 @@
 
               <div class="review-form-card" *ngIf="showReviewForm">
                 <h4 class="review-form-title">Votre avis</h4>
-              
-                <!-- Star picker -->
                 <div class="star-picker-row">
                   <span class="star-pick-label">Note :</span>
                   <div class="star-picker">
-                    <span *ngFor="let s of [1,2,3,4,5]" class="star-pick" [class.active]="s <= (reviewHover || reviewForm.rating)"
-                      (mouseenter)="reviewHover = s" (mouseleave)="reviewHover = 0" (click)="reviewForm.rating = s">★</span>
+                    <span *ngFor="let s of [1,2,3,4,5]" class="star-pick"
+                      [class.active]="s <= (reviewHover || reviewForm.rating)"
+                      (mouseenter)="reviewHover = s" (mouseleave)="reviewHover = 0"
+                      (click)="reviewForm.rating = s">★</span>
                   </div>
-                  <span class="star-pick-hint" *ngIf="reviewForm.rating > 0">
-                    {{ reviewRatingLabel() }}
-                  </span>
+                  <span class="star-pick-hint" *ngIf="reviewForm.rating > 0">{{ reviewRatingLabel() }}</span>
                 </div>
-
-                <!-- Comment -->
                 <textarea class="review-textarea" [(ngModel)]="reviewForm.comment" rows="3"
-                  placeholder="Partagez votre expérience avec ce logement…" [disabled]="isSubmittingReview">
-                                </textarea>
-                
-                <!-- Actions -->
+                  placeholder="Partagez votre expérience avec ce logement…"
+                  [disabled]="isSubmittingReview"></textarea>
                 <div class="review-form-actions">
                   <button class="review-cancel-btn" (click)="toggleReviewForm()" [disabled]="isSubmittingReview">
                     Annuler
@@ -200,9 +196,9 @@
                       Publication…
                     </ng-container>
                   </button>
-                  </div>
+                </div>
               </div>
-              </div>
+            </div>
 
             <!-- Login prompt for unauthenticated -->
             <div class="review-login-prompt" *ngIf="!currentUser">
@@ -218,7 +214,7 @@
               <lucide-icon [img]="StarIcon" class="no-reviews-icon"></lucide-icon>
               <p>Aucun avis pour le moment. Soyez le premier !</p>
             </div>
-            
+
             <div class="review-card" *ngFor="let r of reviews">
               <div class="review-top">
                 <div class="review-avatar">{{ r.initials }}</div>
@@ -227,7 +223,8 @@
                   <div class="review-date">{{ r.date }}</div>
                 </div>
                 <div class="review-stars-wrap">
-                  <lucide-icon [img]="StarIcon" class="icon-xs gold" *ngFor="let s of getStarArray(r.rating)"></lucide-icon>
+                  <lucide-icon [img]="StarIcon" class="icon-xs gold"
+                    *ngFor="let s of getStarArray(r.rating)"></lucide-icon>
                   <lucide-icon [img]="StarIcon" class="icon-xs gray-star"
                     *ngFor="let s of getEmptyStarArray(r.rating)"></lucide-icon>
                 </div>
@@ -242,35 +239,34 @@
                 </button>
               </div>
             </div>
-
           </div>
           <!-- end reviews-block -->
-          
-          </div>
-          <!-- end detail-main -->
-          
-          <!-- RIGHT COLUMN (sticky sidebar) -->
-          <div class="detail-sidebar">
-            <div class="price-card">
-              <div class="price-card-top">
-                <div class="price-amount">{{ housing!.price | number }}</div>
-                <div class="price-currency">FCFA / mois</div>
+
+        </div>
+        <!-- end detail-main -->
+
+        <!-- RIGHT COLUMN (sticky sidebar) -->
+        <div class="detail-sidebar">
+          <div class="price-card">
+            <div class="price-card-top">
+              <div class="price-amount">{{ housing!.price | number }}</div>
+              <div class="price-currency">FCFA / mois</div>
+            </div>
+            <div class="price-divider"></div>
+            <div class="price-details">
+              <div class="price-detail-row">
+                <span>Caution</span>
+                <span>{{ housing!.price | number }} FCFA</span>
               </div>
-              <div class="price-divider"></div>
-              <div class="price-details">
-                <div class="price-detail-row">
-                  <span>Caution</span>
-                  <span>{{ housing!.price | number }} FCFA</span>
-                </div>
-                <div class="price-detail-row">
-                  <span>Durée min.</span>
-                  <span>{{ housing!.minMonths || 2 }} mois</span>
-                </div>
-                <div class="price-detail-row">
-                  <span>Places libres</span>
-                  <span class="places-badge">{{ housing!.free }}</span>
-                </div>
+              <div class="price-detail-row">
+                <span>Durée min.</span>
+                <span>{{ housing!.minMonths || 2 }} mois</span>
               </div>
+              <div class="price-detail-row">
+                <span>Places libres</span>
+                <span class="places-badge">{{ housing!.free }}</span>
+              </div>
+            </div>
             <div class="price-card-actions" *ngIf="currentUser">
               <button class="action-btn btn-primary w-full" (click)="openContact()">
                 <lucide-icon [img]="CalendarIcon" class="icon-sm"></lucide-icon>
@@ -291,7 +287,7 @@
 
       </div>
       <!-- end detail-layout -->
-      
+
       <!-- ══ LIGHTBOX ══ -->
       <div class="lightbox-overlay fade-in" *ngIf="showLightbox" (click)="closeLightbox()">
         <button class="lightbox-close" (click)="closeLightbox()">
@@ -308,10 +304,11 @@
         </div>
         <div class="lightbox-counter">{{ activePhotoIndex + 1 }} / {{ photos.length }}</div>
         <div class="lightbox-thumbs">
-          <img *ngFor="let photo of photos; let i = index" [src]="photo" [class.active]="i === activePhotoIndex"
+          <img *ngFor="let photo of photos; let i = index" [src]="photo"
+            [class.active]="i === activePhotoIndex"
             (click)="$event.stopPropagation(); setActivePhoto(i)" class="lightbox-thumb">
-          </div>
-          </div>
+        </div>
+      </div>
 
       <!-- ══ RESERVATION MODAL ══ -->
       <div class="modal-overlay fade-in" *ngIf="showContactModal" (click)="closeContact()">
@@ -319,69 +316,62 @@
           <button class="modal-close-btn" (click)="closeContact()">
             <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
           </button>
-<div class="modal-header">
-  <div class="modal-header-img">
-    <img [src]="photos[0]" [alt]="housing!.name">
-  </div>
-  <div>
+          <div class="modal-header">
+            <div class="modal-header-img">
+              <img [src]="photos[0]" [alt]="housing!.name">
+            </div>
+            <div>
               <h2 class="modal-title">Réservation</h2>
               <p class="modal-subtitle">{{ housing!.name }}</p>
-              </div>
-              </div>
-
+            </div>
+          </div>
           <div class="modal-info-grid">
             <div class="modal-info-item">
               <lucide-icon [img]="MapPinIcon" class="mdi-icon red"></lucide-icon>
               <div>
                 <div class="mdi-label">Distance</div>
                 <div class="mdi-val">{{ housing!.distance }} m</div>
-                </div>
-                </div>
+              </div>
+            </div>
             <div class="modal-info-item">
               <lucide-icon [img]="ZapIconRef" class="mdi-icon orange"></lucide-icon>
               <div>
                 <div class="mdi-label">Prix</div>
                 <div class="mdi-val">{{ housing!.price | number }} FCFA</div>
-                </div>
-                </div>
+              </div>
+            </div>
             <div class="modal-info-item">
               <lucide-icon [img]="UsersIcon" class="mdi-icon blue"></lucide-icon>
               <div>
                 <div class="mdi-label">Places</div>
                 <div class="mdi-val">{{ housing!.free }}</div>
-                </div>
-                </div>
-                </div>
-
+              </div>
+            </div>
+          </div>
           <div class="modal-equip-tags" *ngIf="housing!.equipments.length > 0">
             <span class="equip-tag" *ngFor="let eq of housing!.equipments">
               <lucide-icon [img]="eq.icon" class="equip-tag-icon" [ngClass]="'eq-' + eq.color"></lucide-icon>
               {{ eq.name }}
-              </span>
-              </div>
-
+            </span>
+          </div>
           <div class="modal-divider"></div>
-
           <div class="form-group">
             <label>Votre nom</label>
-            <input type="text" [(ngModel)]="contactForm.name" placeholder="Ex: Jean Dupont" class="input" [disabled]="isSubmitting">
-            </div>
+            <input type="text" [(ngModel)]="contactForm.name" placeholder="Ex: Jean Dupont"
+              class="input" [disabled]="isSubmitting">
+          </div>
           <div class="form-group mt-3">
             <label>Téléphone</label>
-            <input type="text" [(ngModel)]="contactForm.phone" placeholder="Ex: 6XX XXX XXX" class="input"
-              [disabled]="isSubmitting">
+            <input type="text" [(ngModel)]="contactForm.phone" placeholder="Ex: 6XX XXX XXX"
+              class="input" [disabled]="isSubmitting">
           </div>
           <div class="form-group mt-3">
             <label>Message (optionnel)</label>
             <textarea [(ngModel)]="contactForm.message" class="input" rows="3"
-                      placeholder="Précisez votre demande..."
-                      [disabled]="isSubmitting"></textarea>
+              placeholder="Précisez votre demande..." [disabled]="isSubmitting"></textarea>
           </div>
-
-          <!-- Submit with inline loader -->
-          <button class="action-btn btn-primary w-full mt-4"
-                  (click)="handleSendRequest()"
-                  [disabled]="isSubmitting || !contactForm.name.trim() || !contactForm.phone.trim()">
+          <button class="action-btn btn-primary w-full mt-4" (click)="handleSendRequest()"
+            [disabled]="isSubmitting || !contactForm.name.trim() || !contactForm.phone.trim()">
             <ng-container *ngIf="!isSubmitting">
               <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
               Envoyer la demande
@@ -391,77 +381,107 @@
               Envoi en cours…
             </ng-container>
           </button>
-
-          <!-- Success state -->
           <div class="submit-success" *ngIf="submitSuccess">
             <lucide-icon [img]="CheckCircleIcon" class="success-icon"></lucide-icon>
             <span>Demande envoyée ! Le propriétaire vous contactera bientôt.</span>
           </div>
-
         </div>
       </div>
-<!-- ══ MESSAGE / NÉGOCIATION MODAL ══ -->
-<div class="modal-overlay fade-in" *ngIf="showMessageModal" (click)="closeMessageModal()">
-  <div class="modal-card msg-modal-card" (click)="$event.stopPropagation()">
-    <button class="modal-close-btn" (click)="closeMessageModal()">
-      <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
-    </button>
 
+      <!-- ══ MESSAGE / NÉGOCIATION MODAL — Modern messenger style ══ -->
+      <div class="modal-overlay fade-in" *ngIf="showMessageModal" (click)="closeMessageModal()">
+        <div class="msg-modal-card" (click)="$event.stopPropagation()">
+
+          <!-- Header -->
           <div class="msg-modal-header">
+            <button class="msg-modal-close" (click)="closeMessageModal()">
+              <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
+            </button>
             <div class="msg-owner-avatar">
               {{ housing!.owner?.first_name?.[0] || housing!.owner?.username?.[0] || '?' }}
             </div>
-            <div>
-              <h2 class="modal-title">Négocier avec le propriétaire</h2>
-              <p class="modal-subtitle">
+            <div class="msg-header-info">
+              <div class="msg-header-name">
                 {{ housing!.owner?.first_name || '' }} {{ housing!.owner?.last_name || housing!.owner?.username }}
-                · {{ housing!.name }}
-              </p>
+              </div>
+              <div class="msg-header-sub">{{ housing!.name }}</div>
             </div>
           </div>
-          
-          <!-- Loading conversation -->
+
+          <!-- Loading -->
           <div class="msg-loading" *ngIf="isLoadingConversation">
             <lucide-icon [img]="LoaderIcon" class="spinner-sm"></lucide-icon>
             <span>Connexion en cours…</span>
           </div>
-          
-          <!-- Chat area -->
-          <div class="msg-chat" *ngIf="!isLoadingConversation && activeConversation">
-            <div class="msg-hint">
-              <lucide-icon [img]="InfoIcon" class="hint-icon"></lucide-icon>
-              Discutez du prix, des conditions, ou posez vos questions directement au propriétaire.
+
+          <!-- Chat viewport -->
+          <div class="msg-viewport" #msgScroll *ngIf="!isLoadingConversation && activeConversation">
+
+            <!-- System banner -->
+            <div class="msg-system-banner">
+              <lucide-icon [img]="InfoIcon" class="msg-sys-icon"></lucide-icon>
+              Discutez du prix, des conditions, ou posez vos questions.
             </div>
-          
-            <div *ngIf="activeConversation.messages.length === 0" class="msg-empty">
-              Démarrez la conversation ci-dessous.
+
+            <!-- Empty state -->
+            <div *ngIf="activeConversation.messages.length === 0" class="msg-start-hint">
+              Démarrez la conversation 👇
             </div>
-          
-            <div class="msg-bubble-list" #msgScroll>
-              <div *ngFor="let msg of activeConversation.messages" class="msg-bubble"
-                [class.msg-mine]="msg.sender === currentUser?.id">
-                <div class="bubble-sender">{{ msg.sender_name }}</div>
-                <div class="bubble-text">{{ msg.text }}</div>
-                <div class="bubble-time">{{ msg.created_at | date:'HH:mm' }}</div>
+
+            <!-- Messages -->
+            <div *ngFor="let msg of activeConversation.messages"
+                 class="msg-row" [class.msg-sent]="msg.sender === currentUser?.id"
+                 [class.msg-received]="msg.sender !== currentUser?.id">
+
+              <!-- Received: avatar -->
+              <div *ngIf="msg.sender !== currentUser?.id" class="msg-av-sm">
+                {{ housing!.owner?.first_name?.[0] || housing!.owner?.username?.[0] || '?' }}
+              </div>
+
+              <div class="msg-bubble"
+                   [class.bubble-sent]="msg.sender === currentUser?.id"
+                   [class.bubble-recv]="msg.sender !== currentUser?.id">
+                <p class="bubble-text">{{ msg.text }}</p>
+                <div class="bubble-meta" [class.meta-sent]="msg.sender === currentUser?.id">
+                  <span class="bubble-time">{{ msg.created_at | date:'HH:mm' }}</span>
+                  <span *ngIf="msg.sender === currentUser?.id" class="bubble-tick">
+                    <lucide-icon [img]="msg.read ? CheckCircleIcon : SendIcon" class="tick-icon"></lucide-icon>
+                  </span>
+                </div>
               </div>
             </div>
+
+            <!-- Sending indicator -->
+            <div class="msg-row msg-sent" *ngIf="isSendingMessage">
+              <div class="msg-bubble bubble-sent sending">
+                <p class="bubble-text">{{ messageText || '…' }}</p>
+                <div class="bubble-meta meta-sent">
+                  <span class="bubble-time">Envoi…</span>
+                  <lucide-icon [img]="LoaderIcon" class="tick-icon spinning"></lucide-icon>
+                </div>
+              </div>
             </div>
-<!-- Input -->
-<div class="msg-input-row" *ngIf="!isLoadingConversation && activeConversation">
-  <textarea class="msg-input" [(ngModel)]="messageText" rows="2"
-    placeholder="Votre message (ex: Pouvez-vous baisser le loyer ?)" [disabled]="isSendingMessage"
-    (keydown.enter)="$event.preventDefault(); sendMessage()"></textarea>
-  <button class="msg-send-btn" (click)="sendMessage()" [disabled]="isSendingMessage || !messageText.trim()">
-    <ng-container *ngIf="!isSendingMessage">
-      <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
-              </ng-container>
-              <ng-container *ngIf="isSendingMessage">
-                <lucide-icon [img]="LoaderIcon" class="icon-sm spinning"></lucide-icon>
-              </ng-container>
+
+          </div>
+
+          <!-- Input footer -->
+          <div class="msg-footer" *ngIf="!isLoadingConversation && activeConversation">
+            <div class="msg-input-row" [class.focused]="messageText.length > 0">
+              <input type="text" class="msg-input" [(ngModel)]="messageText"
+                placeholder="Votre message…" [disabled]="isSendingMessage"
+                (keydown.enter)="$event.preventDefault(); sendMessage()">
+              <button class="msg-send-btn"
+                [class.active]="messageText.trim() && !isSendingMessage"
+                [disabled]="isSendingMessage || !messageText.trim()"
+                (click)="sendMessage()">
+                <lucide-icon *ngIf="!isSendingMessage" [img]="SendIcon" class="icon-sm"></lucide-icon>
+                <lucide-icon *ngIf="isSendingMessage"  [img]="LoaderIcon" class="icon-sm spinning"></lucide-icon>
               </button>
-              </div>
-              </div>
-              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
 
     </ng-container>
   </div>

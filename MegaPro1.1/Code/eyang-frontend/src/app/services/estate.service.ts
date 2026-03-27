@@ -20,7 +20,8 @@ export interface Estate extends EstateRaw {
   title: string; image: string; places: number; type: string;
   features: string[]; area: number | null; minMonths: number;
   roomInfo: { single: number; double: number } | null;
-  equipments: { name: string; icon: any; color: string }[];
+  // colorKey added so housing-detail template can use eq.colorKey
+  equipments: { name: string; icon: any; color: string; colorKey: string }[];
 }
 
 export interface Review {
@@ -222,6 +223,16 @@ export class EstateService {
     return this.http.post(`${this.BASE}/conversations/${conversationId}/read/`, {});
   }
 
+  /** Delete a conversation (client-side: delete own messages or entire thread) */
+  deleteConversation(conversationId: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/conversations/${conversationId}/`);
+  }
+
+  /** Delete a single chat message */
+  deleteChatMessage(conversationId: number, messageId: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/conversations/${conversationId}/messages/${messageId}/`);
+  }
+
   // ── Estate images ─────────────────────────────────────────
 
   /** Upload one or more images for an estate. */
@@ -314,6 +325,10 @@ export class EstateService {
     return this.http.post<Review>(`${this.BASE}/reviews/`, data).pipe(map(enrichReview));
   }
 
+  updateReview(id: number, data: { rating: number; comment: string }): Observable<Review> {
+    return this.http.patch<Review>(`${this.BASE}/reviews/${id}/`, data).pipe(map(enrichReview));
+  }
+
   deleteReview(id: number): Observable<void> {
     return this.http.delete<void>(`${this.BASE}/reviews/${id}/`);
   }
@@ -327,8 +342,16 @@ export class EstateService {
     return this.http.post<QuickOrder>(`${this.BASE}/orders/`, data);
   }
 
+  deleteOrder(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/orders/${id}/`);
+  }
+
   // ── Contact ───────────────────────────────────────────────
   sendContact(data: ContactRequest): Observable<any> {
     return this.http.post(`${this.BASE}/contact-requests/`, data);
+  }
+
+  deleteContactRequest(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/contact-requests/${id}/`);
   }
 }

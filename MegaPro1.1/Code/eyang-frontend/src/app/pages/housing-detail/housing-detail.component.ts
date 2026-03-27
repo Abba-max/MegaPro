@@ -61,9 +61,9 @@ export class HousingDetailComponent implements OnInit {
   photos: string[] = [];
   reviews: Review[] = [];
   currentUser: User | null = null;
-  isLoading    = true;
-  errorMessage = '';
-  isSubmitting = false;
+  isLoading     = true;
+  errorMessage  = '';
+  isSubmitting  = false;
   submitSuccess = false;
 
   activePhotoIndex   = 0;
@@ -72,16 +72,17 @@ export class HousingDetailComponent implements OnInit {
   showMessageModal   = false;
 
   contactForm = { name: '', phone: '', message: '' };
+  /** Bound to the chat input in the message modal */
   messageText = '';
-  isSendingMessage    = false;
+  isSendingMessage      = false;
   isLoadingConversation = false;
   activeConversation: Conversation | null = null;
 
   // ── Review form ──────────────────────────────────────────
-  showReviewForm    = false;
+  showReviewForm     = false;
   isSubmittingReview = false;
-  reviewForm        = { rating: 0, comment: '' };
-  reviewHover       = 0;
+  reviewForm         = { rating: 0, comment: '' };
+  reviewHover        = 0;
 
   toasts: Toast[] = [];
   private toastCounter = 0;
@@ -97,7 +98,6 @@ export class HousingDetailComponent implements OnInit {
   ngOnInit(): void {
     this.authService.currentUser$.subscribe(u => {
       this.currentUser = u;
-      // Pre-fill name from logged-in user if contact form is empty
       if (u && !this.contactForm.name) {
         this.contactForm.name = u.name || '';
       }
@@ -128,10 +128,10 @@ export class HousingDetailComponent implements OnInit {
     this.estateService.getEstate(id).subscribe({
       next: (data) => {
         data.equipments = this.buildEquipments(data);
-        this.housing = data;
-        this.photos  = data.images.map(img => img.image).filter(Boolean);
+        this.housing    = data;
+        this.photos     = data.images.map((img: any) => img.image).filter(Boolean);
         if (this.photos.length === 0) this.photos = ['assets/images/placeholder.jpg'];
-        this.isLoading = false;
+        this.isLoading  = false;
       },
       error: () => {
         this.errorMessage = 'Logement introuvable.';
@@ -148,14 +148,18 @@ export class HousingDetailComponent implements OnInit {
     });
   }
 
-  private buildEquipments(h: Estate): { name: string; icon: any; color: string }[] {
-    const eq: { name: string; icon: any; color: string }[] = [];
-    if (h.wifi === '1')       eq.push({ name: 'WiFi',          icon: this.WifiIcon,     color: 'orange' });
-    if (h.generator === '1')  eq.push({ name: 'Générateur',    icon: this.ZapIconRef,   color: 'yellow' });
-    if (h.forage === '1')     eq.push({ name: 'Forage / Eau',  icon: this.DropletsIcon, color: 'blue'   });
-    if (h.restaurant === '1') eq.push({ name: 'Restaurant',    icon: this.UtensilsIcon, color: 'brown'  });
-    if (h.tv === '1')         eq.push({ name: 'Télévision',    icon: this.TvIcon,       color: 'purple' });
-    if (h.fridge === '1')     eq.push({ name: 'Réfrigérateur', icon: this.FridgeIcon,   color: 'teal'   });
+  /**
+   * Build equipment list with both `color` (icon colour class) and
+   * `colorKey` (feat-cell CSS modifier, matching home page keys).
+   */
+  private buildEquipments(h: Estate): { name: string; icon: any; color: string; colorKey: string }[] {
+    const eq: { name: string; icon: any; color: string; colorKey: string }[] = [];
+    if (h.wifi === '1')       eq.push({ name: 'WiFi',          icon: this.WifiIcon,     color: 'orange', colorKey: 'wifi'       });
+    if (h.generator === '1')  eq.push({ name: 'Générateur',    icon: this.ZapIconRef,   color: 'yellow', colorKey: 'generator'  });
+    if (h.forage === '1')     eq.push({ name: 'Forage / Eau',  icon: this.DropletsIcon, color: 'blue',   colorKey: 'forage'     });
+    if (h.restaurant === '1') eq.push({ name: 'Restaurant',    icon: this.UtensilsIcon, color: 'brown',  colorKey: 'restaurant' });
+    if (h.tv === '1')         eq.push({ name: 'Télévision',    icon: this.TvIcon,       color: 'purple', colorKey: 'tv'         });
+    if (h.fridge === '1')     eq.push({ name: 'Réfrigérateur', icon: this.FridgeIcon,   color: 'teal',   colorKey: 'fridge'     });
     return eq;
   }
 
@@ -249,9 +253,9 @@ export class HousingDetailComponent implements OnInit {
       this.showToast('Propriétaire introuvable', 'error');
       return;
     }
-    this.showMessageModal     = true;
+    this.showMessageModal      = true;
     this.isLoadingConversation = true;
-    this.activeConversation   = null;
+    this.activeConversation    = null;
 
     this.estateService.startConversation(this.housing.id, this.housing.owner.id).subscribe({
       next: (conv) => {
@@ -274,9 +278,10 @@ export class HousingDetailComponent implements OnInit {
   }
 
   sendMessage(): void {
-    if (!this.messageText.trim() || !this.activeConversation || this.isSendingMessage) return;
-    this.isSendingMessage = true;
     const text = this.messageText.trim();
+    if (!text || !this.activeConversation || this.isSendingMessage) return;
+
+    this.isSendingMessage = true;
     this.messageText = '';
 
     this.estateService.sendMessage(this.activeConversation.id, text).subscribe({
@@ -327,7 +332,7 @@ export class HousingDetailComponent implements OnInit {
       this.showToast('Veuillez remplir votre nom et téléphone', 'warning');
       return;
     }
-    this.isSubmitting = true;
+    this.isSubmitting  = true;
     this.submitSuccess = false;
 
     this.estateService.createQuickOrder({
