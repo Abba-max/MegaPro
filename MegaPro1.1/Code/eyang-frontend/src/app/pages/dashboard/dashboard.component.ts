@@ -1,4 +1,3 @@
-
 import { Component, OnInit, OnDestroy, AfterViewChecked, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +8,7 @@ import {
   Wifi, Utensils, Zap, Droplets, Tv, Thermometer,
   MessageSquare, FileText, Phone, MapPin, Calendar,
   CheckCircle, AlertCircle, Info, Send, ArrowLeft,
-  Edit, Package, User, Mail, Building
+  Edit, Package, User, Mail, Building, Pencil
 } from 'lucide-angular';
 import { AuthService, User as AuthUser } from '../../services/auth.service';
 import { WebSocketService } from '../../services/websocket.service';
@@ -18,9 +17,9 @@ import {
   Conversation, ChatMessage, OwnerDashboardStats, ClientDashboardStats,
   enrichReview
 } from '../../services/estate.service';
-import { Subscription, interval } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
+
 export interface Toast {
   id: number;
   type: 'success' | 'error' | 'info' | 'warning';
@@ -64,6 +63,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   readonly SendIcon = Send;
   readonly BackIcon = ArrowLeft;
   readonly EditIcon = Edit;
+  readonly PencilIcon = Pencil;
   readonly PackageIcon = Package;
   readonly UserIcon = User;
   readonly MailIcon = Mail;
@@ -93,6 +93,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   estateForm: any = {};
   distanceDisplay = '';
 
+<<<<<<< HEAD
   // ── Room management state ───────────────────────────────
   showRoomModal = false;
   selectedEstateForRooms: Estate | null = null;
@@ -114,8 +115,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   /** Files chosen by the owner for upload */
+=======
+>>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
   newImageFiles: File[] = [];
-  /** Base64 previews of newImageFiles */
   newImagePreviews: string[] = [];
 
   availableEquipments = [
@@ -141,10 +143,23 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   newMessage = '';
   private pollSub?: Subscription;
 
+  // ── Review modal (create) ─────────────────────────────────
   showReviewModal = false;
   reviewForm = { estate: 0, rating: 0, comment: '' };
   hoverRating = 0;
   allEstates: Estate[] = [];
+
+  // ── Review edit modal ─────────────────────────────────────
+  showEditReviewModal = false;
+  editingReview: Review | null = null;
+  editReviewForm = { rating: 0, comment: '' };
+  editHoverRating = 0;
+  isSavingReview = false;
+
+  // ── Confirm dialog ────────────────────────────────────────
+  showConfirm = false;
+  confirmMessage = '';
+  private confirmCallback: (() => void) | null = null;
 
   private subs: Subscription[] = [];
 
@@ -172,7 +187,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
     this.subs.push(sub);
 
-    // Listen for real-time notifications
     this.subs.push(
       this.wsService.notifications$.subscribe(notif => {
         this.handleRealtimeNotification(notif);
@@ -180,7 +194,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       })
     );
 
-    // Listen for real-time chat messages
     this.subs.push(
       this.wsService.messages$.subscribe(msg => {
         this.handleRealtimeMessage(msg);
@@ -210,6 +223,29 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       const el = this.ownerViewport?.nativeElement;
       if (el) el.scrollTop = el.scrollHeight;
     } catch { }
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  CONFIRM DIALOG
+  // ══════════════════════════════════════════════════════════
+
+  openConfirm(message: string, callback: () => void): void {
+    this.confirmMessage = message;
+    this.confirmCallback = callback;
+    this.showConfirm = true;
+  }
+
+  confirmYes(): void {
+    this.showConfirm = false;
+    if (this.confirmCallback) {
+      this.confirmCallback();
+      this.confirmCallback = null;
+    }
+  }
+
+  confirmNo(): void {
+    this.showConfirm = false;
+    this.confirmCallback = null;
   }
 
   // ══════════════════════════════════════════════════════════
@@ -303,8 +339,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.estateForm[key] = this.estateForm[key] === '1' ? '0' : '1';
   }
 
-  // ── Image selection ───────────────────────────────────────
-
   onImagesSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
     if (!input.files) return;
@@ -318,7 +352,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       reader.onload = e => this.newImagePreviews.push(e.target!.result as string);
       reader.readAsDataURL(file);
     });
-    // Reset input so same file can be re-selected
     input.value = '';
   }
 
@@ -338,6 +371,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 
+<<<<<<< HEAD
   // ── Room Category Methods ────────────────────────────────────────────────
   openManageRooms(estate: Estate): void {
     this.selectedEstateForRooms = estate;
@@ -464,6 +498,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   // ── Save estate (create or update, then upload images) ────
 
+=======
+>>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
   saveEstate(): void {
     if (!this.estateForm.name || !this.estateForm.location) {
       this.showToast('Veuillez remplir le nom et la localisation du logement.', 'error');
@@ -471,7 +507,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
     this.isSavingEstate = true;
     const payload = { ...this.estateForm, distance: parseFloat(this.distanceDisplay) || 0 };
+<<<<<<< HEAD
     delete payload.existingImages; 
+=======
+    delete payload.existingImages;
+>>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
 
     const req$ = this.isEditMode && this.editingId
       ? this.estateService.updateEstate(this.editingId, payload)
@@ -509,10 +549,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   deleteEstate(estate: Estate): void {
-    if (!confirm(`Supprimer "${estate.name}" ?`)) return;
-    this.estateService.deleteEstate(estate.id).subscribe({
-      next: () => { this.showToast('Logement supprimé.', 'success'); this.loadOwnerData(); },
-      error: () => this.showToast('Erreur lors de la suppression.', 'error')
+    this.openConfirm(`Supprimer "${estate.name}" ?`, () => {
+      this.estateService.deleteEstate(estate.id).subscribe({
+        next: () => { this.showToast('Logement supprimé.', 'success'); this.loadOwnerData(); },
+        error: () => this.showToast('Erreur lors de la suppression.', 'error')
+      });
     });
   }
 
@@ -551,6 +592,143 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 
+  // ── Client: Reservations ──────────────────────────────────
+
+  deleteReservation(order: QuickOrder): void {
+    this.openConfirm(`Annuler la réservation pour "${order.estate_name}" ?`, () => {
+      this.estateService.deleteOrder(order.id!).subscribe({
+        next: () => {
+          this.myReservations = this.myReservations.filter(r => r.id !== order.id);
+          this.clientStats.total_reservations = Math.max(0, this.clientStats.total_reservations - 1);
+          this.showToast('Réservation annulée.', 'success');
+        },
+        error: () => this.showToast('Erreur lors de l\'annulation.', 'error')
+      });
+    });
+  }
+
+  // ── Client: Reviews ───────────────────────────────────────
+
+  openReviewModal(): void {
+    this.reviewForm = { estate: 0, rating: 0, comment: '' };
+    this.hoverRating = 0;
+    this.showReviewModal = true;
+  }
+
+  closeReviewModal(): void { this.showReviewModal = false; }
+
+  setRating(r: number): void { this.reviewForm.rating = r; }
+  setHover(r: number): void { this.hoverRating = r; }
+  clearHover(): void { this.hoverRating = 0; }
+
+  submitReview(): void {
+    if (!this.reviewForm.estate || !this.reviewForm.rating || !this.reviewForm.comment.trim()) {
+      this.showToast('Veuillez remplir tous les champs.', 'error');
+      return;
+    }
+    const name = this.currentUser?.name || 'Anonyme';
+    this.estateService.createReview({
+      estate: this.reviewForm.estate,
+      name,
+      rating: this.reviewForm.rating,
+      comment: this.reviewForm.comment,
+    }).subscribe({
+      next: () => {
+        this.showToast('Avis publié avec succès !', 'success');
+        this.closeReviewModal();
+        this.loadClientData();
+      },
+      error: () => this.showToast('Erreur lors de la publication.', 'error')
+    });
+  }
+
+  openEditReviewModal(review: Review): void {
+    this.editingReview = review;
+    this.editReviewForm = { rating: review.rating, comment: review.comment };
+    this.editHoverRating = 0;
+    this.showEditReviewModal = true;
+  }
+
+  closeEditReviewModal(): void {
+    this.showEditReviewModal = false;
+    this.editingReview = null;
+  }
+
+  setEditRating(r: number): void { this.editReviewForm.rating = r; }
+  setEditHover(r: number): void { this.editHoverRating = r; }
+  clearEditHover(): void { this.editHoverRating = 0; }
+
+  saveEditReview(): void {
+    if (!this.editingReview || !this.editReviewForm.rating || !this.editReviewForm.comment.trim()) {
+      this.showToast('Veuillez remplir tous les champs.', 'error');
+      return;
+    }
+    this.isSavingReview = true;
+    this.estateService.updateReview(this.editingReview.id, {
+      rating: this.editReviewForm.rating,
+      comment: this.editReviewForm.comment.trim()
+    }).subscribe({
+      next: (updated) => {
+        this.isSavingReview = false;
+        const idx = this.mySubmittedReviews.findIndex(r => r.id === this.editingReview!.id);
+        if (idx !== -1) this.mySubmittedReviews[idx] = enrichReview(updated);
+        this.showToast('Avis mis à jour !', 'success');
+        this.closeEditReviewModal();
+      },
+      error: () => {
+        this.isSavingReview = false;
+        this.showToast('Erreur lors de la mise à jour.', 'error');
+      }
+    });
+  }
+
+  deleteReview(review: Review): void {
+    this.openConfirm('Supprimer cet avis ?', () => {
+      this.estateService.deleteReview(review.id).subscribe({
+        next: () => {
+          this.mySubmittedReviews = this.mySubmittedReviews.filter(r => r.id !== review.id);
+          this.clientStats.total_reviews = Math.max(0, this.clientStats.total_reviews - 1);
+          this.showToast('Avis supprimé.', 'success');
+        },
+        error: () => this.showToast('Erreur lors de la suppression.', 'error')
+      });
+    });
+  }
+
+  // ── Client: Contacts ──────────────────────────────────────
+
+  deleteContact(contact: ContactRequest): void {
+    this.openConfirm('Supprimer cette demande de contact ?', () => {
+      this.estateService.deleteContactRequest(contact.id!).subscribe({
+        next: () => {
+          this.myContacts = this.myContacts.filter(c => c.id !== contact.id);
+          this.clientStats.total_contacts = Math.max(0, this.clientStats.total_contacts - 1);
+          this.showToast('Contact supprimé.', 'success');
+        },
+        error: () => this.showToast('Erreur lors de la suppression.', 'error')
+      });
+    });
+  }
+
+  // ── Client: Messages ──────────────────────────────────────
+
+  deleteConversation(conv: Conversation): void {
+    this.openConfirm(`Supprimer la conversation avec ${this.getConvPartner(conv)} ?`, () => {
+      this.estateService.deleteConversation(conv.id).subscribe({
+        next: () => {
+          this.conversations = this.conversations.filter(c => c.id !== conv.id);
+          if (this.activeConversation?.id === conv.id) {
+            this.activeConversation = null;
+            this.wsService.disconnectChat();
+          }
+          this.clientStats.total_messages = Math.max(0, this.clientStats.total_messages - 1);
+          this.showToast('Conversation supprimée.', 'success');
+        },
+        error: () => this.showToast('Erreur lors de la suppression.', 'error')
+      });
+    });
+  }
+
   // ── Messaging (shared owner + client) ────────────────────
 
   openConversation(conv: Conversation): void {
@@ -559,7 +737,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       next: () => { conv.unread_count = 0; },
       error: () => { }
     });
-    // Load full messages
     this.estateService.getConversation(conv.id).subscribe({
       next: full => {
         this.activeConversation = full;
@@ -567,15 +744,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       },
       error: () => { }
     });
-
-    // Connect to WebSocket chat
     this.wsService.connectChat(conv.id);
   }
 
   closeConversation(): void {
     this.activeConversation = null;
     this.wsService.disconnectChat();
-    // Refresh list to reflect read counts
     if (this.isOwner) {
       this.loadOwnerConversations();
     } else {
@@ -595,13 +769,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
         conv.unread_count = (conv.unread_count || 0) + 1;
       }
       conv.updated_at = new Date().toISOString();
-      // Sort conversations by updated_at
       this.conversations.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
     }
 
     if (!this.activeConversation || this.activeConversation.id !== msg.conversation_id) return;
 
-    // Check if message is already in list (sent by us via HTTP)
     const exists = this.activeConversation.messages.some(m =>
       m.text === msg.message && m.sender === msg.sender_id
     );
@@ -625,10 +797,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   handleRealtimeNotification(notif: any): void {
     if (notif.type === 'new_message') {
-      // If we are not in the active conversation, show a toast
       if (!this.activeConversation || this.activeConversation.id !== notif.conversation_id) {
         this.showToast(`${notif.sender_name}: ${notif.message.substring(0, 30)}...`, 'info');
-        // Increment unread count in the list
         const conv = this.conversations.find(c => c.id === notif.conversation_id);
         if (conv) conv.unread_count = (conv.unread_count || 0) + 1;
       }
@@ -678,6 +848,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     return name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2) || '??';
   }
 
+<<<<<<< HEAD
   getConvPartnerId(conv: Conversation): number {
     return this.isOwner ? conv.client.id : conv.owner.id;
   }
@@ -729,6 +900,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 
+=======
+>>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
   // ── Helpers ───────────────────────────────────────────────
 
   formatDate(dateStr?: string): string {

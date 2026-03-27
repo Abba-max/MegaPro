@@ -32,7 +32,13 @@ export interface RoomCategory {
 export interface Estate extends EstateRaw {
   title: string; image: string; type: string;
   features: string[]; area: number | null; minMonths: number;
+<<<<<<< HEAD
   equipments: { name: string; icon: any; color: string }[];
+=======
+  roomInfo: { single: number; double: number } | null;
+  // colorKey added so housing-detail template can use eq.colorKey
+  equipments: { name: string; icon: any; color: string; colorKey: string }[];
+>>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
 }
 
 export interface Review {
@@ -228,6 +234,16 @@ export class EstateService {
     return this.http.post(`${this.BASE}/conversations/${conversationId}/read/`, {});
   }
 
+  /** Delete a conversation (client-side: delete own messages or entire thread) */
+  deleteConversation(conversationId: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/conversations/${conversationId}/`);
+  }
+
+  /** Delete a single chat message */
+  deleteChatMessage(conversationId: number, messageId: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/conversations/${conversationId}/messages/${messageId}/`);
+  }
+
   // ── Estate images ─────────────────────────────────────────
 
   /** Upload one or more images for an estate. */
@@ -325,6 +341,10 @@ export class EstateService {
     return this.http.post<Review>(`${this.BASE}/reviews/`, data).pipe(map(enrichReview));
   }
 
+  updateReview(id: number, data: { rating: number; comment: string }): Observable<Review> {
+    return this.http.patch<Review>(`${this.BASE}/reviews/${id}/`, data).pipe(map(enrichReview));
+  }
+
   deleteReview(id: number): Observable<void> {
     return this.http.delete<void>(`${this.BASE}/reviews/${id}/`);
   }
@@ -345,6 +365,7 @@ export class EstateService {
     );
   }
 
+<<<<<<< HEAD
   createRoomCategory(data: Partial<RoomCategory>): Observable<RoomCategory> {
     return this.http.post<RoomCategory>(`${this.BASE}/room-categories/`, data);
   }
@@ -365,5 +386,18 @@ export class EstateService {
 
   getOnlineUsers(): Observable<{ online_user_ids: number[] }> {
     return this.http.get<{ online_user_ids: number[] }>(`${this.BASE}/online-users/`);
+=======
+  deleteOrder(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/orders/${id}/`);
+  }
+
+  // ── Contact ───────────────────────────────────────────────
+  sendContact(data: ContactRequest): Observable<any> {
+    return this.http.post(`${this.BASE}/contact-requests/`, data);
+>>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
+  }
+
+  deleteContactRequest(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/contact-requests/${id}/`);
   }
 }

@@ -1030,3 +1030,166 @@ lucide-icon {
     .modal-box { padding: 1.25rem; border-radius: 16px; }
     .equip-grid { grid-template-columns: 1fr 1fr; }
 }
+/* ═══════════════════════════════════════════════════════════
+   NEW: Client action styles
+   ═══════════════════════════════════════════════════════════ */
+
+/* Reservation card action column */
+.res-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #fff;
+    border: 1.5px solid #F3F4F6;
+    border-radius: 14px;
+    padding: 1rem 1.25rem;
+    margin-bottom: .75rem;
+    transition: box-shadow .2s;
+}
+.res-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.07); }
+
+.res-actions {
+    margin-left: auto;
+    flex-shrink: 0;
+}
+
+/* Danger icon button (compact red trash) */
+.btn-danger-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    border: 1.5px solid #FEE2E2;
+    background: #FFF5F5;
+    color: #EF4444;
+    cursor: pointer;
+    transition: background .18s, border-color .18s, transform .15s;
+}
+.btn-danger-icon:hover {
+    background: #FEE2E2;
+    border-color: #EF4444;
+    transform: scale(1.08);
+}
+
+/* Edit text button (mirrors btn-danger-text but blue) */
+.btn-edit-text {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #DBEAFE;
+    background: #EFF6FF;
+    color: #2563EB;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .18s, border-color .18s;
+}
+.btn-edit-text:hover { background: #DBEAFE; border-color: #2563EB; }
+
+/* Review action row */
+.review-action-row {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    margin-top: .5rem;
+}
+
+/* Contact card header adjustments */
+.contact-header {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+}
+.ml-auto { margin-left: auto; }
+
+/* Conversation delete button in sidebar */
+.msg-conv-item {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+.msg-conv-delete-btn {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: #9CA3AF;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-left: 4px;
+    transition: color .18s, background .18s;
+}
+.msg-conv-item:hover .msg-conv-delete-btn { display: inline-flex; }
+.msg-conv-delete-btn:hover { background: #FEE2E2; color: #EF4444; }
+
+/* Readonly input look */
+.input-readonly {
+    background: #F9FAFB;
+    color: #6B7280;
+    pointer-events: none;
+    font-weight: 500;
+}
+
+/* ── Confirm dialog ─────────────────────────────────────── */
+.modal-box-sm {
+    max-width: 360px;
+    text-align: center;
+    padding: 2rem 1.75rem;
+}
+.confirm-icon-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+.confirm-icon {
+    width: 40px;
+    height: 40px;
+    color: #F59E0B;
+}
+.confirm-msg {
+    font-size: 15px;
+    font-weight: 500;
+    color: #111827;
+    margin: 0 0 1.5rem;
+    line-height: 1.5;
+}
+.confirm-actions {
+    display: flex;
+    gap: .75rem;
+    justify-content: center;
+}
+.btn-confirm-cancel {
+    flex: 1;
+    padding: 9px 0;
+    border-radius: 10px;
+    border: 1.5px solid #E5E7EB;
+    background: #F9FAFB;
+    color: #374151;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .18s;
+}
+.btn-confirm-cancel:hover { background: #F3F4F6; }
+.btn-confirm-ok {
+    flex: 1;
+    padding: 9px 0;
+    border-radius: 10px;
+    border: none;
+    background: #EF4444;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .18s;
+}
+.btn-confirm-ok:hover { background: #DC2626; }
