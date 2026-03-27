@@ -180,14 +180,6 @@
         <input type="password" [(ngModel)]="loginPassword" [placeholder]="'auth.password_placeholder' | translate"
           class="input">
       </div>
-      <div class="login-info-box">
-        <div class="info-header"><span>🔑 {{ 'auth.test_credentials' | translate }}</span></div>
-        <div class="info-content">
-          <div class="info-item"><b>• Admin:</b> admin@test.com / admin123</div>
-          <div class="info-item"><b>• {{ 'auth.owner' | translate }}:</b> owner@test.com / owner123</div>
-          <div class="info-item"><b>• {{ 'auth.student' | translate }}:</b> student@test.com / student123</div>
-        </div>
-      </div>
       <div class="error-msg" *ngIf="loginError">{{ loginError }}</div>
       <button class="btn btn-primary w-full mt-4 py-4" (click)="handleLogin()" [disabled]="isLoggingIn">
         {{ isLoggingIn ? '…' : ('auth.login_btn' | translate) }}
