@@ -187,6 +187,7 @@ export class HomeComponent implements OnInit {
   applyFiltersAndClose(): void {
     this.applyFilters();
     this.showAdvanced = false;
+    document.body.style.overflow = '';
   }
 
   resetFilters(): void {
@@ -195,23 +196,19 @@ export class HomeComponent implements OnInit {
     this.filterMaxDist = this.filterMinPrice = this.filterMaxPrice = null;
     this.filterMinFree = 0;
     this.showAdvanced = false;
+    document.body.style.overflow = '';
     this.loadEstates();
   }
 
   toggleAdvanced(): void {
     this.showAdvanced = !this.showAdvanced;
-    if (this.showAdvanced) {
-      setTimeout(() => {
-        const el = document.querySelector('.filter-bar-container');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-      }, 50);
-    }
+    document.body.style.overflow = this.showAdvanced ? 'hidden' : '';
   }
 
-
-  closeAdvanced(): void   { this.showAdvanced = false; }
+  closeAdvanced(): void {
+    this.showAdvanced = false;
+    document.body.style.overflow = '';
+  }
 
   setMaxPrice(val: number): void {
     this.filterMaxPrice = this.filterMaxPrice === val ? null : val;

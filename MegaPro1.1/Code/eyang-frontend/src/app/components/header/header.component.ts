@@ -11,7 +11,8 @@ import {
   Search, Bell, MessageSquare, ChevronDown, ChevronRight,
   Home, Settings, LayoutDashboard, X,
   GraduationCap, Users, Building, Globe,
-  CheckCheck, Trash2, MessageCircle, Star, Calendar, Shield, Info
+  CheckCheck, Trash2, MessageCircle, Star, Calendar, Shield, Info,
+  ArrowLeft   // ← ADDED
 } from 'lucide-angular';
 import { AuthService, User } from '../../services/auth.service';
 import { NotificationService, AppNotification } from '../../services/notification.service';
@@ -48,6 +49,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   readonly CalendarIcon = Calendar;
   readonly ShieldIcon = Shield;
   readonly InfoIcon = Info;
+  readonly ArrowLeftIcon = ArrowLeft;  // ← ADDED
 
   // User state
   currentUser: User | null = null;

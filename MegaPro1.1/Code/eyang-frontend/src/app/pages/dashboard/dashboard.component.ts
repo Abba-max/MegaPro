@@ -1,3 +1,4 @@
+
 import { Component, OnInit, OnDestroy, AfterViewChecked, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -19,7 +20,7 @@ import {
 } from '../../services/estate.service';
 import { Subscription, interval } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-
+import { TranslateModule } from '@ngx-translate/core';
 export interface Toast {
   id: number;
   type: 'success' | 'error' | 'info' | 'warning';
@@ -29,7 +30,7 @@ export interface Toast {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, RouterModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, RouterModule, TranslateModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -603,5 +604,30 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   dismissToast(id: number): void {
     this.toasts = this.toasts.filter(t => t.id !== id);
+  }
+
+  // ── Grouped messages with date separators ─────────────────
+
+  getGroupedMessages(messages: ChatMessage[]): { type: 'separator' | 'message'; label?: string; msg?: ChatMessage }[] {
+    const result: { type: 'separator' | 'message'; label?: string; msg?: ChatMessage }[] = [];
+    let lastDate = '';
+    for (const msg of messages) {
+      const key = new Date(msg.created_at).toDateString();
+      if (key !== lastDate) {
+        result.push({ type: 'separator', label: this.msgDateLabel(msg.created_at) });
+        lastDate = key;
+      }
+      result.push({ type: 'message', msg });
+    }
+    return result;
+  }
+
+  private msgDateLabel(dateStr: string): string {
+    const d = new Date(dateStr);
+    const diff = Math.floor((Date.now() - d.getTime()) / 86_400_000);
+    if (diff === 0) return "Aujourd'hui";
+    if (diff === 1) return 'Hier';
+    if (diff < 7) return d.toLocaleDateString('fr-FR', { weekday: 'long' });
+    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
   }
 }

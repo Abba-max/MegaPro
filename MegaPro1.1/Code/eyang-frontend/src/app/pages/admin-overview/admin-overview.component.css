@@ -15,7 +15,7 @@
 
 .stats-cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 1.5rem;
 }
 
@@ -25,7 +25,7 @@
     border-radius: 12px;
     padding: 1.5rem;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 1rem;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
@@ -56,21 +56,22 @@
 }
 
 .stat-card:nth-child(1) {
-    animation-delay: 0.1s
+    animation-delay: 0.1s;
 }
 
 .stat-card:nth-child(2) {
-    animation-delay: 0.2s
+    animation-delay: 0.2s;
 }
 
 .stat-card:nth-child(3) {
-    animation-delay: 0.3s
+    animation-delay: 0.3s;
 }
 
 .stat-card:nth-child(4) {
-    animation-delay: 0.4s
+    animation-delay: 0.4s;
 }
 
+/* Icon always centered */
 .stat-icon {
     width: 48px;
     height: 48px;
@@ -82,12 +83,18 @@
     transition: all 0.3s;
 }
 
+.stat-icon lucide-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 .stat-card:hover .stat-icon {
     transform: scale(1.1) rotate(5deg);
 }
 
 .stat-content {
     flex: 1;
+    min-width: 0;
 }
 
 .stat-title {
@@ -147,6 +154,7 @@
     margin-bottom: 1.5rem;
 }
 
+/* ── Activity list ─────────────────────────────────────── */
 .activity-list {
     display: flex;
     flex-direction: column;
@@ -180,7 +188,6 @@
 .activity-item:hover::after {
     transform: scaleY(1);
 }
-
 .activity-item:hover {
     background: #F9FAFB;
     transform: translateX(4px);
@@ -188,23 +195,23 @@
 }
 
 .activity-item:nth-child(1) {
-    animation-delay: 0.1s
+    animation-delay: 0.1s;
 }
 
 .activity-item:nth-child(2) {
-    animation-delay: 0.2s
+    animation-delay: 0.2s;
 }
 
 .activity-item:nth-child(3) {
-    animation-delay: 0.3s
+    animation-delay: 0.3s;
 }
 
 .activity-item:nth-child(4) {
-    animation-delay: 0.4s
+    animation-delay: 0.4s;
 }
 
 .activity-item:nth-child(5) {
-    animation-delay: 0.5s
+    animation-delay: 0.5s;
 }
 
 .activity-icon {
@@ -232,6 +239,7 @@
     color: #6B7280;
 }
 
+/* ── Chart ─────────────────────────────────────────────── */
 .chart-container {
     margin-top: 1rem;
 }
@@ -259,12 +267,12 @@
     gap: 4px;
     height: 100%;
     justify-content: flex-end;
-    }
-    
-    .bar-val {
-        font-size: 10px;
-        font-weight: 700;
-        color: #374151;
+}
+
+.bar-val {
+    font-size: 10px;
+    font-weight: 700;
+    color: #374151;
 }
 
 .chart-bar {
@@ -283,27 +291,27 @@
 }
 
 .chart-bar-item:nth-child(1) .chart-bar {
-    animation-delay: 0.1s
+    animation-delay: 0.1s;
 }
 
 .chart-bar-item:nth-child(2) .chart-bar {
-    animation-delay: 0.2s
+    animation-delay: 0.2s;
 }
 
 .chart-bar-item:nth-child(3) .chart-bar {
-    animation-delay: 0.3s
+    animation-delay: 0.3s;
 }
 
 .chart-bar-item:nth-child(4) .chart-bar {
-    animation-delay: 0.4s
+    animation-delay: 0.4s;
 }
 
 .chart-bar-item:nth-child(5) .chart-bar {
-    animation-delay: 0.5s
+    animation-delay: 0.5s;
 }
 
 .chart-bar-item:nth-child(6) .chart-bar {
-    animation-delay: 0.6s
+    animation-delay: 0.6s;
 }
 
 .chart-label {
@@ -313,9 +321,13 @@
     text-transform: uppercase;
 }
 
+/* ── Utilities ─────────────────────────────────────────── */
 .icon-sm {
     width: 16px;
     height: 16px;
+    display: flex;
+        align-items: center;
+        justify-content: center;
 }
 
 .loader-center {
@@ -326,12 +338,14 @@
     gap: 1rem;
     color: #6B7280;
 }
+
 .spin-icon {
     width: 22px;
     height: 22px;
     animation: spin 1s linear infinite;
     color: #2563EB;
 }
+
 .error-banner {
     background: #FEF2F2;
     border: 1px solid #FECACA;
@@ -364,60 +378,65 @@
     font-size: 14px;
     padding: 1rem 0;
 }
+/* ── Animations ────────────────────────────────────────── */
 @keyframes spin {
     to {
-        transform: rotate(360deg);
-    }
+            transform: rotate(360deg);
+            }
 }
 
 @keyframes slideInUp {
     from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+            opacity: 0;
+                transform: translateY(30px);
+            }
+            
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
 }
 
 @keyframes fadeInLeft {
     from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+            opacity: 0;
+                transform: translateX(-20px);
+            }
+            
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
 }
 
 @keyframes growUp {
     from {
-        height: 0;
-        opacity: 0;
-    }
+            height: 0;
+                opacity: 0;
+            }
+            
+            to {
+                height: 100%;
+                opacity: 1;
+            }
+            }
 
-    to {
-        height: 100%;
-        opacity: 1;
-    }
-}
-
+/* ── Responsive ─────────────────────────────────────────── */
 @media (max-width: 1024px) {
     .bottom-section {
         grid-template-columns: 1fr;
-    
-        .stats-cards-grid {
+    .stats-cards-grid {
             grid-template-columns: repeat(2, 1fr);
     
 }
+}
 @media (max-width: 768px) {
     .stats-cards-grid {
-        grid-template-columns: 1fr;
-    
+        grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+        }
+        }
     .bottom-section {
         grid-template-columns: 1fr;
         margin-top: 1.5rem;
@@ -425,12 +444,23 @@
     .chart-area {
         height: 160px;
     }
+                .stat-card {
+                    padding: 1rem;
+                    gap: .75rem;
+                }
+        
+                .stat-value {
+                    font-size: 1.5rem;
+                }
 }
 
 @media (max-width: 480px) {
     .stat-card {
         flex-direction: column;
-        align-items: center;
-        text-align: center;
-    
+        align-items: flex-start;
+            gap: .5rem;
+        }
+                .stats-cards-grid {
+                    grid-template-columns: 1fr 1fr;
+                }
 }

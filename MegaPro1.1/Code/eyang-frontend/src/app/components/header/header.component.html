@@ -1,11 +1,11 @@
 <header class="header" [class.is-public]="isPublic">
 
-  <!-- LEFT: Logo + Nav Links -->
   <div class="header-left">
     <div class="logo-section" routerLink="/">
       <img src="assets/images/logo.png" alt="Eyang Estate" class="logo-img">
     </div>
 
+    <!-- Public nav: full menu -->
     <nav class="nav-links" *ngIf="isPublic">
       <a class="nav-link" (click)="scrollTo('listings')">
         <span>{{ 'nav.listings' | translate }}</span>
@@ -20,28 +20,35 @@
         <span>{{ 'nav.contact' | translate }}</span>
       </a>
     </nav>
+
+    <!-- Dashboard/Private: Back to menu button only -->
+    <a class="btn-back-menu" routerLink="/" *ngIf="!isPublic">
+      <lucide-icon [img]="ArrowLeftIcon" class="btn-back-menu-icon"></lucide-icon>
+      <span>{{ 'nav.back_menu' | translate }}</span>
+    </a>
   </div>
 
   <!-- RIGHT: Actions -->
   <div class="nav-actions">
-<!-- Language Toggle -->
-<button class="lang-btn" (click)="toggleLang()"
-  [title]="currentLang === 'fr' ? 'Switch to English' : 'Passer en français'">
-  <lucide-icon [img]="GlobeIcon" class="nav-icon"></lucide-icon>
-  <span class="lang-label">{{ currentLang === 'fr' ? 'EN' : 'FR' }}</span>
-</button>
+    <!-- Language Toggle -->
+    <button class="lang-btn" (click)="toggleLang()"
+      [title]="currentLang === 'fr' ? 'Switch to English' : 'Passer en français'">
+      <lucide-icon [img]="GlobeIcon" class="nav-icon"></lucide-icon>
+      <span class="lang-label">{{ currentLang === 'fr' ? 'EN' : 'FR' }}</span>
+    </button>
 
     <!-- Logged-in actions -->
     <ng-container *ngIf="currentUser; else authButtons">
-<!-- Messages link -->
-<a routerLink="/messages" class="icon-btn" [title]="'nav.messages' | translate">
+      <!-- Messages link -->
+      <a routerLink="/messages" class="icon-btn" [title]="'nav.messages' | translate">
         <lucide-icon [img]="MessageIcon" class="nav-icon"></lucide-icon>
       </a>
-<!-- ── Notification Bell ── -->
-<div class="notif-container">
-  <button class="icon-btn notif-btn" (click)="toggleNotifPanel(); $event.stopPropagation()"
-    [class.has-unread]="unreadCount > 0" title="Notifications">
-    <lucide-icon [img]="BellIcon" class="nav-icon"></lucide-icon>
+
+      <!-- Notification Bell -->
+      <div class="notif-container">
+        <button class="icon-btn notif-btn" (click)="toggleNotifPanel(); $event.stopPropagation()"
+          [class.has-unread]="unreadCount > 0" title="Notifications">
+          <lucide-icon [img]="BellIcon" class="nav-icon"></lucide-icon>
           <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
         </button>
 
@@ -55,15 +62,13 @@
               </button>
             </div>
           </div>
-        
-          <!-- Empty state -->
+
           <div class="notif-empty" *ngIf="notifications.length === 0">
             <span class="notif-empty-icon">🔔</span>
             <p>Aucune notification</p>
             <span class="notif-empty-hint">Les événements importants apparaîtront ici.</span>
           </div>
-        
-          <!-- Notification list -->
+
           <div class="notif-list" *ngIf="notifications.length > 0">
             <div *ngFor="let n of notifications" class="notif-item" [class.unread]="!n.read" (click)="onNotifClick(n)">
               <span class="notif-item-icon">{{ n.icon || getNotifIcon(n.type) }}</span>
@@ -76,10 +81,9 @@
             </div>
           </div>
         </div>
-        </div>
-        <!-- ── End Notification Bell ── -->
-        
-        <!-- User Profile -->
+      </div>
+
+      <!-- User Profile -->
       <div class="user-profile-container">
         <div class="user-profile" (click)="toggleMenu()">
           <div class="avatar" [class.blue-bg]="currentUser.role === 'Student'">
@@ -103,11 +107,12 @@
           <ul class="menu-links">
             <li>
               <a routerLink="/dashboard" (click)="showMenu = false">
-                <span>• {{ 'nav.dashboard' | translate }}</span>
+                <lucide-icon [img]="DashboardIcon" class="menu-icon"></lucide-icon>
+                <span>{{ 'nav.dashboard' | translate }}</span>
               </a>
             </li>
             <li *ngIf="currentUser.role === 'Admin'">
-              <a routerLink="/admin/reports" (click)="showMenu = false">
+              <a routerLink="/admin/overview" (click)="showMenu = false">
                 <lucide-icon [img]="SettingsIcon" class="menu-icon"></lucide-icon>
                 <span>{{ 'nav.admin' | translate }}</span>
               </a>
@@ -129,13 +134,14 @@
         <button class="btn btn-primary" (click)="openSignup()">{{ 'nav.signup' | translate }}</button>
       </div>
     </ng-template>
-<!-- Hamburger (mobile, guest) -->
-<button class="hamburger-btn" *ngIf="!currentUser && isPublic" (click)="toggleMobileMenu()"
-  [class.hamburger-open]="showMobileMenu" aria-label="Menu">
-  <span class="ham-bar"></span>
-  <span class="ham-bar"></span>
-  <span class="ham-bar"></span>
-</button>
+
+    <!-- Hamburger (mobile, guest, public only) -->
+    <button class="hamburger-btn" *ngIf="!currentUser && isPublic" (click)="toggleMobileMenu()"
+      [class.hamburger-open]="showMobileMenu" aria-label="Menu">
+      <span class="ham-bar"></span>
+      <span class="ham-bar"></span>
+      <span class="ham-bar"></span>
+    </button>
   </div>
 </header>
 

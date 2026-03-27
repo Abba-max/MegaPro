@@ -1,7 +1,3 @@
-/* ============================================================
-   HEADER — Eyang Estate  (complete, all braces closed)
-   ============================================================ */
-
 .header {
     height: 72px;
     display: flex;
@@ -26,12 +22,47 @@
     display: flex; align-items: center; cursor: pointer; flex-shrink: 0;
 }
 .logo-img {
-    height: 42px; width: auto; object-fit: contain;
+    height: 50px;
+        width: 50px;
+        object-fit: contain;
     display: block; transition: opacity 0.2s ease;
 }
 .logo-section:hover .logo-img { opacity: 0.85; }
 
-/* ── NAV LINKS ──────────────────────────────────────────── */
+/* ── BACK TO MENU BUTTON (dashboard / admin pages) ─────── */
+.btn-back-menu {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 10px;
+    border: 1.5px solid #E5E7EB;
+    background: #F9FAFB;
+    color: #374151;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.15s;
+    flex-shrink: 0;
+}
+.btn-back-menu:hover {
+    background: #EEF3FF;
+    border-color: #2563EB;
+    color: #1D4ED8;
+    transform: translateX(-2px);
+}
+.btn-back-menu:active { transform: translateX(-1px); }
+.btn-back-menu-icon {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+/* ── NAV LINKS (only visible on public pages) ───────────── */
 .nav-links { display: flex; align-items: center; gap: 0.2rem; }
 
 .nav-link {
@@ -59,7 +90,11 @@
 .nav-link:active { transform: scale(0.97); }
 
 /* ── RIGHT ──────────────────────────────────────────────── */
-.nav-actions { display: flex; align-items: center; gap: 1rem; }
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
 
 .icon-btn {
     background: none; border: none; color: #6B7280;
@@ -67,9 +102,51 @@
     display: flex; align-items: center; justify-content: center;
     transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease;
     text-decoration: none;
+    flex-shrink: 0;
 }
 .icon-btn:hover { background: #F3F4F6; color: #111827; transform: scale(1.08); }
-.nav-icon { width: 20px; height: 20px; }
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    display: block;
+}
+
+/* ── LANG BUTTON ────────────────────────────────────────── */
+.lang-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #E5E7EB;
+    background: #F9FAFB;
+    color: #374151;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: 13px;
+    font-weight: 700;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.lang-btn:hover {
+    background: #EEF3FF;
+    border-color: #2563EB;
+    color: #1D4ED8;
+}
+
+.lang-btn .nav-icon {
+    width: 16px;
+    height: 16px;
+    color: currentColor;
+    flex-shrink: 0;
+}
+
+.lang-label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: 0.03em;
+}
 
 /* ── AUTH BUTTONS ───────────────────────────────────────── */
 .auth-buttons { display: flex; align-items: center; gap: 0.75rem; }
@@ -130,6 +207,7 @@
     box-shadow: 0 16px 48px rgba(0,0,0,0.13), 0 2px 8px rgba(0,0,0,0.05);
     border: 1px solid rgba(0,0,0,0.06); padding: 1rem;
     transform-origin: top right;
+    z-index: 1001;
 }
 .user-info { display: flex; flex-direction: column; padding: 0.25rem 0.5rem; }
 .user-name  { font-weight: 700; color: #111827; font-size: 14px; }
@@ -196,95 +274,183 @@
 /* ── MODALS ─────────────────────────────────────────────── */
 .modal-overlay {
     position: fixed; inset: 0;
-    background: rgba(0,0,0,0.48); backdrop-filter: blur(4px);
-    display: flex; align-items: center; justify-content: center; z-index: 2000;
+    background: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
 }
 .modal-card {
-    background: #fff; width: 100%; max-width: 440px;
-    border-radius: 22px; padding: 2.5rem;
-    box-shadow: 0 24px 60px rgba(0,0,0,0.18); position: relative;
-    max-height: 92vh; overflow-y: auto; overscroll-behavior: contain;
+    background: #fff;
+        border-radius: 24px;
+        padding: 2.25rem;
+        width: 100%;
+        max-width: 440px;
+        position: relative;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);
+        max-height: 90vh;
+        overflow-y: auto;
 }
-.modal-header h2 {
-    font-size: 1.5rem; font-weight: 800; color: #111827;
-    margin-bottom: 1.75rem; letter-spacing: -0.02em;
+.signup-modal {
+    max-width: 520px;
 }
 .close-btn {
     position: absolute; top: 1.25rem; right: 1.25rem;
-    background: #F3F4F6; border: none; border-radius: 50%;
-    width: 34px; height: 34px;
+    background: #F3F4F6;
+        border: none;
+        cursor: pointer;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    color: #6B7280; cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease;
+    color: #6B7280;
+        transition: background 0.2s, color 0.2s;
 }
 .close-btn:hover { background: #E5E7EB; color: #111827; }
+.icon-sm {
+    width: 16px;
+    height: 16px;
+}
+
+.modal-header {
+    margin-bottom: 1.5rem;
+}
+
+.modal-header h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #111827;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
 
 .input {
-    width: 100%; padding: 0.75rem 1rem;
-    border: 1.5px solid #E5E7EB; border-radius: 12px;
-    font-size: 15px; outline: none; color: #111827; background: #FAFAFA;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-    box-sizing: border-box;
+    padding: 11px 14px;
+        border: 1.5px solid #E5E7EB;
+        border-radius: 10px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        background: #F9FAFB;
+        color: #111827;
+        font-family: inherit;
 }
 .input:focus {
-    border-color: #2563EB; background: #fff;
-    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+    border-color: #2563EB;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.mt-4 {
+    margin-top: 1rem;
+}
+
+.mt-6 {
+    margin-top: 1.5rem;
+}
+.w-full { width: 100%; }
+.py-4 {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+
+.error-msg {
+    color: #DC2626;
+    font-size: 13px;
+    margin-top: 0.5rem;
+}
+
+.auth-footer {
+    font-size: 14px;
+    color: #6B7280;
+    text-align: center;
+}
+
+.link {
+    color: #2563EB;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.link:hover {
+    text-decoration: underline;
 }
 
 .login-info-box {
-    background: #F8FAFF; padding: 1.125rem; border-radius: 12px;
-    margin: 1.25rem 0; border: 1px solid #DBEAFE;
+    background: #F8FAFF;
+    border: 1px solid #BFDBFE;
+    border-radius: 12px;
+    padding: 0.875rem 1rem;
+    margin-top: 1rem;
+    font-size: 13px;
 }
-.info-header  { font-size: 13px; font-weight: 700; color: #1D4ED8; margin-bottom: 8px; }
-.info-content { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #6B7280; }
-.info-content b { color: #374151; }
-.error-msg    { color: #EF4444; font-size: 13px; font-weight: 600; text-align: center; margin-top: 0.75rem; }
-.auth-footer  { text-align: center; color: #6B7280; font-size: 14px; }
-.link         { color: #2563EB; font-weight: 700; cursor: pointer; transition: color 0.15s ease; }
-.link:hover   { color: #1D4ED8; }
+.info-header {
+    font-weight: 700;
+    color: #1D4ED8;
+    margin-bottom: 0.5rem;
+}
 
-.form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
-.w-full { width: 100%; }
-.mt-4   { margin-top: 1rem; }
-.mt-6   { margin-top: 1.5rem; }
-.py-4   { padding-top: 1rem; padding-bottom: 1rem; }
-.icon-sm { width: 16px; height: 16px; }
+.info-item {
+    color: #374151;
+    line-height: 1.7;
+}
 
-.signup-modal { max-width: 500px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+/* Account type selector */
+.account-type-selector {
+    display: flex;
+    gap: 0.75rem;
+}
 
-.account-type-selector { display: flex; gap: 0.625rem; margin-top: 0.5rem; }
 .account-type-btn {
-    flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
-    padding: 0.875rem 0.75rem; border: 1.5px solid #E5E7EB; border-radius: 14px;
-    background: #fff; cursor: pointer;
-    transition: border-color 0.22s, background 0.22s, transform 0.18s, box-shadow 0.22s;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.875rem 0.5rem;
+    border-radius: 12px;
+    border: 1.5px solid #E5E7EB;
+    background: #F9FAFB;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4B5563;
+    transition: all 0.2s ease;
 }
 .account-type-btn:hover {
-    border-color: #93C5FD; background: #F0F9FF;
-    transform: translateY(-2px); box-shadow: 0 4px 14px rgba(37,99,235,0.12);
+    border-color: #93C5FD;
+    background: #EFF6FF;
+    color: #1D4ED8;
 }
-.account-type-btn.active { background: #EFF6FF; border-color: #2563EB; box-shadow: 0 4px 16px rgba(37,99,235,0.18); }
-.account-type-btn:active { transform: scale(0.97); }
-.account-icon { width: 22px; height: 22px; color: #9CA3AF; transition: color 0.2s, transform 0.2s; }
-.account-type-btn.active .account-icon { color: #2563EB; transform: scale(1.1); }
-.owner-btn .account-icon        { color: #F97316; }
-.owner-btn.active .account-icon { color: #F97316; }
-.account-type-btn span { font-size: 12px; font-weight: 600; color: #374151; transition: color 0.2s; }
-.account-type-btn.active span  { color: #2563EB; }
 
-/* ── LANGUAGE TOGGLE ────────────────────────────────────── */
-.lang-btn {
-    display: flex; align-items: center; gap: 5px;
-    background: transparent; border: 1.5px solid #D1D5DB;
-    border-radius: 20px; padding: 5px 13px;
-    color: #374151; font-size: 0.8rem; font-weight: 700;
-    cursor: pointer; letter-spacing: 0.04em; white-space: nowrap; flex-shrink: 0;
-    transition: background 0.2s, border-color 0.2s, color 0.2s;
+.account-type-btn.active {
+    border-color: #2563EB;
+    background: #EFF6FF;
+    color: #1D4ED8;
 }
-.lang-btn:hover { background: #EEF3FF; border-color: #2563EB; color: #1D4ED8; }
-.lang-btn .nav-icon { width: 15px; height: 15px; color: currentColor; }
-.lang-label { font-size: 0.78rem; font-weight: 800; line-height: 1; }
+
+.account-icon {
+    width: 20px;
+    height: 20px;
+}
 
 /* ── NOTIFICATION BELL ──────────────────────────────────── */
 .notif-container { position: relative; }
@@ -466,13 +632,14 @@
 
 @media (max-width: 480px) {
     .header        { padding: 0 0.75rem; height: 60px; }
-    .logo-img      { height: 36px; }
+        .logo-img {
+            height: 50px;
+        }
     .btn-primary,
     .btn.btn-primary { padding: 7px 12px; font-size: 12px; }
     .modal-card    { max-width: 95%; padding: 1.25rem; border-radius: 16px; }
-    .lang-label    { display: none; }
-    .lang-btn      { padding: 6px 8px; }
-    /* Notification panel — keep on screen */
+    .btn-back-menu span { display: none; }
+    .btn-back-menu { padding: 7px 9px; }
     .notif-panel {
         right: -3rem;
         width: calc(100vw - 1rem);
