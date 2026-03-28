@@ -148,13 +148,9 @@
                 <div class="housing-body">
                     <h3 class="housing-name">{{ e.name }}</h3>
                     <div class="housing-location"><lucide-icon [img]="MapPinIcon" class="icon-xs"></lucide-icon> {{ e.location }}</div>
-<<<<<<< HEAD
-                    <div class="housing-row">
-=======
                     <div class="housing-price">{{ formatPrice(e.price) }}<span class="price-unit">{{ 'dashboard.per_month' | translate }}</span></div>
                     <div class="housing-row">
                         <span class="hbadge"><lucide-icon [img]="UserIcon" class="icon-xs"></lucide-icon> {{ e.free }} {{ 'detail.places'|translate }} / {{ e.capacity }}</span>
->>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
                         <span class="hbadge star"><lucide-icon [img]="StarIcon" class="icon-xs"></lucide-icon> {{ e.rating }}</span>
                     </div>
                     <div class="housing-actions">
@@ -538,12 +534,6 @@
         <h2 class="modal-title">{{ isEditMode ? ('dashboard.modal_edit_title'|translate) : ('dashboard.modal_add_title'|translate) }}</h2>
         <div class="form-group"><label>Nom *</label><input class="input" [(ngModel)]="estateForm.name" placeholder="Ex: Résidence Les Palmiers"></div>
         <div class="form-row">
-<<<<<<< HEAD
-            <div class="form-group"><label>Localisation *</label><input class="input" [(ngModel)]="estateForm.location"
-                    placeholder="Ex: Yaoundé, Ngoa-Ekellé"></div>
-            <div class="form-group"><label>Distance campus (m)</label><input class="input" [(ngModel)]="distanceDisplay"
-                    placeholder="500"></div>
-=======
             <div class="form-group"><label>Localisation *</label><input class="input" [(ngModel)]="estateForm.location" placeholder="Ex: Yaoundé, Soa"></div>
             <div class="form-group"><label>Prix (FCFA/mois) *</label><input class="input" type="number" [(ngModel)]="estateForm.price" placeholder="35000"></div>
         </div>
@@ -560,7 +550,6 @@
                     <option value="3">Chambre</option>
                 </select>
             </div>
->>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
         </div>
         <div class="form-group"><label>Statut</label>
             <select class="input" [(ngModel)]="estateForm.status">
@@ -602,7 +591,6 @@
             </label>
             <input id="imgFileInput" type="file" accept="image/*" multiple style="display:none" (change)="onImagesSelected($event)">
         </div>
-<<<<<<< HEAD
         <div style="display: flex; justify-content: space-between; gap: 0.5rem; margin-top: 1.5rem;">
             <button *ngIf="isEditMode" class="btn-edit" style="background:#0ea5e9; color:white; border-color:#0ea5e9; padding:0.5rem 1rem;" (click)="switchToRoomManagerFromEdit()">
                 <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon> Gérer les chambres (Catégories)
@@ -622,11 +610,6 @@
     <div class="modal-box modal-box-wide" (click)="$event.stopPropagation()" style="background:white; border-radius:12px; max-width: 800px; padding: 2rem; width:100%; max-height: 90vh; overflow-y: auto;">
         <button class="modal-close" style="position: absolute; right: 1rem; top: 1rem; border: none; background: transparent; cursor: pointer;" (click)="closeRoomModal()">
             <lucide-icon [img]="XIcon" class="icon-xs"></lucide-icon>
-=======
-        <button class="btn-submit" (click)="saveEstate()" [disabled]="isSavingEstate">
-            <span *ngIf="!isSavingEstate">{{ isEditMode ? ('dashboard.save_changes'|translate) : ('dashboard.modal_add_title'|translate) }}</span>
-            <span *ngIf="isSavingEstate">{{ 'dashboard.saving'|translate }}</span>
->>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
         </button>
 
         <h2 class="modal-title" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem;">

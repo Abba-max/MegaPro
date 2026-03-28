@@ -282,3 +282,294 @@ html {
     max-height: 90vh;
   }
 }
+lucide-icon {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+/* 2. The inner SVG must never overflow its container */
+lucide-icon svg {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: visible;
+}
+
+/* ── Size utility classes ─────────────────────────────────────
+   Use [class]="..." or directly in the template:
+   class="icon-xs"  → 12 px  (inline badges, ticks)
+   class="icon-sm"  → 16 px  (buttons, chips, labels)
+   class="icon-md"  → 20 px  (header nav, primary actions)
+   class="icon-lg"  → 24 px  (hero tags, large CTAs)
+   class="icon-xl"  → 32 px  (empty states, illustrations)
+──────────────────────────────────────────────────────────── */
+.icon-xs { width: 12px !important; height: 12px !important; min-width: 12px; }
+.icon-xs svg { width: 12px !important; height: 12px !important; }
+
+.icon-sm { width: 16px !important; height: 16px !important; min-width: 16px; }
+.icon-sm svg { width: 16px !important; height: 16px !important; }
+
+.icon-md { width: 20px !important; height: 20px !important; min-width: 20px; }
+.icon-md svg { width: 20px !important; height: 20px !important; }
+
+.icon-lg { width: 24px !important; height: 24px !important; min-width: 24px; }
+.icon-lg svg { width: 24px !important; height: 24px !important; }
+
+.icon-xl { width: 32px !important; height: 32px !important; min-width: 32px; }
+.icon-xl svg { width: 32px !important; height: 32px !important; }
+
+/* ── Header ───────────────────────────────────────────────── */
+/* .nav-icon is used for bell, message, globe in the header */
+.nav-icon {
+  display: inline-flex !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px;
+}
+.nav-icon svg { width: 20px !important; height: 20px !important; display: block; }
+
+/* chevron in user-profile dropdown */
+.chevron-icon {
+  display: inline-flex !important;
+  width: 15px !important;
+  height: 15px !important;
+}
+.chevron-icon svg { width: 15px !important; height: 15px !important; display: block; }
+
+/* menu icons in the dropdown list */
+.menu-icon {
+  display: inline-flex !important;
+  width: 15px !important;
+  height: 15px !important;
+  min-width: 15px;
+}
+.menu-icon svg { width: 15px !important; height: 15px !important; display: block; }
+
+/* account-type picker icons (signup modal) */
+.account-icon {
+  display: inline-flex !important;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px;
+}
+.account-icon svg { width: 20px !important; height: 20px !important; display: block; }
+
+/* Back-to-menu button icon */
+.btn-back-menu-icon {
+  display: inline-flex !important;
+  width: 15px !important;
+  height: 15px !important;
+  min-width: 15px;
+}
+.btn-back-menu-icon svg { width: 15px !important; height: 15px !important; display: block; }
+
+/* ── Home page ────────────────────────────────────────────── */
+.tag-icon,
+.hero-search-icon,
+.btn-search-icon {
+  display: inline-flex !important;
+  flex-shrink: 0;
+}
+.tag-icon      { width: 16px !important; height: 16px !important; }
+.tag-icon svg  { width: 16px !important; height: 16px !important; display: block; }
+.hero-search-icon     { width: 20px !important; height: 20px !important; }
+.hero-search-icon svg { width: 20px !important; height: 20px !important; display: block; }
+.btn-search-icon     { width: 16px !important; height: 16px !important; }
+.btn-search-icon svg { width: 16px !important; height: 16px !important; display: block; }
+
+/* Filter bar icons */
+.filter-icon {
+  display: inline-flex !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px;
+  flex-shrink: 0;
+}
+.filter-icon svg { width: 16px !important; height: 16px !important; display: block; }
+
+/* Advanced filter drawer icons */
+.adv-title-icon {
+  display: inline-flex !important;
+  width: 17px !important;
+  height: 17px !important;
+}
+.adv-title-icon svg { width: 17px !important; height: 17px !important; display: block; }
+
+.btn-icon-sm {
+  display: inline-flex !important;
+  width: 15px !important;
+  height: 15px !important;
+}
+.btn-icon-sm svg { width: 15px !important; height: 15px !important; display: block; }
+
+.equip-icon {
+  display: inline-flex !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px;
+}
+.equip-icon svg { width: 16px !important; height: 16px !important; display: block; }
+
+.chip-icon {
+  display: inline-flex !important;
+  width: 13px !important;
+  height: 13px !important;
+  min-width: 13px;
+}
+.chip-icon svg { width: 13px !important; height: 13px !important; display: block; }
+
+/* Home card: meta icons */
+.meta-icon {
+  display: inline-flex !important;
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px;
+  flex-shrink: 0;
+}
+.meta-icon svg { width: 14px !important; height: 14px !important; display: block; }
+
+/* Home card: why-section icons */
+.why-icon {
+  display: inline-flex !important;
+  width: 26px !important;
+  height: 26px !important;
+}
+.why-icon svg { width: 26px !important; height: 26px !important; display: block; }
+
+/* Home card: feature-cell icons */
+.feat-cell-ico {
+  display: inline-flex !important;
+  width: 15px !important;
+  height: 15px !important;
+  flex-shrink: 0;
+}
+.feat-cell-ico svg { width: 15px !important; height: 15px !important; display: block; }
+
+/* Star icon inside card badge */
+.icon-star {
+  display: inline-flex !important;
+  width: 13px !important;
+  height: 13px !important;
+  min-width: 13px;
+  color: #F59E0B;
+}
+.icon-star svg { width: 13px !important; height: 13px !important; display: block; }
+
+/* ── Housing detail ───────────────────────────────────────── */
+.chip-icon    { /* already covered above */ }
+
+/* Toast icon */
+.toast-icon {
+  display: inline-flex !important;
+  width: 16px !important;
+  height: 16px !important;
+  min-width: 16px;
+  flex-shrink: 0;
+}
+.toast-icon svg { width: 16px !important; height: 16px !important; display: block; }
+
+/* Gallery nav icons */
+.gallery-nav-icon {
+  display: inline-flex !important;
+  width: 20px !important;
+  height: 20px !important;
+}
+.gallery-nav-icon svg { width: 20px !important; height: 20px !important; display: block; }
+
+/* Counter icon */
+.counter-icon {
+  display: inline-flex !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+.counter-icon svg { width: 14px !important; height: 14px !important; display: block; }
+
+/* Gold/gray star rating icons */
+.icon-xs {
+  display: inline-flex !important;
+  width: 13px !important;
+  height: 13px !important;
+  min-width: 13px;
+}
+.icon-xs svg { width: 13px !important; height: 13px !important; display: block; }
+
+/* Detail feat-cell (equipment grid, matches home page) */
+.feat-cell-ico {
+  display: inline-flex !important;
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0;
+}
+.feat-cell-ico svg { width: 20px !important; height: 20px !important; display: block; }
+
+/* Auth CTA icon */
+.auth-cta-icon {
+  display: inline-flex !important;
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0;
+}
+.auth-cta-icon svg { width: 20px !important; height: 20px !important; display: block; }
+
+/* hint icon */
+.hint-icon {
+  display: inline-flex !important;
+  width: 14px !important;
+  height: 14px !important;
+  flex-shrink: 0;
+}
+.hint-icon svg { width: 14px !important; height: 14px !important; display: block; }
+
+/* like-icon in review */
+.like-icon {
+  display: inline-flex !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+.like-icon svg { width: 16px !important; height: 16px !important; display: block; }
+
+/* ── Messages page ────────────────────────────────────────── */
+.estate-icon {
+  display: inline-flex !important;
+  width: 11px !important;
+  height: 11px !important;
+  min-width: 11px;
+}
+.estate-icon svg { width: 11px !important; height: 11px !important; display: block; }
+
+.estate-icon-sm {
+  display: inline-flex !important;
+  width: 12px !important;
+  height: 12px !important;
+  min-width: 12px;
+}
+.estate-icon-sm svg { width: 12px !important; height: 12px !important; display: block; }
+
+.sys-icon {
+  display: inline-flex !important;
+  width: 13px !important;
+  height: 13px !important;
+}
+.sys-icon svg { width: 13px !important; height: 13px !important; display: block; }
+
+.tick-icon {
+  display: inline-flex !important;
+  width: 15px !important;
+  height: 15px !important;
+  min-width: 15px;
+}
+.tick-icon svg { width: 15px !important; height: 15px !important; display: block; }
+
+/* ── Dashboard ────────────────────────────────────────────── */
+/* CTA / button icons in dashboard use .icon-sm (covered) */
+
+/* ── Sidebar ──────────────────────────────────────────────── */
+/* Sidebar nav icons – typically 18–20px, covered by .icon-sm / .icon-md */
+
+/* ── Spinner ──────────────────────────────────────────────── */
+.spinner,
+.spinning { animation: _spin 1s linear infinite; }
+@keyframes _spin { to { transform: rotate(360deg); } }

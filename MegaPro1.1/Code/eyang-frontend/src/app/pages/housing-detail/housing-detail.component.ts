@@ -58,6 +58,7 @@ export class HousingDetailComponent implements OnInit {
   readonly InfoIcon         = Info;
 
   housing: Estate | null = null;
+  hosingEquipmentsWithIcons: { name: string; icon: any; color: string; colorKey: string }[] = [];
   photos: string[] = [];
   reviews: Review[] = [];
   currentUser: User | null = null;
@@ -127,7 +128,7 @@ export class HousingDetailComponent implements OnInit {
     this.isLoading = true;
     this.estateService.getEstate(id).subscribe({
       next: (data) => {
-        data.equipments = this.buildEquipments(data);
+        this.hosingEquipmentsWithIcons = this.buildEquipments(data);
         this.housing    = data;
         this.photos     = data.images.map((img: any) => img.image).filter(Boolean);
         if (this.photos.length === 0) this.photos = ['assets/images/placeholder.jpg'];

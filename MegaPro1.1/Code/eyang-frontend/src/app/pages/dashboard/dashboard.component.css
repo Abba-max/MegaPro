@@ -969,12 +969,13 @@
 }
 
 lucide-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    vertical-align: middle;
-    flex-shrink: 0;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  vertical-align: middle !important;
 }
+lucide-icon svg { display: block !important; width: 100% !important; height: 100% !important; }
 
 /* ── Utilities ──────────────────────────────────────────── */
 .fade-in { animation: fadeIn .22s cubic-bezier(.4,0,.2,1); }

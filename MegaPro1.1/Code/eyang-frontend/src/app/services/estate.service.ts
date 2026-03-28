@@ -32,13 +32,7 @@ export interface RoomCategory {
 export interface Estate extends EstateRaw {
   title: string; image: string; type: string;
   features: string[]; area: number | null; minMonths: number;
-<<<<<<< HEAD
   equipments: { name: string; icon: any; color: string }[];
-=======
-  roomInfo: { single: number; double: number } | null;
-  // colorKey added so housing-detail template can use eq.colorKey
-  equipments: { name: string; icon: any; color: string; colorKey: string }[];
->>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
 }
 
 export interface Review {
@@ -330,6 +324,10 @@ export class EstateService {
     return this.http.post<QuickOrder>(`${this.BASE}/orders/`, data);
   }
 
+  deleteQuickOrder(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/orders/${id}/`);
+  }
+
   // ── Reviews ───────────────────────────────────────────────
   getReviews(estateId?: number): Observable<Review[]> {
     let p = new HttpParams();
@@ -365,7 +363,6 @@ export class EstateService {
     );
   }
 
-<<<<<<< HEAD
   createRoomCategory(data: Partial<RoomCategory>): Observable<RoomCategory> {
     return this.http.post<RoomCategory>(`${this.BASE}/room-categories/`, data);
   }
@@ -386,15 +383,6 @@ export class EstateService {
 
   getOnlineUsers(): Observable<{ online_user_ids: number[] }> {
     return this.http.get<{ online_user_ids: number[] }>(`${this.BASE}/online-users/`);
-=======
-  deleteOrder(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.BASE}/orders/${id}/`);
-  }
-
-  // ── Contact ───────────────────────────────────────────────
-  sendContact(data: ContactRequest): Observable<any> {
-    return this.http.post(`${this.BASE}/contact-requests/`, data);
->>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
   }
 
   deleteContactRequest(id: number): Observable<void> {

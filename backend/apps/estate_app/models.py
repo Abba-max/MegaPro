@@ -29,7 +29,7 @@ class User(AbstractUser):
 class Estate(models.Model):
     name = models.CharField(max_length=255)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='estates', limit_choices_to={'user_type': 'owner'})
-    location = models.CharField(max_length=255, default="Yaounde")
+    location = models.CharField(max_length=255, default="Eyang")
     rating = models.CharField(max_length=10, default="0.0")
     distance = models.IntegerField(default=100)
     restaurant = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')

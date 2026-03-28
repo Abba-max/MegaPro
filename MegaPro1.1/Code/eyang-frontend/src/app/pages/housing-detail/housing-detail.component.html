@@ -102,8 +102,8 @@
             <!-- ══ EQUIPMENTS — matching home page feat-cell style ══ -->
             <div class="detail-card" *ngIf="housing!.equipments.length > 0">
               <h3 class="detail-card-title">Équipements</h3>
-              <div class="features-grid" [ngClass]="'cols-' + housing!.equipments.length">
-                <div *ngFor="let eq of housing!.equipments"
+              <div class="features-grid" [ngClass]="'cols-' + hosingEquipmentsWithIcons.length">
+                <div *ngFor="let eq of hosingEquipmentsWithIcons"
                      class="feat-cell" [ngClass]="'feat-' + eq.colorKey">
                   <div class="feat-cell-icon">
                     <lucide-icon [img]="eq.icon" class="feat-cell-ico" [ngClass]="'eq-' + eq.color"></lucide-icon>
@@ -348,8 +348,8 @@
               </div>
             </div>
           </div>
-          <div class="modal-equip-tags" *ngIf="housing!.equipments.length > 0">
-            <span class="equip-tag" *ngFor="let eq of housing!.equipments">
+          <div class="modal-equip-tags" *ngIf="hosingEquipmentsWithIcons.length > 0">
+            <span class="equip-tag" *ngFor="let eq of hosingEquipmentsWithIcons">
               <lucide-icon [img]="eq.icon" class="equip-tag-icon" [ngClass]="'eq-' + eq.color"></lucide-icon>
               {{ eq.name }}
             </span>

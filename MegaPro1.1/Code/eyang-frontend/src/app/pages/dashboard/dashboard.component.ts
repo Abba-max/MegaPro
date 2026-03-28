@@ -17,7 +17,7 @@ import {
   Conversation, ChatMessage, OwnerDashboardStats, ClientDashboardStats,
   enrichReview
 } from '../../services/estate.service';
-import { Subscription } from 'rxjs';
+import { Subscription, interval } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
 
 export interface Toast {
@@ -93,18 +93,17 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   estateForm: any = {};
   distanceDisplay = '';
 
-<<<<<<< HEAD
   // ── Room management state ───────────────────────────────
   showRoomModal = false;
   selectedEstateForRooms: Estate | null = null;
   isLoadingRooms = false;
   roomCategories: RoomCategory[] = [];
-  
+
   isRoomEditMode = false;
   isSavingRoom = false;
   roomEditId: number | null = null;
   roomForm: Partial<RoomCategory> = this.emptyRoomForm();
-  
+
   roomSelectedFiles: File[] = [];
   roomPreviewImages: string[] = [];
   roomExistingImages: RoomImage[] = [];
@@ -114,9 +113,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     return { name: '', price: 300000, occupancy: 'single', quantity_available: 1, wifi: '0', tv: '0', fridge: '0', room_size: '2', description: '' };
   }
 
-  /** Files chosen by the owner for upload */
-=======
->>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
   newImageFiles: File[] = [];
   newImagePreviews: string[] = [];
 
@@ -371,7 +367,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 
-<<<<<<< HEAD
   // ── Room Category Methods ────────────────────────────────────────────────
   openManageRooms(estate: Estate): void {
     this.selectedEstateForRooms = estate;
@@ -433,14 +428,14 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   saveRoom(): void {
     if (!this.selectedEstateForRooms) return;
     if (!this.roomForm.name) { this.showToast('Le nom est obligatoire.', 'warning'); return; }
-    
+
     this.isSavingRoom = true;
     const payload = { ...this.roomForm, estate: this.selectedEstateForRooms.id };
-    
-    const req = this.roomEditId 
+
+    const req = this.roomEditId
       ? this.estateService.updateRoomCategory(this.roomEditId, payload)
       : this.estateService.createRoomCategory(payload);
-      
+
     req.subscribe({
       next: (saved) => {
         const afterSave = () => {
@@ -449,7 +444,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
           this.showToast(`Chambre ${this.roomEditId ? 'mise à jour' : 'ajoutée'}.`, 'success');
           this.loadRooms(this.selectedEstateForRooms!.id);
         };
-        
+
         if (this.roomSelectedFiles.length > 0) {
           this.estateService.uploadRoomImages(saved.id, this.roomSelectedFiles).subscribe(afterSave);
         } else {
@@ -457,7 +452,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
         }
       },
       error: () => {
-        this.showToast('Erreur lors de l’enregistrement de la chambre.', 'error');
+        this.showToast('Erreur lors de l\'enregistrement de la chambre.', 'error');
         this.isSavingRoom = false;
         this.cdr.detectChanges();
       }
@@ -488,18 +483,16 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   switchToRoomManagerFromEdit(): void {
-      if (!this.editingId) return;
-      const est = this.myEstates.find(h => h.id === this.editingId);
-      if (est) {
-          this.closeEstateModal();
-          this.openManageRooms(est);
-      }
+    if (!this.editingId) return;
+    const est = this.myEstates.find(h => h.id === this.editingId);
+    if (est) {
+      this.closeEstateModal();
+      this.openManageRooms(est);
+    }
   }
 
   // ── Save estate (create or update, then upload images) ────
 
-=======
->>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
   saveEstate(): void {
     if (!this.estateForm.name || !this.estateForm.location) {
       this.showToast('Veuillez remplir le nom et la localisation du logement.', 'error');
@@ -507,11 +500,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
     this.isSavingEstate = true;
     const payload = { ...this.estateForm, distance: parseFloat(this.distanceDisplay) || 0 };
-<<<<<<< HEAD
-    delete payload.existingImages; 
-=======
     delete payload.existingImages;
->>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
 
     const req$ = this.isEditMode && this.editingId
       ? this.estateService.updateEstate(this.editingId, payload)
@@ -520,15 +509,14 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     req$.subscribe({
       next: (savedEstate) => {
         const estateId = savedEstate.id;
-        
+
         const finalizeCreation = () => {
           this.isSavingEstate = false;
           this.showToast(this.isEditMode ? 'Logement mis à jour.' : 'Logement créé avec succès. Veuillez configurer les chambres.', 'success');
           this.closeEstateModal();
           this.loadOwnerData();
           if (!this.isEditMode) {
-             // Immediately switch to Room Manager for new estate!
-             this.openManageRooms(savedEstate);
+            this.openManageRooms(savedEstate);
           }
         };
 
@@ -596,7 +584,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   deleteReservation(order: QuickOrder): void {
     this.openConfirm(`Annuler la réservation pour "${order.estate_name}" ?`, () => {
-      this.estateService.deleteOrder(order.id!).subscribe({
+      this.estateService.deleteQuickOrder(order.id!).subscribe({
         next: () => {
           this.myReservations = this.myReservations.filter(r => r.id !== order.id);
           this.clientStats.total_reservations = Math.max(0, this.clientStats.total_reservations - 1);
@@ -848,7 +836,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     return name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2) || '??';
   }
 
-<<<<<<< HEAD
   getConvPartnerId(conv: Conversation): number {
     return this.isOwner ? conv.client.id : conv.owner.id;
   }
@@ -857,51 +844,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     return this.onlineUsers.has(this.getConvPartnerId(conv));
   }
 
-  // ── Review modal ──────────────────────────────────────────
-
-  openReviewModal(): void {
-    this.reviewForm = { estate: 0, rating: 0, comment: '' };
-    this.hoverRating = 0;
-    this.showReviewModal = true;
-  }
-
-  closeReviewModal(): void { this.showReviewModal = false; }
-
-  setRating(r: number): void { this.reviewForm.rating = r; }
-  setHover(r: number): void { this.hoverRating = r; }
-  clearHover(): void { this.hoverRating = 0; }
-
-  submitReview(): void {
-    if (!this.reviewForm.estate || !this.reviewForm.rating || !this.reviewForm.comment.trim()) {
-      this.showToast('Veuillez remplir tous les champs.', 'error');
-      return;
-    }
-    const name = this.currentUser?.name || 'Anonyme';
-    this.estateService.createReview({
-      estate: this.reviewForm.estate,
-      name,
-      rating: this.reviewForm.rating,
-      comment: this.reviewForm.comment,
-    }).subscribe({
-      next: () => {
-        this.showToast('Avis publié avec succès !', 'success');
-        this.closeReviewModal();
-        this.loadClientData();
-      },
-      error: () => this.showToast('Erreur lors de la publication.', 'error')
-    });
-  }
-
-  deleteReview(review: Review): void {
-    if (!confirm('Supprimer cet avis ?')) return;
-    this.estateService.deleteReview(review.id).subscribe({
-      next: () => { this.showToast('Avis supprimé.', 'success'); this.loadClientData(); },
-      error: () => this.showToast('Erreur lors de la suppression.', 'error')
-    });
-  }
-
-=======
->>>>>>> 8819bfaae45df2e7d0224db9df32cea642789ba3
   // ── Helpers ───────────────────────────────────────────────
 
   formatDate(dateStr?: string): string {
