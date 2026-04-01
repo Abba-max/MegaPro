@@ -289,7 +289,7 @@ class QuickOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model  = QuickOrder
         fields = ['id', 'estate', 'estate_name', 'estate_image', 'estate_location',
-                  'room_category', 'room_category_name',
+                  'room_category','estate_price', 'room_category_name',
                   'name', 'phone', 'note', 'created_at']
 
     def get_estate_image(self, obj):
