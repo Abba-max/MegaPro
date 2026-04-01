@@ -1,4 +1,4 @@
-// src/app/services/auth.service.ts
+
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, Subject, tap, throwError, catchError } from 'rxjs';
@@ -113,6 +113,26 @@ export class AuthService {
           this.fetchMe().subscribe();
         } else if (access) {
           // refresh-less response (should not happen but guard anyway)
+          localStorage.setItem(ACCESS_KEY, access);
+          this.fetchMe().subscribe();
+        }
+      })
+    );
+  }
+
+  /**
+   * Register using FormData (multipart) — required when id_card file is included.
+   * Used for Owner registrations; falls back gracefully for other roles too.
+   */
+  registerFormData(formData: FormData): Observable<any> {
+    return this.http.post<any>(`${this.BASE}/auth/register/`, formData).pipe(
+      tap(res => {
+        const access  = res.access  ?? res.tokens?.access;
+        const refresh = res.refresh ?? res.tokens?.refresh;
+        if (access && refresh) {
+          this.storeTokens(access, refresh);
+          this.fetchMe().subscribe();
+        } else if (access) {
           localStorage.setItem(ACCESS_KEY, access);
           this.fetchMe().subscribe();
         }

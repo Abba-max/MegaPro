@@ -16,7 +16,6 @@ export class LayoutComponent implements OnInit {
   sidebarOpen = false;
   currentUser: User | null = null;
   isAdmin = false;
-  // Always false for authenticated layout — full nav hidden, only Home link shown
   readonly isPublic = false;
 
   constructor(private authService: AuthService) {}
@@ -26,13 +25,16 @@ export class LayoutComponent implements OnInit {
       this.currentUser = user;
       this.isAdmin = user?.role === 'Admin';
     });
+    // Auto-open sidebar on large screens
+    if (window.innerWidth > 1024) this.sidebarOpen = false;
   }
 
   @HostListener('window:resize')
   onResize() {
+    // Close overlay-sidebar when viewport grows back past breakpoint
     if (window.innerWidth > 1024) this.sidebarOpen = false;
   }
 
   toggleSidebar() { this.sidebarOpen = !this.sidebarOpen; }
-  closeSidebar() { this.sidebarOpen = false; }
+  closeSidebar()  { this.sidebarOpen = false; }
 }

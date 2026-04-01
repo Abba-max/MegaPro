@@ -31,6 +31,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
     phone    = serializers.CharField(write_only=True, required=False, allow_blank=True, default='')
+    address  = serializers.CharField(write_only=True, required=False, allow_blank=True, default='')
     role     = serializers.ChoiceField(
         choices=['Student', 'Parent', 'Owner'], write_only=True, default='Student'
     )
@@ -38,7 +39,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = User
-        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'phone', 'role', 'id_card']
+        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'phone', 'address', 'role', 'id_card']
 
     def validate_password(self, value):
         from django.contrib.auth.password_validation import validate_password
@@ -60,14 +61,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        phone = validated_data.pop('phone', '')
-        role  = validated_data.pop('role', 'Student')
+        phone   = validated_data.pop('phone', '')
+        address = validated_data.pop('address', '')
+        role    = validated_data.pop('role', 'Student')
         user_type = 'owner' if role == 'Owner' else 'visitor'
         visitor_category = '1' if role == 'Student' else ('2' if role == 'Parent' else None)
         user = User.objects.create_user(
             **validated_data,
             user_type=user_type,
             contact=phone,
+            address=address,
             visitor_category=visitor_category,
             is_verified=False
         )

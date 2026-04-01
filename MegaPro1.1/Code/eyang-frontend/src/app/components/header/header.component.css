@@ -645,3 +645,269 @@
         width: calc(100vw - 1rem);
     }
 }
+/* ══════════════════════════════════════════════════════════════
+   MULTI-STEP SIGNUP STYLES
+══════════════════════════════════════════════════════════════ */
+
+/* ── Step indicator track ────────────────────────────────────── */
+.signup-steps {
+  padding: 0 1.5rem 1rem;
+  border-bottom: 1px solid #F3F4F6;
+  margin-bottom: 0.5rem;
+}
+.step-track {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+.step-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.step-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #F3F4F6;
+  border: 2px solid #E5E7EB;
+  color: #9CA3AF;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+.step-item.active .step-circle {
+  background: #EFF6FF;
+  border-color: #2563EB;
+  color: #2563EB;
+}
+.step-item.done .step-circle {
+  background: #2563EB;
+  border-color: #2563EB;
+  color: #fff;
+}
+.step-check-icon {
+  display: inline-flex !important;
+  width: 14px !important;
+  height: 14px !important;
+}
+.step-check-icon svg { width: 14px !important; height: 14px !important; }
+.step-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9CA3AF;
+  letter-spacing: 0.02em;
+}
+.step-item.active .step-label,
+.step-item.done .step-label { color: #2563EB; }
+.step-line {
+  flex: 1;
+  height: 2px;
+  background: #E5E7EB;
+  margin: 0 8px;
+  margin-bottom: 16px;
+  transition: background 0.2s ease;
+}
+.step-line.done { background: #2563EB; }
+
+/* ── Step subtitle ────────────────────────────────────────────── */
+.signup-step-subtitle {
+  font-size: 13px;
+  color: #6B7280;
+  margin: 2px 0 0;
+}
+
+/* ── Step nav buttons row ─────────────────────────────────────── */
+.form-step-nav {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+.form-step-nav .btn { flex: 1; }
+.btn-outline {
+  background: #fff;
+  border: 1.5px solid #D1D5DB;
+  color: #374151;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.btn-outline:hover { border-color: #9CA3AF; background: #F9FAFB; }
+.btn-icon-right, .btn-icon-left {
+  display: inline-flex !important;
+  width: 15px !important;
+  height: 15px !important;
+}
+.btn-icon-right svg, .btn-icon-left svg { width: 15px !important; height: 15px !important; display: block; }
+
+/* ── Password field with show/hide toggle ─────────────────────── */
+.input-password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-password-wrap .input { padding-right: 2.75rem; }
+.toggle-pw-btn {
+  position: absolute;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9CA3AF;
+  padding: 0;
+  display: flex;
+  align-items: center;
+}
+.toggle-pw-btn:hover { color: #4B5563; }
+.pw-eye-icon {
+  display: inline-flex !important;
+  width: 17px !important;
+  height: 17px !important;
+}
+.pw-eye-icon svg { width: 17px !important; height: 17px !important; }
+
+/* ── Password strength bar ────────────────────────────────────── */
+.pw-strength {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+.pw-bar {
+  flex: 1;
+  height: 4px;
+  background: #E5E7EB;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.pw-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.3s ease, background 0.3s ease;
+}
+.pw-weak   .pw-fill { background: #EF4444; }
+.pw-fair   .pw-fill { background: #F59E0B; }
+.pw-good   .pw-fill { background: #3B82F6; }
+.pw-strong .pw-fill { background: #10B981; }
+.pw-label { font-size: 11px; font-weight: 600; }
+.pw-text-weak   { color: #EF4444; }
+.pw-text-fair   { color: #F59E0B; }
+.pw-text-good   { color: #3B82F6; }
+.pw-text-strong { color: #10B981; }
+
+/* ── Owner notice banner ──────────────────────────────────────── */
+.owner-notice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  background: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 13px;
+  color: #1E40AF;
+  line-height: 1.5;
+}
+.owner-notice-icon {
+  display: inline-flex !important;
+  width: 18px !important;
+  height: 18px !important;
+  flex-shrink: 0;
+  color: #2563EB;
+  margin-top: 1px;
+}
+.owner-notice-icon svg { width: 18px !important; height: 18px !important; }
+
+/* ── ID card upload area ──────────────────────────────────────── */
+.id-upload-area {
+  border: 2px dashed #D1D5DB;
+  border-radius: 12px;
+  padding: 1.5rem 1rem;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+}
+.id-upload-area:hover { border-color: #2563EB; background: #F8FAFF; }
+.id-upload-area.has-file { border-color: #10B981; border-style: solid; background: #F0FDF4; cursor: default; }
+.upload-icon {
+  display: inline-flex !important;
+  width: 32px !important;
+  height: 32px !important;
+  color: #9CA3AF;
+  margin-bottom: 8px;
+}
+.upload-icon svg { width: 32px !important; height: 32px !important; }
+.upload-main-text { font-size: 14px; font-weight: 600; color: #374151; margin: 0 0 4px; }
+.upload-sub-text { font-size: 12px; color: #9CA3AF; margin: 0; }
+.upload-link { color: #2563EB; font-weight: 600; }
+
+.upload-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.id-preview-img {
+  max-height: 80px;
+  max-width: 100%;
+  border-radius: 6px;
+  object-fit: contain;
+  border: 1px solid #D1FAE5;
+}
+.upload-file-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #065F46;
+}
+.upload-ok-icon {
+  display: inline-flex !important;
+  width: 16px !important;
+  height: 16px !important;
+  color: #10B981;
+}
+.upload-ok-icon svg { width: 16px !important; height: 16px !important; }
+.upload-filename { font-weight: 600; }
+.upload-filesize { color: #6B7280; font-size: 11px; }
+.upload-remove-btn {
+  background: #FEE2E2;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #DC2626;
+  transition: background 0.15s;
+}
+.upload-remove-btn:hover { background: #FECACA; }
+
+/* ── Required star ────────────────────────────────────────────── */
+.required-star { color: #EF4444; margin-left: 2px; }
+
+/* ── Account type button with description ─────────────────────── */
+.account-type-btn small {
+  display: block;
+  font-size: 10px;
+  font-weight: 400;
+  color: #9CA3AF;
+  margin-top: 2px;
+}
+.account-type-btn.active small { color: rgba(37,99,235,0.7); }
+.account-type-btn.owner-btn.active small { color: rgba(245,158,11,0.8); }

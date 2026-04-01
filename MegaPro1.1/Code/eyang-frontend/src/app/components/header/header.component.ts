@@ -1,4 +1,3 @@
-
 import { Component, Input, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
@@ -12,7 +11,7 @@ import {
   Home, Settings, LayoutDashboard, X,
   GraduationCap, Users, Building, Globe,
   CheckCheck, Trash2, MessageCircle, Star, Calendar, Shield, Info,
-  ArrowLeft
+  ArrowLeft, Eye, EyeOff, Upload, CheckCircle, Check
 } from 'lucide-angular';
 import { AuthService, User } from '../../services/auth.service';
 import { NotificationService, AppNotification } from '../../services/notification.service';
@@ -50,6 +49,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   readonly ShieldIcon = Shield;
   readonly InfoIcon = Info;
   readonly ArrowLeftIcon = ArrowLeft;
+  readonly EyeIcon = Eye;
+  readonly EyeOffIcon = EyeOff;
+  readonly UploadIcon = Upload;
+  readonly CheckCircleIcon = CheckCircle;
+  readonly CheckIcon = Check;
 
   // User state
   currentUser: User | null = null;
@@ -75,9 +79,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
   loginError = '';
 
   // Signup form
+  signupStep = 1;
+  showPassword = false;
+  idCardPreview: string | null = null;
+
   signupForm = {
     firstName: '', lastName: '', email: '',
-    phone: '', password: '',
+    phone: '', password: '', username: '',
+    address: '', idCardFile: null as File | null,
     accountType: 'Student' as 'Student' | 'Parent' | 'Owner'
   };
   signupError = '';
@@ -207,7 +216,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
   openLogin(): void { this.authService.openLogin(); }
   closeLogin(): void { this.authService.closeLogin(); }
   openSignup(): void { this.showSignupModal = true; this.authService.closeLogin(); }
-  closeSignup(): void { this.showSignupModal = false; this.signupError = ''; this.resetSignupForm(); }
+  closeSignup(): void {
+    this.showSignupModal = false;
+    this.signupError = '';
+    this.signupStep = 1;
+    this.showPassword = false;
+    this.idCardPreview = null;
+    this.resetSignupForm();
+  }
   switchToSignup(): void { this.closeLogin(); this.openSignup(); }
   switchToLogin(): void { this.closeSignup(); this.openLogin(); }
 
@@ -244,24 +260,108 @@ export class HeaderComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ── Password strength ──────────────────────────────────────────
+  get passwordStrength(): { level: string; label: string; pct: number } {
+    const pw = this.signupForm.password;
+    if (!pw) return { level: 'empty', label: '', pct: 0 };
+    let score = 0;
+    if (pw.length >= 8)             score++;
+    if (/[A-Z]/.test(pw))           score++;
+    if (/[0-9]/.test(pw))           score++;
+    if (/[^A-Za-z0-9]/.test(pw))   score++;
+    const levels = [
+      { level: 'weak',   label: 'Faible',    pct: 25 },
+      { level: 'fair',   label: 'Moyen',     pct: 50 },
+      { level: 'good',   label: 'Bien',      pct: 75 },
+      { level: 'strong', label: 'Fort',      pct: 100 },
+    ];
+    return levels[Math.max(0, score - 1)];
+  }
+
+  // ── Step navigation ────────────────────────────────────────────
+  nextStep(): void {
+    this.signupError = '';
+    if (this.signupStep === 1) {
+      if (!this.signupForm.email || !this.signupForm.username || !this.signupForm.password) {
+        this.signupError = 'Veuillez remplir tous les champs obligatoires.';
+        return;
+      }
+      this.signupStep = 2;
+    } else if (this.signupStep === 2) {
+      if (!this.signupForm.firstName || !this.signupForm.lastName) {
+        this.signupError = 'Veuillez renseigner votre prénom et nom.';
+        return;
+      }
+      if (this.signupForm.accountType === 'Owner') {
+        this.signupStep = 3;
+      } else {
+        this.handleSignup();
+      }
+    }
+  }
+
+  prevStep(): void {
+    if (this.signupStep > 1) this.signupStep--;
+    this.signupError = '';
+  }
+
+  // ── ID card upload ─────────────────────────────────────────────
+  onIdCardChange(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (file) this.setIdCardFile(file);
+  }
+
+  onIdCardDrop(event: DragEvent): void {
+    event.preventDefault();
+    const file = event.dataTransfer?.files?.[0];
+    if (file) this.setIdCardFile(file);
+  }
+
+  private setIdCardFile(file: File): void {
+    if (file.size > 5 * 1024 * 1024) {
+      this.signupError = 'Le fichier dépasse la taille maximale de 5 Mo.';
+      return;
+    }
+    this.signupForm.idCardFile = file;
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => { this.idCardPreview = e.target?.result as string; };
+      reader.readAsDataURL(file);
+    } else {
+      this.idCardPreview = null;
+    }
+  }
+
+  removeIdCard(): void {
+    this.signupForm.idCardFile = null;
+    this.idCardPreview = null;
+  }
+
   handleSignup(): void {
     this.signupError = '';
     const f = this.signupForm;
-    if (!f.firstName || !f.lastName || !f.email || !f.password) {
-      this.signupError = this.currentLang === 'fr'
-        ? 'Veuillez remplir tous les champs obligatoires.'
-        : 'Please fill in all required fields.';
+
+    if (f.accountType === 'Owner' && !f.idCardFile) {
+      this.signupError = 'Veuillez télécharger votre pièce d\'identité.';
       return;
     }
+
     this.isSigningUp = true;
-    this.authService.register({
-      email: f.email,
-      password: f.password,
-      first_name: f.firstName,
-      last_name: f.lastName,
-      phone: f.phone,
-      role: f.accountType        // Django expects 'role', not 'accountType'
-    }).subscribe({
+
+    // Build FormData so the id_card image can be sent as multipart
+    const formData = new FormData();
+    formData.append('email',      f.email);
+    formData.append('username',   f.username);
+    formData.append('password',   f.password);
+    formData.append('first_name', f.firstName);
+    formData.append('last_name',  f.lastName);
+    formData.append('phone',      f.phone);
+    formData.append('role',       f.accountType);
+    if (f.address)    formData.append('address', f.address);
+    if (f.idCardFile) formData.append('id_card', f.idCardFile, f.idCardFile.name);
+
+    this.authService.registerFormData(formData).subscribe({
       next: () => {
         this.closeSignup();
         this.authService.currentUser$.pipe(filter(u => u !== null), take(1)).subscribe(user => {
@@ -275,12 +375,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
       },
       error: (err: any) => {
         this.isSigningUp = false;
-        // Collect all field errors from Django validation response
         const errors = err?.error;
         if (errors && typeof errors === 'object') {
-          const messages = Object.values(errors)
-            .map((v: any) => (Array.isArray(v) ? v[0] : v))
-            .join(' ');
+          const messages = Object.entries(errors)
+            .map(([k, v]: [string, any]) => {
+              const label: Record<string, string> = {
+                email: 'Email', username: 'Nom d\'utilisateur',
+                password: 'Mot de passe', id_card: 'Pièce d\'identité'
+              };
+              return `${label[k] ?? k} : ${Array.isArray(v) ? v[0] : v}`;
+            }).join(' | ');
           this.signupError = messages;
         } else {
           this.signupError = this.currentLang === 'fr'
@@ -302,7 +406,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private resetSignupForm(): void {
     this.signupForm = {
       firstName: '', lastName: '', email: '',
-      phone: '', password: '', accountType: 'Student'
+      phone: '', password: '', username: '',
+      address: '', idCardFile: null,
+      accountType: 'Student'
     };
   }
 }

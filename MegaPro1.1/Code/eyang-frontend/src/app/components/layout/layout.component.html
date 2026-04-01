@@ -1,27 +1,38 @@
 <div class="app-layout">
-    <!-- Mobile Sidebar Overlay (Admin only) -->
-    <div class="sidebar-overlay" *ngIf="isAdmin && sidebarOpen" (click)="closeSidebar()"></div>
 
-    <!-- Sidebar (Admin only) -->
-    <aside class="sidebar" [class.open]="isAdmin && sidebarOpen" *ngIf="isAdmin">
-        <app-sidebar [isOpen]="sidebarOpen"></app-sidebar>
-    </aside>
+  <!-- ── Dark overlay (mobile/tablet only, admin sidebar) ── -->
+  <div class="sidebar-overlay"
+       *ngIf="isAdmin && sidebarOpen"
+       (click)="closeSidebar()">
+  </div>
 
-    <div class="main-wrapper" [class.with-sidebar]="isAdmin">
-        <!-- Mobile Menu Toggle (Admin only) -->
-        <button class="mobile-menu-toggle" (click)="toggleSidebar()" *ngIf="isAdmin && !sidebarOpen">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <line x1="3" y1="6" x2="21" y2="6"></line>
-                <line x1="3" y1="12" x2="21" y2="12"></line>
-                <line x1="3" y1="18" x2="21" y2="18"></line>
-            </svg>
-        </button>
+  <!-- ── Sidebar (Admin only) ─────────────────────────────── -->
+  <app-sidebar
+    *ngIf="isAdmin"
+    [isOpen]="sidebarOpen"
+    (closeRequest)="closeSidebar()">
+  </app-sidebar>
 
-        <!-- isPublic is route-based: false on /dashboard and /admin/* -->
-        <app-header [isAdmin]="isAdmin" [isPublic]="isPublic"></app-header>
+  <!-- ── Main wrapper ──────────────────────────────────────── -->
+  <div class="main-wrapper" [class.with-sidebar]="isAdmin">
 
-        <main class="content-area">
-            <router-outlet></router-outlet>
-        </main>
-    </div>
+    <!-- Hamburger button – only on ≤1024 px, admin only -->
+    <button class="mobile-menu-toggle"
+            *ngIf="isAdmin"
+            (click)="toggleSidebar()"
+            [class.toggle-open]="sidebarOpen"
+            aria-label="Toggle menu">
+      <!-- Animated bars → X -->
+      <span class="ham-bar bar-top"    [class.open]="sidebarOpen"></span>
+      <span class="ham-bar bar-mid"    [class.open]="sidebarOpen"></span>
+      <span class="ham-bar bar-bottom" [class.open]="sidebarOpen"></span>
+    </button>
+
+    <app-header [isAdmin]="isAdmin" [isPublic]="isPublic"></app-header>
+
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
 </div>

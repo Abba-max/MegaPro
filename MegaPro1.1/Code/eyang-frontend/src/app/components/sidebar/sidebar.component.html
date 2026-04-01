@@ -1,73 +1,80 @@
 <aside class="sidebar" [class.open]="isOpen">
-    <div class="sidebar-header">
-        <div class="admin-badge">
-            <lucide-icon [img]="DashboardIcon" class="icon-xs"></lucide-icon>
-            <span>{{ 'nav.admin' | translate }}</span>
-        </div>
+
+  <!-- Mobile close button (×) inside sidebar top-right -->
+  <button class="sidebar-close-btn" (click)="navClick()" aria-label="Fermer le menu">
+    <lucide-icon [img]="XIcon" class="sidebar-close-ico"></lucide-icon>
+  </button>
+
+  <div class="sidebar-header">
+    <div class="admin-badge">
+      <lucide-icon [img]="DashboardIcon" class="icon-xs"></lucide-icon>
+      <span>{{ 'nav.admin' | translate }}</span>
     </div>
+  </div>
 
-    <nav class="sidebar-nav">
-        <ul class="nav-links">
-            <li>
-                <a routerLink="/admin/overview" routerLinkActive="active" class="nav-link">
-                    <lucide-icon [img]="DashboardIcon" class="nav-icon"></lucide-icon>
-                    <span>{{ 'sidebar.overview' | translate }}</span>
-                </a>
-            </li>
-            <li>
-                <a routerLink="/admin/users" routerLinkActive="active" class="nav-link">
-                    <lucide-icon [img]="UsersIcon" class="nav-icon"></lucide-icon>
-                    <span>{{ 'sidebar.users' | translate }}</span>
-                </a>
-            </li>
-            <li>
-                <a routerLink="/admin/verification" routerLinkActive="active" class="nav-link">
-                    <lucide-icon [img]="ShieldIcon" class="nav-icon"></lucide-icon>
-                    <span>{{ 'sidebar.verification' | translate }}</span>
-                </a>
-            </li>
-            <li>
-                <a routerLink="/admin/logements" routerLinkActive="active" class="nav-link">
-                    <lucide-icon [img]="HomeIcon" class="nav-icon"></lucide-icon>
-                    <span>{{ 'sidebar.logements' | translate }}</span>
-                </a>
-            </li>
-            <li>
-                <a routerLink="/admin/bookings" routerLinkActive="active" class="nav-link">
-                    <lucide-icon [img]="CalendarIcon" class="nav-icon"></lucide-icon>
-                    <span>{{ 'sidebar.bookings' | translate }}</span>
-                </a>
-            </li>
-            <li>
-                <a routerLink="/admin/reviews" routerLinkActive="active" class="nav-link">
-                    <lucide-icon [img]="StarIcon" class="nav-icon"></lucide-icon>
-                    <span>{{ 'sidebar.reviews' | translate }}</span>
-                </a>
-            </li>
-            <li>
-                <a routerLink="/admin/reports" routerLinkActive="active" class="nav-link">
-                    <lucide-icon [img]="ReportsIcon" class="nav-icon"></lucide-icon>
-                    <span>{{ 'sidebar.reports' | translate }}</span>
-                </a>
-            </li>
-            <li>
-                <a routerLink="/admin/settings" routerLinkActive="active" class="nav-link">
-                    <lucide-icon [img]="SettingsIcon" class="nav-icon"></lucide-icon>
-                    <span>{{ 'sidebar.settings' | translate }}</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
-
-    <div class="sidebar-footer">
-        <div class="menu-divider"></div>
-        <a routerLink="/" class="footer-btn primary-btn">
-            <lucide-icon [img]="GlobeIcon" class="nav-icon"></lucide-icon>
-            <span>{{ 'sidebar.back_to_site' | translate }}</span>
+  <nav class="sidebar-nav">
+    <ul class="nav-links">
+      <li>
+        <a routerLink="/admin/overview" routerLinkActive="active" class="nav-link" (click)="navClick()">
+          <lucide-icon [img]="DashboardIcon" class="nav-icon"></lucide-icon>
+          <span>{{ 'sidebar.overview' | translate }}</span>
         </a>
-        <button class="footer-btn" (click)="onLogout()">
-            <lucide-icon [img]="LogOutIcon" class="nav-icon"></lucide-icon>
-            <span>{{ 'nav.logout' | translate }}</span>
-        </button>
-    </div>
+      </li>
+      <li>
+        <a routerLink="/admin/users" routerLinkActive="active" class="nav-link" (click)="navClick()">
+          <lucide-icon [img]="UsersIcon" class="nav-icon"></lucide-icon>
+          <span>{{ 'sidebar.users' | translate }}</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/verification" routerLinkActive="active" class="nav-link" (click)="navClick()">
+          <lucide-icon [img]="ShieldIcon" class="nav-icon"></lucide-icon>
+          <span>{{ 'sidebar.verification' | translate }}</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/logements" routerLinkActive="active" class="nav-link" (click)="navClick()">
+          <lucide-icon [img]="HomeIcon" class="nav-icon"></lucide-icon>
+          <span>{{ 'sidebar.logements' | translate }}</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/bookings" routerLinkActive="active" class="nav-link" (click)="navClick()">
+          <lucide-icon [img]="CalendarIcon" class="nav-icon"></lucide-icon>
+          <span>{{ 'sidebar.bookings' | translate }}</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/reviews" routerLinkActive="active" class="nav-link" (click)="navClick()">
+          <lucide-icon [img]="StarIcon" class="nav-icon"></lucide-icon>
+          <span>{{ 'sidebar.reviews' | translate }}</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/reports" routerLinkActive="active" class="nav-link" (click)="navClick()">
+          <lucide-icon [img]="ReportsIcon" class="nav-icon"></lucide-icon>
+          <span>{{ 'sidebar.reports' | translate }}</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/settings" routerLinkActive="active" class="nav-link" (click)="navClick()">
+          <lucide-icon [img]="SettingsIcon" class="nav-icon"></lucide-icon>
+          <span>{{ 'sidebar.settings' | translate }}</span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="menu-divider"></div>
+    <a routerLink="/" class="footer-btn primary-btn" (click)="navClick()">
+      <lucide-icon [img]="GlobeIcon" class="nav-icon"></lucide-icon>
+      <span>{{ 'sidebar.back_to_site' | translate }}</span>
+    </a>
+    <button class="footer-btn" (click)="onLogout()">
+      <lucide-icon [img]="LogOutIcon" class="nav-icon"></lucide-icon>
+      <span>{{ 'nav.logout' | translate }}</span>
+    </button>
+  </div>
+
 </aside>

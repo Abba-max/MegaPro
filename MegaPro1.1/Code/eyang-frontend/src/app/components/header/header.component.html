@@ -192,66 +192,203 @@
   </div>
 </div>
 
-<!-- ══ Signup Modal ══ -->
+<!-- ══ Signup Modal — Multi-step ══ -->
 <div class="modal-overlay fade-in" *ngIf="showSignupModal" (click)="closeSignup()">
   <div class="modal-card signup-modal" (click)="$event.stopPropagation()">
     <button class="close-btn" (click)="closeSignup()">
       <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
     </button>
+
+    <!-- Step indicator -->
+    <div class="signup-steps">
+      <div class="step-track">
+        <div class="step-item" [class.active]="signupStep >= 1" [class.done]="signupStep > 1">
+          <div class="step-circle">
+            <lucide-icon *ngIf="signupStep > 1" [img]="CheckIcon" class="step-check-icon"></lucide-icon>
+            <span *ngIf="signupStep <= 1">1</span>
+          </div>
+          <span class="step-label">Compte</span>
+        </div>
+        <div class="step-line" [class.done]="signupStep > 1"></div>
+        <div class="step-item" [class.active]="signupStep >= 2" [class.done]="signupStep > 2">
+          <div class="step-circle">
+            <lucide-icon *ngIf="signupStep > 2" [img]="CheckIcon" class="step-check-icon"></lucide-icon>
+            <span *ngIf="signupStep <= 2">2</span>
+          </div>
+          <span class="step-label">Profil</span>
+        </div>
+        <ng-container *ngIf="signupForm.accountType === 'Owner'">
+          <div class="step-line" [class.done]="signupStep > 2"></div>
+          <div class="step-item" [class.active]="signupStep >= 3">
+            <div class="step-circle"><span>3</span></div>
+            <span class="step-label">Bailleur</span>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+
     <div class="modal-header">
       <h2>{{ 'auth.signup_title' | translate }}</h2>
+      <p class="signup-step-subtitle">
+        <ng-container *ngIf="signupStep === 1">Choisissez votre type de compte</ng-container>
+        <ng-container *ngIf="signupStep === 2">Vos informations personnelles</ng-container>
+        <ng-container *ngIf="signupStep === 3">Informations et document du bailleur</ng-container>
+      </p>
     </div>
+
     <div class="modal-body">
-      <div class="form-row">
+
+      <!-- ═══ STEP 1: Account type + credentials ═══ -->
+      <ng-container *ngIf="signupStep === 1">
         <div class="form-group">
-          <label>{{ 'auth.firstname' | translate }}</label>
-          <input type="text" [(ngModel)]="signupForm.firstName" [placeholder]="'auth.firstname_placeholder' | translate"
-            class="input">
+          <label>{{ 'auth.account_type' | translate }}</label>
+          <div class="account-type-selector">
+            <button class="account-type-btn" [class.active]="signupForm.accountType === 'Student'"
+              (click)="signupForm.accountType = 'Student'">
+              <lucide-icon [img]="GraduationCapIcon" class="account-icon"></lucide-icon>
+              <span>{{ 'auth.student' | translate }}</span>
+              <small>Étudiant cherchant un logement</small>
+            </button>
+            <button class="account-type-btn" [class.active]="signupForm.accountType === 'Parent'"
+              (click)="signupForm.accountType = 'Parent'">
+              <lucide-icon [img]="UsersIcon" class="account-icon"></lucide-icon>
+              <span>{{ 'auth.parent' | translate }}</span>
+              <small>Parent d'un étudiant</small>
+            </button>
+            <button class="account-type-btn owner-btn" [class.active]="signupForm.accountType === 'Owner'"
+              (click)="signupForm.accountType = 'Owner'">
+              <lucide-icon [img]="BuildingIcon" class="account-icon"></lucide-icon>
+              <span>{{ 'auth.owner' | translate }}</span>
+              <small>Propriétaire ou bailleur</small>
+            </button>
+          </div>
         </div>
-        <div class="form-group">
-          <label>{{ 'auth.lastname' | translate }}</label>
-          <input type="text" [(ngModel)]="signupForm.lastName" [placeholder]="'auth.lastname_placeholder' | translate"
-            class="input">
+
+        <div class="form-group mt-4">
+          <label>{{ 'auth.email' | translate }}</label>
+          <input type="email" [(ngModel)]="signupForm.email"
+            [placeholder]="'auth.email_placeholder' | translate" class="input">
         </div>
-      </div>
-      <div class="form-group mt-4">
-        <label>{{ 'auth.email' | translate }}</label>
-        <input type="email" [(ngModel)]="signupForm.email" [placeholder]="'auth.email_placeholder' | translate" class="input">
-      </div>
-      <div class="form-group mt-4">
-        <label>{{ 'auth.phone' | translate }}</label>
-        <input type="tel" [(ngModel)]="signupForm.phone" [placeholder]="'auth.phone_placeholder' | translate" class="input">
-      </div>
-      <div class="form-group mt-4">
-        <label>{{ 'auth.password' | translate }}</label>
-        <input type="password" [(ngModel)]="signupForm.password" [placeholder]="'auth.password_placeholder' | translate"
-          class="input">
-      </div>
-      <div class="form-group mt-4">
-        <label>{{ 'auth.account_type' | translate }}</label>
-        <div class="account-type-selector">
-          <button class="account-type-btn" [class.active]="signupForm.accountType === 'Student'"
-            (click)="signupForm.accountType = 'Student'">
-            <lucide-icon [img]="GraduationCapIcon" class="account-icon"></lucide-icon>
-            <span>{{ 'auth.student' | translate }}</span>
+        <div class="form-group mt-3">
+          <label>Nom d'utilisateur</label>
+          <input type="text" [(ngModel)]="signupForm.username"
+            placeholder="ex: Abba Adji" class="input">
+        </div>
+        <div class="form-group mt-3">
+          <label>{{ 'auth.password' | translate }}</label>
+          <div class="input-password-wrap">
+            <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="signupForm.password"
+              [placeholder]="'auth.password_placeholder' | translate" class="input">
+            <button type="button" class="toggle-pw-btn" (click)="showPassword = !showPassword">
+              <lucide-icon [img]="showPassword ? EyeOffIcon : EyeIcon" class="pw-eye-icon"></lucide-icon>
+            </button>
+          </div>
+          <div class="pw-strength" *ngIf="signupForm.password">
+            <div class="pw-bar" [class]="'pw-' + passwordStrength.level">
+              <div class="pw-fill" [style.width]="passwordStrength.pct + '%'"></div>
+            </div>
+            <span class="pw-label" [class]="'pw-text-' + passwordStrength.level">{{ passwordStrength.label }}</span>
+          </div>
+        </div>
+
+        <div class="error-msg" *ngIf="signupError">{{ signupError }}</div>
+        <button class="btn btn-primary w-full mt-5" (click)="nextStep()">
+          Continuer <lucide-icon [img]="ChevronRightIcon" class="btn-icon-right"></lucide-icon>
+        </button>
+      </ng-container>
+
+      <!-- ═══ STEP 2: Personal info ═══ -->
+      <ng-container *ngIf="signupStep === 2">
+        <div class="form-row">
+          <div class="form-group">
+            <label>{{ 'auth.firstname' | translate }}</label>
+            <input type="text" [(ngModel)]="signupForm.firstName"
+              [placeholder]="'auth.firstname_placeholder' | translate" class="input">
+          </div>
+          <div class="form-group">
+            <label>{{ 'auth.lastname' | translate }}</label>
+            <input type="text" [(ngModel)]="signupForm.lastName"
+              [placeholder]="'auth.lastname_placeholder' | translate" class="input">
+          </div>
+        </div>
+        <div class="form-group mt-3">
+          <label>{{ 'auth.phone' | translate }}</label>
+          <input type="tel" [(ngModel)]="signupForm.phone"
+            [placeholder]="'auth.phone_placeholder' | translate" class="input">
+        </div>
+
+        <div class="error-msg" *ngIf="signupError">{{ signupError }}</div>
+        <div class="form-step-nav">
+          <button class="btn btn-outline" (click)="prevStep()">
+            <lucide-icon [img]="ArrowLeftIcon" class="btn-icon-left"></lucide-icon> Retour
           </button>
-          <button class="account-type-btn" [class.active]="signupForm.accountType === 'Parent'"
-            (click)="signupForm.accountType = 'Parent'">
-            <lucide-icon [img]="UsersIcon" class="account-icon"></lucide-icon>
-            <span>{{ 'auth.parent' | translate }}</span>
-          </button>
-          <button class="account-type-btn owner-btn" [class.active]="signupForm.accountType === 'Owner'"
-            (click)="signupForm.accountType = 'Owner'">
-            <lucide-icon [img]="BuildingIcon" class="account-icon"></lucide-icon>
-            <span>{{ 'auth.owner' | translate }}</span>
+          <button class="btn btn-primary" (click)="nextStep()" [disabled]="isSigningUp">
+            <ng-container *ngIf="signupForm.accountType !== 'Owner'">
+              {{ isSigningUp ? '…' : ('auth.signup_btn' | translate) }}
+            </ng-container>
+            <ng-container *ngIf="signupForm.accountType === 'Owner'">
+              Continuer <lucide-icon [img]="ChevronRightIcon" class="btn-icon-right"></lucide-icon>
+            </ng-container>
           </button>
         </div>
-      </div>
-      <div class="error-msg" *ngIf="signupError">{{ signupError }}</div>
-      <button class="btn btn-primary w-full mt-6 py-4" (click)="handleSignup()" [disabled]="isSigningUp">
-        {{ isSigningUp ? '…' : ('auth.signup_btn' | translate) }}
-      </button>
-      <p class="auth-footer mt-6">
+      </ng-container>
+
+      <!-- ═══ STEP 3 (Owner only): Business info + ID card ═══ -->
+      <ng-container *ngIf="signupStep === 3">
+
+        <!-- Owner info notice -->
+        <div class="owner-notice">
+          <lucide-icon [img]="ShieldIcon" class="owner-notice-icon"></lucide-icon>
+          <p>En tant que bailleur, votre compte sera soumis à <strong>vérification</strong> par notre équipe avant d'être activé. Veuillez fournir des informations exactes.</p>
+        </div>
+
+        <div class="form-group mt-3">
+          <label>Adresse du bien / siège</label>
+          <input type="text" [(ngModel)]="signupForm.address"
+            placeholder="ex: Yaoundé, Biyem-Assi, rue des écoles" class="input">
+        </div>
+
+        <!-- ID Card upload -->
+        <div class="form-group mt-3">
+          <label>Pièce d'identité <span class="required-star">*</span></label>
+          <div class="id-upload-area" [class.has-file]="signupForm.idCardFile"
+            (click)="idCardInput.click()" (dragover)="$event.preventDefault()"
+            (drop)="onIdCardDrop($event)">
+            <input #idCardInput type="file" accept="image/*,.pdf"
+              (change)="onIdCardChange($event)" style="display:none">
+            <ng-container *ngIf="!signupForm.idCardFile">
+              <lucide-icon [img]="UploadIcon" class="upload-icon"></lucide-icon>
+              <p class="upload-main-text">Glissez votre pièce d'identité ici</p>
+              <p class="upload-sub-text">ou <span class="upload-link">parcourir</span> — JPG, PNG, PDF · max 5 Mo</p>
+            </ng-container>
+            <ng-container *ngIf="signupForm.idCardFile">
+              <div class="upload-preview">
+                <img *ngIf="idCardPreview" [src]="idCardPreview" class="id-preview-img" alt="Aperçu pièce">
+                <div class="upload-file-info">
+                  <lucide-icon [img]="CheckCircleIcon" class="upload-ok-icon"></lucide-icon>
+                  <span class="upload-filename">{{ signupForm.idCardFile.name }}</span>
+                  <span class="upload-filesize">{{ (signupForm.idCardFile.size / 1024 / 1024 | number:'1.1-1') }} Mo</span>
+                </div>
+                <button class="upload-remove-btn" type="button" (click)="removeIdCard(); $event.stopPropagation()">
+                  <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
+                </button>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+
+        <div class="error-msg" *ngIf="signupError">{{ signupError }}</div>
+        <div class="form-step-nav">
+          <button class="btn btn-outline" (click)="prevStep()">
+            <lucide-icon [img]="ArrowLeftIcon" class="btn-icon-left"></lucide-icon> Retour
+          </button>
+          <button class="btn btn-primary" (click)="handleSignup()" [disabled]="isSigningUp">
+            {{ isSigningUp ? 'Envoi en cours…' : 'Créer mon compte bailleur' }}
+          </button>
+        </div>
+      </ng-container>
+
+      <p class="auth-footer mt-5">
         {{ 'auth.already_account' | translate }}
         <span class="link" (click)="switchToLogin()">{{ 'auth.login_link' | translate }}</span>
       </p>

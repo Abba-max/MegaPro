@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
@@ -13,7 +13,8 @@ import {
   Settings,
   LogOut,
   Globe,
-  ShieldCheck
+  ShieldCheck,
+  X
 } from 'lucide-angular';
 import { AuthService } from '../../services/auth.service';
 
@@ -25,23 +26,30 @@ import { AuthService } from '../../services/auth.service';
   styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent {
-  @Input() isOpen = false;
+  @Input()  isOpen = false;
+  /** Emits when a nav link is clicked on mobile so the layout can close the sidebar */
+  @Output() closeRequest = new EventEmitter<void>();
 
   readonly DashboardIcon = LayoutDashboard;
-  readonly UsersIcon = Users;
-  readonly HomeIcon = Home;
-  readonly CalendarIcon = Calendar;
-  readonly StarIcon = Star;
-  readonly ReportsIcon = BarChart2;
-  readonly SettingsIcon = Settings;
-  readonly LogOutIcon = LogOut;
-  readonly GlobeIcon = Globe;
-  readonly ShieldIcon = ShieldCheck;
+  readonly UsersIcon     = Users;
+  readonly HomeIcon      = Home;
+  readonly CalendarIcon  = Calendar;
+  readonly StarIcon      = Star;
+  readonly ReportsIcon   = BarChart2;
+  readonly SettingsIcon  = Settings;
+  readonly LogOutIcon    = LogOut;
+  readonly GlobeIcon     = Globe;
+  readonly ShieldIcon    = ShieldCheck;
+  readonly XIcon         = X;
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(private authService: AuthService, private router: Router) {}
+
+  /** Call after every navigation link click on mobile */
+  navClick(): void { this.closeRequest.emit(); }
 
   onLogout(): void {
     this.authService.logout();
+    this.closeRequest.emit();
     this.router.navigate(['/']);
   }
 }

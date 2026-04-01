@@ -1426,3 +1426,135 @@ display: inline-flex !important;
   letter-spacing: 0.03em;
   margin-right: 4px;
 }
+/* ════════════════════════════════════════════════════════
+   CARD RATING — dynamic display
+════════════════════════════════════════════════════════ */
+.badge-rating {
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(15,23,42,.72); backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,.18);
+  color: #fff; border-radius: 20px; padding: 4px 10px;
+  font-size: 12px; font-weight: 700;
+}
+.badge-rating-count {
+  font-size: 11px; font-weight: 400; opacity: .75;
+}
+.icon-star { width: 12px; height: 12px; color: #FCD34D; }
+
+.card-rating-row {
+  align-items: center; gap: 5px;
+}
+.card-rating-stars { display: inline-flex; gap: 1px; font-size: 13px; line-height: 1; }
+.star-filled { color: #F59E0B; }
+.star-empty  { color: #D1D5DB; }
+.card-rating-label {
+  font-size: 12px; color: #64748B; font-weight: 600;
+}
+.card-no-rating .meta-text { color: #CBD5E1; font-style: italic; }
+.meta-gold { color: #F59E0B; }
+.meta-gray { color: #CBD5E1; }
+
+/* ════════════════════════════════════════════════════════
+   SITE FOOTER
+════════════════════════════════════════════════════════ */
+.site-footer {
+  background: linear-gradient(180deg, #0F172A 0%, #1E293B 100%);
+  color: #94A3B8;
+  padding: 4rem 2rem 0;
+  margin-top: 0;
+}
+
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 3rem;
+  padding-bottom: 3rem;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+/* Brand column */
+.footer-brand { }
+.footer-logo-row {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 1rem;
+}
+.footer-logo {
+  width: 44px; height: 44px; object-fit: contain; border-radius: 10px;
+  background: rgba(255,255,255,.06); padding: 4px;
+}
+.footer-brand-name {
+  font-size: 18px; font-weight: 800; color: #F1F5F9; letter-spacing: -.01em;
+}
+.footer-brand-desc {
+  font-size: 13.5px; line-height: 1.7; color: #64748B; max-width: 280px;
+}
+.footer-socials {
+  display: flex; gap: 10px; margin-top: 1.25rem;
+}
+.social-btn {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.1);
+  color: #94A3B8; text-decoration: none;
+  transition: background .2s, color .2s, transform .15s;
+}
+.social-btn:hover { transform: translateY(-3px); }
+.social-whatsapp:hover  { background: #25D366; color: #fff; border-color: #25D366; }
+.social-facebook:hover  { background: #1877F2; color: #fff; border-color: #1877F2; }
+.social-instagram:hover { background: linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888); color: #fff; border-color: transparent; }
+.social-icon { width: 18px; height: 18px; }
+
+/* Nav columns */
+.footer-links-group { }
+.footer-col-title {
+  font-size: 12px; font-weight: 800; text-transform: uppercase;
+  letter-spacing: .08em; color: #E2E8F0; margin-bottom: 1.25rem;
+}
+.footer-links {
+  list-style: none; padding: 0; margin: 0;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.footer-link {
+  font-size: 14px; color: #64748B; text-decoration: none; cursor: pointer;
+  transition: color .2s, transform .15s;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.footer-link:hover { color: #E2E8F0; transform: translateX(4px); }
+
+/* Bottom bar */
+.footer-bottom {
+  max-width: 1200px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 1.25rem 0;
+  font-size: 13px; color: #475569;
+  flex-wrap: wrap; gap: .75rem;
+}
+.footer-copy { }
+.footer-bottom-links { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.footer-bottom-link {
+  color: #475569; text-decoration: none; font-size: 13px;
+  transition: color .2s;
+}
+.footer-bottom-link:hover { color: #94A3B8; }
+.footer-dot { color: #334155; }
+
+/* ── Responsive footer ── */
+@media (max-width: 1024px) {
+  .footer-inner {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+  .footer-brand { grid-column: 1 / -1; }
+}
+
+@media (max-width: 640px) {
+  .site-footer { padding: 3rem 1.25rem 0; }
+  .footer-inner {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+  .footer-brand { grid-column: auto; }
+  .footer-bottom {
+    flex-direction: column; align-items: flex-start; gap: .5rem;
+  }
+}

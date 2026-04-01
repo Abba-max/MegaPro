@@ -22,7 +22,7 @@ import {
         <router-outlet></router-outlet>
       </main>
 
-      <!-- ════════════════ RICH FOOTER ════════════════ -->
+   
       <footer class="site-footer">
 
         <!-- TOP: columns -->
@@ -43,7 +43,7 @@ import {
                 </li>
                 <li>
                   <lucide-icon [img]="PhoneIcon" class="f-contact-icon"></lucide-icon>
-                  <span>+237 675193603/652552561/691380083</span>
+                  <span>+237 675193603/652552561</span>
                 </li>
                 <li>
                   <lucide-icon [img]="MailIcon" class="f-contact-icon"></lucide-icon>
@@ -56,8 +56,9 @@ import {
             <div class="f-col">
               <h4 class="f-col-title">{{ 'footer.nav_title' | translate }}</h4>
               <ul class="f-links">
-                <li><a routerLink="/">{{ 'footer.home' | translate }}</a></li>
-                <li><a routerLink="/" fragment="listings">{{ 'footer.listings' | translate }}</a></li>
+                <li><a routerLink="/" (click)="scrollTop()">{{ 'footer.hero' | translate }}</a></li>
+                <li><a (click)="scrollToSection('listings')">{{ 'footer.listings' | translate }}</a></li>
+                <li><a (click)="scrollToSection('why')">Pourquoi nous</a></li>
                 <li><a routerLink="/contact">{{ 'footer.contact' | translate }}</a></li>
               </ul>
             </div>
@@ -66,9 +67,10 @@ import {
             <div class="f-col">
               <h4 class="f-col-title">{{ 'footer.services_title' | translate }}</h4>
               <ul class="f-links">
-                <li><a routerLink="/">{{ 'footer.find_housing' | translate }}</a></li>
+                <li><a (click)="scrollToSection('listings')">{{ 'footer.find_housing' | translate }}</a></li>
                 <li><a routerLink="/dashboard">{{ 'footer.owner_space' | translate }}</a></li>
-                <li><a routerLink="/" fragment="faq">{{ 'footer.faq' | translate }}</a></li>
+                <li><a (click)="scrollToSection('faq')">{{ 'footer.faq' | translate }}</a></li>
+                <li><a href="mailto:contact@eyangestate.com">contact@eyangestate.com</a></li>
               </ul>
             </div>
 
@@ -86,16 +88,16 @@ import {
 
               <h4 class="f-col-title f-social-title">{{ 'footer.follow_us' | translate }}</h4>
               <div class="f-socials">
-                <a href="#" class="f-social-btn" aria-label="Facebook">
+                <a href="https://facebook.com/eyangestate" target="_blank" rel="noopener" class="f-social-btn" aria-label="Facebook">
                   <lucide-icon [img]="FacebookIcon" class="f-social-icon"></lucide-icon>
                 </a>
-                <a href="#" class="f-social-btn" aria-label="Instagram">
+                <a href="https://instagram.com/eyangestate" target="_blank" rel="noopener" class="f-social-btn" aria-label="Instagram">
                   <lucide-icon [img]="InstagramIcon" class="f-social-icon"></lucide-icon>
                 </a>
-                <a href="#" class="f-social-btn" aria-label="Twitter">
+                <a href="https://twitter.com/eyangestate" target="_blank" rel="noopener" class="f-social-btn" aria-label="Twitter">
                   <lucide-icon [img]="TwitterIcon" class="f-social-icon"></lucide-icon>
                 </a>
-                <a href="#" class="f-social-btn" aria-label="LinkedIn">
+                <a href="https://wa.me/237675193603" target="_blank" rel="noopener" class="f-social-btn" aria-label="WhatsApp">
                   <lucide-icon [img]="LinkedinIcon" class="f-social-icon"></lucide-icon>
                 </a>
               </div>
@@ -466,5 +468,12 @@ export class PublicLayoutComponent implements OnInit {
 
   scrollTop(): void {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  scrollToSection(name: string): void {
+    const el = document.querySelector(`.${name}-section`);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 }

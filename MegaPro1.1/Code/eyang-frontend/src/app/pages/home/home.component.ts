@@ -11,6 +11,7 @@ import {
   Maximize2, Navigation, BedDouble, Bed, X, Users
 } from 'lucide-angular';
 import { EstateService, Estate, PlatformStats } from '../../services/estate.service';
+import { AuthService } from '../../services/auth.service';
 
 export interface Toast {
   id: number;
@@ -69,7 +70,7 @@ export class HomeComponent implements OnInit {
   showAdvanced   = false;
   filterTv       = '';
   filterFridge   = '';
-  filterRoomSize = '';           // '1'=Villa '2'=Studio '3'=Chambre
+  filterRoomSize = '';
   filterMaxDist: number | null = null;
   filterMinPrice: number | null = null;
   filterMaxPrice: number | null = null;
@@ -86,20 +87,21 @@ export class HomeComponent implements OnInit {
   // ── FAQ ──────────────────────────────────────────────────
   faqs: { question: string; answer: string; open: boolean }[] = [];
 
+  /** Used in the footer copyright line */
+  readonly currentYear = new Date().getFullYear();
+
   constructor(
     private estateService: EstateService,
+    private authService: AuthService,
     private translate: TranslateService
   ) {}
 
   ngOnInit(): void {
     const lang = this.translate.currentLang || this.translate.defaultLang || 'fr';
 
-    // Always load estates and stats immediately — never wait for translations
     this.loadEstates();
     this.loadStats();
 
-    // Load FAQs: if translations are already loaded use them instantly,
-    // otherwise wait for them then build FAQs
     const alreadyLoaded = this.translate.instant('faq.q1') !== 'faq.q1';
     if (alreadyLoaded) {
       this.buildFaqs();
@@ -107,7 +109,6 @@ export class HomeComponent implements OnInit {
       this.translate.getTranslation(lang).subscribe(() => this.buildFaqs());
     }
 
-    // Rebuild FAQs and refresh housing list on every subsequent language change
     this.translate.onLangChange.subscribe(() => {
       this.buildFaqs();
       this.housings = [...this.housings];
@@ -173,7 +174,6 @@ export class HomeComponent implements OnInit {
     this.isLoading = true;
     this.estateService.getEstates(filters).subscribe({
       next: data => {
-        // Client-side filter for min free places (not in backend API)
         let result = data;
         if (this.filterMinFree > 0) {
           result = data.filter(h => h.free >= this.filterMinFree);
@@ -215,7 +215,6 @@ export class HomeComponent implements OnInit {
     this.filterMaxPrice = this.filterMaxPrice === val ? null : val;
   }
 
-  /** Count active filter criteria for the badge */
   get activeFilterCount(): number {
     let c = 0;
     if (this.filterWifi)       c++;
@@ -257,6 +256,10 @@ export class HomeComponent implements OnInit {
     return Array(Math.round(Number(rating))).fill(0);
   }
 
+  getEmptyStarArray(rating: string | number): number[] {
+    return Array(Math.max(0, 5 - Math.round(Number(rating)))).fill(0);
+  }
+
   getTimeAgo(dateStr: string | undefined): string {
     if (!dateStr) return '';
     const diffMs   = Date.now() - new Date(dateStr).getTime();
@@ -266,25 +269,42 @@ export class HomeComponent implements OnInit {
     const weeks = Math.floor(diffDays / 7);
     if (weeks < 4)      return this.translate.instant('listings.published_weeks_ago',  { weeks });
     const months = Math.floor(diffDays / 30);
-                        return this.translate.instant('listings.published_months_ago', { months });
+    return this.translate.instant('listings.published_months_ago', { months });
   }
 
   toggleFaq(index: number): void { this.faqs[index].open = !this.faqs[index].open; }
 
-  /** Returns up to 3 active features for a given estate, in priority order */
   getTopFeatures(h: Estate): { key: string; label: string }[] {
     const all: { key: string; label: string; active: boolean }[] = [
-      { key: 'wifi', label: 'filters.wifi_label', active: h.wifi === '1' },
-      { key: 'forage', label: 'filters.water', active: h.forage === '1' },
-      { key: 'generator', label: 'filters.generator', active: h.generator === '1' },
-      { key: 'restaurant', label: 'filters.restaurant', active: h.restaurant === '1' },
-      { key: 'tv', label: 'filters.tv_label', active: h.tv === '1' },
-      { key: 'fridge', label: 'filters.fridge_label', active: h.fridge === '1' },
+      { key: 'wifi',       label: 'filters.wifi_label',   active: h.wifi === '1' },
+      { key: 'forage',     label: 'filters.water',        active: h.forage === '1' },
+      { key: 'generator',  label: 'filters.generator',    active: h.generator === '1' },
+      { key: 'restaurant', label: 'filters.restaurant',   active: h.restaurant === '1' },
+      { key: 'tv',         label: 'filters.tv_label',     active: h.tv === '1' },
+      { key: 'fridge',     label: 'filters.fridge_label', active: h.fridge === '1' },
     ];
     return all.filter(f => f.active).slice(0, 3).map(({ key, label }) => ({ key, label }));
   }
 
   scrollToListings(): void {
     document.querySelector('.listings-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /**
+   * Footer scroll helper — works for section class names like
+   * 'listings', 'why', 'stats', 'testimonials', 'faq'
+   */
+  scrollToSection(name: string): void {
+    const selector = `.${name}-section`;
+    document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /** Open auth modals from the footer */
+  openLoginFromFooter(): void  { this.authService.openLogin(); }
+  openSignupFromFooter(): void {
+    // Re-use the header's signup flow via the auth service.
+    // The header listens to authService.openSignup$ if you have one;
+    // if not, open login and let the user switch — or directly dispatch:
+    this.authService.openLogin();
   }
 }
