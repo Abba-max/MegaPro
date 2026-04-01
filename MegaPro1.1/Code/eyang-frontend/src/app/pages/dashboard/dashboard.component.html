@@ -16,8 +16,8 @@
         </div>
         <p class="confirm-msg">{{ confirmMessage }}</p>
         <div class="confirm-actions">
-            <button class="btn-confirm-cancel" (click)="confirmNo()">Annuler</button>
-            <button class="btn-confirm-ok" (click)="confirmYes()">Confirmer</button>
+            <button class="btn-confirm-cancel" (click)="confirmNo()">{{ 'confirm.cancel' | translate }}</button>
+            <button class="btn-confirm-ok" (click)="confirmYes()">{{ 'confirm.confirm' | translate }}</button>
         </div>
     </div>
 </div>
@@ -158,7 +158,7 @@
                             <lucide-icon [img]="EditIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.edit' | translate }}
                         </button>
                         <button class="btn-edit" style="background:#0ea5e9; color:white; border-color:#0ea5e9; margin-right:0.5rem;" (click)="openManageRooms(e)">
-                            <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon> Chambres
+                            <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.tab_bookings' | translate }}
                         </button>
                         <button class="btn-delete" (click)="deleteEstate(e)">
                             <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
@@ -532,33 +532,33 @@
     <div class="modal-box modal-box-wide" (click)="$event.stopPropagation()">
         <button class="modal-close" (click)="closeEstateModal()"><lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon></button>
         <h2 class="modal-title">{{ isEditMode ? ('dashboard.modal_edit_title'|translate) : ('dashboard.modal_add_title'|translate) }}</h2>
-        <div class="form-group"><label>Nom *</label><input class="input" [(ngModel)]="estateForm.name" placeholder="Ex: Résidence Les Palmiers"></div>
+        <div class="form-group"><label>{{ 'dashboard.form_name' | translate }} *</label><input class="input" [(ngModel)]="estateForm.name" [placeholder]="'dashboard.form_name_ph' | translate"></div>
         <div class="form-row">
-            <div class="form-group"><label>Localisation *</label><input class="input" [(ngModel)]="estateForm.location" placeholder="Ex: Yaoundé, Soa"></div>
-            <div class="form-group"><label>Prix (FCFA/mois) *</label><input class="input" type="number" [(ngModel)]="estateForm.price" placeholder="35000"></div>
+            <div class="form-group"><label>{{ 'dashboard.form_location' | translate }} *</label><input class="input" [(ngModel)]="estateForm.location" [placeholder]="'dashboard.form_location_ph' | translate"></div>
+            <div class="form-group"><label>{{ 'dashboard.form_price' | translate }} *</label><input class="input" type="number" [(ngModel)]="estateForm.price" placeholder="35000"></div>
         </div>
         <div class="form-row">
-            <div class="form-group"><label>Capacité totale</label><input class="input" type="number" [(ngModel)]="estateForm.capacity" placeholder="10"></div>
-            <div class="form-group"><label>Places libres</label><input class="input" type="number" [(ngModel)]="estateForm.free" placeholder="5"></div>
+            <div class="form-group"><label>{{ 'dashboard.form_capacity' | translate }}</label><input class="input" type="number" [(ngModel)]="estateForm.capacity" placeholder="10"></div>
+            <div class="form-group"><label>{{ 'dashboard.form_free' | translate }}</label><input class="input" type="number" [(ngModel)]="estateForm.free" placeholder="5"></div>
         </div>
         <div class="form-row">
-            <div class="form-group"><label>Distance campus (m)</label><input class="input" [(ngModel)]="distanceDisplay" placeholder="500"></div>
-            <div class="form-group"><label>Type de chambre</label>
+            <div class="form-group"><label>{{ 'dashboard.form_distance' | translate }}</label><input class="input" [(ngModel)]="distanceDisplay" placeholder="500"></div>
+            <div class="form-group"><label>{{ 'dashboard.form_room_type' | translate }}</label>
                 <select class="input" [(ngModel)]="estateForm.room_size">
-                    <option value="1">Villa</option>
-                    <option value="2">Studio</option>
-                    <option value="3">Chambre</option>
+                    <option value="1">{{ 'dashboard.room_type_villa' | translate }}</option>
+                    <option value="2">{{ 'dashboard.room_type_studio' | translate }}</option>
+                    <option value="3">{{ 'dashboard.room_type_chamber' | translate }}</option>
                 </select>
             </div>
         </div>
-        <div class="form-group"><label>Statut</label>
+        <div class="form-group"><label>{{ 'dashboard.form_status' | translate }}</label>
             <select class="input" [(ngModel)]="estateForm.status">
                 <option value="published">{{ 'dashboard.status_published'|translate }}</option>
                 <option value="draft">{{ 'dashboard.status_draft'|translate }}</option>
                 <option value="archived">{{ 'dashboard.status_archived'|translate }}</option>
             </select>
         </div>
-        <div class="form-group"><label>Équipements</label>
+        <div class="form-group"><label>{{ 'dashboard.form_amenities' | translate }}</label>
             <div class="equip-grid">
                 <label class="equip-item" *ngFor="let eq of availableEquipments">
                     <input type="checkbox" [checked]="estateForm[eq.key]==='1'" (change)="toggleEquipment(eq.key)">
@@ -567,11 +567,11 @@
                 </label>
             </div>
         </div>
-        <div class="form-group"><label>Description</label>
-            <textarea class="textarea" [(ngModel)]="estateForm.description" rows="3" placeholder="Description du logement…"></textarea>
+        <div class="form-group"><label>{{ 'dashboard.form_description' | translate }}</label>
+            <textarea class="textarea" [(ngModel)]="estateForm.description" rows="3" [placeholder]="'dashboard.form_description_ph' | translate"></textarea>
         </div>
         <div class="form-group">
-            <label>Photos du logement</label>
+            <label>{{ 'dashboard.form_photos' | translate }}</label>
             <div class="image-preview-grid" *ngIf="isEditMode && estateForm.existingImages?.length > 0">
                 <div class="image-preview-item" *ngFor="let img of estateForm.existingImages">
                     <img [src]="img.image" alt="photo" class="preview-thumb">
@@ -586,19 +586,19 @@
             </div>
             <label class="img-dropzone" for="imgFileInput">
                 <lucide-icon [img]="PlusIcon" class="icon-sm"></lucide-icon>
-                <span>Cliquer ou glisser-déposer des images</span>
-                <span class="img-hint">JPG, PNG, WEBP — max 5 Mo chacune</span>
+                <span>{{ 'dashboard.form_photos_drop' | translate }}</span>
+                <span class="img-hint">{{ 'dashboard.form_photos_hint' | translate }}</span>
             </label>
             <input id="imgFileInput" type="file" accept="image/*" multiple style="display:none" (change)="onImagesSelected($event)">
         </div>
         <div style="display: flex; justify-content: space-between; gap: 0.5rem; margin-top: 1.5rem;">
             <button *ngIf="isEditMode" class="btn-edit" style="background:#0ea5e9; color:white; border-color:#0ea5e9; padding:0.5rem 1rem;" (click)="switchToRoomManagerFromEdit()">
-                <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon> Gérer les chambres (Catégories)
+                <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.manage_rooms' | translate }}
             </button>
             <div style="flex: 1;"></div>
-            <button class="btn-cancel" style="padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; cursor: pointer;" (click)="closeEstateModal()">Annuler</button>
+            <button class="btn-cancel" style="padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; cursor: pointer;" (click)="closeEstateModal()">{{ 'dashboard.cancel' | translate }}</button>
             <button class="btn-submit" style="width: auto; padding: 0.5rem 1.5rem; margin-top: 0;" (click)="saveEstate()" [disabled]="isSavingEstate">
-                <span *ngIf="!isSavingEstate">{{ isEditMode ? ('dashboard.save_changes'|translate) : 'Créer & Ajouter des chambres' }}</span>
+                <span *ngIf="!isSavingEstate">{{ isEditMode ? ('dashboard.save_changes'|translate) : ('dashboard.create_and_add_rooms'|translate) }}</span>
                 <span *ngIf="isSavingEstate">{{ 'dashboard.saving'|translate }}</span>
             </button>
         </div>
@@ -613,21 +613,21 @@
         </button>
 
         <h2 class="modal-title" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem;">
-            Chambres pour {{ selectedEstateForRooms?.name }}
+            {{ 'dashboard.rooms_for' | translate }} {{ selectedEstateForRooms?.name }}
         </h2>
 
         <!-- Room List View -->
         <div *ngIf="!isRoomEditMode">
             <button class="btn-submit" style="width: auto; margin-bottom: 1rem; padding: 0.5rem 1rem; cursor: pointer;" (click)="openCreateRoom()">
                 <lucide-icon [img]="PlusIcon" class="icon-sm" style="display:inline-block; vertical-align:middle; margin-right:4px;"></lucide-icon>
-                Ajouter une chambre
+                {{ 'dashboard.add_room' | translate }}
             </button>
             <div *ngIf="isLoadingRooms" style="text-align: center; padding: 2rem;">
                 <lucide-icon [img]="ClockIcon" class="spin-icon"></lucide-icon>
-                <span>Chargement…</span>
+                <span>{{ 'dashboard.loading' | translate }}</span>
             </div>
             <div *ngIf="!isLoadingRooms && roomCategories.length === 0" style="text-align: center; padding: 2rem; color: #6b7280;">
-                Aucune chambre trouvée pour ce logement.
+                {{ 'dashboard.no_rooms' | translate }}
             </div>
             
             <div *ngIf="!isLoadingRooms && roomCategories.length > 0" style="display: grid; gap: 1rem;">
@@ -640,7 +640,7 @@
                     </div>
                     <div style="flex-grow: 1;">
                         <div style="font-weight: bold; font-size: 1.1rem; color: #111827;">{{ rm.name }}</div>
-                        <div style="color: #6b7280; font-size: 0.9rem;">{{ rm.occupancy | titlecase }} | {{ rm.quantity_available }} dispo</div>
+                        <div style="color: #6b7280; font-size: 0.9rem;">{{ rm.occupancy | titlecase }} | {{ rm.quantity_available }} {{ 'dashboard.room_form_qty_available' | translate }}</div>
                     </div>
                     <div style="font-weight: bold; font-size: 1.1rem; flex-shrink: 0; margin-right: 2rem; color: #111827;">
                         {{ rm.price }} FCFA
@@ -661,47 +661,47 @@
         <div *ngIf="isRoomEditMode">
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">Nom *</label>
-                    <input type="text" [(ngModel)]="roomForm.name" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.375rem;" placeholder="Ex: Chambre VIP">
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_name' | translate }} *</label>
+                    <input type="text" [(ngModel)]="roomForm.name" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.375rem;" [placeholder]="'dashboard.room_form_name_ph' | translate">
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">Prix (FCFA) *</label>
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_price' | translate }} *</label>
                     <input type="number" [(ngModel)]="roomForm.price" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.375rem;" min="0">
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">Capacité (Occupants)</label>
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_capacity' | translate }}</label>
                     <select [(ngModel)]="roomForm.occupancy" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.375rem; background:#fff;">
-                        <option value="single">1 Personne</option>
-                        <option value="double">2 Personnes</option>
-                        <option value="shared">Partagée</option>
+                        <option value="single">{{ 'dashboard.room_form_occupancy_single' | translate }}</option>
+                        <option value="double">{{ 'dashboard.room_form_occupancy_double' | translate }}</option>
+                        <option value="shared">{{ 'dashboard.room_form_occupancy_shared' | translate }}</option>
                     </select>
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">Quantité disponible</label>
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_qty' | translate }}</label>
                     <input type="number" [(ngModel)]="roomForm.quantity_available" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.375rem;" min="1">
                 </div>
             </div>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">Taille de la pièce</label>
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_size' | translate }}</label>
                     <select [(ngModel)]="roomForm.room_size" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.375rem; background:#fff;">
-                        <option value="1">Grande</option>
-                        <option value="2">Moyenne</option>
-                        <option value="3">Petite</option>
+                        <option value="1">{{ 'dashboard.room_form_size_large' | translate }}</option>
+                        <option value="2">{{ 'dashboard.room_form_size_medium' | translate }}</option>
+                        <option value="3">{{ 'dashboard.room_form_size_small' | translate }}</option>
                     </select>
                 </div>
                 <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">Description (Optionnel)</label>
+                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_desc_optional' | translate }}</label>
                     <textarea [(ngModel)]="roomForm.description" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.375rem;" rows="2"></textarea>
                 </div>
             </div>
 
             <div class="form-group" style="margin-bottom: 1rem;">
-                <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">Équipements de la chambre</label>
+                <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_amenities' | translate }}</label>
                 <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
                     <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
                         <input type="checkbox" [checked]="roomForm.wifi === '1'" (change)="roomForm.wifi = $any($event.target).checked ? '1' : '0'">
@@ -713,16 +713,16 @@
                     </label>
                     <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
                         <input type="checkbox" [checked]="roomForm.fridge === '1'" (change)="roomForm.fridge = $any($event.target).checked ? '1' : '0'">
-                        ❄️ Réfrigérateur
+                        ❄️ {{ 'filters.fridge_label' | translate }}
                     </label>
                 </div>
             </div>
 
             <div class="form-group">
-                <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">Photos de la chambre</label>
+                <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_photos' | translate }}</label>
                 <label class="img-dropzone" for="roomFileInput" style="margin-top: 0.5rem; display: block; border: 2px dashed #d1d5db; padding: 1.5rem; text-align: center; border-radius: 8px; background: #f9fafb; cursor: pointer;">
                     <lucide-icon [img]="PlusIcon" class="icon-sm" style="margin: 0 auto 0.5rem auto; color: #9ca3af; display: block;"></lucide-icon>
-                    <span style="display: block; color: #4b5563;">Ajouter des photos</span>
+                    <span style="display: block; color: #4b5563;">{{ 'dashboard.room_form_add_photos' | translate }}</span>
                 </label>
                 <input id="roomFileInput" type="file" accept="image/*" multiple (change)="onRoomFilesSelected($event)" style="display:none">
                 
@@ -739,9 +739,9 @@
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
-                <button class="btn-cancel" style="padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; cursor: pointer;" (click)="isRoomEditMode = false">Annuler</button>
+                <button class="btn-cancel" style="padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; cursor: pointer;" (click)="isRoomEditMode = false">{{ 'dashboard.cancel' | translate }}</button>
                 <button class="btn-submit" style="width: auto; padding: 0.5rem 1.5rem; cursor: pointer;" (click)="saveRoom()" [disabled]="isSavingRoom">
-                    {{ isSavingRoom ? 'Enregistrement…' : (roomEditId ? 'Mettre à jour' : 'Créer') }}
+                    {{ isSavingRoom ? ('dashboard.saving' | translate) : (roomEditId ? ('dashboard.room_update' | translate) : ('dashboard.room_create' | translate)) }}
                 </button>
             </div>
         </div>
@@ -754,21 +754,21 @@
     <div class="modal-box" (click)="$event.stopPropagation()">
         <button class="modal-close" (click)="closeReviewModal()"><lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon></button>
         <h2 class="modal-title">{{ 'dashboard.modal_review_title' | translate }}</h2>
-        <div class="form-group"><label>Logement *</label>
+        <div class="form-group"><label>{{ 'dashboard.form_listing' | translate }} *</label>
             <select class="input" [(ngModel)]="reviewForm.estate">
-                <option [value]="0" disabled>Choisir un logement…</option>
+                <option [value]="0" disabled>{{ 'dashboard.choose_listing' | translate }}</option>
                 <option *ngFor="let e of allEstates" [value]="e.id">{{ e.name }}</option>
             </select>
         </div>
-        <div class="form-group"><label>Note *</label>
+        <div class="form-group"><label>{{ 'dashboard.form_rating' | translate }} *</label>
             <div class="star-picker">
                 <span *ngFor="let s of getStars(5)" class="star-pick"
                     [class.active]="s<=(hoverRating || reviewForm.rating)"
                     (mouseenter)="setHover(s)" (mouseleave)="clearHover()" (click)="setRating(s)">★</span>
             </div>
         </div>
-        <div class="form-group"><label>Commentaire *</label>
-            <textarea class="textarea" [(ngModel)]="reviewForm.comment" rows="4" placeholder="Partagez votre expérience…"></textarea>
+        <div class="form-group"><label>{{ 'dashboard.form_comment' | translate }} *</label>
+            <textarea class="textarea" [(ngModel)]="reviewForm.comment" rows="4" [placeholder]="'dashboard.form_comment_ph' | translate"></textarea>
         </div>
         <button class="btn-submit" (click)="submitReview()">{{ 'dashboard.publish_review' | translate }}</button>
     </div>
@@ -778,23 +778,23 @@
 <div class="modal-overlay" *ngIf="showEditReviewModal" (click)="closeEditReviewModal()">
     <div class="modal-box" (click)="$event.stopPropagation()">
         <button class="modal-close" (click)="closeEditReviewModal()"><lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon></button>
-        <h2 class="modal-title">Modifier l'avis</h2>
+        <h2 class="modal-title">{{ 'dashboard.modal_edit_review_title' | translate }}</h2>
         <div class="form-group" *ngIf="editingReview?.estate_name">
-            <label>Logement</label>
+            <label>{{ 'dashboard.form_listing' | translate }}</label>
             <div class="input input-readonly">{{ editingReview?.estate_name }}</div>
         </div>
-        <div class="form-group"><label>Note *</label>
+        <div class="form-group"><label>{{ 'dashboard.form_rating' | translate }} *</label>
             <div class="star-picker">
                 <span *ngFor="let s of getStars(5)" class="star-pick"
                     [class.active]="s<=(editHoverRating || editReviewForm.rating)"
                     (mouseenter)="setEditHover(s)" (mouseleave)="clearEditHover()" (click)="setEditRating(s)">★</span>
             </div>
         </div>
-        <div class="form-group"><label>Commentaire *</label>
-            <textarea class="textarea" [(ngModel)]="editReviewForm.comment" rows="4" placeholder="Votre avis…"></textarea>
+        <div class="form-group"><label>{{ 'dashboard.form_comment' | translate }} *</label>
+            <textarea class="textarea" [(ngModel)]="editReviewForm.comment" rows="4" [placeholder]="'dashboard.form_edit_comment_ph' | translate"></textarea>
         </div>
         <button class="btn-submit" (click)="saveEditReview()" [disabled]="isSavingReview">
-            <span *ngIf="!isSavingReview">Enregistrer les modifications</span>
+            <span *ngIf="!isSavingReview">{{ 'dashboard.save_changes' | translate }}</span>
             <span *ngIf="isSavingReview">{{ 'dashboard.saving'|translate }}</span>
         </button>
     </div>

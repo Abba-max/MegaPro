@@ -5,8 +5,8 @@
         <div class="contact-hero-bg"></div>
         <div class="contact-hero-overlay"></div>
         <div class="contact-hero-content">
-            <h1 class="contact-hero-title">Contactez-nous</h1>
-            <p class="contact-hero-sub">Partenariat, sponsoring, questions ou suggestions, notre équipe vous répond rapidement.</p>
+            <h1 class="contact-hero-title">{{ 'contact.title' | translate }}</h1>
+            <p class="contact-hero-sub">{{ 'contact.subtitle' | translate }}</p>
         </div>
     </section>
 
@@ -17,7 +17,7 @@
                 <lucide-icon [img]="MailIcon" class="qicon"></lucide-icon>
             </div>
             <div class="qcard-info">
-                <div class="qcard-label">Email</div>
+                <div class="qcard-label">{{ 'contact.email_label' | translate }}</div>
                 <div class="qcard-value">eyangestate@gmail.com</div>
             </div>
         </div>
@@ -26,8 +26,8 @@
                 <lucide-icon [img]="PhoneIcon" class="qicon"></lucide-icon>
             </div>
             <div class="qcard-info">
-                <div class="qcard-label">Téléphone</div>
-                <div class="qcard-value">692570294/652552561</div>
+                <div class="qcard-label">{{ 'contact.phone_label' | translate }}</div>
+                <div class="qcard-value">692570294 / 652552561</div>
             </div>
         </div>
         <div class="contact-quick-card">
@@ -35,8 +35,8 @@
                 <lucide-icon [img]="MapPinIcon" class="qicon"></lucide-icon>
             </div>
             <div class="qcard-info">
-                <div class="qcard-label">Localisation</div>
-                <div class="qcard-value">Eyang, Cameroun</div>
+                <div class="qcard-label">{{ 'contact.location_label' | translate }}</div>
+                <div class="qcard-value">{{ 'contact.location_value' | translate }}</div>
             </div>
         </div>
         <div class="contact-quick-card">
@@ -44,8 +44,8 @@
                 <lucide-icon [img]="ClockIcon" class="qicon"></lucide-icon>
             </div>
             <div class="qcard-info">
-                <div class="qcard-label">Disponibilité</div>
-                <div class="qcard-value">Lun - Ven, 8h-18h</div>
+                <div class="qcard-label">{{ 'contact.availability_label' | translate }}</div>
+                <div class="qcard-value">{{ 'contact.availability_value' | translate }}</div>
             </div>
         </div>
     </div>
@@ -59,18 +59,18 @@
             <!-- Success State -->
             <div class="success-state fade-in" *ngIf="submitted">
                 <div class="success-icon">✅</div>
-                <h2 class="success-title">Message envoyé !</h2>
-                <p class="success-text">Notre équipe vous répondra sous 24 heures ouvrables à l'adresse <strong>{{contactForm.email}}</strong>.</p>
+                <h2 class="success-title">{{ 'contact.success_title' | translate }}</h2>
+                <p class="success-text">{{ 'contact.success_text' | translate }} <strong>{{ contactForm.email }}</strong>.</p>
                 <button class="reset-btn" (click)="resetForm()">
                     <lucide-icon [img]="RefreshIcon" class="btn-icon-sm"></lucide-icon>
-                    Envoyer un autre message
+                    {{ 'contact.send_another' | translate }}
                 </button>
             </div>
 
             <!-- Form State -->
             <ng-container *ngIf="!submitted">
-                <h2 class="form-title">Envoyez-nous un message</h2>
-                <p class="form-subtitle">Sélectionnez la raison de votre contact, puis remplissez le formulaire.</p>
+                <h2 class="form-title">{{ 'contact.form_title' | translate }}</h2>
+                <p class="form-subtitle">{{ 'contact.form_subtitle' | translate }}</p>
 
                 <!-- Reason Selector -->
                 <div class="reason-selector">
@@ -80,53 +80,63 @@
                         [class.active]="selectedReason === reason.key"
                         (click)="selectedReason = reason.key; hasError = false">
                         <lucide-icon [img]="reason.icon" class="reason-icon"></lucide-icon>
-                        <span>{{reason.label}}</span>
+                        <span>{{ reason.labelKey | translate }}</span>
                     </button>
                 </div>
 
                 <!-- Error Banner -->
                 <div class="error-banner" *ngIf="hasError">
                     <lucide-icon [img]="AlertIcon" class="error-icon"></lucide-icon>
-                    <span>Veuillez remplir les champs obligatoires (nom, email, message).</span>
+                    <span>{{ 'contact.error_required' | translate }}</span>
                 </div>
 
                 <!-- Form Fields -->
                 <div class="contact-form">
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Nom complet <span class="required">*</span></label>
-                            <input type="text" [(ngModel)]="contactForm.name" placeholder="Mon Noms" class="input" [class.input-error]="hasError && !contactForm.name">
+                            <label>{{ 'contact.field_fullname' | translate }} <span class="required">{{ 'contact.required' | translate }}</span></label>
+                            <input type="text" [(ngModel)]="contactForm.name"
+                                [placeholder]="'contact.field_fullname_ph' | translate"
+                                class="input" [class.input-error]="hasError && !contactForm.name">
                         </div>
                         <div class="form-group">
-                            <label>Email <span class="required">*</span></label>
-                            <input type="email" [(ngModel)]="contactForm.email" placeholder="Nom@email.com" class="input" [class.input-error]="hasError && !contactForm.email">
+                            <label>{{ 'contact.field_email' | translate }} <span class="required">{{ 'contact.required' | translate }}</span></label>
+                            <input type="email" [(ngModel)]="contactForm.email"
+                                [placeholder]="'contact.field_email_ph' | translate"
+                                class="input" [class.input-error]="hasError && !contactForm.email">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label>Téléphone <span class="optional">(optionnel)</span></label>
-                            <input type="tel" [(ngModel)]="contactForm.phone" placeholder="+237 6XX XXX XXX" class="input">
+                            <label>{{ 'contact.field_phone' | translate }} <span class="optional">({{ 'contact.field_phone_optional' | translate }})</span></label>
+                            <input type="tel" [(ngModel)]="contactForm.phone"
+                                [placeholder]="'contact.field_phone_ph' | translate" class="input">
                         </div>
                         <div class="form-group">
-                            <label>Organisation <span class="optional">(optionnel)</span></label>
-                            <input type="text" [(ngModel)]="contactForm.organization" placeholder="Votre entreprise" class="input">
+                            <label>{{ 'contact.field_org' | translate }} <span class="optional">({{ 'contact.field_org_optional' | translate }})</span></label>
+                            <input type="text" [(ngModel)]="contactForm.organization"
+                                [placeholder]="'contact.field_org_ph' | translate" class="input">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>Objet <span class="optional">(optionnel)</span></label>
-                        <input type="text" [(ngModel)]="contactForm.subject" [placeholder]="getSubjectPlaceholder()" class="input">
+                        <label>{{ 'contact.field_subject' | translate }} <span class="optional">({{ 'contact.field_subject_optional' | translate }})</span></label>
+                        <input type="text" [(ngModel)]="contactForm.subject"
+                            [placeholder]="getSubjectPlaceholder() | translate" class="input">
                     </div>
 
                     <div class="form-group">
-                        <label>Message <span class="required">*</span></label>
-                        <textarea [(ngModel)]="contactForm.message" [placeholder]="getMessagePlaceholder()" class="input textarea" rows="5" [class.input-error]="hasError && !contactForm.message"></textarea>
+                        <label>{{ 'contact.field_message' | translate }} <span class="required">{{ 'contact.required' | translate }}</span></label>
+                        <textarea [(ngModel)]="contactForm.message"
+                            [placeholder]="getMessagePlaceholder() | translate"
+                            class="input textarea" rows="5"
+                            [class.input-error]="hasError && !contactForm.message"></textarea>
                     </div>
 
                     <button class="submit-btn" (click)="handleSubmit()">
                         <lucide-icon [img]="SendIcon" class="btn-icon"></lucide-icon>
-                        <span>Envoyer le message</span>
+                        <span>{{ 'contact.submit_btn' | translate }}</span>
                     </button>
                 </div>
             </ng-container>
@@ -134,37 +144,35 @@
 
         <!-- Info Side -->
         <div class="contact-info-side">
-
-            <!-- Who Are You -->
             <div class="info-panel">
-                <h3 class="info-panel-title">Vous êtes...</h3>
+                <h3 class="info-panel-title">{{ 'contact.who_are_you' | translate }}</h3>
                 <div class="profile-cards">
                     <div class="profile-card student-card">
                         <div class="profile-icon">🎓</div>
                         <div>
-                            <div class="profile-title">Étudiant(e)</div>
-                            <div class="profile-desc">Questions sur les logements, réservations, support.</div>
+                            <div class="profile-title">{{ 'contact.profile_student' | translate }}</div>
+                            <div class="profile-desc">{{ 'contact.profile_student_desc' | translate }}</div>
                         </div>
                     </div>
                     <div class="profile-card owner-card">
                         <div class="profile-icon">🏠</div>
                         <div>
-                            <div class="profile-title">Propriétaire</div>
-                            <div class="profile-desc">Inscription, gestion des annonces, signalement.</div>
+                            <div class="profile-title">{{ 'contact.profile_owner' | translate }}</div>
+                            <div class="profile-desc">{{ 'contact.profile_owner_desc' | translate }}</div>
                         </div>
                     </div>
                     <div class="profile-card partner-card">
                         <div class="profile-icon">🤝</div>
                         <div>
-                            <div class="profile-title">Partenaire / Sponsor</div>
-                            <div class="profile-desc">Partenariats commerciaux, sponsoring, intégrations.</div>
+                            <div class="profile-title">{{ 'contact.profile_partner' | translate }}</div>
+                            <div class="profile-desc">{{ 'contact.profile_partner_desc' | translate }}</div>
                         </div>
                     </div>
                     <div class="profile-card media-card">
                         <div class="profile-icon">📰</div>
                         <div>
-                            <div class="profile-title">Presse / Média</div>
-                            <div class="profile-desc">Interviews, informations sur la plateforme, kit presse.</div>
+                            <div class="profile-title">{{ 'contact.profile_media' | translate }}</div>
+                            <div class="profile-desc">{{ 'contact.profile_media_desc' | translate }}</div>
                         </div>
                     </div>
                 </div>

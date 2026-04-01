@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 import {
     LucideAngularModule,
     Mail,
@@ -20,68 +21,67 @@ import {
 @Component({
     selector: 'app-contact',
     standalone: true,
-    imports: [CommonModule, FormsModule, LucideAngularModule],
+    imports: [CommonModule, FormsModule, LucideAngularModule, TranslateModule],
     templateUrl: './contact.component.html',
     styleUrl: './contact.component.css'
 })
 export class ContactComponent {
-    readonly MailIcon = Mail;
-    readonly PhoneIcon = Phone;
-    readonly MapPinIcon = MapPin;
-    readonly ClockIcon = Clock;
-    readonly SendIcon = Send;
+    readonly MailIcon      = Mail;
+    readonly PhoneIcon     = Phone;
+    readonly MapPinIcon    = MapPin;
+    readonly ClockIcon     = Clock;
+    readonly SendIcon      = Send;
     readonly HandshakeIcon = Handshake;
-    readonly HelpIcon = HelpCircle;
+    readonly HelpIcon      = HelpCircle;
     readonly MegaphoneIcon = Megaphone;
-    readonly MessageIcon = MessageSquare;
-    readonly BuildingIcon = Building;
-    readonly AlertIcon = AlertCircle;
-    readonly RefreshIcon = RefreshCw;
+    readonly MessageIcon   = MessageSquare;
+    readonly BuildingIcon  = Building;
+    readonly AlertIcon     = AlertCircle;
+    readonly RefreshIcon   = RefreshCw;
 
     selectedReason = 'question';
     submitted = false;
-    hasError = false;
+    hasError  = false;
 
+    /** Each reason now carries a `labelKey` that goes through the translate pipe in the template */
     reasons = [
-        { key: 'question', label: 'Question générale', icon: HelpCircle },
-        { key: 'partenariat', label: 'Partenariat', icon: Handshake },
-        { key: 'sponsoring', label: 'Sponsoring', icon: Megaphone },
-        { key: 'proprietaire', label: 'Je suis propriétaire', icon: Building },
-        { key: 'probleme', label: 'Signaler un problème', icon: AlertCircle },
-        { key: 'autre', label: 'Autre', icon: Mail }
+        { key: 'question',     labelKey: 'contact.reason_question',    icon: HelpCircle   },
+        { key: 'partenariat',  labelKey: 'contact.reason_partnership',  icon: Handshake    },
+        { key: 'sponsoring',   labelKey: 'contact.reason_sponsoring',   icon: Megaphone    },
+        { key: 'proprietaire', labelKey: 'contact.reason_owner',        icon: Building     },
+        { key: 'probleme',     labelKey: 'contact.reason_problem',      icon: AlertCircle  },
+        { key: 'autre',        labelKey: 'contact.reason_other',        icon: Mail         },
     ];
 
     contactForm = {
-        name: '',
-        email: '',
-        phone: '',
-        organization: '',
-        subject: '',
-        message: ''
+        name: '', email: '', phone: '',
+        organization: '', subject: '', message: ''
     };
 
+    /** Returns an i18n key — the template applies `| translate` to it */
     getSubjectPlaceholder(): string {
         const map: Record<string, string> = {
-            question: 'Ex: Question sur les réservations',
-            partenariat: 'Ex: Proposition de partenariat commercial',
-            sponsoring: 'Ex: Sponsoring d\'événement étudiant',
-            proprietaire: 'Ex: Je souhaite publier mon logement',
-            probleme: 'Ex: Problème avec ma réservation',
-            autre: 'Objet de votre message'
+            question:     'contact.subject_question',
+            partenariat:  'contact.subject_partnership',
+            sponsoring:   'contact.subject_sponsoring',
+            proprietaire: 'contact.subject_owner',
+            probleme:     'contact.subject_problem',
+            autre:        'contact.subject_other',
         };
-        return map[this.selectedReason] || 'Objet de votre message';
+        return map[this.selectedReason] ?? 'contact.subject_other';
     }
 
+    /** Returns an i18n key — the template applies `| translate` to it */
     getMessagePlaceholder(): string {
         const map: Record<string, string> = {
-            question: 'Décrivez votre question en détail...',
-            partenariat: 'Décrivez votre proposition de partenariat, votre entreprise et vos objectifs communs...',
-            sponsoring: 'Décrivez l\'événement ou le projet à sponsoriser, votre audience et les retombées attendues...',
-            proprietaire: 'Décrivez votre logement, sa localisation, les équipements disponibles et vos conditions...',
-            probleme: 'Décrivez le problème rencontré et votre identifiant utilisateur si disponible...',
-            autre: 'Écrivez votre message ici...'
+            question:     'contact.msg_question',
+            partenariat:  'contact.msg_partnership',
+            sponsoring:   'contact.msg_sponsoring',
+            proprietaire: 'contact.msg_owner',
+            probleme:     'contact.msg_problem',
+            autre:        'contact.msg_other',
         };
-        return map[this.selectedReason] || 'Écrivez votre message ici...';
+        return map[this.selectedReason] ?? 'contact.msg_other';
     }
 
     handleSubmit(): void {
@@ -97,7 +97,7 @@ export class ContactComponent {
 
     resetForm(): void {
         this.submitted = false;
-        this.hasError = false;
+        this.hasError  = false;
         this.contactForm = { name: '', email: '', phone: '', organization: '', subject: '', message: '' };
         this.selectedReason = 'question';
     }

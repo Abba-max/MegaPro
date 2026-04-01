@@ -55,9 +55,9 @@
         <!-- Notification Panel -->
         <div class="notif-panel fade-in" *ngIf="showNotifPanel" (click)="$event.stopPropagation()">
           <div class="notif-panel-header">
-            <span class="notif-panel-title">Notifications</span>
+            <span class="notif-panel-title">{{ 'auth.notifications' | translate }}</span>
             <div class="notif-panel-actions">
-              <button class="notif-action-btn" (click)="clearAllNotifs()" title="Tout effacer" *ngIf="notifications.length > 0">
+              <button class="notif-action-btn" (click)="clearAllNotifs()" [title]="'dashboard.delete' | translate" *ngIf="notifications.length > 0">
                 <lucide-icon [img]="Trash2Icon" style="width:14px;height:14px;"></lucide-icon>
               </button>
             </div>
@@ -65,8 +65,8 @@
 
           <div class="notif-empty" *ngIf="notifications.length === 0">
             <span class="notif-empty-icon">🔔</span>
-            <p>Aucune notification</p>
-            <span class="notif-empty-hint">Les événements importants apparaîtront ici.</span>
+            <p>{{ 'auth.no_notifications' | translate }}</p>
+            <span class="notif-empty-hint">{{ 'auth.no_notifications_hint' | translate }}</span>
           </div>
 
           <div class="notif-list" *ngIf="notifications.length > 0">
@@ -207,7 +207,7 @@
             <lucide-icon *ngIf="signupStep > 1" [img]="CheckIcon" class="step-check-icon"></lucide-icon>
             <span *ngIf="signupStep <= 1">1</span>
           </div>
-          <span class="step-label">Compte</span>
+          <span class="step-label">{{ 'auth.step_account' | translate }}</span>
         </div>
         <div class="step-line" [class.done]="signupStep > 1"></div>
         <div class="step-item" [class.active]="signupStep >= 2" [class.done]="signupStep > 2">
@@ -215,13 +215,13 @@
             <lucide-icon *ngIf="signupStep > 2" [img]="CheckIcon" class="step-check-icon"></lucide-icon>
             <span *ngIf="signupStep <= 2">2</span>
           </div>
-          <span class="step-label">Profil</span>
+          <span class="step-label">{{ 'auth.step_profile' | translate }}</span>
         </div>
         <ng-container *ngIf="signupForm.accountType === 'Owner'">
           <div class="step-line" [class.done]="signupStep > 2"></div>
           <div class="step-item" [class.active]="signupStep >= 3">
             <div class="step-circle"><span>3</span></div>
-            <span class="step-label">Bailleur</span>
+            <span class="step-label">{{ 'auth.step_owner' | translate }}</span>
           </div>
         </ng-container>
       </div>
@@ -230,9 +230,9 @@
     <div class="modal-header">
       <h2>{{ 'auth.signup_title' | translate }}</h2>
       <p class="signup-step-subtitle">
-        <ng-container *ngIf="signupStep === 1">Choisissez votre type de compte</ng-container>
-        <ng-container *ngIf="signupStep === 2">Vos informations personnelles</ng-container>
-        <ng-container *ngIf="signupStep === 3">Informations et document du bailleur</ng-container>
+        <ng-container *ngIf="signupStep === 1">{{ 'auth.step1_subtitle' | translate }}</ng-container>
+        <ng-container *ngIf="signupStep === 2">{{ 'auth.step2_subtitle' | translate }}</ng-container>
+        <ng-container *ngIf="signupStep === 3">{{ 'auth.step3_subtitle' | translate }}</ng-container>
       </p>
     </div>
 
@@ -247,19 +247,19 @@
               (click)="signupForm.accountType = 'Student'">
               <lucide-icon [img]="GraduationCapIcon" class="account-icon"></lucide-icon>
               <span>{{ 'auth.student' | translate }}</span>
-              <small>Étudiant cherchant un logement</small>
+              <small>{{ 'auth.student_desc' | translate }}</small>
             </button>
             <button class="account-type-btn" [class.active]="signupForm.accountType === 'Parent'"
               (click)="signupForm.accountType = 'Parent'">
               <lucide-icon [img]="UsersIcon" class="account-icon"></lucide-icon>
               <span>{{ 'auth.parent' | translate }}</span>
-              <small>Parent d'un étudiant</small>
+              <small>{{ 'auth.parent_desc' | translate }}</small>
             </button>
             <button class="account-type-btn owner-btn" [class.active]="signupForm.accountType === 'Owner'"
               (click)="signupForm.accountType = 'Owner'">
               <lucide-icon [img]="BuildingIcon" class="account-icon"></lucide-icon>
               <span>{{ 'auth.owner' | translate }}</span>
-              <small>Propriétaire ou bailleur</small>
+              <small>{{ 'auth.owner_desc' | translate }}</small>
             </button>
           </div>
         </div>
@@ -270,9 +270,9 @@
             [placeholder]="'auth.email_placeholder' | translate" class="input">
         </div>
         <div class="form-group mt-3">
-          <label>Nom d'utilisateur</label>
+          <label>{{ 'auth.username' | translate }}</label>
           <input type="text" [(ngModel)]="signupForm.username"
-            placeholder="ex: Abba Adji" class="input">
+            [placeholder]="'auth.username_placeholder' | translate" class="input">
         </div>
         <div class="form-group mt-3">
           <label>{{ 'auth.password' | translate }}</label>
@@ -293,7 +293,7 @@
 
         <div class="error-msg" *ngIf="signupError">{{ signupError }}</div>
         <button class="btn btn-primary w-full mt-5" (click)="nextStep()">
-          Continuer <lucide-icon [img]="ChevronRightIcon" class="btn-icon-right"></lucide-icon>
+          {{ 'auth.continue' | translate }} <lucide-icon [img]="ChevronRightIcon" class="btn-icon-right"></lucide-icon>
         </button>
       </ng-container>
 
@@ -320,14 +320,14 @@
         <div class="error-msg" *ngIf="signupError">{{ signupError }}</div>
         <div class="form-step-nav">
           <button class="btn btn-outline" (click)="prevStep()">
-            <lucide-icon [img]="ArrowLeftIcon" class="btn-icon-left"></lucide-icon> Retour
+            <lucide-icon [img]="ArrowLeftIcon" class="btn-icon-left"></lucide-icon> {{ 'auth.back' | translate }}
           </button>
           <button class="btn btn-primary" (click)="nextStep()" [disabled]="isSigningUp">
             <ng-container *ngIf="signupForm.accountType !== 'Owner'">
               {{ isSigningUp ? '…' : ('auth.signup_btn' | translate) }}
             </ng-container>
             <ng-container *ngIf="signupForm.accountType === 'Owner'">
-              Continuer <lucide-icon [img]="ChevronRightIcon" class="btn-icon-right"></lucide-icon>
+              {{ 'auth.continue' | translate }} <lucide-icon [img]="ChevronRightIcon" class="btn-icon-right"></lucide-icon>
             </ng-container>
           </button>
         </div>
@@ -339,18 +339,18 @@
         <!-- Owner info notice -->
         <div class="owner-notice">
           <lucide-icon [img]="ShieldIcon" class="owner-notice-icon"></lucide-icon>
-          <p>En tant que bailleur, votre compte sera soumis à <strong>vérification</strong> par notre équipe avant d'être activé. Veuillez fournir des informations exactes.</p>
+          <p [innerHTML]="'auth.owner_notice' | translate"></p>
         </div>
 
         <div class="form-group mt-3">
-          <label>Adresse du bien / siège</label>
+          <label>{{ 'auth.address' | translate }}</label>
           <input type="text" [(ngModel)]="signupForm.address"
-            placeholder="ex: Yaoundé, Biyem-Assi, rue des écoles" class="input">
+            [placeholder]="'auth.address_placeholder' | translate" class="input">
         </div>
 
         <!-- ID Card upload -->
         <div class="form-group mt-3">
-          <label>Pièce d'identité <span class="required-star">*</span></label>
+          <label>{{ 'auth.id_card' | translate }} <span class="required-star">*</span></label>
           <div class="id-upload-area" [class.has-file]="signupForm.idCardFile"
             (click)="idCardInput.click()" (dragover)="$event.preventDefault()"
             (drop)="onIdCardDrop($event)">
@@ -358,12 +358,16 @@
               (change)="onIdCardChange($event)" style="display:none">
             <ng-container *ngIf="!signupForm.idCardFile">
               <lucide-icon [img]="UploadIcon" class="upload-icon"></lucide-icon>
-              <p class="upload-main-text">Glissez votre pièce d'identité ici</p>
-              <p class="upload-sub-text">ou <span class="upload-link">parcourir</span> — JPG, PNG, PDF · max 5 Mo</p>
+              <p class="upload-main-text">{{ 'auth.id_card_drag' | translate }}</p>
+              <p class="upload-sub-text">
+                {{ 'auth.id_card_or_browse' | translate }}
+                <span class="upload-link">{{ 'auth.id_card_browse' | translate }}</span>
+                — {{ 'auth.id_card_hint' | translate }}
+              </p>
             </ng-container>
             <ng-container *ngIf="signupForm.idCardFile">
               <div class="upload-preview">
-                <img *ngIf="idCardPreview" [src]="idCardPreview" class="id-preview-img" alt="Aperçu pièce">
+                <img *ngIf="idCardPreview" [src]="idCardPreview" class="id-preview-img" alt="preview">
                 <div class="upload-file-info">
                   <lucide-icon [img]="CheckCircleIcon" class="upload-ok-icon"></lucide-icon>
                   <span class="upload-filename">{{ signupForm.idCardFile.name }}</span>
@@ -380,10 +384,10 @@
         <div class="error-msg" *ngIf="signupError">{{ signupError }}</div>
         <div class="form-step-nav">
           <button class="btn btn-outline" (click)="prevStep()">
-            <lucide-icon [img]="ArrowLeftIcon" class="btn-icon-left"></lucide-icon> Retour
+            <lucide-icon [img]="ArrowLeftIcon" class="btn-icon-left"></lucide-icon> {{ 'auth.back' | translate }}
           </button>
           <button class="btn btn-primary" (click)="handleSignup()" [disabled]="isSigningUp">
-            {{ isSigningUp ? 'Envoi en cours…' : 'Créer mon compte bailleur' }}
+            {{ isSigningUp ? ('auth.sending' | translate) : ('auth.create_owner_account' | translate) }}
           </button>
         </div>
       </ng-container>
