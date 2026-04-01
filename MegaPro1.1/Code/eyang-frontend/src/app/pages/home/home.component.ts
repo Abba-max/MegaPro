@@ -8,7 +8,7 @@ import {
   MapPin, Search, Wifi, Zap, Droplets, Star, Filter,
   Coffee, Check, Lock, Home, Building, Shield, MessageSquare, Loader,
   CheckCircle, XCircle, AlertCircle, Info, Tv, Thermometer,
-  Maximize2, Navigation, BedDouble, Bed, X
+  Maximize2, Navigation, BedDouble, Bed, X, Users
 } from 'lucide-angular';
 import { EstateService, Estate, PlatformStats } from '../../services/estate.service';
 
@@ -51,6 +51,7 @@ export class HomeComponent implements OnInit {
   readonly DistanceIcon      = Navigation;
   readonly BedDoubleIcon     = BedDouble;
   readonly BedIcon           = Bed;
+  readonly UsersIcon         = Users;
   readonly XIcon             = X;
 
   searchQuery  = '';

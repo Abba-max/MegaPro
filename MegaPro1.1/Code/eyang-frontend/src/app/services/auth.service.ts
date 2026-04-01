@@ -22,7 +22,7 @@ export interface User {
 export type CurrentUser = User;
 export type UserRole = 'Admin' | 'Student' | 'Owner' | 'Parent';
 
-const ACCESS_KEY = 'access_token';
+const ACCESS_KEY  = 'access_token';
 const REFRESH_KEY = 'refresh_token';
 
 @Injectable({ providedIn: 'root' })
@@ -36,16 +36,12 @@ export class AuthService {
   showLoginModal$ = this.showLoginModalSubject.asObservable();
 
   constructor(private http: HttpClient, private router: Router) {
-  // FIX: Restore session on page reload.
-  // If a token is stored, call fetchMe() to rebuild the user object.
-  // We no longer use NgZone here — with provideZoneChangeDetection()
-  // HTTP observables run inside the zone automatically.
+    // Restore session on page reload: if a token is stored, rebuild the user object.
     if (this.getAccessToken()) {
       this.fetchMe().subscribe({
         error: (err) => {
-          // Only force-logout on explicit auth errors (401/403).
-          // Network errors, 500s, etc. should NOT clear the session so the
-          // user isn't kicked out just because the backend is momentarily down.
+          // Only force-logout on explicit auth errors. Network errors / 500s should
+          // NOT clear the session so the user isn't kicked on a momentary backend hiccup.
           if (err.status === 401 || err.status === 403) {
             this.logout();
           }
@@ -80,6 +76,7 @@ export class AuthService {
     return this.http
       .post<{ access: string; refresh: string }>(
         `${this.BASE}/token/`,
+        // Django SimpleJWT uses 'username' field even for email-based auth
         { username: email, password }
       )
       .pipe(
@@ -90,11 +87,33 @@ export class AuthService {
       );
   }
 
-  register(userData: any): Observable<any> {
+  /**
+   * Register a new user.
+   * Payload shape matches the Django backend:
+   *   email, password, first_name, last_name, phone, role
+   *
+   * On success the backend returns { access, refresh, user } or just tokens.
+   * We store the tokens and call fetchMe() to populate currentUser$.
+   */
+  register(userData: {
+    email: string;
+    password: string;
+    first_name: string;
+    last_name: string;
+    phone?: string;
+    role: 'Student' | 'Parent' | 'Owner';
+  }): Observable<any> {
     return this.http.post<any>(`${this.BASE}/auth/register/`, userData).pipe(
       tap(res => {
-        if (res.access) {
-          this.storeTokens(res.access, res.refresh);
+        // The backend may return tokens directly or nest them
+        const access  = res.access  ?? res.tokens?.access;
+        const refresh = res.refresh ?? res.tokens?.refresh;
+        if (access && refresh) {
+          this.storeTokens(access, refresh);
+          this.fetchMe().subscribe();
+        } else if (access) {
+          // refresh-less response (should not happen but guard anyway)
+          localStorage.setItem(ACCESS_KEY, access);
           this.fetchMe().subscribe();
         }
       })
@@ -122,6 +141,7 @@ export class AuthService {
           data.name ||
           `${data.first_name || ''} ${data.last_name || ''}`.trim() ||
           data.username;
+
         const initials = name
           .split(' ')
           .map((w: string) => w[0])
@@ -147,15 +167,14 @@ export class AuthService {
           initials,
           email: data.email || data.username,
           role,
-          user_type: data.user_type || undefined,
+          user_type:        data.user_type        || undefined,
           visitor_category: data.visitor_category || undefined,
-          is_verified: data.is_verified,
+          is_verified:      data.is_verified,
           id_card,
-          phone: data.phone || '',
+          phone:   data.phone   || '',
           address: data.address || '',
         };
 
-        // No NgZone.run() needed — HTTP runs inside the zone with zone-based CD
         this.currentUserSubject.next(user);
       }),
       catchError(err => {
@@ -170,6 +189,7 @@ export class AuthService {
   logout(): void {
     this.clearTokens();
     this.currentUserSubject.next(null);
+    // Use window.location so all services/subscriptions are cleanly torn down
     window.location.href = '/';
   }
 
@@ -189,20 +209,20 @@ export class AuthService {
 
   // ── Role helpers ───────────────────────────────────────────────────────
 
-  get isAdminUser(): boolean { return this.currentUser?.role === 'Admin'; }
-  get isOwnerUser(): boolean { return this.currentUser?.role === 'Owner'; }
+  get isAdminUser(): boolean  { return this.currentUser?.role === 'Admin'; }
+  get isOwnerUser(): boolean  { return this.currentUser?.role === 'Owner'; }
   get isClientUser(): boolean {
     const r = this.currentUser?.role;
     return r === 'Student' || r === 'Parent';
   }
 
-  canActivateAdmin(): boolean { return this.isAdminUser; }
-  canActivateOwner(): boolean { return this.isAdminUser || this.isOwnerUser; }
+  canActivateAdmin():  boolean { return this.isAdminUser; }
+  canActivateOwner():  boolean { return this.isAdminUser || this.isOwnerUser; }
   canActivateClient(): boolean { return this.isClientUser || this.isAdminUser; }
 
   // ── Modal control ──────────────────────────────────────────────────────
 
-  openLogin(): void { this.showLoginModalSubject.next(true); }
+  openLogin():  void { this.showLoginModalSubject.next(true);  }
   closeLogin(): void { this.showLoginModalSubject.next(false); }
 
   setUser(user: User): void { this.currentUserSubject.next(user); }

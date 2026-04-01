@@ -77,68 +77,49 @@
 .detail-card-title { font-size: 15px; font-weight: 800; color: #1e293b; margin-bottom: 1rem; padding-bottom: .75rem; border-bottom: 1px solid #f1f5f9; }
 .detail-text { color: #475569; line-height: 1.7; font-size: 15px; }
 
-/* ══════════════════════════════════════════════
-   EQUIPMENT GRID — matches home page feat-cell
-══════════════════════════════════════════════ */
-.features-grid {
-  display: grid;
-  gap: 10px;
-  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-}
-/* Dynamic col count helpers (same as home) */
-.features-grid.cols-1 { grid-template-columns: repeat(1,1fr); }
-.features-grid.cols-2 { grid-template-columns: repeat(2,1fr); }
-.features-grid.cols-3 { grid-template-columns: repeat(3,1fr); }
-.features-grid.cols-4 { grid-template-columns: repeat(4,1fr); }
-.features-grid.cols-5 { grid-template-columns: repeat(5,1fr); }
-.features-grid.cols-6 { grid-template-columns: repeat(6,1fr); }
 
-.feat-cell {
+/* ══════════════════════════════════════════════
+   EQUIPMENT PILLS — icon only, no square box
+══════════════════════════════════════════════ */
+.features-row {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.feat-pill {
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  background: #f8fafc;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 1rem .75rem;
-  text-align: center;
-  transition: all .15s;
+  gap: 6px;
+  padding: 6px 14px 6px 10px;
+  border-radius: 20px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
   cursor: default;
 }
-.feat-cell:hover { border-color: #2563EB; background: #eff6ff; transform: translateY(-2px); }
 
-.feat-cell-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.feat-pill-ico {
+  width: 15px;
+  height: 15px;
   flex-shrink: 0;
 }
 
-.feat-cell-ico {
-  display: inline-flex !important;
-  width: 20px !important;
-  height: 20px !important;
-}
-.feat-cell-ico svg { width: 20px !important; height: 20px !important; display: block; }
+.feat-pill-wifi       { background: #fff7ed; border-color: #fed7aa; color: #c2410c; }
+.feat-pill-wifi       .feat-pill-ico { color: #f97316; }
+.feat-pill-forage     { background: #eff6ff; border-color: #bfdbfe; color: #1d4ed8; }
+.feat-pill-forage     .feat-pill-ico { color: #3b82f6; }
+.feat-pill-generator  { background: #fffbeb; border-color: #fde68a; color: #b45309; }
+.feat-pill-generator  .feat-pill-ico { color: #f59e0b; }
+.feat-pill-restaurant { background: #fdf8f0; border-color: #f5d9b5; color: #92400e; }
+.feat-pill-restaurant .feat-pill-ico { color: #b45309; }
+.feat-pill-tv         { background: #f5f3ff; border-color: #ddd6fe; color: #6d28d9; }
+.feat-pill-tv         .feat-pill-ico { color: #7c3aed; }
+.feat-pill-fridge     { background: #f0fdfa; border-color: #99f6e4; color: #0d9488; }
+.feat-pill-fridge     .feat-pill-ico { color: #0d9488; }
 
-.feat-cell-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: #374151;
-  line-height: 1.3;
-}
 
-/* Per-feature background + icon colour */
-.feat-wifi      .feat-cell-icon { background: #fff7ed; }
-.feat-generator .feat-cell-icon { background: #fefce8; }
-.feat-forage    .feat-cell-icon { background: #eff6ff; }
-.feat-restaurant .feat-cell-icon { background: #fdf8f0; }
-.feat-tv        .feat-cell-icon { background: #f5f3ff; }
-.feat-fridge    .feat-cell-icon { background: #f0fdfa; }
 
 .eq-orange { color: #f97316; }
 .eq-yellow { color: #eab308; }
@@ -578,3 +559,442 @@
   .toast { min-width: unset; max-width: calc(100vw - 2rem); }
   .toast-container { right: 1rem; left: 1rem; }
 }
+detail-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.detail-card-title-icon {
+  width: 18px;
+  height: 18px;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+ 
+/* ── Room categories grid ────────────────────────────────────── */
+.room-cats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+ 
+/* ── Individual room category card ──────────────────────────── */
+.room-cat-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.18s, box-shadow 0.18s, transform 0.12s;
+  background: #fff;
+}
+.room-cat-card:hover:not(.room-cat-full) {
+  border-color: #93c5fd;
+  box-shadow: 0 4px 18px rgba(37,99,235,0.10);
+  transform: translateY(-2px);
+}
+.room-cat-card.room-cat-selected {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.15), 0 4px 18px rgba(37,99,235,0.12);
+}
+.room-cat-card.room-cat-full {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+ 
+/* Header strip */
+.rcc-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px 10px;
+  position: relative;
+}
+.rcc-header.rcc-occ-single  { background: linear-gradient(90deg, #eff6ff 0%, #f0f9ff 100%); }
+.rcc-header.rcc-occ-double  { background: linear-gradient(90deg, #f0fdf4 0%, #ecfdf5 100%); }
+.rcc-header.rcc-occ-shared  { background: linear-gradient(90deg, #fffbeb 0%, #fef9c3 100%); }
+ 
+.rcc-occ-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.rcc-occ-single .rcc-occ-icon { background: #dbeafe; }
+.rcc-occ-double .rcc-occ-icon { background: #d1fae5; }
+.rcc-occ-shared .rcc-occ-icon { background: #fef3c7; }
+ 
+.rcc-ico {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.2;
+}
+.rcc-occ-single .rcc-ico { color: #2563eb; }
+.rcc-occ-double .rcc-ico { color: #059669; }
+.rcc-occ-shared .rcc-ico { color: #d97706; }
+ 
+.rcc-header-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+.rcc-name {
+  font-size: 0.90rem;
+  font-weight: 700;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.rcc-occ-label {
+  font-size: 0.72rem;
+  color: #64748b;
+  font-weight: 500;
+}
+ 
+.rcc-full-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #fff;
+  background: #ef4444;
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+ 
+.rcc-selected-check {
+  flex-shrink: 0;
+}
+.rcc-check-ico {
+  width: 20px;
+  height: 20px;
+  color: #2563eb;
+}
+ 
+/* Room image */
+.rcc-images {
+  position: relative;
+  height: 130px;
+  overflow: hidden;
+}
+.rcc-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.rcc-img-count {
+  position: absolute;
+  bottom: 6px;
+  right: 8px;
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  font-size: 0.70rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 10px;
+}
+ 
+/* Description */
+.rcc-desc {
+  font-size: 0.78rem;
+  color: #64748b;
+  padding: 10px 14px 4px;
+  line-height: 1.5;
+  margin: 0;
+}
+ 
+/* Amenities row */
+.rcc-amenities {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 14px 8px;
+}
+.rcc-amenity {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+.rcc-wifi   { background: #fff7ed; color: #ea580c; }
+.rcc-tv     { background: #f5f3ff; color: #7c3aed; }
+.rcc-fridge { background: #f0fdfa; color: #0d9488; }
+.rcc-none   { background: #f8fafc; color: #94a3b8; }
+.rcc-am-ico { width: 12px; height: 12px; stroke-width: 2.5; }
+ 
+/* Footer: availability + price */
+.rcc-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px 10px;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 4px;
+}
+.rcc-avail {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  color: #16a34a;
+}
+.rcc-avail.rcc-avail-full { color: #ef4444; }
+.rcc-avail-ico { width: 13px; height: 13px; }
+ 
+.rcc-price-wrap { text-align: right; }
+.rcc-price {
+  display: block;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #1e40af;
+  line-height: 1.1;
+}
+.rcc-price-unit {
+  font-size: 0.68rem;
+  color: #64748b;
+  font-weight: 500;
+}
+ 
+/* Select hint at bottom */
+.rcc-select-hint {
+  text-align: center;
+  font-size: 0.70rem;
+  color: #94a3b8;
+  padding: 5px 14px 8px;
+  font-style: italic;
+}
+.selected-hint {
+  color: #2563eb;
+  font-style: normal;
+  font-weight: 600;
+}
+ 
+/* No category selection reminder */
+.room-selection-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: #fef9c3;
+  border-radius: 10px;
+  font-size: 0.80rem;
+  color: #854d0e;
+  font-weight: 500;
+}
+.hint-ico { width: 16px; height: 16px; flex-shrink: 0; }
+ 
+/* Action hint below buttons */
+.action-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  color: #f59e0b;
+  margin-top: 6px;
+  padding: 0 2px;
+}
+.hint-ico-sm { width: 13px; height: 13px; flex-shrink: 0; }
+ 
+/* ── Sidebar room category picker ───────────────────────────── */
+.sidebar-room-cats {
+  margin: 0 0 12px;
+}
+.sidebar-rc-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #94a3b8;
+  margin-bottom: 8px;
+}
+.sidebar-rc-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1.5px solid #e2e8f0;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  background: #fff;
+}
+.sidebar-rc-item:hover:not(.sidebar-rc-full) {
+  border-color: #93c5fd;
+  background: #f8faff;
+}
+.sidebar-rc-item.sidebar-rc-selected {
+  border-color: #2563eb;
+  background: #eff6ff;
+}
+.sidebar-rc-item.sidebar-rc-full {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.sidebar-rc-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.sidebar-rc-ico {
+  width: 15px;
+  height: 15px;
+  color: #2563eb;
+  flex-shrink: 0;
+}
+.sidebar-rc-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.sidebar-rc-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1e293b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sidebar-rc-avail {
+  font-size: 0.68rem;
+  color: #16a34a;
+  font-weight: 500;
+}
+.sidebar-rc-avail.full { color: #ef4444; }
+.sidebar-rc-price {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #1e40af;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.sidebar-select-hint {
+  font-size: 0.72rem;
+  color: #f59e0b;
+  text-align: center;
+  margin: 4px 0 0;
+}
+ 
+/* Price card "from" label */
+.price-from-label {
+  font-size: 0.72rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
+}
+.price-selected-name {
+  font-size: 0.78rem;
+  color: #2563eb;
+  font-weight: 600;
+  margin-top: 3px;
+}
+ 
+/* ── Modal room banner (selected category) ───────────────────── */
+.modal-room-banner {
+  margin: 8px 0 12px;
+}
+.modal-room-banner-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1.5px solid #bfdbfe;
+  background: #eff6ff;
+}
+.modal-room-banner-inner.mrb-single { background: #eff6ff; border-color: #bfdbfe; }
+.modal-room-banner-inner.mrb-double { background: #f0fdf4; border-color: #bbf7d0; }
+.modal-room-banner-inner.mrb-shared { background: #fffbeb; border-color: #fde68a; }
+ 
+.mrb-ico { width: 18px; height: 18px; color: #2563eb; flex-shrink: 0; }
+.mrb-double .mrb-ico { color: #059669; }
+.mrb-shared .mrb-ico { color: #d97706; }
+ 
+.mrb-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+}
+.mrb-name { font-size: 0.85rem; font-weight: 700; color: #1e293b; }
+.mrb-detail { font-size: 0.73rem; color: #64748b; }
+ 
+.mrb-change {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #2563eb;
+  background: none;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  padding: 3px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.13s;
+}
+.mrb-change:hover { background: #dbeafe; }
+ 
+/* ── Modal inline room picker ────────────────────────────────── */
+.modal-room-picker {
+  margin: 8px 0 10px;
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+}
+.modal-picker-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #475569;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+.modal-picker-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.modal-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 9px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.13s, background 0.13s;
+  width: 100%;
+}
+.modal-picker-item:hover:not(:disabled) {
+  border-color: #93c5fd;
+  background: #f8faff;
+}
+.modal-picker-item:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.mpi-ico { width: 16px; height: 16px; color: #2563eb; flex-shrink: 0; }
+.mpi-info { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
+.mpi-name { font-size: 0.82rem; font-weight: 600; color: #1e293b; }
+.mpi-avail { font-size: 0.70rem; color: #16a34a; font-weight: 500; }
+.mpi-avail.mpi-full { color: #ef4444; }
+.mpi-price { font-size: 0.82rem; font-weight: 700; color: #1e40af; white-space: nowrap; flex-shrink: 0; }

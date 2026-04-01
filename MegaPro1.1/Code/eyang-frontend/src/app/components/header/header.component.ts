@@ -1,7 +1,7 @@
-// src/app/components/header/header.component.ts
+
 import { Component, Input, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
@@ -12,7 +12,7 @@ import {
   Home, Settings, LayoutDashboard, X,
   GraduationCap, Users, Building, Globe,
   CheckCheck, Trash2, MessageCircle, Star, Calendar, Shield, Info,
-  ArrowLeft   // ← ADDED
+  ArrowLeft
 } from 'lucide-angular';
 import { AuthService, User } from '../../services/auth.service';
 import { NotificationService, AppNotification } from '../../services/notification.service';
@@ -49,7 +49,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   readonly CalendarIcon = Calendar;
   readonly ShieldIcon = Shield;
   readonly InfoIcon = Info;
-  readonly ArrowLeftIcon = ArrowLeft;  // ← ADDED
+  readonly ArrowLeftIcon = ArrowLeft;
 
   // User state
   currentUser: User | null = null;
@@ -61,6 +61,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   isLoggingIn = false;
   isSigningUp = false;
   currentLang = 'fr';
+
+  // Track whether we are on the home page so scroll-to links know to navigate first
+  isHomePage = false;
 
   // Notifications
   notifications: AppNotification[] = [];
@@ -93,7 +96,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.currentLang = saved;
     this.translate.use(saved);
 
+    // Detect current route so we can decide whether to scroll or navigate
+    this.isHomePage = this.router.url === '/' || this.router.url === '';
     this.subs.push(
+      this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe((e: any) => {
+        this.isHomePage = e.urlAfterRedirects === '/' || e.urlAfterRedirects === '';
+      }),
+
       this.authService.currentUser$.subscribe(u => { this.currentUser = u; }),
 
       this.authService.showLoginModal$.subscribe(show => {
@@ -117,8 +126,23 @@ export class HeaderComponent implements OnInit, OnDestroy {
     localStorage.setItem('lang', this.currentLang);
   }
 
+  /**
+   * If we are already on the home page, scroll to the section immediately.
+   * If we are on any other page (e.g. /contact), navigate to home first and
+   * then scroll after the navigation completes.
+   */
   scrollTo(id: string): void {
-    document.querySelector('.' + id + '-section')?.scrollIntoView({ behavior: 'smooth' });
+    const selector = '.' + id + '-section';
+    if (this.isHomePage) {
+      document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      this.router.navigate(['/']).then(() => {
+        // Give Angular a tick to render the home component before scrolling
+        setTimeout(() => {
+          document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth' });
+        }, 150);
+      });
+    }
   }
 
   toggleMenu(): void {
@@ -166,11 +190,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
   formatNotifTime(dateStr: string): string {
     const d = new Date(dateStr);
     const diff = Math.floor((Date.now() - d.getTime()) / 60000);
-    if (diff < 1) return 'À l\'instant';
-    if (diff < 60) return `Il y a ${diff} min`;
+    if (diff < 1) return this.currentLang === 'fr' ? 'À l\'instant' : 'Just now';
+    if (diff < 60) return this.currentLang === 'fr' ? `Il y a ${diff} min` : `${diff} min ago`;
     const h = Math.floor(diff / 60);
-    if (h < 24) return `Il y a ${h}h`;
-    return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+    if (h < 24) return this.currentLang === 'fr' ? `Il y a ${h}h` : `${h}h ago`;
+    return d.toLocaleDateString(this.currentLang === 'fr' ? 'fr-FR' : 'en-US', { day: '2-digit', month: 'short' });
   }
 
   // ── Auth ───────────────────────────────────────────────────────
@@ -201,14 +225,21 @@ export class HeaderComponent implements OnInit, OnDestroy {
         this.loginEmail = ''; this.loginPassword = '';
         this.authService.currentUser$.pipe(filter(u => u !== null), take(1)).subscribe(user => {
           this.isLoggingIn = false;
-          this.notifService.success('Connexion réussie', `Bienvenue, ${user!.name} !`);
+          this.notifService.success(
+            this.currentLang === 'fr' ? 'Connexion réussie' : 'Login successful',
+            this.currentLang === 'fr' ? `Bienvenue, ${user!.name} !` : `Welcome, ${user!.name}!`
+          );
           this.router.navigate([user!.role === 'Admin' ? '/admin/overview' : '/dashboard']);
         });
       },
-      error: () => {
+      error: (err: any) => {
         this.isLoggingIn = false;
-        this.loginError = this.currentLang === 'fr'
-          ? 'Email ou mot de passe incorrect.' : 'Invalid email or password.';
+        // Show the exact Django error if available, otherwise generic message
+        const detail = err?.error?.detail || err?.error?.non_field_errors?.[0];
+        this.loginError = detail
+          ?? (this.currentLang === 'fr'
+            ? 'Email ou mot de passe incorrect.'
+            : 'Invalid email or password.');
       }
     });
   }
@@ -224,23 +255,38 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
     this.isSigningUp = true;
     this.authService.register({
-      email: f.email, password: f.password,
-      firstName: f.firstName, lastName: f.lastName,
-      phone: f.phone, accountType: f.accountType
+      email: f.email,
+      password: f.password,
+      first_name: f.firstName,
+      last_name: f.lastName,
+      phone: f.phone,
+      role: f.accountType        // Django expects 'role', not 'accountType'
     }).subscribe({
       next: () => {
         this.closeSignup();
         this.authService.currentUser$.pipe(filter(u => u !== null), take(1)).subscribe(user => {
           this.isSigningUp = false;
-          this.notifService.success('Compte créé !', `Bienvenue, ${user!.name} !`);
+          this.notifService.success(
+            this.currentLang === 'fr' ? 'Compte créé !' : 'Account created!',
+            this.currentLang === 'fr' ? `Bienvenue, ${user!.name} !` : `Welcome, ${user!.name}!`
+          );
           this.router.navigate([user!.role === 'Admin' ? '/admin/overview' : '/dashboard']);
         });
       },
       error: (err: any) => {
         this.isSigningUp = false;
-        this.signupError = err?.error?.email?.[0]
-          ?? err?.error?.username?.[0]
-          ?? (this.currentLang === 'fr' ? 'Erreur lors de l\'inscription.' : 'Registration error.');
+        // Collect all field errors from Django validation response
+        const errors = err?.error;
+        if (errors && typeof errors === 'object') {
+          const messages = Object.values(errors)
+            .map((v: any) => (Array.isArray(v) ? v[0] : v))
+            .join(' ');
+          this.signupError = messages;
+        } else {
+          this.signupError = this.currentLang === 'fr'
+            ? 'Erreur lors de l\'inscription.'
+            : 'Registration error.';
+        }
       }
     });
   }

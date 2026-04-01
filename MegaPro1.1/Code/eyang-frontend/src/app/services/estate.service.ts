@@ -5,6 +5,25 @@ import { environment } from '../../environments/environment';
 
 export interface EstateImage { id: number; image: string; }
 
+export interface RoomImage { id: number; image: string; caption: string; room_category: number; }
+
+export interface RoomCategory {
+  id: number;
+  estate: number;
+  name: string;
+  /** single | double | shared */
+  occupancy: 'single' | 'double' | 'shared';
+  price: number;
+  quantity_available: number;
+  wifi: '0' | '1';
+  tv: '0' | '1';
+  fridge: '0' | '1';
+  /** 1=Large 2=Medium 3=Small */
+  room_size: '1' | '2' | '3';
+  description: string;
+  images: RoomImage[];
+}
+
 export interface EstateRaw {
   id: number; name: string; location: string;
   rating: string; distance: number;
@@ -13,20 +32,12 @@ export interface EstateRaw {
   description: string; publishedAt: string;
   status: 'draft' | 'published' | 'archived';
   images: EstateImage[];
+  // ↓ Now included by the serializer
+  room_categories: RoomCategory[];
   owner?: { id: number; username: string; email: string; first_name: string; last_name: string; };
   reviews_count: number; orders_count: number;
   price: number; capacity: number; free: number;
   wifi: '0' | '1'; tv: '0' | '1'; fridge: '0' | '1';
-}
-
-export interface RoomImage { id: number; image: string; caption: string; }
-
-export interface RoomCategory {
-  id: number; estate: number; name: string; occupancy: string;
-  price: number; quantity_available: number;
-  wifi: '0' | '1'; tv: '0' | '1'; fridge: '0' | '1';
-  room_size: '1' | '2' | '3'; description: string;
-  images: RoomImage[];
 }
 
 export interface Estate extends EstateRaw {
@@ -45,6 +56,7 @@ export interface Review {
 export interface QuickOrder {
   id?: number; estate: number; estate_name?: string; estate_image?: string;
   estate_location?: string; estate_price?: number;
+  room_category?: number | null; room_category_name?: string | null;
   name: string; phone: string; note?: string; created_at?: string;
   user_email?: string;
 }
@@ -96,8 +108,6 @@ export interface EstateFilters {
   min_price?: number; max_price?: number; room_size?: string; max_dist?: number; mine?: string;
 }
 
-const ROOM_MAP: Record<string, string> = { '1': 'Villa', '2': 'Studio', '3': 'Chambre' };
-
 export function getAbsoluteUrl(url: string | null | undefined): string {
   if (!url) return '';
   if (url.startsWith('http')) return url;
@@ -116,12 +126,19 @@ export function enrichEstate(raw: EstateRaw): Estate {
     image: getAbsoluteUrl(img.image)
   }));
 
+  // Enrich room category images too
+  const room_categories = (raw.room_categories || []).map(rc => ({
+    ...rc,
+    images: (rc.images || []).map(img => ({ ...img, image: getAbsoluteUrl(img.image) }))
+  }));
+
   return {
     ...raw,
     images,
+    room_categories,
     title: raw.name,
     image: images[0]?.image ?? '',
-    type: 'Logement', // Placeholder since room_size moved to RoomCategory
+    type: 'Logement',
     features, area: null, minMonths: 2, equipments: [],
   };
 }
@@ -132,6 +149,16 @@ export function enrichReview(r: Review): Review {
     initials: r.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
     date: new Date(r.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }),
   };
+}
+
+/** Helper: human-readable occupancy label */
+export function occupancyLabel(occ: string): string {
+  return { single: 'Individuelle', double: 'Double', shared: 'Partagée' }[occ] ?? occ;
+}
+
+/** Helper: room size label */
+export function roomSizeLabel(s: string): string {
+  return { '1': 'Grande', '2': 'Moyenne', '3': 'Petite' }[s] ?? '';
 }
 
 @Injectable({ providedIn: 'root' })
@@ -228,36 +255,30 @@ export class EstateService {
     return this.http.post(`${this.BASE}/conversations/${conversationId}/read/`, {});
   }
 
-  /** Delete a conversation (client-side: delete own messages or entire thread) */
   deleteConversation(conversationId: number): Observable<void> {
     return this.http.delete<void>(`${this.BASE}/conversations/${conversationId}/`);
   }
 
-  /** Delete a single chat message */
   deleteChatMessage(conversationId: number, messageId: number): Observable<void> {
     return this.http.delete<void>(`${this.BASE}/conversations/${conversationId}/messages/${messageId}/`);
   }
 
   // ── Estate images ─────────────────────────────────────────
-
-  /** Upload one or more images for an estate. */
   uploadEstateImages(estateId: number, files: File[]): Observable<EstateImage[]> {
     const fd = new FormData();
     files.forEach(f => fd.append('images', f, f.name));
     return this.http.post<EstateImage[]>(`${this.BASE}/estates/${estateId}/images/`, fd);
   }
 
-  /** Delete a single image by its id. */
   deleteEstateImage(estateId: number, imageId: number): Observable<void> {
     return this.http.delete<void>(`${this.BASE}/estates/${estateId}/images/${imageId}/`);
   }
 
-  // ── Admin: overview ───────────────────────────────────────
+  // ── Admin ─────────────────────────────────────────────────
   getAdminStats(): Observable<AdminStats> {
     return this.http.get<AdminStats>(`${this.BASE}/admin/stats/`);
   }
 
-  // ── Admin: bookings ───────────────────────────────────────
   getAdminBookings(): Observable<QuickOrder[]> {
     return this.http.get<QuickOrder[]>(`${this.BASE}/admin/bookings/`).pipe(
       map(list => list.map(o => ({ ...o, estate_image: getAbsoluteUrl(o.estate_image) })))
@@ -268,7 +289,6 @@ export class EstateService {
     return this.http.delete(`${this.BASE}/admin/bookings/?id=${id}`);
   }
 
-  // ── Admin: reviews ────────────────────────────────────────
   getAdminReviews(): Observable<Review[]> {
     return this.http.get<Review[]>(`${this.BASE}/admin/reviews/`).pipe(map(list => list.map(enrichReview)));
   }
@@ -277,7 +297,6 @@ export class EstateService {
     return this.http.delete(`${this.BASE}/admin/reviews/?id=${id}`);
   }
 
-  // ── Admin: contacts ───────────────────────────────────────
   getAdminContacts(): Observable<ContactRequest[]> {
     return this.http.get<ContactRequest[]>(`${this.BASE}/admin/contacts/`);
   }
@@ -286,7 +305,6 @@ export class EstateService {
     return this.http.delete(`${this.BASE}/admin/contacts/?id=${id}`);
   }
 
-  // ── Admin: users ──────────────────────────────────────────
   getAdminUsers(): Observable<AdminUser[]> {
     return this.http.get<AdminUser[]>(`${this.BASE}/admin/users/`);
   }
@@ -295,7 +313,6 @@ export class EstateService {
     return this.http.patch<{ id: number; active: boolean }>(`${this.BASE}/admin/users/${userId}/toggle/`, {});
   }
 
-  // ── Admin: verification ───────────────────────────────────
   getPendingOwners(): Observable<any[]> {
     return this.http.get<any[]>(`${this.BASE}/admin/users/?pending_only=1`).pipe(
       map(users => users.map(u => ({ ...u, id_card: getAbsoluteUrl(u.id_card) })))

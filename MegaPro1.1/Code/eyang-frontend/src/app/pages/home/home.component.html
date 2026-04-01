@@ -160,28 +160,26 @@
         </div>
     </div>
 
-    <div class="card-divider"></div>
+    <!-- Description snippet -->
+    <p class="card-description" *ngIf="h.description">{{ h.description }}</p>
 
-    <!-- Dynamic features: up to 3 active features this estate actually has -->
-    <div class="features-grid" [ngClass]="'cols-' + getTopFeatures(h).length">
-        <div *ngFor="let f of getTopFeatures(h)" class="feat-cell" [ngClass]="'feat-' + f.key">
-            <div class="feat-cell-icon">
-                <lucide-icon *ngIf="f.key==='wifi'" [img]="WifiIcon" class="feat-cell-ico"></lucide-icon>
-                <lucide-icon *ngIf="f.key==='forage'" [img]="DropletsIcon" class="feat-cell-ico"></lucide-icon>
-                <lucide-icon *ngIf="f.key==='generator'" [img]="ZapIcon" class="feat-cell-ico"></lucide-icon>
-                <lucide-icon *ngIf="f.key==='restaurant'" [img]="CoffeeIcon" class="feat-cell-ico"></lucide-icon>
-                <lucide-icon *ngIf="f.key==='tv'" [img]="TvIcon" class="feat-cell-ico"></lucide-icon>
-                <lucide-icon *ngIf="f.key==='fridge'" [img]="FridgeIcon" class="feat-cell-ico"></lucide-icon>
-            </div>
-        <span class="feat-cell-label">{{ f.label | translate }}</span>
-        </div>
-        <!-- Placeholder if estate has no features -->
-        <div *ngIf="getTopFeatures(h).length === 0" class="feat-none">
-            {{ 'listings.no_features' | translate }}
-        </div>
+    <!-- Features: only shown when no room categories — icon only, no square box -->
+    <div class="card-divider"></div>
+    <div class="features-row" *ngIf="getTopFeatures(h).length > 0">
+        <span *ngFor="let f of getTopFeatures(h)" class="feat-pill" [ngClass]="'feat-pill-' + f.key">
+            <lucide-icon *ngIf="f.key==='wifi'"       [img]="WifiIcon"     class="feat-pill-ico"></lucide-icon>
+            <lucide-icon *ngIf="f.key==='forage'"     [img]="DropletsIcon" class="feat-pill-ico"></lucide-icon>
+            <lucide-icon *ngIf="f.key==='generator'"  [img]="ZapIcon"      class="feat-pill-ico"></lucide-icon>
+            <lucide-icon *ngIf="f.key==='restaurant'" [img]="CoffeeIcon"   class="feat-pill-ico"></lucide-icon>
+            <lucide-icon *ngIf="f.key==='tv'"         [img]="TvIcon"       class="feat-pill-ico"></lucide-icon>
+            <lucide-icon *ngIf="f.key==='fridge'"     [img]="FridgeIcon"   class="feat-pill-ico"></lucide-icon>
+            <span class="feat-pill-label">{{ f.label | translate }}</span>
+        </span>
     </div>
 
+    <!-- Price row: shows lowest available price -->
     <div class="price-row">
+        <span class="price-label">À partir de</span>
         <span class="price-amount">{{ h.price | number }}</span>
         <span class="price-currency">FCFA</span>
         <span class="price-period">{{ 'listings.per_month' | translate }}</span>
@@ -340,9 +338,7 @@
     </section>
 
 </div>
-<!-- ════ ADVANCED FILTER MODAL — outside home-container so position:fixed works ════ -->
 <!-- ════ ADVANCED FILTER DRAWER ════ -->
-<!-- Backdrop: clicking outside closes the panel -->
 <div class="adv-drawer-backdrop" *ngIf="showAdvanced" (click)="closeAdvanced()" aria-label="Fermer les filtres"></div>
 <div class="adv-drawer" [class.adv-drawer-open]="showAdvanced">
     <div class="adv-drawer-header">
@@ -355,9 +351,9 @@
         </button>
     </div>
     <div class="adv-drawer-body">
-        <!-- Type -->
+        <!-- Type de chambre -->
         <div class="adv-section">
-            <label class="adv-label">Type de logement</label>
+            <label class="adv-label">Type de chambre</label>
             <div class="adv-chip-group">
                 <button class="adv-chip" [class.adv-chip-on]="filterRoomSize===''"
                     (click)="filterRoomSize=''">Tous</button>
@@ -415,14 +411,10 @@
         <div class="adv-section">
             <label class="adv-label">Budget mensuel (FCFA)</label>
             <div class="adv-price-presets">
-                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===50000" (click)="setMaxPrice(50000)">≤ 50
-                    000</button>
-                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===100000" (click)="setMaxPrice(100000)">≤
-                    100 000</button>
-                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===200000" (click)="setMaxPrice(200000)">≤
-                    200 000</button>
-                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===500000" (click)="setMaxPrice(500000)">≤
-                    500 000</button>
+                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===50000" (click)="setMaxPrice(50000)">≤ 50 000</button>
+                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===100000" (click)="setMaxPrice(100000)">≤ 100 000</button>
+                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===200000" (click)="setMaxPrice(200000)">≤ 200 000</button>
+                <button class="adv-chip" [class.adv-chip-on]="filterMaxPrice===500000" (click)="setMaxPrice(500000)">≤ 500 000</button>
             </div>
             <div class="adv-price-inputs">
                 <div class="adv-input-wrap">
@@ -450,8 +442,7 @@
                     (click)="filterMaxDist=filterMaxDist===2000?null:2000">≤ 2 km</button>
             </div>
             <div class="adv-input-wrap mt-3">
-                <input class="adv-input" type="number" placeholder="Saisir distance max" [(ngModel)]="filterMaxDist"
-                    min="0">
+                <input class="adv-input" type="number" placeholder="Saisir distance max" [(ngModel)]="filterMaxDist" min="0">
             </div>
         </div>
         <!-- Places -->

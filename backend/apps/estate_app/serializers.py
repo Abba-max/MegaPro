@@ -62,17 +62,14 @@ class RegisterSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         phone = validated_data.pop('phone', '')
         role  = validated_data.pop('role', 'Student')
-        
-        # Map frontend role to user_type and visitor_category
         user_type = 'owner' if role == 'Owner' else 'visitor'
         visitor_category = '1' if role == 'Student' else ('2' if role == 'Parent' else None)
-        
         user = User.objects.create_user(
             **validated_data,
             user_type=user_type,
             contact=phone,
             visitor_category=visitor_category,
-            is_verified=False  # Always false on registration
+            is_verified=False
         )
         return user
 
@@ -93,6 +90,7 @@ class UserSerializer(serializers.ModelSerializer):
             return f"http://localhost:8000{url}"
         return None
 
+
 class EstateImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
@@ -106,22 +104,58 @@ class EstateImageSerializer(serializers.ModelSerializer):
             url = obj.image.url
             if request:
                 return request.build_absolute_uri(url)
-            # Fallback for when request is missing
             return f"http://localhost:8000{url}"
         return None
 
 
+# ── Room Serializers (defined before EstateSerializer so they can be nested) ──
+
+from .models import RoomCategory, RoomImage
+
+class RoomImageSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = RoomImage
+        fields = ['id', 'room_category', 'image', 'caption']
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.image:
+            url = obj.image.url
+            if request:
+                return request.build_absolute_uri(url)
+            return f"http://localhost:8000{url}"
+        return None
+
+
+class RoomCategorySerializer(serializers.ModelSerializer):
+    images = RoomImageSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = RoomCategory
+        fields = [
+            'id', 'estate', 'name', 'occupancy', 'price',
+            'quantity_available', 'wifi', 'tv', 'fridge',
+            'room_size', 'description', 'images'
+        ]
+
+
+# ── Estate Serializer ────────────────────────────────────────────────────────
+
 class EstateSerializer(serializers.ModelSerializer):
     owner          = UserSerializer(read_only=True)
     images         = EstateImageSerializer(many=True, read_only=True)
-    capacity      = serializers.SerializerMethodField()
-    free          = serializers.SerializerMethodField()
-    price         = serializers.SerializerMethodField()
-    wifi          = serializers.SerializerMethodField()
-    tv            = serializers.SerializerMethodField()
-    fridge        = serializers.SerializerMethodField()
-    reviews_count = serializers.SerializerMethodField()
-    orders_count  = serializers.SerializerMethodField()
+    # ↓ NEW: nested room categories so the frontend can render per-room details
+    room_categories = RoomCategorySerializer(many=True, read_only=True)
+    capacity        = serializers.SerializerMethodField()
+    free            = serializers.SerializerMethodField()
+    price           = serializers.SerializerMethodField()
+    wifi            = serializers.SerializerMethodField()
+    tv              = serializers.SerializerMethodField()
+    fridge          = serializers.SerializerMethodField()
+    reviews_count   = serializers.SerializerMethodField()
+    orders_count    = serializers.SerializerMethodField()
 
     class Meta:
         model  = Estate
@@ -130,6 +164,7 @@ class EstateSerializer(serializers.ModelSerializer):
             'rating', 'distance', 'restaurant',
             'generator', 'forage',
             'description', 'publishedAt', 'status', 'images',
+            'room_categories',          # ← added
             'capacity', 'free', 'price',
             'wifi', 'tv', 'fridge',
             'reviews_count', 'orders_count',
@@ -204,15 +239,16 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class QuickOrderSerializer(serializers.ModelSerializer):
-    estate_name  = serializers.CharField(source='estate.name', read_only=True)
-    estate_image = serializers.SerializerMethodField()
-    # Expose estate location for client dashboard
+    estate_name     = serializers.CharField(source='estate.name', read_only=True)
+    estate_image    = serializers.SerializerMethodField()
     estate_location = serializers.CharField(source='estate.location', read_only=True)
     estate_price    = serializers.IntegerField(source='estate.price', read_only=True)
+    room_category_name = serializers.CharField(source='room_category.name', read_only=True, default=None)
 
     class Meta:
         model  = QuickOrder
         fields = ['id', 'estate', 'estate_name', 'estate_image', 'estate_location',
+                  'room_category', 'room_category_name',
                   'name', 'phone', 'note', 'created_at']
 
     def get_estate_image(self, obj):
@@ -226,7 +262,6 @@ class QuickOrderSerializer(serializers.ModelSerializer):
         return None
 
     def create(self, validated_data):
-        # Attach authenticated user if available
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             validated_data['user'] = request.user
@@ -246,27 +281,6 @@ class ContactRequestSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             validated_data['user'] = request.user
         return super().create(validated_data)
-
-
-# ── New Room Serializers ──────────────────────────────────────────────────
-
-from .models import RoomCategory, RoomImage
-
-class RoomImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RoomImage
-        fields = ['id', 'room_category', 'image', 'caption']
-
-class RoomCategorySerializer(serializers.ModelSerializer):
-    images = RoomImageSerializer(many=True, read_only=True)
-    
-    class Meta:
-        model = RoomCategory
-        fields = [
-            'id', 'estate', 'name', 'occupancy', 'price', 
-            'quantity_available', 'wifi', 'tv', 'fridge', 
-            'room_size', 'description', 'images'
-        ]
 
 
 # ── Messaging ────────────────────────────────────────────────

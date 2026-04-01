@@ -10,7 +10,7 @@ import {
   MessageSquare, Send, X, Images, Loader, CheckCircle, XCircle, AlertCircle,
   Heart, Tv, Thermometer, Phone, Info
 } from 'lucide-angular';
-import { EstateService, Estate, Review, Conversation } from '../../services/estate.service';
+import { EstateService, Estate, Review, Conversation, RoomCategory } from '../../services/estate.service';
 import { AuthService, User } from '../../services/auth.service';
 
 export interface Toast {
@@ -67,13 +67,16 @@ export class HousingDetailComponent implements OnInit {
   isSubmitting  = false;
   submitSuccess = false;
 
+  // ── Room category selection ───────────────────────────────
+  /** The room category the user has selected for booking */
+  selectedRoomCategory: RoomCategory | null = null;
+
   activePhotoIndex   = 0;
   showLightbox       = false;
   showContactModal   = false;
   showMessageModal   = false;
 
   contactForm = { name: '', phone: '', message: '' };
-  /** Bound to the chat input in the message modal */
   messageText = '';
   isSendingMessage      = false;
   isLoadingConversation = false;
@@ -133,6 +136,11 @@ export class HousingDetailComponent implements OnInit {
         this.photos     = data.images.map((img: any) => img.image).filter(Boolean);
         if (this.photos.length === 0) this.photos = ['assets/images/placeholder.jpg'];
         this.isLoading  = false;
+        // If only one room category with availability, auto-select it
+        const available = (data.room_categories || []).filter(rc => rc.quantity_available > 0);
+        if (available.length === 1) {
+          this.selectedRoomCategory = available[0];
+        }
       },
       error: () => {
         this.errorMessage = 'Logement introuvable.';
@@ -149,12 +157,9 @@ export class HousingDetailComponent implements OnInit {
     });
   }
 
-  /**
-   * Build equipment list with both `color` (icon colour class) and
-   * `colorKey` (feat-cell CSS modifier, matching home page keys).
-   */
   private buildEquipments(h: Estate): { name: string; icon: any; color: string; colorKey: string }[] {
     const eq: { name: string; icon: any; color: string; colorKey: string }[] = [];
+    // Estate-level amenities (not per-room)
     if (h.wifi === '1')       eq.push({ name: 'WiFi',          icon: this.WifiIcon,     color: 'orange', colorKey: 'wifi'       });
     if (h.generator === '1')  eq.push({ name: 'Générateur',    icon: this.ZapIconRef,   color: 'yellow', colorKey: 'generator'  });
     if (h.forage === '1')     eq.push({ name: 'Forage / Eau',  icon: this.DropletsIcon, color: 'blue',   colorKey: 'forage'     });
@@ -162,6 +167,16 @@ export class HousingDetailComponent implements OnInit {
     if (h.tv === '1')         eq.push({ name: 'Télévision',    icon: this.TvIcon,       color: 'purple', colorKey: 'tv'         });
     if (h.fridge === '1')     eq.push({ name: 'Réfrigérateur', icon: this.FridgeIcon,   color: 'teal',   colorKey: 'fridge'     });
     return eq;
+  }
+
+  // ── Room category selection ───────────────────────────────
+
+  selectRoomCategory(rc: RoomCategory): void {
+    this.selectedRoomCategory = rc;
+  }
+
+  clearRoomCategory(): void {
+    this.selectedRoomCategory = null;
   }
 
   // ── Star helpers ──────────────────────────────────────────
@@ -293,7 +308,7 @@ export class HousingDetailComponent implements OnInit {
       },
       error: () => {
         this.isSendingMessage = false;
-        this.messageText = text; // restore on failure
+        this.messageText = text;
         this.showToast('Erreur lors de l\'envoi', 'error');
       }
     });
@@ -337,10 +352,12 @@ export class HousingDetailComponent implements OnInit {
     this.submitSuccess = false;
 
     this.estateService.createQuickOrder({
-      estate: this.housing.id,
-      name:   this.contactForm.name.trim(),
-      phone:  this.contactForm.phone.trim(),
-      note:   this.contactForm.message
+      estate:         this.housing.id,
+      // ← pass the selected room category id if one was chosen
+      room_category:  this.selectedRoomCategory?.id ?? null,
+      name:           this.contactForm.name.trim(),
+      phone:          this.contactForm.phone.trim(),
+      note:           this.contactForm.message
     }).subscribe({
       next: () => {
         this.isSubmitting  = false;
