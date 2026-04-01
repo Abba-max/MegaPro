@@ -108,7 +108,7 @@ class EstateImageSerializer(serializers.ModelSerializer):
         return None
 
 
-# ── Room Serializers (defined before EstateSerializer so they can be nested) ──
+# ── Room Serializers ──────────────────────────────────────────────────────────
 
 from .models import RoomCategory, RoomImage
 
@@ -141,12 +141,11 @@ class RoomCategorySerializer(serializers.ModelSerializer):
         ]
 
 
-# ── Estate Serializer ────────────────────────────────────────────────────────
+# ── Estate Serializer ─────────────────────────────────────────────────────────
 
 class EstateSerializer(serializers.ModelSerializer):
-    owner          = UserSerializer(read_only=True)
-    images         = EstateImageSerializer(many=True, read_only=True)
-    # ↓ NEW: nested room categories so the frontend can render per-room details
+    owner           = UserSerializer(read_only=True)
+    images          = EstateImageSerializer(many=True, read_only=True)
     room_categories = RoomCategorySerializer(many=True, read_only=True)
     capacity        = serializers.SerializerMethodField()
     free            = serializers.SerializerMethodField()
@@ -156,25 +155,60 @@ class EstateSerializer(serializers.ModelSerializer):
     fridge          = serializers.SerializerMethodField()
     reviews_count   = serializers.SerializerMethodField()
     orders_count    = serializers.SerializerMethodField()
+    # ── Dynamic rating: always computed live from reviews ──────────────────────
+    average_rating  = serializers.SerializerMethodField()
 
     class Meta:
         model  = Estate
         fields = [
             'id', 'owner', 'name', 'location',
-            'rating', 'distance', 'restaurant',
+            'rating',           # kept for backward-compat (stored value, auto-updated by signal)
+            'average_rating',   # ← live-computed from reviews; use this on the frontend
+            'distance', 'restaurant',
             'generator', 'forage',
             'description', 'publishedAt', 'status', 'images',
-            'room_categories',          # ← added
+            'room_categories',
             'capacity', 'free', 'price',
             'wifi', 'tv', 'fridge',
             'reviews_count', 'orders_count',
         ]
 
+    # ── average_rating ────────────────────────────────────────────────────────
+    def get_average_rating(self, obj) -> dict:
+        """
+        Returns a dict with:
+          - value   : float  – the average (0.0 when no reviews)
+          - display : str    – e.g. "4.3"
+          - count   : int    – number of top-level reviews used in the average
+          - breakdown: dict  – count per star level  {1: n, 2: n, 3: n, 4: n, 5: n}
+        """
+        from django.db.models import Avg, Count
+        top_level_reviews = obj.reviews.filter(parent__isnull=True)
+        agg = top_level_reviews.aggregate(avg=Avg('rating'), count=Count('id'))
+        avg   = agg['avg']
+        count = agg['count'] or 0
+
+        # Breakdown per star level
+        breakdown = {i: 0 for i in range(1, 6)}
+        for row in top_level_reviews.values('rating').annotate(n=Count('id')):
+            if 1 <= row['rating'] <= 5:
+                breakdown[row['rating']] = row['n']
+
+        value = round(avg, 1) if avg is not None else 0.0
+        return {
+            'value':     value,
+            'display':   f"{value:.1f}",
+            'count':     count,
+            'breakdown': breakdown,
+        }
+
+    # ── Other computed fields ─────────────────────────────────────────────────
+
     def get_capacity(self, obj) -> int:
         total = 0
         for rc in obj.room_categories.all():
             multiplier = {'single': 1, 'double': 2, 'shared': 4}.get(rc.occupancy, 1)
-            total += (rc.quantity_available * multiplier)
+            total += rc.quantity_available * multiplier
         return total
 
     def get_free(self, obj) -> int:
@@ -195,11 +229,13 @@ class EstateSerializer(serializers.ModelSerializer):
         return '1' if obj.room_categories.filter(fridge='1').exists() else '0'
 
     def get_reviews_count(self, obj) -> int:
-        return obj.reviews.count()
+        return obj.reviews.filter(parent__isnull=True).count()
 
     def get_orders_count(self, obj) -> int:
         return obj.quick_orders.count()
 
+
+# ── Review Serializer ─────────────────────────────────────────────────────────
 
 class ReviewSerializer(serializers.ModelSerializer):
     estate_name  = serializers.CharField(source='estate.name', read_only=True)
@@ -238,11 +274,13 @@ class ReviewSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+# ── QuickOrder Serializer ─────────────────────────────────────────────────────
+
 class QuickOrderSerializer(serializers.ModelSerializer):
-    estate_name     = serializers.CharField(source='estate.name', read_only=True)
-    estate_image    = serializers.SerializerMethodField()
-    estate_location = serializers.CharField(source='estate.location', read_only=True)
-    estate_price    = serializers.IntegerField(source='estate.price', read_only=True)
+    estate_name        = serializers.CharField(source='estate.name', read_only=True)
+    estate_image       = serializers.SerializerMethodField()
+    estate_location    = serializers.CharField(source='estate.location', read_only=True)
+    estate_price       = serializers.IntegerField(source='estate.price', read_only=True)
     room_category_name = serializers.CharField(source='room_category.name', read_only=True, default=None)
 
     class Meta:
@@ -268,6 +306,8 @@ class QuickOrderSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+# ── ContactRequest Serializer ─────────────────────────────────────────────────
+
 class ContactRequestSerializer(serializers.ModelSerializer):
     estate_name = serializers.CharField(source='estate.name', read_only=True)
 
@@ -283,7 +323,7 @@ class ContactRequestSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-# ── Messaging ────────────────────────────────────────────────
+# ── Messaging Serializers ─────────────────────────────────────────────────────
 
 class MessageSerializer(serializers.ModelSerializer):
     sender_name     = serializers.CharField(source='sender.get_full_name', read_only=True)

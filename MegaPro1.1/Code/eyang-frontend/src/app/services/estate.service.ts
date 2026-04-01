@@ -24,15 +24,30 @@ export interface RoomCategory {
   images: RoomImage[];
 }
 
+/** Shape returned by the backend for average_rating */
+export interface AverageRating {
+  /** Numeric average, e.g. 4.3 */
+  value: number;
+  /** Formatted string, e.g. "4.3" */
+  display: string;
+  /** Number of top-level reviews included in the average */
+  count: number;
+  /** Per-star breakdown: { 1: n, 2: n, 3: n, 4: n, 5: n } */
+  breakdown: { [star: number]: number };
+}
+
 export interface EstateRaw {
   id: number; name: string; location: string;
-  rating: string; distance: number;
+  /** Stored string kept for backward-compat; prefer average_rating.value */
+  rating: string;
+  /** Live-computed average from reviews (use this) */
+  average_rating: AverageRating;
+  distance: number;
   restaurant: '0' | '1'; generator: '0' | '1';
   forage: '0' | '1';
   description: string; publishedAt: string;
   status: 'draft' | 'published' | 'archived';
   images: EstateImage[];
-  // ↓ Now included by the serializer
   room_categories: RoomCategory[];
   owner?: { id: number; username: string; email: string; first_name: string; last_name: string; };
   reviews_count: number; orders_count: number;
@@ -115,6 +130,17 @@ export function getAbsoluteUrl(url: string | null | undefined): string {
   return url.startsWith('/') ? `${base}${url}` : `${base}/${url}`;
 }
 
+/** Fallback AverageRating when the backend didn't return one (old data). */
+function defaultAverageRating(storedRating: string): AverageRating {
+  const value = parseFloat(storedRating) || 0;
+  return {
+    value,
+    display: value.toFixed(1),
+    count: 0,
+    breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+  };
+}
+
 export function enrichEstate(raw: EstateRaw): Estate {
   const features: string[] = [];
   if (raw.generator === '1') features.push('zap');
@@ -126,16 +152,20 @@ export function enrichEstate(raw: EstateRaw): Estate {
     image: getAbsoluteUrl(img.image)
   }));
 
-  // Enrich room category images too
   const room_categories = (raw.room_categories || []).map(rc => ({
     ...rc,
     images: (rc.images || []).map(img => ({ ...img, image: getAbsoluteUrl(img.image) }))
   }));
 
+  // Ensure average_rating is always present (guard against old API versions)
+  const average_rating: AverageRating =
+    raw.average_rating ?? defaultAverageRating(raw.rating ?? '0.0');
+
   return {
     ...raw,
     images,
     room_categories,
+    average_rating,
     title: raw.name,
     image: images[0]?.image ?? '',
     type: 'Logement',

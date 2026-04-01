@@ -10,7 +10,7 @@ import {
   MessageSquare, Send, X, Images, Loader, CheckCircle, XCircle, AlertCircle,
   Heart, Tv, Thermometer, Phone, Info
 } from 'lucide-angular';
-import { EstateService, Estate, Review, Conversation, RoomCategory } from '../../services/estate.service';
+import { EstateService, Estate, Review, Conversation, RoomCategory, AverageRating } from '../../services/estate.service';
 import { AuthService, User } from '../../services/auth.service';
 
 export interface Toast {
@@ -68,7 +68,6 @@ export class HousingDetailComponent implements OnInit {
   submitSuccess = false;
 
   // ── Room category selection ───────────────────────────────
-  /** The room category the user has selected for booking */
   selectedRoomCategory: RoomCategory | null = null;
 
   activePhotoIndex   = 0;
@@ -136,7 +135,6 @@ export class HousingDetailComponent implements OnInit {
         this.photos     = data.images.map((img: any) => img.image).filter(Boolean);
         if (this.photos.length === 0) this.photos = ['assets/images/placeholder.jpg'];
         this.isLoading  = false;
-        // If only one room category with availability, auto-select it
         const available = (data.room_categories || []).filter(rc => rc.quantity_available > 0);
         if (available.length === 1) {
           this.selectedRoomCategory = available[0];
@@ -159,7 +157,6 @@ export class HousingDetailComponent implements OnInit {
 
   private buildEquipments(h: Estate): { name: string; icon: any; color: string; colorKey: string }[] {
     const eq: { name: string; icon: any; color: string; colorKey: string }[] = [];
-    // Estate-level amenities (not per-room)
     if (h.wifi === '1')       eq.push({ name: 'WiFi',          icon: this.WifiIcon,     color: 'orange', colorKey: 'wifi'       });
     if (h.generator === '1')  eq.push({ name: 'Générateur',    icon: this.ZapIconRef,   color: 'yellow', colorKey: 'generator'  });
     if (h.forage === '1')     eq.push({ name: 'Forage / Eau',  icon: this.DropletsIcon, color: 'blue',   colorKey: 'forage'     });
@@ -192,6 +189,17 @@ export class HousingDetailComponent implements OnInit {
   }
 
   getRatingAsNumber(rating: string): number { return Number(rating); }
+
+  /**
+   * Returns the percentage width for a star-breakdown bar.
+   * @param breakdown  The AverageRating.breakdown object
+   * @param star       The star level (1-5)
+   * @param total      Total number of reviews
+   */
+  getBreakdownPct(breakdown: AverageRating['breakdown'], star: number, total: number): number {
+    if (!total || !breakdown) return 0;
+    return Math.round(((breakdown[star] || 0) / total) * 100);
+  }
 
   // ── Review form ───────────────────────────────────────────
 
@@ -231,7 +239,9 @@ export class HousingDetailComponent implements OnInit {
         this.showToast('Avis publié avec succès !', 'success');
         this.showReviewForm = false;
         this.reviewForm     = { rating: 0, comment: '' };
+        // Reload both reviews list AND estate (to update average_rating in the UI)
         this.loadReviews(this.housing!.id);
+        this.loadEstate(this.housing!.id);
       },
       error: () => {
         this.isSubmittingReview = false;
@@ -353,7 +363,6 @@ export class HousingDetailComponent implements OnInit {
 
     this.estateService.createQuickOrder({
       estate:         this.housing.id,
-      // ← pass the selected room category id if one was chosen
       room_category:  this.selectedRoomCategory?.id ?? null,
       name:           this.contactForm.name.trim(),
       phone:          this.contactForm.phone.trim(),

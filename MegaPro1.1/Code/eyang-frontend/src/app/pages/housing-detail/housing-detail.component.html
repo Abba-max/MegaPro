@@ -79,9 +79,10 @@
                 <lucide-icon [img]="MapPinIcon" class="chip-icon red"></lucide-icon>
                 <span>{{ housing!.distance }} m du campus</span>
               </div>
-              <div class="meta-chip" *ngIf="getRatingAsNumber(housing!.rating) > 0">
+              <!-- ── Dynamic rating chip (uses average_rating from API) ── -->
+              <div class="meta-chip" *ngIf="housing!.average_rating.value > 0">
                 <lucide-icon [img]="StarIcon" class="chip-icon gold"></lucide-icon>
-                <span>{{ housing!.rating }} ({{ reviews.length }} avis)</span>
+                <span>{{ housing!.average_rating.display }} ({{ housing!.average_rating.count }} avis)</span>
               </div>
               <div class="meta-chip">
                 <lucide-icon [img]="UsersIcon" class="chip-icon blue"></lucide-icon>
@@ -99,7 +100,7 @@
               <p class="detail-text">{{ housing!.description }}</p>
             </div>
 
-            <!-- ══ ROOM CATEGORIES — main section ══ -->
+            <!-- ══ ROOM CATEGORIES ══ -->
             <div class="detail-card" *ngIf="housing!.room_categories && housing!.room_categories.length > 0">
               <h3 class="detail-card-title">
                 <lucide-icon [img]="LayoutIcon" class="detail-card-title-icon"></lucide-icon>
@@ -112,7 +113,6 @@
                      [class.room-cat-full]="rc.quantity_available === 0"
                      (click)="rc.quantity_available > 0 && selectRoomCategory(rc)">
 
-                  <!-- Category header -->
                   <div class="rcc-header" [ngClass]="'rcc-occ-' + rc.occupancy">
                     <div class="rcc-occ-icon">
                       <lucide-icon *ngIf="rc.occupancy === 'single'" [img]="BedIcon" class="rcc-ico"></lucide-icon>
@@ -126,24 +126,19 @@
                         · {{ rc.room_size === '1' ? 'Grande' : rc.room_size === '2' ? 'Moyenne' : 'Petite' }}
                       </span>
                     </div>
-                    <!-- Full badge -->
                     <span class="rcc-full-badge" *ngIf="rc.quantity_available === 0">Complet</span>
-                    <!-- Selected check -->
                     <span class="rcc-selected-check" *ngIf="selectedRoomCategory?.id === rc.id">
                       <lucide-icon [img]="CheckCircleIcon" class="rcc-check-ico"></lucide-icon>
                     </span>
                   </div>
 
-                  <!-- Room image(s) -->
                   <div class="rcc-images" *ngIf="rc.images && rc.images.length > 0">
                     <img [src]="rc.images[0].image" [alt]="rc.name" class="rcc-img">
                     <span class="rcc-img-count" *ngIf="rc.images.length > 1">+{{ rc.images.length - 1 }}</span>
                   </div>
 
-                  <!-- Description -->
                   <p class="rcc-desc" *ngIf="rc.description">{{ rc.description }}</p>
 
-                  <!-- Amenities specific to this room category -->
                   <div class="rcc-amenities">
                     <span class="rcc-amenity rcc-wifi" *ngIf="rc.wifi === '1'">
                       <lucide-icon [img]="WifiIcon" class="rcc-am-ico"></lucide-icon> WiFi
@@ -160,7 +155,6 @@
                     </span>
                   </div>
 
-                  <!-- Price + availability footer -->
                   <div class="rcc-footer">
                     <div class="rcc-avail" [class.rcc-avail-full]="rc.quantity_available === 0">
                       <lucide-icon [img]="UsersIcon" class="rcc-avail-ico"></lucide-icon>
@@ -175,7 +169,6 @@
                     </div>
                   </div>
 
-                  <!-- Select hint -->
                   <div class="rcc-select-hint" *ngIf="rc.quantity_available > 0 && selectedRoomCategory?.id !== rc.id">
                     Cliquer pour sélectionner
                   </div>
@@ -186,14 +179,13 @@
                 </div>
               </div>
 
-              <!-- Selection reminder if none selected -->
               <div class="room-selection-hint" *ngIf="!selectedRoomCategory">
                 <lucide-icon [img]="InfoIcon" class="hint-ico"></lucide-icon>
                 Sélectionnez un type de chambre avant de réserver
               </div>
             </div>
 
-            <!-- ══ ESTATE-LEVEL EQUIPMENTS (generator, forage, restaurant) ══ -->
+            <!-- ══ ESTATE-LEVEL EQUIPMENTS ══ -->
             <div class="detail-card" *ngIf="hosingEquipmentsWithIcons.length > 0">
               <h3 class="detail-card-title">Équipements de la résidence</h3>
               <div class="features-row">
@@ -223,7 +215,6 @@
               </button>
             </div>
 
-            <!-- Hint when room categories exist but none is selected -->
             <p class="action-hint"
                *ngIf="housing!.room_categories.length > 0 && !selectedRoomCategory">
               <lucide-icon [img]="InfoIcon" class="hint-ico-sm"></lucide-icon>
@@ -247,15 +238,48 @@
           <!-- ══ REVIEWS ══ -->
           <div class="reviews-block">
             <div class="reviews-header">
-              <h2 class="reviews-title">Avis clients ({{ reviews.length }})</h2>
-              <div class="rating-summary" *ngIf="getRatingAsNumber(housing!.rating) > 0">
-                <span class="rating-big">{{ housing!.rating }}</span>
-                <div class="rating-stars">
-                  <lucide-icon [img]="StarIcon" class="icon-xs gold"
-                    *ngFor="let s of getStarArray(housing!.rating)"></lucide-icon>
-                  <lucide-icon [img]="StarIcon" class="icon-xs gray-star"
-                    *ngFor="let s of getEmptyStarArray(housing!.rating)"></lucide-icon>
+              <h2 class="reviews-title">
+                Avis clients
+                <span class="reviews-count-badge">{{ housing!.average_rating.count }}</span>
+              </h2>
+
+              <!-- ── Dynamic rating summary panel ── -->
+              <div class="rating-summary-panel" *ngIf="housing!.average_rating.count > 0">
+
+                <!-- Big score -->
+                <div class="rating-score-col">
+                  <span class="rating-big">{{ housing!.average_rating.display }}</span>
+                  <div class="rating-stars">
+                    <lucide-icon [img]="StarIcon" class="icon-xs gold"
+                      *ngFor="let s of getStarArray(housing!.average_rating.value)"></lucide-icon>
+                    <lucide-icon [img]="StarIcon" class="icon-xs gray-star"
+                      *ngFor="let s of getEmptyStarArray(housing!.average_rating.value)"></lucide-icon>
+                  </div>
+                  <span class="rating-count-label">
+                    {{ housing!.average_rating.count }} avis
+                  </span>
                 </div>
+
+                <!-- Breakdown bars (5 → 1) -->
+                <div class="rating-bars-col">
+                  <div class="rating-bar-row" *ngFor="let star of [5,4,3,2,1]">
+                    <span class="bar-star-label">{{ star }} ★</span>
+                    <div class="bar-track">
+                      <div class="bar-fill"
+                           [style.width.%]="getBreakdownPct(housing!.average_rating.breakdown, star, housing!.average_rating.count)">
+                      </div>
+                    </div>
+                    <span class="bar-count">
+                      {{ housing!.average_rating.breakdown[star] || 0 }}
+                    </span>
+                  </div>
+                </div>
+
+              </div>
+              <!-- No reviews yet -->
+              <div class="rating-no-reviews" *ngIf="housing!.average_rating.count === 0">
+                <lucide-icon [img]="StarIcon" class="icon-sm gray-star"></lucide-icon>
+                <span>Aucune note pour le moment</span>
               </div>
             </div>
 
@@ -351,7 +375,6 @@
         <div class="detail-sidebar">
           <div class="price-card">
             <div class="price-card-top">
-              <!-- Show selected category price or minimum price -->
               <ng-container *ngIf="selectedRoomCategory; else defaultPrice">
                 <div class="price-amount">{{ selectedRoomCategory.price | number }}</div>
                 <div class="price-currency">FCFA / mois</div>
@@ -364,6 +387,17 @@
               </ng-template>
             </div>
             <div class="price-divider"></div>
+
+            <!-- ── Sidebar dynamic rating ── -->
+            <div class="sidebar-rating" *ngIf="housing!.average_rating.count > 0">
+              <lucide-icon [img]="StarIcon" class="icon-xs gold"></lucide-icon>
+              <span class="sidebar-rating-val">{{ housing!.average_rating.display }}</span>
+              <span class="sidebar-rating-count">({{ housing!.average_rating.count }} avis)</span>
+            </div>
+            <div class="sidebar-rating sidebar-no-rating" *ngIf="housing!.average_rating.count === 0">
+              <lucide-icon [img]="StarIcon" class="icon-xs gray-star"></lucide-icon>
+              <span>Pas encore d'avis</span>
+            </div>
 
             <!-- Room categories summary in sidebar -->
             <div class="sidebar-room-cats" *ngIf="housing!.room_categories && housing!.room_categories.length > 0">
@@ -388,7 +422,7 @@
               </div>
             </div>
 
-            <!-- Fallback details when no room categories -->
+            <!-- Fallback when no room categories -->
             <div class="price-details" *ngIf="!housing!.room_categories || housing!.room_categories.length === 0">
               <div class="price-detail-row">
                 <span>Caution</span>
@@ -453,7 +487,7 @@
         </div>
       </div>
 
-      <!-- ══ RESERVATION MODAL — now shows selected room category ══ -->
+      <!-- ══ RESERVATION MODAL ══ -->
       <div class="modal-overlay fade-in" *ngIf="showContactModal" (click)="closeContact()">
         <div class="modal-card" (click)="$event.stopPropagation()">
           <button class="modal-close-btn" (click)="closeContact()">
@@ -469,7 +503,6 @@
             </div>
           </div>
 
-          <!-- Selected room category banner -->
           <div class="modal-room-banner" *ngIf="selectedRoomCategory">
             <div class="modal-room-banner-inner" [ngClass]="'mrb-' + selectedRoomCategory.occupancy">
               <lucide-icon *ngIf="selectedRoomCategory.occupancy === 'single'" [img]="BedIcon" class="mrb-ico"></lucide-icon>
@@ -486,7 +519,6 @@
             </div>
           </div>
 
-          <!-- No category selected: show picker inline in modal -->
           <div class="modal-room-picker" *ngIf="!selectedRoomCategory && housing!.room_categories.length > 0">
             <p class="modal-picker-label">
               <lucide-icon [img]="InfoIcon" class="hint-ico-sm"></lucide-icon>
@@ -575,11 +607,10 @@
         </div>
       </div>
 
-      <!-- ══ MESSAGE / NÉGOCIATION MODAL ══ -->
+      <!-- ══ MESSAGE MODAL ══ -->
       <div class="modal-overlay fade-in" *ngIf="showMessageModal" (click)="closeMessageModal()">
         <div class="msg-modal-card" (click)="$event.stopPropagation()">
 
-          <!-- Header -->
           <div class="msg-modal-header">
             <button class="msg-modal-close" (click)="closeMessageModal()">
               <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
@@ -595,15 +626,12 @@
             </div>
           </div>
 
-          <!-- Loading -->
           <div class="msg-loading" *ngIf="isLoadingConversation">
             <lucide-icon [img]="LoaderIcon" class="spinner-sm"></lucide-icon>
             <span>Connexion en cours…</span>
           </div>
 
-          <!-- Chat viewport -->
           <div class="msg-viewport" #msgScroll *ngIf="!isLoadingConversation && activeConversation">
-
             <div class="msg-system-banner">
               <lucide-icon [img]="InfoIcon" class="msg-sys-icon"></lucide-icon>
               Discutez du prix, des conditions, ou posez vos questions.
@@ -616,11 +644,9 @@
             <div *ngFor="let msg of activeConversation.messages"
                  class="msg-row" [class.msg-sent]="msg.sender === currentUser?.id"
                  [class.msg-received]="msg.sender !== currentUser?.id">
-
               <div *ngIf="msg.sender !== currentUser?.id" class="msg-av-sm">
                 {{ housing!.owner?.first_name?.[0] || housing!.owner?.username?.[0] || '?' }}
               </div>
-
               <div class="msg-bubble"
                    [class.bubble-sent]="msg.sender === currentUser?.id"
                    [class.bubble-recv]="msg.sender !== currentUser?.id">
@@ -643,10 +669,8 @@
                 </div>
               </div>
             </div>
-
           </div>
 
-          <!-- Input footer -->
           <div class="msg-footer" *ngIf="!isLoadingConversation && activeConversation">
             <div class="msg-input-row" [class.focused]="messageText.length > 0">
               <input type="text" class="msg-input" [(ngModel)]="messageText"
