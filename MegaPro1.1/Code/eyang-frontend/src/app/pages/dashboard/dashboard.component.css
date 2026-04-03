@@ -1194,3 +1194,265 @@ lucide-icon svg { display: block !important; width: 100% !important; height: 100
     transition: background .18s;
 }
 .btn-confirm-ok:hover { background: #DC2626; }
+/* ══════════════════════════════════════════════════════════
+   ESTATE LISTINGS — Sort label, rating badge, pagination
+══════════════════════════════════════════════════════════ */
+
+/* Sort info row above the grid */
+.listings-sort-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #6B7280;
+    margin-bottom: 1rem;
+}
+.sort-star { color: #F59E0B; }
+
+.listings-count-badge {
+    margin-left: auto;
+    background: #EFF6FF;
+    color: #2563EB;
+    border-radius: 20px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+/* Rating badge overlaid on the estate image (bottom-right) */
+.housing-rating-badge {
+    position: absolute;
+    bottom: .65rem;
+    right: .65rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(4px);
+    color: #FCD34D;
+    border-radius: 8px;
+    padding: 3px 8px;
+    font-size: 12.5px;
+    font-weight: 700;
+}
+.housing-rating-badge lucide-icon { width: 13px; height: 13px; }
+
+/* ── Show-more button ──────────────────────────────────── */
+.show-more-wrap {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.5rem;
+}
+
+.btn-show-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.7rem 2rem;
+    border-radius: 12px;
+    border: 1.5px solid #BFDBFE;
+    background: #EFF6FF;
+    color: #2563EB;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(37,99,235,.08);
+}
+.btn-show-more:hover {
+    background: #DBEAFE;
+    border-color: #93C5FD;
+    transform: translateY(2px);
+    box-shadow: 0 4px 16px rgba(37,99,235,.14);
+}
+.btn-show-more:active { transform: translateY(3px); }
+
+.show-more-count {
+    font-size: 12px;
+    font-weight: 500;
+    color: #60A5FA;
+}
+
+/* "All listings shown" label */
+.all-loaded-label {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.25rem;
+}
+.all-loaded-label span {
+    font-size: 13px;
+    color: #10B981;
+    font-weight: 600;
+    background: #ECFDF5;
+    border-radius: 20px;
+    padding: 4px 14px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE — listings grid
+══════════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+    .housings-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .housings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .btn-show-more {
+        width: 100%;
+        justify-content: center;
+    }
+}
+/* ══════════════════════════════════════════════════════════
+   MOBILE TAB DROPDOWN  (shown ≤768px, hidden above)
+══════════════════════════════════════════════════════════ */
+
+/* Desktop tabs: shown by default, hidden on mobile */
+.tabs-desktop {
+  display: flex;
+}
+
+/* Mobile dropdown wrapper: hidden by default */
+.tabs-mobile {
+  display: none;
+  position: relative;
+  margin-bottom: 1.25rem;
+  z-index: 50;
+}
+
+/* The button that shows the current tab name + chevron */
+.tabs-mobile-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.875rem 1.1rem;
+  background: #fff;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.tabs-mobile-trigger:hover {
+  border-color: #2563EB;
+  box-shadow: 0 4px 14px rgba(37,99,235,.12);
+}
+
+.tabs-mobile-label { flex: 1; text-align: left; }
+
+.tabs-mobile-chevron {
+  width: 18px;
+  height: 18px;
+  color: #6B7280;
+  transition: transform 0.25s cubic-bezier(.4,0,.2,1);
+  flex-shrink: 0;
+}
+.tabs-mobile-chevron.rotated { transform: rotate(180deg); }
+
+/* Dropdown list */
+.tabs-mobile-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid #E5E7EB;
+  border-radius: 12px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.13);
+  overflow: hidden;
+  animation: dropdownIn 0.18s ease;
+  z-index: 100;
+}
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.tabs-mobile-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.1rem;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  border-bottom: 1px solid #F3F4F6;
+}
+.tabs-mobile-item:last-child { border-bottom: none; }
+.tabs-mobile-item:hover {
+  background: #F0F9FF;
+  color: #2563EB;
+}
+.tabs-mobile-item.active {
+  background: #EFF6FF;
+  color: #2563EB;
+  font-weight: 700;
+}
+
+/* ── Switch visibility at 768px ──────────────────────────── */
+@media (max-width: 768px) {
+  .tabs-desktop { display: none !important; }
+  .tabs-mobile  { display: block; }
+
+  /* Tighten page header on phones */
+  .page-header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .page-title { font-size: 1.3rem; }
+
+  /* Make content feel less cramped */
+  .stats-grid { gap: 0.75rem; }
+}
+
+@media (max-width: 480px) {
+  .page-title { font-size: 1.15rem; }
+  .page-subtitle { font-size: 13px; }
+
+  /* Stack header actions fully */
+  .header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 0.5rem;
+  }
+  .btn-back-home,
+  .btn-primary-action,
+  .btn-secondary-action {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+  }
+
+  /* Wider modal on very small screens */
+  .modal-box {
+    margin: 0.5rem;
+    padding: 1rem;
+    border-radius: 14px;
+    max-height: 92vh;
+    overflow-y: auto;
+  }
+
+  /* Reservation cards stack vertically */
+  .res-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .res-actions { align-self: flex-end; }
+
+  /* Messaging panel stacks */
+  .owner-messages { flex-direction: column; }
+  .msg-sidebar    { max-height: 220px; }
+}

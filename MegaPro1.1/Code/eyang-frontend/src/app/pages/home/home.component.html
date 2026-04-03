@@ -113,7 +113,7 @@
 <div *ngIf="!isLoading && errorMessage" style="text-align:center;padding:2rem;color:#DC2626;">{{ errorMessage }}</div>
 
 <div class="listings-grid" *ngIf="!isLoading && !errorMessage">
-    <div class="housing-card" *ngFor="let h of housings" [routerLink]="['/housing', h.id]">
+    <div class="housing-card" *ngFor="let h of pagedHousings" [routerLink]="['/housing', h.id]">
 
     <!-- IMAGE -->
     <div class="card-image-area">
@@ -189,6 +189,19 @@
     </div>
     </div>
 </div>
+
+<!-- ════ SHOW MORE / ALL LOADED ════ -->
+<div class="home-show-more-wrap" *ngIf="!isLoading && !errorMessage && hasMoreHousings">
+  <button class="home-btn-show-more" (click)="showMoreHousings()">
+    <lucide-icon [img]="ChevronDownIcon" class="home-chevron-icon"></lucide-icon>
+    {{ 'listings.show_more' | translate }}
+    <span class="home-show-more-count">({{ housings.length - visibleCount }} {{ 'listings.remaining' | translate }})</span>
+  </button>
+</div>
+<div class="home-all-loaded" *ngIf="!isLoading && !errorMessage && !hasMoreHousings && housings.length > HOME_PAGE_SIZE">
+  <span>✓ {{ 'listings.all_shown' | translate }}</span>
+</div>
+
 </section>
 
 <!-- ════ WHY ════ -->

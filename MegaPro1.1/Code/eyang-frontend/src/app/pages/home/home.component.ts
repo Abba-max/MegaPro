@@ -8,7 +8,7 @@ import {
   MapPin, Search, Wifi, Zap, Droplets, Star, Filter,
   Coffee, Check, Lock, Home, Building, Shield, MessageSquare, Loader,
   CheckCircle, XCircle, AlertCircle, Info, Tv, Thermometer,
-  Maximize2, Navigation, BedDouble, Bed, X, Users
+  Maximize2, Navigation, BedDouble, Bed, X, Users, ChevronDown
 } from 'lucide-angular';
 import { EstateService, Estate, PlatformStats } from '../../services/estate.service';
 import { AuthService } from '../../services/auth.service';
@@ -54,11 +54,45 @@ export class HomeComponent implements OnInit {
   readonly BedIcon           = Bed;
   readonly UsersIcon         = Users;
   readonly XIcon             = X;
+  readonly ChevronDownIcon   = ChevronDown;
 
   searchQuery  = '';
   housings: Estate[] = [];
   isLoading    = true;
   errorMessage = '';
+
+  // ── Pagination ────────────────────────────────────────────
+  readonly HOME_PAGE_SIZE = 6;
+  visibleCount = this.HOME_PAGE_SIZE;
+
+  /** All housings sorted by average_rating descending */
+  get sortedHousings(): Estate[] {
+    return [...this.housings].sort((a, b) => {
+      const ra = a.average_rating?.value ?? parseFloat(a.rating ?? '0');
+      const rb = b.average_rating?.value ?? parseFloat(b.rating ?? '0');
+      return rb - ra;
+    });
+  }
+
+  /** The slice shown in the grid */
+  get pagedHousings(): Estate[] {
+    return this.sortedHousings.slice(0, this.visibleCount);
+  }
+
+  get hasMoreHousings(): boolean {
+    return this.visibleCount < this.housings.length;
+  }
+
+  showMoreHousings(): void {
+    this.visibleCount = Math.min(
+      this.visibleCount + this.HOME_PAGE_SIZE,
+      this.housings.length
+    );
+  }
+
+  private resetHomePage(): void {
+    this.visibleCount = this.HOME_PAGE_SIZE;
+  }
 
   // ── Quick filter bar ─────────────────────────────────────
   filterWifi       = '';
@@ -148,7 +182,7 @@ export class HomeComponent implements OnInit {
     this.isLoading    = true;
     this.errorMessage = '';
     this.estateService.getEstates({ status: 'published' }).subscribe({
-      next: data => { this.housings = data; this.isLoading = false; },
+      next: data => { this.housings = data; this.isLoading = false; this.resetHomePage(); },
       error: err => {
         console.error('Failed to load estates:', err);
         this.errorMessage = 'Impossible de charger les logements.';
@@ -180,6 +214,7 @@ export class HomeComponent implements OnInit {
         }
         this.housings  = result;
         this.isLoading = false;
+        this.resetHomePage();
       },
       error: () => { this.isLoading = false; }
     });
@@ -240,6 +275,7 @@ export class HomeComponent implements OnInit {
         this.housings = data.filter(h =>
           h.name.toLowerCase().includes(q) || h.location.toLowerCase().includes(q)
         );
+        this.resetHomePage();
       }
     });
   }

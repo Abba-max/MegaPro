@@ -89,12 +89,37 @@
         </div>
     </div>
 
-    <div class="tabs">
-        <div class="tab" [class.active]="activeTab==='overview'" (click)="activeTab='overview'">{{ 'dashboard.tab_overview' | translate }}</div>
-        <div class="tab" [class.active]="activeTab==='logements'" (click)="activeTab='logements'">{{ 'dashboard.tab_listings' | translate }}</div>
+    <!-- ── Mobile tab dropdown (≤768px) ────────────────────── -->
+    <div class="tabs-mobile" (click)="$event.stopPropagation()">
+        <button class="tabs-mobile-trigger" (click)="toggleMobileTab()">
+            <span class="tabs-mobile-label">
+                <ng-container *ngIf="activeTab==='overview'">{{ 'dashboard.tab_overview' | translate }}</ng-container>
+                <ng-container *ngIf="activeTab==='logements'">{{ 'dashboard.tab_listings' | translate }}</ng-container>
+                <ng-container *ngIf="activeTab==='reservations'">{{ 'dashboard.tab_reservations' | translate }}</ng-container>
+                <ng-container *ngIf="activeTab==='avis'">{{ 'dashboard.tab_reviews' | translate }}</ng-container>
+                <ng-container *ngIf="activeTab==='messages'">{{ 'dashboard.tab_messages' | translate }}</ng-container>
+            </span>
+            <lucide-icon [img]="ChevronDownIcon" class="tabs-mobile-chevron" [class.rotated]="mobileTabOpen"></lucide-icon>
+        </button>
+        <div class="tabs-mobile-dropdown" *ngIf="mobileTabOpen">
+            <div class="tabs-mobile-item" [class.active]="activeTab==='overview'"     (click)="selectTab('overview')">{{ 'dashboard.tab_overview' | translate }}</div>
+            <div class="tabs-mobile-item" [class.active]="activeTab==='logements'"    (click)="selectTab('logements')">{{ 'dashboard.tab_listings' | translate }}</div>
+            <div class="tabs-mobile-item" [class.active]="activeTab==='reservations'" (click)="selectTab('reservations')">{{ 'dashboard.tab_reservations' | translate }}</div>
+            <div class="tabs-mobile-item" [class.active]="activeTab==='avis'"         (click)="selectTab('avis')">{{ 'dashboard.tab_reviews' | translate }}</div>
+            <div class="tabs-mobile-item" [class.active]="activeTab==='messages'"     (click)="selectTab('messages')">
+                {{ 'dashboard.tab_messages' | translate }}
+                <span class="tab-badge ml-4" *ngIf="getTotalUnread() > 0">{{ getTotalUnread() }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Desktop tabs (>768px) ────────────────────────────── -->
+    <div class="tabs tabs-desktop">
+        <div class="tab" [class.active]="activeTab==='overview'"     (click)="activeTab='overview'">{{ 'dashboard.tab_overview' | translate }}</div>
+        <div class="tab" [class.active]="activeTab==='logements'"    (click)="activeTab='logements'">{{ 'dashboard.tab_listings' | translate }}</div>
         <div class="tab" [class.active]="activeTab==='reservations'" (click)="activeTab='reservations'">{{ 'dashboard.tab_reservations' | translate }}</div>
-        <div class="tab" [class.active]="activeTab==='avis'" (click)="activeTab='avis'">{{ 'dashboard.tab_reviews' | translate }}</div>
-        <div class="tab" [class.active]="activeTab==='messages'" (click)="activeTab='messages'; loadOwnerConversations()">
+        <div class="tab" [class.active]="activeTab==='avis'"         (click)="activeTab='avis'">{{ 'dashboard.tab_reviews' | translate }}</div>
+        <div class="tab" [class.active]="activeTab==='messages'"     (click)="activeTab='messages'; loadOwnerConversations()">
             {{ 'dashboard.tab_messages' | translate }}
             <span class="tab-badge" *ngIf="getTotalUnread() > 0">{{ getTotalUnread() }}</span>
         </div>
@@ -134,39 +159,68 @@
             <lucide-icon [img]="HomeIcon" class="empty-icon"></lucide-icon>
             <p>{{ 'dashboard.no_listings' | translate }}</p>
         </div>
-        <div class="housings-grid" *ngIf="!isLoading && myEstates.length>0">
-            <div class="housing-card" *ngFor="let e of myEstates">
-                <div class="housing-image">
-                    <img *ngIf="getEstateImage(e)" [src]="getEstateImage(e)" alt="" class="housing-img">
-                    <div *ngIf="!getEstateImage(e)" class="housing-img-placeholder">
-                        <lucide-icon [img]="HomeIcon" class="placeholder-icon"></lucide-icon>
+
+        <ng-container *ngIf="!isLoading && myEstates.length>0">
+            <!-- Sort label -->
+            <div class="listings-sort-label">
+                <lucide-icon [img]="StarIcon" class="icon-xs sort-star"></lucide-icon>
+                {{ 'dashboard.sorted_by_rating' | translate }}
+                <span class="listings-count-badge">{{ myEstates.length }}</span>
+            </div>
+
+            <div class="housings-grid">
+                <div class="housing-card" *ngFor="let e of pagedEstates">
+                    <div class="housing-image">
+                        <img *ngIf="getEstateImage(e)" [src]="getEstateImage(e)" alt="" class="housing-img">
+                        <div *ngIf="!getEstateImage(e)" class="housing-img-placeholder">
+                            <lucide-icon [img]="HomeIcon" class="placeholder-icon"></lucide-icon>
+                        </div>
+                        <span class="status-pill" [ngClass]="'pill-'+e.status">
+                            {{ e.status==='published' ? ('dashboard.status_published'|translate) : e.status==='draft' ? ('dashboard.status_draft'|translate) : ('dashboard.status_archived'|translate) }}
+                        </span>
+                        <!-- Rating badge overlay -->
+                        <span class="housing-rating-badge">
+                            <lucide-icon [img]="StarIcon" class="icon-xs"></lucide-icon>
+                            {{ (e.average_rating?.value ?? e.rating) || '–' }}
+                        </span>
                     </div>
-                    <span class="status-pill" [ngClass]="'pill-'+e.status">
-                        {{ e.status==='published' ? ('dashboard.status_published'|translate) : e.status==='draft' ? ('dashboard.status_draft'|translate) : ('dashboard.status_archived'|translate) }}
-                    </span>
-                </div>
-                <div class="housing-body">
-                    <h3 class="housing-name">{{ e.name }}</h3>
-                    <div class="housing-location"><lucide-icon [img]="MapPinIcon" class="icon-xs"></lucide-icon> {{ e.location }}</div>
-                    <div class="housing-price">{{ formatPrice(e.price) }}<span class="price-unit">{{ 'dashboard.per_month' | translate }}</span></div>
-                    <div class="housing-row">
-                        <span class="hbadge"><lucide-icon [img]="UserIcon" class="icon-xs"></lucide-icon> {{ e.free }} {{ 'detail.places'|translate }} / {{ e.capacity }}</span>
-                        <span class="hbadge star"><lucide-icon [img]="StarIcon" class="icon-xs"></lucide-icon> {{ e.rating }}</span>
-                    </div>
-                    <div class="housing-actions">
-                        <button class="btn-edit" (click)="openEditModal(e)" style="margin-right:0.5rem;">
-                            <lucide-icon [img]="EditIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.edit' | translate }}
-                        </button>
-                        <button class="btn-edit" style="background:#0ea5e9; color:white; border-color:#0ea5e9; margin-right:0.5rem;" (click)="openManageRooms(e)">
-                            <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.tab_bookings' | translate }}
-                        </button>
-                        <button class="btn-delete" (click)="deleteEstate(e)">
-                            <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
-                        </button>
+                    <div class="housing-body">
+                        <h3 class="housing-name">{{ e.name }}</h3>
+                        <div class="housing-location"><lucide-icon [img]="MapPinIcon" class="icon-xs"></lucide-icon> {{ e.location }}</div>
+                        <div class="housing-price">{{ formatPrice(e.price) }}<span class="price-unit">{{ 'dashboard.per_month' | translate }}</span></div>
+                        <div class="housing-row">
+                            <span class="hbadge"><lucide-icon [img]="UserIcon" class="icon-xs"></lucide-icon> {{ e.free }} {{ 'detail.places'|translate }} / {{ e.capacity }}</span>
+                            <span class="hbadge star"><lucide-icon [img]="StarIcon" class="icon-xs"></lucide-icon> {{ e.average_rating?.value ?? e.rating }}</span>
+                        </div>
+                        <div class="housing-actions">
+                            <button class="btn-edit" (click)="openEditModal(e)" style="margin-right:0.5rem;">
+                                <lucide-icon [img]="EditIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.edit' | translate }}
+                            </button>
+                            <button class="btn-edit" style="background:#0ea5e9; color:white; border-color:#0ea5e9; margin-right:0.5rem;" (click)="openManageRooms(e)">
+                                <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.tab_bookings' | translate }}
+                            </button>
+                            <button class="btn-delete" (click)="deleteEstate(e)">
+                                <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
+
+            <!-- Show more button -->
+            <div class="show-more-wrap" *ngIf="hasMoreEstates">
+                <button class="btn-show-more" (click)="showMoreEstates()">
+                    <lucide-icon [img]="ChevronDownIcon" class="icon-sm"></lucide-icon>
+                    {{ 'dashboard.show_more' | translate }}
+                    <span class="show-more-count">({{ myEstates.length - visibleEstateCount }} {{ 'dashboard.remaining' | translate }})</span>
+                </button>
+            </div>
+
+            <!-- All loaded indicator -->
+            <div class="all-loaded-label" *ngIf="!hasMoreEstates && myEstates.length > PAGE_SIZE">
+                <span>✓ {{ 'dashboard.all_listings_shown' | translate }}</span>
+            </div>
+        </ng-container>
     </div>
 
     <!-- Reservations (Owner) -->
@@ -346,11 +400,31 @@
         </div>
     </div>
 
-    <div class="tabs">
+    <!-- ── Mobile tab dropdown (≤768px) ────────────────────── -->
+    <div class="tabs-mobile" (click)="$event.stopPropagation()">
+        <button class="tabs-mobile-trigger" (click)="toggleMobileTab()">
+            <span class="tabs-mobile-label">
+                <ng-container *ngIf="activeTab==='reservations'">{{ 'dashboard.tab_reservations' | translate }}</ng-container>
+                <ng-container *ngIf="activeTab==='avis'">{{ 'dashboard.tab_my_reviews' | translate }}</ng-container>
+                <ng-container *ngIf="activeTab==='messages'">{{ 'dashboard.tab_messages' | translate }}</ng-container>
+                <ng-container *ngIf="activeTab==='contacts'">{{ 'dashboard.tab_contacts' | translate }}</ng-container>
+            </span>
+            <lucide-icon [img]="ChevronDownIcon" class="tabs-mobile-chevron" [class.rotated]="mobileTabOpen"></lucide-icon>
+        </button>
+        <div class="tabs-mobile-dropdown" *ngIf="mobileTabOpen">
+            <div class="tabs-mobile-item" [class.active]="activeTab==='reservations'" (click)="selectTab('reservations')">{{ 'dashboard.tab_reservations' | translate }}</div>
+            <div class="tabs-mobile-item" [class.active]="activeTab==='avis'"         (click)="selectTab('avis')">{{ 'dashboard.tab_my_reviews' | translate }}</div>
+            <div class="tabs-mobile-item" [class.active]="activeTab==='messages'"     (click)="selectTab('messages')">{{ 'dashboard.tab_messages' | translate }}</div>
+            <div class="tabs-mobile-item" [class.active]="activeTab==='contacts'"     (click)="selectTab('contacts')">{{ 'dashboard.tab_contacts' | translate }}</div>
+        </div>
+    </div>
+
+    <!-- ── Desktop tabs (>768px) ────────────────────────────── -->
+    <div class="tabs tabs-desktop">
         <div class="tab" [class.active]="activeTab==='reservations'" (click)="activeTab='reservations'">{{ 'dashboard.tab_reservations' | translate }}</div>
-        <div class="tab" [class.active]="activeTab==='avis'" (click)="activeTab='avis'">{{ 'dashboard.tab_my_reviews' | translate }}</div>
-        <div class="tab" [class.active]="activeTab==='messages'" (click)="activeTab='messages'">{{ 'dashboard.tab_messages' | translate }}</div>
-        <div class="tab" [class.active]="activeTab==='contacts'" (click)="activeTab='contacts'">{{ 'dashboard.tab_contacts' | translate }}</div>
+        <div class="tab" [class.active]="activeTab==='avis'"         (click)="activeTab='avis'">{{ 'dashboard.tab_my_reviews' | translate }}</div>
+        <div class="tab" [class.active]="activeTab==='messages'"     (click)="activeTab='messages'">{{ 'dashboard.tab_messages' | translate }}</div>
+        <div class="tab" [class.active]="activeTab==='contacts'"     (click)="activeTab='contacts'">{{ 'dashboard.tab_contacts' | translate }}</div>
     </div>
 
     <!-- Réservations (Client) -->

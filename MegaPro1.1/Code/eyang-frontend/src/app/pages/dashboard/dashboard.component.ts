@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, AfterViewChecked, ElementRef, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewChecked, ElementRef, ViewChild, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -8,7 +8,7 @@ import {
   Wifi, Utensils, Zap, Droplets, Tv, Thermometer,
   MessageSquare, FileText, Phone, MapPin, Calendar,
   CheckCircle, AlertCircle, Info, Send, ArrowLeft,
-  Edit, Package, User, Mail, Building, Pencil
+  Edit, Package, User, Mail, Building, Pencil, ChevronDown
 } from 'lucide-angular';
 import { AuthService, User as AuthUser } from '../../services/auth.service';
 import { WebSocketService } from '../../services/websocket.service';
@@ -68,6 +68,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   readonly UserIcon = User;
   readonly MailIcon = Mail;
   readonly BuildingIcon = Building;
+  readonly ChevronDownIcon = ChevronDown;
 
   // ── State ─────────────────────────────────────────────────
   currentUser: AuthUser | null = null;
@@ -78,6 +79,19 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   toasts: Toast[] = [];
   private toastCounter = 0;
 
+  // ── Mobile tab dropdown ────────────────────────────────────
+  mobileTabOpen = false;
+  toggleMobileTab(): void { this.mobileTabOpen = !this.mobileTabOpen; }
+  closeMobileTab(): void  { this.mobileTabOpen = false; }
+  selectTab(tab: string): void {
+    this.activeTab = tab;
+    this.mobileTabOpen = false;
+    if (tab === 'messages' && this.isOwner) this.loadOwnerConversations();
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void { this.mobileTabOpen = false; }
+
   // ── Owner ─────────────────────────────────────────────────
   ownerStats: OwnerDashboardStats = {
     total_estates: 0, occupancy_pct: 0, pending_orders: 0, avg_rating: 0
@@ -85,6 +99,44 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   myEstates: Estate[] = [];
   myOrders: QuickOrder[] = [];
   myReviews: Review[] = [];
+
+  // ── Estate pagination ──────────────────────────────────────
+  /** Number of estate cards shown per page */
+  readonly PAGE_SIZE = 6;
+  /** How many estates are currently visible */
+  visibleEstateCount = this.PAGE_SIZE;
+
+  /** Estates sorted by rating (highest first), ready to display */
+  get sortedEstates(): Estate[] {
+    return [...this.myEstates].sort((a, b) => {
+      const ra = a.average_rating?.value ?? parseFloat(a.rating ?? '0');
+      const rb = b.average_rating?.value ?? parseFloat(b.rating ?? '0');
+      return rb - ra;
+    });
+  }
+
+  /** The slice currently shown in the grid */
+  get pagedEstates(): Estate[] {
+    return this.sortedEstates.slice(0, this.visibleEstateCount);
+  }
+
+  /** True when there are more estates to load */
+  get hasMoreEstates(): boolean {
+    return this.visibleEstateCount < this.myEstates.length;
+  }
+
+  /** Show 6 more */
+  showMoreEstates(): void {
+    this.visibleEstateCount = Math.min(
+      this.visibleEstateCount + this.PAGE_SIZE,
+      this.myEstates.length
+    );
+  }
+
+  /** Reset pagination when tab is re-opened */
+  resetEstatePage(): void {
+    this.visibleEstateCount = this.PAGE_SIZE;
+  }
 
   showEstateModal = false;
   isEditMode = false;
@@ -254,7 +306,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       error: () => { }
     });
     this.estateService.getMyEstates().subscribe({
-      next: e => { this.myEstates = e; this.isLoading = false; this.cdr.detectChanges(); },
+      next: e => {
+        this.myEstates = e;
+        this.resetEstatePage();          // reset to first 6 on fresh load
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
       error: () => { this.isLoading = false; this.cdr.detectChanges(); }
     });
     this.estateService.getMyOrders().subscribe({
