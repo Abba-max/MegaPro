@@ -1456,3 +1456,123 @@ lucide-icon svg { display: block !important; width: 100% !important; height: 100
   .owner-messages { flex-direction: column; }
   .msg-sidebar    { max-height: 220px; }
 }
+/* ═══════════════════════════════════════════════════════════
+   DASHBOARD IMPROVEMENTS — Additional responsive fixes
+   ═══════════════════════════════════════════════════════════ */
+
+/* Stats grid: 2-col on tablet, 2-col stacked on phone */
+@media (max-width: 900px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.625rem;
+  }
+  .stat-card {
+    padding: 0.875rem;
+    gap: 0.625rem;
+  }
+  .stat-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+  }
+  .stat-value { font-size: 1.35rem; }
+  .stat-label { font-size: 11.5px; }
+}
+
+/* Page header: on phones make actions full width below title */
+@media (max-width: 640px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .header-actions {
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+    gap: 0.5rem;
+  }
+  .btn-primary-action {
+    flex: 1;
+    justify-content: center;
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+  .btn-back-home {
+    font-size: 13px;
+    padding: 7px 12px;
+  }
+}
+
+/* Housings grid responsive */
+@media (min-width: 540px) and (max-width: 900px) {
+  .housings-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Form sections in modal: single column on phone */
+@media (max-width: 580px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+  .form-row-2 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Scrollable tabs on tablet */
+@media (max-width: 900px) {
+  .tabs-desktop {
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+  }
+  .tabs-desktop::-webkit-scrollbar { display: none; }
+}
+
+/* Messaging panel: stacked on tablet */
+@media (max-width: 768px) {
+  .owner-messages {
+    flex-direction: column;
+  }
+  .msg-sidebar {
+    width: 100%;
+    max-height: 200px;
+    border-right: none;
+    border-bottom: 1px solid #E5E7EB;
+  }
+  .msg-main {
+    height: 380px;
+  }
+}
+
+/* Review cards: full width on phone */
+@media (max-width: 640px) {
+  .review-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .review-stars { font-size: 13px; }
+}
+
+/* Activity list: tighter on phone */
+@media (max-width: 480px) {
+  .activity-item {
+    padding: 0.75rem 0;
+  }
+  .activity-title { font-size: 13px; }
+  .activity-sub { font-size: 11.5px; }
+}
+
+/* Alert banner full width */
+.alert-banner {
+  width: 100%;
+  box-sizing: border-box;
+}

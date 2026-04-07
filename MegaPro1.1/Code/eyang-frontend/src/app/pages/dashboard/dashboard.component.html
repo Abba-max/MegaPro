@@ -181,7 +181,7 @@
                         <!-- Rating badge overlay -->
                         <span class="housing-rating-badge">
                             <lucide-icon [img]="StarIcon" class="icon-xs"></lucide-icon>
-                            {{ (e.average_rating?.value ?? e.rating) || '–' }}
+                            {{ (e.average_rating.value || e.rating || '–') }}
                         </span>
                     </div>
                     <div class="housing-body">
@@ -190,7 +190,7 @@
                         <div class="housing-price">{{ formatPrice(e.price) }}<span class="price-unit">{{ 'dashboard.per_month' | translate }}</span></div>
                         <div class="housing-row">
                             <span class="hbadge"><lucide-icon [img]="UserIcon" class="icon-xs"></lucide-icon> {{ e.free }} {{ 'detail.places'|translate }} / {{ e.capacity }}</span>
-                            <span class="hbadge star"><lucide-icon [img]="StarIcon" class="icon-xs"></lucide-icon> {{ e.average_rating?.value ?? e.rating }}</span>
+                            <span class="hbadge star"><lucide-icon [img]="StarIcon" class="icon-xs"></lucide-icon> {{ e.average_rating.value || e.rating || 0 }}</span>
                         </div>
                         <div class="housing-actions">
                             <button class="btn-edit" (click)="openEditModal(e)" style="margin-right:0.5rem;">

@@ -69,24 +69,24 @@
           <!-- Title + Meta -->
           <div class="detail-title-block">
             <div class="detail-type-badge">
-              <ng-container *ngIf="housing!.capacity < 20">Mini Cité</ng-container>
-              <ng-container *ngIf="housing!.capacity >= 20 && housing!.capacity < 30">Cité</ng-container>
-              <ng-container *ngIf="housing!.capacity >= 30">Grande Cité</ng-container>
+              <ng-container *ngIf="housing!.capacity < 20">{{ 'detail.mini_city' | translate }}</ng-container>
+              <ng-container *ngIf="housing!.capacity >= 20 && housing!.capacity < 30">{{ 'detail.city' | translate }}</ng-container>
+              <ng-container *ngIf="housing!.capacity >= 30">{{ 'detail.large_city' | translate }}</ng-container>
             </div>
             <h1 class="housing-title">{{ housing!.name }}</h1>
             <div class="meta-chips">
               <div class="meta-chip">
                 <lucide-icon [img]="MapPinIcon" class="chip-icon red"></lucide-icon>
-                <span>{{ housing!.distance }} m du campus</span>
+                <span>{{ housing!.distance }} m {{ 'detail.from_campus' | translate }}</span>
               </div>
               <!-- ── Dynamic rating chip (uses average_rating from API) ── -->
               <div class="meta-chip" *ngIf="housing!.average_rating.value > 0">
                 <lucide-icon [img]="StarIcon" class="chip-icon gold"></lucide-icon>
-                <span>{{ housing!.average_rating.display }} ({{ housing!.average_rating.count }} avis)</span>
+                <span>{{ housing!.average_rating.display }} ({{ housing!.average_rating.count }} {{ 'dashboard.tab_reviews' | translate }})</span>
               </div>
               <div class="meta-chip">
                 <lucide-icon [img]="UsersIcon" class="chip-icon blue"></lucide-icon>
-                <span>{{ housing!.free }} / {{ housing!.capacity }} places libres</span>
+                <span>{{ housing!.free }} / {{ housing!.capacity }} {{ 'detail.free_places' | translate }}</span>
               </div>
             </div>
           </div>
@@ -96,7 +96,7 @@
 
             <!-- Description -->
             <div class="detail-card" *ngIf="housing!.description">
-              <h3 class="detail-card-title">Description</h3>
+              <h3 class="detail-card-title">{{ 'detail.description' | translate }}</h3>
               <p class="detail-text">{{ housing!.description }}</p>
             </div>
 
@@ -104,7 +104,7 @@
             <div class="detail-card" *ngIf="housing!.room_categories && housing!.room_categories.length > 0">
               <h3 class="detail-card-title">
                 <lucide-icon [img]="LayoutIcon" class="detail-card-title-icon"></lucide-icon>
-                Types de chambres disponibles
+                {{ 'detail.room_types' | translate }}
               </h3>
               <div class="room-cats-grid">
                 <div class="room-cat-card"
@@ -122,11 +122,11 @@
                     <div class="rcc-header-text">
                       <span class="rcc-name">{{ rc.name }}</span>
                       <span class="rcc-occ-label">
-                        {{ rc.occupancy === 'single' ? 'Individuelle' : rc.occupancy === 'double' ? 'Double' : 'Partagée' }}
-                        · {{ rc.room_size === '1' ? 'Grande' : rc.room_size === '2' ? 'Moyenne' : 'Petite' }}
+                        {{ rc.occupancy === 'single' ? ('detail.single' | translate) : rc.occupancy === 'double' ? ('detail.double' | translate) : ('detail.shared' | translate) }}
+                        · {{ rc.room_size === '1' ? ('detail.large' | translate) : rc.room_size === '2' ? ('detail.medium' | translate) : ('detail.small' | translate) }}
                       </span>
                     </div>
-                    <span class="rcc-full-badge" *ngIf="rc.quantity_available === 0">Complet</span>
+                    <span class="rcc-full-badge" *ngIf="rc.quantity_available === 0">{{ 'detail.full' | translate }}</span>
                     <span class="rcc-selected-check" *ngIf="selectedRoomCategory?.id === rc.id">
                       <lucide-icon [img]="CheckCircleIcon" class="rcc-check-ico"></lucide-icon>
                     </span>
@@ -147,11 +147,11 @@
                       <lucide-icon [img]="TvIcon" class="rcc-am-ico"></lucide-icon> TV
                     </span>
                     <span class="rcc-amenity rcc-fridge" *ngIf="rc.fridge === '1'">
-                      <lucide-icon [img]="FridgeIcon" class="rcc-am-ico"></lucide-icon> Frigo
+                      <lucide-icon [img]="FridgeIcon" class="rcc-am-ico"></lucide-icon> {{ 'filters.fridge_label' | translate }}
                     </span>
                     <span class="rcc-amenity rcc-none"
                           *ngIf="rc.wifi === '0' && rc.tv === '0' && rc.fridge === '0'">
-                      Aucun équipement spécifique
+                      {{ 'listings.no_features' | translate }}
                     </span>
                   </div>
 
@@ -159,9 +159,9 @@
                     <div class="rcc-avail" [class.rcc-avail-full]="rc.quantity_available === 0">
                       <lucide-icon [img]="UsersIcon" class="rcc-avail-ico"></lucide-icon>
                       <span *ngIf="rc.quantity_available > 0">
-                        {{ rc.quantity_available }} place{{ rc.quantity_available > 1 ? 's' : '' }} libre{{ rc.quantity_available > 1 ? 's' : '' }}
+                        {{ rc.quantity_available }} {{ rc.quantity_available > 1 ? ('detail.places_available' | translate) : ('detail.place_available' | translate) }}
                       </span>
-                      <span *ngIf="rc.quantity_available === 0">Complet</span>
+                      <span *ngIf="rc.quantity_available === 0">{{ 'detail.full' | translate }}</span>
                     </div>
                     <div class="rcc-price-wrap">
                       <span class="rcc-price">{{ rc.price | number }}</span>
@@ -170,10 +170,10 @@
                   </div>
 
                   <div class="rcc-select-hint" *ngIf="rc.quantity_available > 0 && selectedRoomCategory?.id !== rc.id">
-                    Cliquer pour sélectionner
+                    {{ 'detail.click_to_select' | translate }}
                   </div>
                   <div class="rcc-select-hint selected-hint" *ngIf="selectedRoomCategory?.id === rc.id">
-                    ✓ Sélectionné — cliquez sur Réserver
+                    {{ 'detail.selected' | translate }}
                   </div>
 
                 </div>
@@ -181,13 +181,13 @@
 
               <div class="room-selection-hint" *ngIf="!selectedRoomCategory">
                 <lucide-icon [img]="InfoIcon" class="hint-ico"></lucide-icon>
-                Sélectionnez un type de chambre avant de réserver
+                {{ 'detail.select_room_type' | translate }}
               </div>
             </div>
 
             <!-- ══ ESTATE-LEVEL EQUIPMENTS ══ -->
             <div class="detail-card" *ngIf="hosingEquipmentsWithIcons.length > 0">
-              <h3 class="detail-card-title">Équipements de la résidence</h3>
+              <h3 class="detail-card-title">{{ 'detail.estate_equipment' | translate }}</h3>
               <div class="features-row">
                 <span *ngFor="let eq of hosingEquipmentsWithIcons"
                       class="feat-pill" [ngClass]="'feat-pill-' + eq.colorKey">

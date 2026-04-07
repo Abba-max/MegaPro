@@ -68,6 +68,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   // Track whether we are on the home page so scroll-to links know to navigate first
   isHomePage = false;
+  isScrolled = false;
 
   // Notifications
   notifications: AppNotification[] = [];
@@ -167,6 +168,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   toggleMobileMenu(): void { this.showMobileMenu = !this.showMobileMenu; }
   closeMobileMenu(): void { this.showMobileMenu = false; }
+
+  @HostListener('window:scroll', [])
+  onWindowScroll(): void {
+    this.isScrolled = window.scrollY > 20;
+  }
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(e: Event): void {
