@@ -152,7 +152,7 @@
         <!-- Distance from campus -->
         <div class="card-meta-row" *ngIf="h.distance">
           <lucide-icon [img]="DistanceIcon" class="meta-icon meta-blue"></lucide-icon>
-          <span class="meta-text">{{ h.distance < 1000 ? h.distance + ' m' : ((h.distance / 1000) | number:'1.1-1') + ' km' }} —
+          <span class="meta-text">{{ h.distance < 1000 ? h.distance + ' m' : ((h.distance / 1000) | number:'1.1-1') + ' km' }} 
               {{ 'detail.distance' | translate }}</span>
         </div>
         <!-- Published -->
@@ -254,21 +254,33 @@
     </div>
     <div class="stat-divider"></div>
     <div class="stat-item">
-    <span class="stat-number"><ng-container *ngIf="!statsLoading">{{ platformStats.users }}</ng-container><span
+    <span class="stat-number"><ng-container *ngIf="!statsLoading">{{ platformStats.orders }}</ng-container><span
             *ngIf="statsLoading">…</span></span>
-    <span class="stat-label">{{ 'stats.students' | translate }}</span>
+    <span class="stat-label">{{ 'stats.reservations' | translate }}</span>
     </div>
     <div class="stat-divider"></div>
     <div class="stat-item">
-    <span class="stat-number"><ng-container *ngIf="!statsLoading">{{ platformStats.reviews }}</ng-container><span
+    <span class="stat-number"><ng-container *ngIf="!statsLoading">{{ platformStats.reviews > 0 ? (platformStats.reviews | number:'1.0-0') + '+' : '–' }}</ng-container><span
             *ngIf="statsLoading">…</span></span>
     <span class="stat-label">{{ 'stats.satisfaction' | translate }}</span>
     </div>
     <div class="stat-divider"></div>
-    <div class="stat-item">
-    <span class="stat-number"><ng-container *ngIf="!statsLoading">{{ platformStats.users }}</ng-container><span
-            *ngIf="statsLoading">…</span></span>
-    <span class="stat-label">{{ 'stats.students_count' | translate }}</span>
+    <div class="stat-item stat-user-breakdown">
+        <ng-container *ngIf="!statsLoading">
+            <div class="stat-user-row">
+                <span class="stat-user-icon">🎓</span>
+                <span class="stat-user-label">{{ 'stats.students' | translate }}</span>
+            </div>
+            <div class="stat-user-row">
+                <span class="stat-user-icon">👨‍👩‍👧</span>
+                <span class="stat-user-label">{{ 'stats.parents' | translate }}</span>
+            </div>
+            <div class="stat-user-row">
+                <span class="stat-user-icon">🏠</span>
+                <span class="stat-user-label">{{ 'stats.owners' | translate }}</span>
+            </div>
+        </ng-container>
+        <span *ngIf="statsLoading" class="stat-number">…</span>
     </div>
     </div>
 </section>

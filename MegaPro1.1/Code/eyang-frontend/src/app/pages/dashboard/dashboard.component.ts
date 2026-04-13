@@ -100,6 +100,14 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   myOrders: QuickOrder[] = [];
   myReviews: Review[] = [];
 
+  // ── Review pagination (owner) ──────────────────────────────
+  readonly REVIEW_PAGE_SIZE = 5;
+  visibleReviewCount = this.REVIEW_PAGE_SIZE;
+  get pagedReviews(): Review[] { return this.myReviews.slice(0, this.visibleReviewCount); }
+  get hasMoreReviews(): boolean { return this.visibleReviewCount < this.myReviews.length; }
+  showMoreReviews(): void { this.visibleReviewCount = Math.min(this.visibleReviewCount + this.REVIEW_PAGE_SIZE, this.myReviews.length); }
+  resetReviewPage(): void { this.visibleReviewCount = this.REVIEW_PAGE_SIZE; }
+
   // ── Estate pagination ──────────────────────────────────────
   /** Number of estate cards shown per page */
   readonly PAGE_SIZE = 6;
@@ -319,7 +327,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       error: () => { }
     });
     this.estateService.getMyReviews().subscribe({
-      next: r => this.myReviews = r,
+      next: r => { this.myReviews = r; this.resetReviewPage(); },
       error: () => { }
     });
   }
@@ -634,6 +642,34 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.estateService.getEstates({ status: 'published' }).subscribe({
       next: e => this.allEstates = e,
       error: () => { }
+    });
+  }
+
+  // ── Owner: Reservation actions ────────────────────────────
+
+  acceptReservation(order: QuickOrder): void {
+    if (!order.id) return;
+    this.estateService.acceptReservation(order.id).subscribe({
+      next: updated => {
+        const idx = this.myOrders.findIndex(o => o.id === order.id);
+        if (idx !== -1) this.myOrders[idx] = updated;
+        this.showToast('Réservation acceptée.', 'success');
+      },
+      error: () => this.showToast('Erreur lors de la mise à jour.', 'error')
+    });
+  }
+
+  rejectReservation(order: QuickOrder): void {
+    if (!order.id) return;
+    this.openConfirm(`Rejeter la réservation de "${order.name}" ?`, () => {
+      this.estateService.rejectReservation(order.id!).subscribe({
+        next: updated => {
+          const idx = this.myOrders.findIndex(o => o.id === order.id);
+          if (idx !== -1) this.myOrders[idx] = updated;
+          this.showToast('Réservation rejetée.', 'info');
+        },
+        error: () => this.showToast('Erreur lors de la mise à jour.', 'error')
+      });
     });
   }
 

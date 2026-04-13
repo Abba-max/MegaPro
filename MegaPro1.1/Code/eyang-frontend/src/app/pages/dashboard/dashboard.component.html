@@ -230,7 +230,7 @@
             <p>{{ 'dashboard.no_reservations' | translate }}</p>
         </div>
         <div class="data-list" *ngIf="myOrders.length>0">
-            <div class="data-row" *ngFor="let o of myOrders">
+            <div class="data-row res-owner-row" *ngFor="let o of myOrders">
                 <div class="dr-col">
                     <div class="dr-primary">{{ o.estate_name }}</div>
                     <div class="dr-secondary">{{ formatDate(o.created_at) }}</div>
@@ -238,6 +238,26 @@
                 <div class="dr-col">
                     <div class="dr-primary">{{ o.name }}</div>
                     <div class="dr-secondary flex-row"><lucide-icon [img]="PhoneIcon" class="icon-xs"></lucide-icon> {{ o.phone }}</div>
+                </div>
+                <!-- Status badge -->
+                <div class="dr-col" style="flex: 0 0 auto; align-items: flex-end;">
+                    <span class="res-status-badge"
+                        [class.status-pending]="!o.status || o.status==='pending'"
+                        [class.status-accepted]="o.status==='accepted'"
+                        [class.status-rejected]="o.status==='rejected'">
+                        <ng-container *ngIf="!o.status || o.status==='pending'">⏳ {{ 'dashboard.status_pending' | translate }}</ng-container>
+                        <ng-container *ngIf="o.status==='accepted'">✅ {{ 'dashboard.status_accepted' | translate }}</ng-container>
+                        <ng-container *ngIf="o.status==='rejected'">❌ {{ 'dashboard.status_rejected' | translate }}</ng-container>
+                    </span>
+                    <!-- Action buttons (only when pending) -->
+                    <div class="res-owner-actions" *ngIf="!o.status || o.status==='pending'">
+                        <button class="btn-accept" (click)="acceptReservation(o)" title="Accepter">
+                            <lucide-icon [img]="CheckIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.accept' | translate }}
+                        </button>
+                        <button class="btn-reject" (click)="rejectReservation(o)" title="Rejeter">
+                            <lucide-icon [img]="XIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.reject' | translate }}
+                        </button>
+                    </div>
                 </div>
                 <div class="dr-note" *ngIf="o.note">{{ o.note }}</div>
             </div>
@@ -251,7 +271,7 @@
             <p>{{ 'dashboard.no_reviews' | translate }}</p>
         </div>
         <div class="reviews-list" *ngIf="myReviews.length>0">
-            <div class="review-card" *ngFor="let r of myReviews">
+            <div class="review-card" *ngFor="let r of pagedReviews">
                 <div class="review-header">
                     <div class="review-avatar">{{ r.initials }}</div>
                     <div class="review-meta">
@@ -264,6 +284,17 @@
                 </div>
                 <p class="review-comment">{{ r.comment }}</p>
             </div>
+        </div>
+        <!-- Review show-more -->
+        <div class="show-more-wrap" *ngIf="hasMoreReviews">
+            <button class="btn-show-more" (click)="showMoreReviews()">
+                <lucide-icon [img]="ChevronDownIcon" class="icon-sm"></lucide-icon>
+                {{ 'dashboard.show_more' | translate }}
+                <span class="show-more-count">({{ myReviews.length - visibleReviewCount }} {{ 'dashboard.remaining' | translate }})</span>
+            </button>
+        </div>
+        <div class="all-loaded-label" *ngIf="!hasMoreReviews && myReviews.length > REVIEW_PAGE_SIZE">
+            <span>✓ {{ 'dashboard.all_reviews_shown' | translate }}</span>
         </div>
     </div>
 
@@ -449,6 +480,17 @@
                     </div>
                     <div class="res-contact"><lucide-icon [img]="PhoneIcon" class="icon-xs"></lucide-icon> {{ r.phone }}<span *ngIf="r.note"> · {{ r.note }}</span></div>
                     <div class="res-date"><lucide-icon [img]="CalendarIcon" class="icon-xs"></lucide-icon> {{ formatDate(r.created_at) }}</div>
+                    <!-- Status badge for client reservations -->
+                    <div style="margin-top: 0.5rem;">
+                        <span class="res-status-badge"
+                            [class.status-pending]="!r.status || r.status==='pending'"
+                            [class.status-accepted]="r.status==='accepted'"
+                            [class.status-rejected]="r.status==='rejected'">
+                            <ng-container *ngIf="!r.status || r.status==='pending'">⏳ {{ 'dashboard.status_pending' | translate }}</ng-container>
+                            <ng-container *ngIf="r.status==='accepted'">✅ {{ 'dashboard.status_accepted' | translate }}</ng-container>
+                            <ng-container *ngIf="r.status==='rejected'">❌ {{ 'dashboard.status_rejected' | translate }}</ng-container>
+                        </span>
+                    </div>
                 </div>
                 <div class="res-actions">
                     <button class="btn-danger-icon" (click)="deleteReservation(r)" title="Annuler la réservation">

@@ -1457,8 +1457,82 @@ lucide-icon svg { display: block !important; width: 100% !important; height: 100
   .msg-sidebar    { max-height: 220px; }
 }
 /* ═══════════════════════════════════════════════════════════
-   DASHBOARD IMPROVEMENTS — Additional responsive fixes
+   RESERVATION STATUS — Owner dashboard
    ═══════════════════════════════════════════════════════════ */
+
+.res-owner-row {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: flex-start;
+}
+
+/* Status badge */
+.res-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.res-status-badge.status-pending  { background: #FFF7ED; color: #D97706; border: 1.5px solid #FDE68A; }
+.res-status-badge.status-accepted { background: #ECFDF5; color: #059669; border: 1.5px solid #A7F3D0; }
+.res-status-badge.status-rejected { background: #FEF2F2; color: #DC2626; border: 1.5px solid #FECACA; }
+
+/* Owner action buttons row */
+.res-owner-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.btn-accept {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1.5px solid #A7F3D0;
+    background: #ECFDF5;
+    color: #059669;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .18s, border-color .18s, transform .12s;
+}
+.btn-accept:hover {
+    background: #D1FAE5;
+    border-color: #059669;
+    transform: translateY(-1px);
+}
+
+.btn-reject {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1.5px solid #FECACA;
+    background: #FEF2F2;
+    color: #DC2626;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .18s, border-color .18s, transform .12s;
+}
+.btn-reject:hover {
+    background: #FEE2E2;
+    border-color: #DC2626;
+    transform: translateY(-1px);
+}
+
+@media (max-width: 480px) {
+    .res-owner-actions { flex-direction: row; }
+    .btn-accept, .btn-reject { flex: 1; justify-content: center; }
+}
 
 /* Stats grid: 2-col on tablet, 2-col stacked on phone */
 @media (max-width: 900px) {

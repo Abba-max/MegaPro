@@ -1,4 +1,4 @@
-// src/app/pages/messages/messages.component.ts
+
 import {
   Component, OnInit, OnDestroy, AfterViewChecked,
   ElementRef, ViewChild, ChangeDetectorRef
@@ -93,7 +93,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   }
 
-  // ── Data ───────────────────────────────────────────────────────────────
+ 
 
   loadConversations(): void {
     this.isLoading = true;

@@ -68,7 +68,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   // Track whether we are on the home page so scroll-to links know to navigate first
   isHomePage = false;
-  isScrolled = false;
 
   // Notifications
   notifications: AppNotification[] = [];
@@ -111,6 +110,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.subs.push(
       this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe((e: any) => {
         this.isHomePage = e.urlAfterRedirects === '/' || e.urlAfterRedirects === '';
+        // Close mobile drawer and restore scroll on every navigation
+        this.showMobileMenu = false;
+        document.body.style.overflow = '';
       }),
 
       this.authService.currentUser$.subscribe(u => { this.currentUser = u; }),
@@ -127,7 +129,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     );
   }
 
-  ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
+  ngOnDestroy(): void {
+    this.subs.forEach(s => s.unsubscribe());
+    // Always restore scroll when component is destroyed
+    document.body.style.overflow = '';
+  }
 
   // ── Language ───────────────────────────────────────────────────
   toggleLang(): void {
@@ -166,12 +172,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
     if (this.showNotifPanel) this.notifService.markAllRead();
   }
 
-  toggleMobileMenu(): void { this.showMobileMenu = !this.showMobileMenu; }
-  closeMobileMenu(): void { this.showMobileMenu = false; }
+  toggleMobileMenu(): void {
+    this.showMobileMenu = !this.showMobileMenu;
+    document.body.style.overflow = this.showMobileMenu ? 'hidden' : '';
+  }
 
-  @HostListener('window:scroll', [])
-  onWindowScroll(): void {
-    this.isScrolled = window.scrollY > 20;
+  closeMobileMenu(): void {
+    this.showMobileMenu = false;
+    document.body.style.overflow = '';
   }
 
   @HostListener('document:click', ['$event'])

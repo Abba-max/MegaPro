@@ -74,6 +74,8 @@ export interface QuickOrder {
   room_category?: number | null; room_category_name?: string | null;
   name: string; phone: string; note?: string; created_at?: string;
   user_email?: string;
+  /** pending | accepted | rejected */
+  status?: 'pending' | 'accepted' | 'rejected';
 }
 
 export interface ContactRequest {
@@ -373,6 +375,18 @@ export class EstateService {
 
   deleteQuickOrder(id: number): Observable<void> {
     return this.http.delete<void>(`${this.BASE}/orders/${id}/`);
+  }
+
+  updateOrderStatus(id: number, status: 'accepted' | 'rejected'): Observable<QuickOrder> {
+    return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/`, { status });
+  }
+
+  acceptReservation(id: number): Observable<QuickOrder> {
+    return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/accept/`, {});
+  }
+
+  rejectReservation(id: number): Observable<QuickOrder> {
+    return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/reject/`, {});
   }
 
   // ── Reviews ───────────────────────────────────────────────

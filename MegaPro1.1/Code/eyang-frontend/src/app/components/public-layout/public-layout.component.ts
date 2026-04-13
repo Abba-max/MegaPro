@@ -138,7 +138,13 @@ import {
       flex-direction: column;
       background:     white;
     }
-    .public-content { flex: 1; }
+    /* Offset for fixed header (72px desktop → 64px tablet → 60px mobile) */
+    .public-content {
+      flex:       1;
+      padding-top: 72px;
+    }
+    @media (max-width: 768px) { .public-content { padding-top: 64px; } }
+    @media (max-width: 480px) { .public-content { padding-top: 60px; } }
 
     /* ── FOOTER BASE ─────────────────────────────────────────── */
     .site-footer {
@@ -424,11 +430,36 @@ import {
       .f-legal { justify-content: center; }
     }
     @media (max-width: 480px) {
-      .footer-top { padding: 2.5rem 1rem 2rem; }
-      .footer-grid { grid-template-columns: 1fr; gap: 1.75rem; }
-      .f-brand { grid-column: unset; }
-      .f-divider { margin: 0 1rem; }
-      .f-bottom { padding: 1rem; }
+      .footer-top { padding: 2rem 1.25rem 1.5rem; }
+
+      /* On mobile: show only the brand column, hide all nav/services/lang columns */
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+      /* Hide secondary columns entirely */
+      .f-col:not(.f-brand) { display: none; }
+
+      /* Brand column: keep logo + socials, hide tagline & contact list */
+      .f-tagline { display: none; }
+      .f-contact  { display: none; }
+
+      /* Socials always visible */
+      .f-social-title { display: none; }
+      .f-socials {
+        margin-top: 0.75rem;
+        gap: 0.75rem;
+      }
+      .f-social-btn {
+        width:  42px;
+        height: 42px;
+      }
+
+      .f-brand { padding-bottom: 1.5rem; }
+
+      .f-divider { margin: 0 1.25rem; }
+      .f-bottom  { padding: 0.875rem 1.25rem; }
+      .f-bottom-inner { justify-content: center; text-align: center; }
       .f-lang-row { flex-direction: column; }
     }
   `]
