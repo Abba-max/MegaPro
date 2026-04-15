@@ -839,53 +839,68 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   handleRealtimeMessage(msg: any): void {
-    const conv = this.conversations.find(c => c.id === msg.conversation_id);
+    // msg fields (from ws_utils.broadcast_chat_message):
+    //   id, conversation, text, sender, sender_name, sender_username, read, created_at
+
+    // Update sidebar conversation preview
+    const conv = this.conversations.find(c => c.id === msg.conversation);
     if (conv) {
-      conv.last_message = {
-        text: msg.message,
-        created_at: new Date().toISOString(),
-        sender_id: msg.sender_id
-      };
-      if (!this.activeConversation || this.activeConversation.id !== conv.id) {
+      conv.last_message = { text: msg.text, created_at: msg.created_at, sender_id: msg.sender };
+      if (!this.activeConversation || this.activeConversation.id !== msg.conversation) {
         conv.unread_count = (conv.unread_count || 0) + 1;
       }
-      conv.updated_at = new Date().toISOString();
+      conv.updated_at = msg.created_at;
       this.conversations.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
     }
 
-    if (!this.activeConversation || this.activeConversation.id !== msg.conversation_id) return;
+    // Only mutate the active conversation's message list
+    if (!this.activeConversation || this.activeConversation.id !== msg.conversation) return;
 
-    const exists = this.activeConversation.messages.some(m =>
-      m.text === msg.message && m.sender === msg.sender_id
-    );
+    // Dedup: skip if a message with this DB id already exists
+    const alreadyExists = this.activeConversation.messages.some(m => m.id === msg.id);
+    if (alreadyExists) return;
 
-    if (!exists) {
-      const newMsg: ChatMessage = {
-        id: 0,
-        sender: msg.sender_id,
-        text: msg.message,
-        created_at: new Date().toISOString(),
-        read: true,
-        conversation: this.activeConversation.id,
-        sender_name: msg.sender_name || 'Autre',
-        sender_username: ''
-      };
-      this.activeConversation.messages.push(newMsg);
-      this.shouldScroll = true;
-      this.cdr.detectChanges();
-    }
+    const newMsg: ChatMessage = {
+      id:               msg.id,
+      sender:           msg.sender,
+      text:             msg.text,
+      created_at:       msg.created_at,
+      read:             msg.read ?? false,
+      conversation:     msg.conversation,
+      sender_name:      msg.sender_name || '',
+      sender_username:  msg.sender_username || '',
+    };
+    this.activeConversation.messages.push(newMsg);
+    this.activeConversation.last_message = { text: msg.text, created_at: msg.created_at, sender_id: msg.sender };
+    this.shouldScroll = true;
+    this.cdr.detectChanges();
   }
 
   handleRealtimeNotification(notif: any): void {
-    if (notif.type === 'new_message') {
-      if (!this.activeConversation || this.activeConversation.id !== notif.conversation_id) {
-        this.showToast(`${notif.sender_name}: ${notif.message.substring(0, 30)}...`, 'info');
-        const conv = this.conversations.find(c => c.id === notif.conversation_id);
-        if (conv) conv.unread_count = (conv.unread_count || 0) + 1;
-      }
-    } else if (notif.type === 'verification_status') {
-      this.showToast(notif.message, 'success');
-      if (this.currentUser) this.currentUser.is_verified = true;
+    switch (notif.type) {
+      case 'new_message':
+        if (!this.activeConversation || this.activeConversation.id !== notif.conversation_id) {
+          this.showToast(`💬 ${notif.sender_name}: ${(notif.message || '').substring(0, 40)}`, 'info');
+          const conv = this.conversations.find(c => c.id === notif.conversation_id);
+          if (conv) conv.unread_count = (conv.unread_count || 0) + 1;
+        }
+        break;
+      case 'verification_status':
+        this.showToast(notif.message || 'Compte vérifié !', 'success');
+        if (this.currentUser) this.currentUser.is_verified = true;
+        break;
+      case 'new_booking':
+        this.showToast(`📋 ${notif.message}`, 'info');
+        this.loadOwnerData(); // refresh reservation list
+        break;
+      case 'booking_accepted':
+        this.showToast(`✅ ${notif.message}`, 'success');
+        this.loadClientData();
+        break;
+      case 'booking_rejected':
+        this.showToast(`❌ ${notif.message}`, 'warning');
+        this.loadClientData();
+        break;
     }
   }
 
@@ -893,22 +908,41 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     const text = this.newMessage.trim();
     if (!text || !this.activeConversation) return;
     this.newMessage = '';
-    this.estateService.sendMessage(this.activeConversation.id, text).subscribe({
-      next: msg => {
-        if (this.activeConversation) {
-          this.activeConversation = {
-            ...this.activeConversation,
-            messages: [...this.activeConversation.messages, msg],
-            last_message: { text: msg.text, created_at: msg.created_at, sender_id: msg.sender }
-          };
-          this.shouldScroll = true;
+
+    const convId = this.activeConversation.id;
+
+    // ── Strategy: single source of truth ──────────────────────────────────
+    // If the WebSocket is open, send via WS only. The server saves to DB,
+    // then signals.py broadcasts the saved record back to both participants
+    // via group_send. handleRealtimeMessage() adds it to the list — no HTTP.
+    //
+    // If WS is closed, fall back to HTTP POST. The response IS the record;
+    // add it directly. WS is not active so there is no echo to dedup.
+    // ─────────────────────────────────────────────────────────────────────
+
+    if (this.wsService.isChatOpen) {
+      // Send via WS; the server echo will add the message via handleRealtimeMessage()
+      this.wsService.sendChatMessage(text, this.currentUser!.id!, this.currentUser!.name);
+    } else {
+      // HTTP fallback
+      this.estateService.sendMessage(convId, text).subscribe({
+        next: msg => {
+          if (this.activeConversation) {
+            this.activeConversation = {
+              ...this.activeConversation,
+              messages: [...this.activeConversation.messages, msg],
+              last_message: { text: msg.text, created_at: msg.created_at, sender_id: msg.sender }
+            };
+            this.shouldScroll = true;
+            this.cdr.detectChanges();
+          }
+        },
+        error: () => {
+          this.newMessage = text;
+          this.showToast("Erreur lors de l'envoi.", 'error');
         }
-      },
-      error: () => {
-        this.newMessage = text;
-        this.showToast("Erreur lors de l'envoi.", 'error');
-      }
-    });
+      });
+    }
   }
 
   isMine(msg: ChatMessage): boolean {

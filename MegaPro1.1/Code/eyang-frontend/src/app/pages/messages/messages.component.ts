@@ -1,4 +1,3 @@
-
 import {
   Component, OnInit, OnDestroy, AfterViewChecked,
   ElementRef, ViewChild, ChangeDetectorRef
@@ -161,57 +160,46 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
   // ── Incoming WS messages ───────────────────────────────────────────────
 
   /**
-   * Called for every message broadcast by the server.
-   * This now covers BOTH sides:
-   *   - Messages sent by the other participant  → add to list
-   *   - Echoed back from our own send()         → replace the optimistic bubble
+   * Called for every message broadcast by the server via WebSocketService.messages$.
+   *
+   * The server (ws_utils.broadcast_chat_message) sends these fields:
+   *   id, conversation, text, sender, sender_name, sender_username, read, created_at
+   *
+   * Single-source-of-truth rule:
+   *   - If WS is open and we sent via WS, the server echo is the authoritative record.
+   *     We add it here; we never also add it from the HTTP response.
+   *   - If we sent via HTTP (WS was closed), we already added the msg in sendMessage().
+   *     The WS is not active, so this handler is not called — no dedup needed.
+   *   - Dedup guard: skip any msg whose DB id already exists in the list.
    */
   private handleIncomingWsMessage(data: any): void {
     if (!this.activeConversation) return;
     if (data.conversation !== this.activeConversation.id) return;
 
-    const isMine = data.sender === this.currentUser?.id;
+    // Dedup by DB id — the only reliable key
+    const alreadyExists = this.activeConversation.messages.some(m => m.id === data.id);
+    if (alreadyExists) return;
 
-    if (isMine) {
-      // Replace the temporary "sending" bubble with the real DB record
-      const msgs = this.activeConversation.messages;
-      const tempIdx = msgs.findIndex(
-        m => m.id < 0 && m.text === data.text && m.sender === data.sender
-      );
-      if (tempIdx !== -1) {
-        msgs[tempIdx] = this.wsMsgToChatMessage(data);
-      } else {
-        // Dedup: skip if we already have this id (HTTP response arrived first)
-        if (!msgs.find(m => m.id === data.id)) {
-          msgs.push(this.wsMsgToChatMessage(data));
-        }
-      }
-    } else {
-      // Message from the other party
-      const exists = this.activeConversation.messages.find(m => m.id === data.id);
-      if (!exists) {
-        const msg = this.wsMsgToChatMessage(data);
-        this.activeConversation.messages.push(msg);
-
-        // Toast notification
-        const name = this.getPartnerName(this.activeConversation);
-        this.notifService.toast({
-          type: 'message', icon: '💬', title: name,
-          message: data.text.length > 60 ? data.text.slice(0, 60) + '…' : data.text,
-          duration: 4000
-        });
-
-        // Mark as read since we're viewing this conversation
-        this.estateService.markConversationRead(this.activeConversation.id)
-          .subscribe({ error: () => { } });
-      }
-    }
+    const msg = this.wsMsgToChatMessage(data);
+    this.activeConversation.messages.push(msg);
 
     this.activeConversation.last_message = {
       text: data.text,
       created_at: data.created_at,
-      sender_id: data.sender
+      sender_id: data.sender,
     };
+
+    // Toast only for incoming messages (not our own echo)
+    if (!this.isMine(msg)) {
+      const name = this.getPartnerName(this.activeConversation);
+      this.notifService.toast({
+        type: 'message', icon: '💬', title: name,
+        message: data.text.length > 60 ? data.text.slice(0, 60) + '…' : data.text,
+        duration: 4000,
+      });
+      this.estateService.markConversationRead(this.activeConversation.id)
+        .subscribe({ error: () => { } });
+    }
 
     this.shouldScroll = true;
     this.loadConversations(); // refresh sidebar badges
@@ -239,55 +227,38 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     this.isSending = true;
     const convId = this.activeConversation.id;
-
-    // Add an optimistic bubble with a temporary negative id
-    const tempMsg: ChatMessage = {
-      id: -Date.now(), // negative = temporary
-      conversation: convId,
-      sender: this.currentUser!.id!,
-      sender_name: this.currentUser!.name,
-      sender_username: '',
-      text,
-      read: false,
-      created_at: new Date().toISOString(),
-    };
-    this.activeConversation.messages.push(tempMsg);
-    this.shouldScroll = true;
     this.newMessage = '';
-    this.cdr.detectChanges();
 
-    // FIX: Single send path.
-    // If the WebSocket is open, send via WS only — the consumer saves to DB
-    // and broadcasts back (including to us), which replaces the temp bubble.
-    // If WS is NOT open, fall back to HTTP POST, which also saves to DB.
+    // ── Strategy: single source of truth ──────────────────────────────────
+    // WS open  → send via WS only; server echo adds msg via handleIncomingWsMessage().
+    // WS closed → send via HTTP; add response directly; no echo expected.
+    // Never do both — that is what caused the double messages.
+    // ─────────────────────────────────────────────────────────────────────
+
     if (this.wsService.isChatOpen) {
       this.wsService.sendChatMessage(text, this.currentUser!.id!, this.currentUser!.name);
-      // The echo from the server will replace the temp bubble via handleIncomingWsMessage
       this.isSending = false;
+      // The server echo will arrive via handleIncomingWsMessage() and add the msg.
     } else {
       this.estateService.sendMessage(convId, text).subscribe({
         next: msg => {
-          // Replace temp bubble with the real DB record
-          const msgs = this.activeConversation!.messages;
-          const idx = msgs.findIndex(m => m.id === tempMsg.id);
-          if (idx !== -1) msgs[idx] = msg;
-          this.activeConversation!.last_message = {
-            text: msg.text, created_at: msg.created_at, sender_id: msg.sender
-          };
+          if (this.activeConversation) {
+            this.activeConversation.messages.push(msg);
+            this.activeConversation.last_message = {
+              text: msg.text, created_at: msg.created_at, sender_id: msg.sender,
+            };
+          }
           this.isSending = false;
           this.shouldScroll = true;
           this.loadConversations();
           this.cdr.detectChanges();
         },
         error: () => {
-          // Remove the temp bubble and restore the input
-          this.activeConversation!.messages = this.activeConversation!.messages
-            .filter(m => m.id !== tempMsg.id);
           this.newMessage = text;
           this.isSending = false;
-          this.notifService.error('Erreur d\'envoi', 'Impossible d\'envoyer le message. Réessayez.');
+          this.notifService.error("Erreur d'envoi", 'Impossible d\'envoyer le message. Réessayez.');
           this.cdr.detectChanges();
-        }
+        },
       });
     }
   }
