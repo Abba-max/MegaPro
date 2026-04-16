@@ -7,8 +7,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import {
   LucideAngularModule,
-  Send, Search, Phone, MoreVertical, Paperclip,
-  CheckCheck, Check, Home, ArrowLeft, Clock, MessageSquare
+  Send, Search, Paperclip,
+  CheckCheck, Check, Home, ArrowLeft, Clock, MessageSquare, Download, File
 } from 'lucide-angular';
 import { AuthService, User } from '../../services/auth.service';
 import { EstateService, Conversation, ChatMessage } from '../../services/estate.service';
@@ -25,11 +25,10 @@ import { Subscription, interval } from 'rxjs';
 })
 export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
   @ViewChild('messagesViewport') messagesViewport!: ElementRef;
+  @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
   readonly SendIcon = Send;
   readonly SearchIcon = Search;
-  readonly PhoneIcon = Phone;
-  readonly MoreIcon = MoreVertical;
   readonly PaperclipIcon = Paperclip;
   readonly CheckCheckIcon = CheckCheck;
   readonly CheckIcon = Check;
@@ -37,6 +36,8 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
   readonly ArrowLeftIcon = ArrowLeft;
   readonly ClockIcon = Clock;
   readonly MessageSquareIcon = MessageSquare;
+  readonly DownloadIcon = Download;
+  readonly FileIcon = File;
 
   currentUser: User | null = null;
   searchQuery = '';
@@ -44,6 +45,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
   showSidebar = true;
   isLoading = true;
   isSending = false;
+  isUploadingFile = false;
 
   conversations: Conversation[] = [];
   activeConversation: Conversation | null = null;
@@ -173,12 +175,27 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
    *   - Dedup guard: skip any msg whose DB id already exists in the list.
    */
   private handleIncomingWsMessage(data: any): void {
-    if (!this.activeConversation) return;
-    if (data.conversation !== this.activeConversation.id) return;
+    if (!this.activeConversation) {
+      console.warn('[MSG] Received message but no active conversation');
+      return;
+    }
+    if (data.conversation !== this.activeConversation.id) {
+      console.warn('[MSG] Message is for different conversation, ignoring');
+      return;
+    }
+
+    // Validate required fields
+    if (!data.id || data.sender === undefined || !data.text || !data.created_at) {
+      console.error('[MSG] Invalid message format received:', data);
+      return;
+    }
 
     // Dedup by DB id — the only reliable key
     const alreadyExists = this.activeConversation.messages.some(m => m.id === data.id);
-    if (alreadyExists) return;
+    if (alreadyExists) {
+      console.warn('[MSG] Duplicate message (id=' + data.id + '), ignoring');
+      return;
+    }
 
     const msg = this.wsMsgToChatMessage(data);
     this.activeConversation.messages.push(msg);
@@ -204,6 +221,9 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.shouldScroll = true;
     this.loadConversations(); // refresh sidebar badges
     this.cdr.detectChanges();
+    
+    console.info('[MSG] Message added (id=' + msg.id + ') from ' + 
+                 (msg.sender === this.currentUser?.id ? 'self' : 'peer'));
   }
 
   private wsMsgToChatMessage(data: any): ChatMessage {
@@ -229,23 +249,29 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
     const convId = this.activeConversation.id;
     this.newMessage = '';
 
-    // ── Strategy: single source of truth ──────────────────────────────────
+    // ── Strategy: single source of truth with fallback ──────────────────
     // WS open  → send via WS only; server echo adds msg via handleIncomingWsMessage().
     // WS closed → send via HTTP; add response directly; no echo expected.
-    // Never do both — that is what caused the double messages.
+    // If WS fails unexpectedly → automatically fallback to HTTP
     // ─────────────────────────────────────────────────────────────────────
 
-    if (this.wsService.isChatOpen) {
-      this.wsService.sendChatMessage(text, this.currentUser!.id!, this.currentUser!.name);
-      this.isSending = false;
-      // The server echo will arrive via handleIncomingWsMessage() and add the msg.
-    } else {
+    const attemptWsSend = (): boolean => {
+      return this.wsService.sendChatMessage(
+        text,
+        this.currentUser!.id!,
+        this.currentUser!.name
+      );
+    };
+
+    const attemptHttpSend = (): void => {
       this.estateService.sendMessage(convId, text).subscribe({
         next: msg => {
           if (this.activeConversation) {
             this.activeConversation.messages.push(msg);
             this.activeConversation.last_message = {
-              text: msg.text, created_at: msg.created_at, sender_id: msg.sender,
+              text: msg.text,
+              created_at: msg.created_at,
+              sender_id: msg.sender,
             };
           }
           this.isSending = false;
@@ -253,13 +279,28 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
           this.loadConversations();
           this.cdr.detectChanges();
         },
-        error: () => {
-          this.newMessage = text;
+        error: (err) => {
+          console.error('HTTP send failed:', err);
+          this.newMessage = text; // restore for retry
           this.isSending = false;
-          this.notifService.error("Erreur d'envoi", 'Impossible d\'envoyer le message. Réessayez.');
+          this.notifService.error(
+            'Erreur d\'envoi',
+            'Impossible d\'envoyer le message. Réessayez.'
+          );
           this.cdr.detectChanges();
         },
       });
+    };
+
+    // Try WS first
+    if (attemptWsSend()) {
+      // Message queued on WS, server will echo it back
+      this.isSending = false;
+      console.info('[MSG] Sent via WebSocket');
+    } else {
+      // WS not available, try HTTP immediately
+      console.warn('[MSG] WS unavailable, falling back to HTTP');
+      attemptHttpSend();
     }
   }
 
@@ -268,6 +309,76 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
       event.preventDefault();
       this.sendMessage();
     }
+  }
+
+  // ── File Upload ────────────────────────────────────────────────────────
+
+  triggerFileInput(): void {
+    this.fileInput.nativeElement.click();
+  }
+
+  onFileSelected(event: any): void {
+    const files: File[] = event.target.files;
+    if (!files || files.length === 0) return;
+    
+    for (let file of files) {
+      this.uploadFile(file);
+    }
+
+    // Reset file input
+    this.fileInput.nativeElement.value = '';
+  }
+
+  private uploadFile(file: File): void {
+    if (!this.activeConversation || this.isUploadingFile) return;
+
+    // Validate file size (max 10MB)
+    const MAX_SIZE = 10 * 1024 * 1024;
+    if (file.size > MAX_SIZE) {
+      this.notifService.error('Fichier trop volumineux', 'La taille maximale est 10 MB');
+      return;
+    }
+
+    this.isUploadingFile = true;
+    const convId = this.activeConversation.id;
+    const fileName = file.name;
+    const fileSize = this.formatFileSize(file.size);
+
+    // Send file via the backend
+    this.estateService.sendMessageWithFile(convId, file).subscribe({
+      next: (msg) => {
+        if (this.activeConversation) {
+          this.activeConversation.messages.push(msg);
+          this.activeConversation.last_message = {
+            text: `📎 ${fileName}`,
+            created_at: msg.created_at,
+            sender_id: msg.sender,
+          };
+        }
+        this.isUploadingFile = false;
+        this.shouldScroll = true;
+        this.loadConversations();
+        this.notifService.success('Fichier envoyé', `${fileName} a été envoyé avec succès`);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('File upload failed:', err);
+        this.isUploadingFile = false;
+        this.notifService.error(
+          'Erreur d\'envoi',
+          `Impossible d'envoyer le fichier. Réessayez.`
+        );
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 10) / 10 + ' ' + sizes[i];
   }
 
   // ── Grouped messages with date separators ─────────────────────────────

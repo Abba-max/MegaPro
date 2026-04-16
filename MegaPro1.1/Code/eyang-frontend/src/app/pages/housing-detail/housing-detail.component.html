@@ -132,9 +132,42 @@
                     </span>
                   </div>
 
-                  <div class="rcc-images" *ngIf="rc.images && rc.images.length > 0">
-                    <img [src]="rc.images[0].image" [alt]="rc.name" class="rcc-img">
-                    <span class="rcc-img-count" *ngIf="rc.images.length > 1">+{{ rc.images.length - 1 }}</span>
+                  <!-- Room category image swiper -->
+                  <div class="rcc-images" *ngIf="rc.images && rc.images.length > 0"
+                       (touchstart)="onRccTouchStart($event, rc)"
+                       (touchend)="onRccTouchEnd($event, rc)"
+                       (mousedown)="onRccMouseDown($event, rc)"
+                       (mouseup)="onRccMouseUp($event, rc)">
+
+                    <div class="rcc-swiper-track"
+                         [style.transform]="'translateX(-' + getRccActiveIndex(rc) * 100 + '%)'">
+                      <div class="rcc-swiper-slide" *ngFor="let img of rc.images">
+                        <img [src]="img.image" [alt]="rc.name">
+                      </div>
+                    </div>
+
+                    <ng-container *ngIf="rc.images.length > 1">
+                      <button class="rcc-arrow rcc-arrow-left"
+                              (click)="$event.stopPropagation(); prevRccSlide(rc)"
+                              aria-label="Photo précédente">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                      </button>
+                      <button class="rcc-arrow rcc-arrow-right"
+                              (click)="$event.stopPropagation(); nextRccSlide(rc)"
+                              aria-label="Photo suivante">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                      </button>
+                      <div class="rcc-dots">
+                        <span *ngFor="let img of rc.images; let i = index"
+                              class="rcc-dot"
+                              [class.active]="i === getRccActiveIndex(rc)">
+                        </span>
+                      </div>
+                    </ng-container>
                   </div>
 
                   <p class="rcc-desc" *ngIf="rc.description">{{ rc.description }}</p>
@@ -341,7 +374,7 @@
               <p>Aucun avis pour le moment. Soyez le premier !</p>
             </div>
 
-            <div class="review-card" *ngFor="let r of reviews">
+            <div class="review-card" *ngFor="let r of visibleReviews">
               <div class="review-top">
                 <div class="review-avatar">{{ r.initials }}</div>
                 <div class="review-meta">
@@ -365,6 +398,11 @@
                 </button>
               </div>
             </div>
+
+            <!-- Show more button -->
+            <button class="show-more-btn" *ngIf="hasMoreReviews()" (click)="loadMoreReviews()">
+              Voir plus d'avis
+            </button>
           </div>
           <!-- end reviews-block -->
 

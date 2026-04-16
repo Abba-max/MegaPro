@@ -216,6 +216,9 @@
 .link-btn { background: none; border: none; color: #2563eb; font-weight: 700; cursor: pointer; font-size: inherit; padding: 0; text-decoration: underline; }
 .link-btn:hover { color: #1d4ed8; }
 
+.show-more-btn { display: block; margin: 1.25rem auto 0; padding: 10px 24px; border: 1.5px solid #e2e8f0; background: #fff; border-radius: 10px; font-size: 14px; font-weight: 700; color: #2563EB; cursor: pointer; transition: all .2s; }
+.show-more-btn:hover { background: #eff6ff; border-color: #bfdbfe; }
+
 /* ══════════════════════════════════════════════
    FORM LOADING / SUCCESS
 ══════════════════════════════════════════════ */
@@ -1079,3 +1082,73 @@ detail-card-title {
 /* ── Star icon colours ── */
 .gold      { color: #f59e0b; }
 .gray-star { color: #e2e8f0; }
+
+/* ════════════════════════════════════════════════════════════
+   ROOM CATEGORY CARD — IMAGE SWIPER
+════════════════════════════════════════════════════════════ */
+.rcc-images {
+  position: relative;
+  height: 160px;
+  overflow: hidden;
+  background: #E2E8F0;
+  cursor: pointer;
+}
+
+/* Swiper track */
+.rcc-swiper-track {
+  display: flex;
+  height: 100%;
+  transition: transform .32s cubic-bezier(.4,0,.2,1);
+  will-change: transform;
+}
+.rcc-swiper-slide {
+  flex: 0 0 100%;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+.rcc-swiper-slide img {
+  width: 100%; height: 100%; object-fit: cover;
+  display: block; pointer-events: none;
+  transition: transform .4s ease;
+}
+.room-cat-card:hover .rcc-swiper-slide img { transform: scale(1.04); }
+
+/* Arrow nav */
+.rcc-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,255,255,.9); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10; box-shadow: 0 2px 6px rgba(0,0,0,.18);
+  opacity: 0; transition: opacity .2s;
+  color: #1e293b;
+}
+.rcc-arrow svg { width: 14px; height: 14px; }
+.rcc-arrow-left  { left: 6px; }
+.rcc-arrow-right { right: 6px; }
+.rcc-images:hover .rcc-arrow { opacity: 1; }
+.rcc-arrow:hover { background: #fff; transform: translateY(-50%) scale(1.08); }
+
+/* Dot indicators */
+.rcc-dots {
+  position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 4px; z-index: 10; pointer-events: none;
+}
+.rcc-dot {
+  width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.55);
+  transition: all .2s;
+}
+.rcc-dot.active { background: #fff; width: 14px; border-radius: 3px; }
+
+/* Image count badge */
+.rcc-img-count {
+  position: absolute; bottom: 6px; right: 8px; z-index: 5;
+  background: rgba(0,0,0,.55); color: #fff; font-size: 0.70rem; font-weight: 600;
+  padding: 2px 7px; border-radius: 10px;
+}
+
+/* Mobile: always show arrows slightly */
+@media (max-width: 480px) {
+  .rcc-arrow { opacity: .6; }
+}

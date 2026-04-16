@@ -389,25 +389,6 @@
 }
 .estate-icon-sm svg { width: 12px !important; height: 12px !important; display: block; }
 
-.chat-header-actions { display: flex; gap: 4px; margin-left: auto; }
-.hdr-btn {
-  width: 36px;
-  height: 36px;
-  border: none;
-  background: #F8FAFC;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: #64748B;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-.hdr-btn:hover { background: #EFF6FF; color: #2563EB; }
-.hdr-btn lucide-icon { display: inline-flex !important; width: 17px !important; height: 17px !important; }
-.hdr-btn lucide-icon svg { width: 17px !important; height: 17px !important; display: block; }
-
 /* ── Messages viewport ── */
 .messages-viewport {
   flex: 1;
@@ -653,6 +634,49 @@
 .send-btn:disabled { cursor: not-allowed; opacity: 0.6; transform: none; }
 .send-btn lucide-icon { display: inline-flex !important; width: 17px !important; height: 17px !important; }
 .send-btn lucide-icon svg { width: 17px !important; height: 17px !important; display: block; }
+
+/* ── File upload ─────────────────────────────────────────── */
+.file-input-hidden {
+  display: none;
+}
+
+.attach-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.msg-file {
+  margin: 0.5rem 0;
+  padding: 0.75rem;
+  background: rgba(255,255,255,0.1);
+  border-radius: 8px;
+  display: inline-block;
+}
+
+.file-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 2px 0;
+}
+
+.file-link:hover {
+  text-decoration: underline;
+}
+
+.file-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.sent-file-link {
+  color: #fff;
+}
 
 /* Icon utility */
 .icon-sm {

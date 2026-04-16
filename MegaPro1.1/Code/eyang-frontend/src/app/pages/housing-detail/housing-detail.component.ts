@@ -67,6 +67,10 @@ export class HousingDetailComponent implements OnInit {
   isSubmitting  = false;
   submitSuccess = false;
 
+  // ── Review "show more" ──────────────────────────────────
+  readonly REVIEWS_PER_PAGE = 3;
+  reviewsDisplayed = 3;
+
   // ── Room category selection ───────────────────────────────
   selectedRoomCategory: RoomCategory | null = null;
 
@@ -196,6 +200,33 @@ export class HousingDetailComponent implements OnInit {
    * @param star       The star level (1-5)
    * @param total      Total number of reviews
    */
+  // ── Room category image swiper ─────────────────────────
+  private rccSlideIndexMap = new Map<number, number>();
+  private rccTouchStartX = 0;
+  private rccMouseStartX = 0;
+
+  getRccActiveIndex(rc: { id: number }): number {
+    return this.rccSlideIndexMap.get(rc.id) ?? 0;
+  }
+  nextRccSlide(rc: { id: number; images: any[] }): void {
+    const cur = this.rccSlideIndexMap.get(rc.id) ?? 0;
+    this.rccSlideIndexMap.set(rc.id, (cur + 1) % rc.images.length);
+  }
+  prevRccSlide(rc: { id: number; images: any[] }): void {
+    const cur = this.rccSlideIndexMap.get(rc.id) ?? 0;
+    this.rccSlideIndexMap.set(rc.id, (cur - 1 + rc.images.length) % rc.images.length);
+  }
+  onRccTouchStart(e: TouchEvent, rc: any): void { this.rccTouchStartX = e.touches[0].clientX; }
+  onRccTouchEnd(e: TouchEvent, rc: any): void {
+    const dx = e.changedTouches[0].clientX - this.rccTouchStartX;
+    if (Math.abs(dx) > 35) { dx < 0 ? this.nextRccSlide(rc) : this.prevRccSlide(rc); }
+  }
+  onRccMouseDown(e: MouseEvent, rc: any): void { this.rccMouseStartX = e.clientX; }
+  onRccMouseUp(e: MouseEvent, rc: any): void {
+    const dx = e.clientX - this.rccMouseStartX;
+    if (Math.abs(dx) > 35) { dx < 0 ? this.nextRccSlide(rc) : this.prevRccSlide(rc); }
+  }
+
   getBreakdownPct(breakdown: AverageRating['breakdown'], star: number, total: number): number {
     if (!total || !breakdown) return 0;
     return Math.round(((breakdown[star] || 0) / total) * 100);
@@ -265,6 +296,20 @@ export class HousingDetailComponent implements OnInit {
       },
       error: () => this.showToast('Erreur lors du like', 'error')
     });
+  }
+
+  // ── Review "show more" ────────────────────────────────────
+
+  get visibleReviews(): Review[] {
+    return this.reviews.slice(0, this.reviewsDisplayed);
+  }
+
+  hasMoreReviews(): boolean {
+    return this.reviewsDisplayed < this.reviews.length;
+  }
+
+  loadMoreReviews(): void {
+    this.reviewsDisplayed += this.REVIEWS_PER_PAGE;
   }
 
   // ── Messaging ─────────────────────────────────────────────

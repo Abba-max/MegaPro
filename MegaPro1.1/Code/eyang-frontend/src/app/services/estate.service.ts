@@ -88,6 +88,7 @@ export interface ChatMessage {
   id: number; conversation: number; sender: number;
   sender_name: string; sender_username: string;
   text: string; read: boolean; created_at: string;
+  file?: { id: number; file: string; filename: string; size: number } | null;
 }
 
 export interface Conversation {
@@ -281,6 +282,12 @@ export class EstateService {
 
   sendMessage(conversationId: number, text: string): Observable<ChatMessage> {
     return this.http.post<ChatMessage>(`${this.BASE}/conversations/${conversationId}/messages/`, { text });
+  }
+
+  sendMessageWithFile(conversationId: number, file: File): Observable<ChatMessage> {
+    const fd = new FormData();
+    fd.append('file', file, file.name);
+    return this.http.post<ChatMessage>(`${this.BASE}/conversations/${conversationId}/messages/`, fd);
   }
 
   markConversationRead(conversationId: number): Observable<any> {

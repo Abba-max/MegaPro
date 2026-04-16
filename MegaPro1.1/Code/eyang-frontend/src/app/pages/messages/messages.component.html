@@ -110,14 +110,7 @@
         <span>{{ activeConversation.estate_name }}</span>
         </div>
 
-        <div class="chat-header-actions">
-        <button class="hdr-btn" title="Appeler">
-            <lucide-icon [img]="PhoneIcon" class="icon-sm"></lucide-icon>
-        </button>
-        <button class="hdr-btn" title="Plus">
-            <lucide-icon [img]="MoreIcon" class="icon-sm"></lucide-icon>
-        </button>
-        </div>
+
     </header>
 
     <!-- ── Messages viewport ── -->
@@ -148,7 +141,13 @@
             {{ getPartnerInitials(activeConversation) }}
             </div>
             <div class="msg-bubble received-bubble">
-            <p class="msg-text">{{ item.msg.text }}</p>
+            <p class="msg-text" *ngIf="item.msg.text">{{ item.msg.text }}</p>
+            <div class="msg-file" *ngIf="item.msg.file">
+                <a class="file-link" [href]="item.msg.file.file" target="_blank" download>
+                    <lucide-icon [img]="FileIcon" class="file-icon"></lucide-icon>
+                    <span class="file-name">{{ item.msg.file.filename }}</span>
+                </a>
+            </div>
             <div class="msg-meta">
                 <span class="msg-time">{{ formatTime(item.msg.created_at) }}</span>
             </div>
@@ -158,7 +157,13 @@
         <!-- Sent message -->
         <div *ngIf="item.type === 'message' && item.msg && isMine(item.msg)" class="msg-row sent">
             <div class="msg-bubble sent-bubble">
-            <p class="msg-text">{{ item.msg.text }}</p>
+            <p class="msg-text" *ngIf="item.msg.text">{{ item.msg.text }}</p>
+            <div class="msg-file" *ngIf="item.msg.file">
+                <a class="file-link sent-file-link" [href]="item.msg.file.file" target="_blank" download>
+                    <lucide-icon [img]="FileIcon" class="file-icon"></lucide-icon>
+                    <span class="file-name">{{ item.msg.file.filename }}</span>
+                </a>
+            </div>
             <div class="msg-meta sent-meta">
                 <span class="msg-time">{{ formatTime(item.msg.created_at) }}</span>
                 <span class="ticks" [class.read]="item.msg.read">
@@ -189,7 +194,8 @@
     <!-- ── Chat input footer ── -->
     <footer class="chat-footer">
         <div class="input-row" [class.focused]="newMessage.length > 0">
-            <button class="attach-btn" title="Joindre">
+            <input type="file" #fileInput (change)="onFileSelected($event)" class="file-input-hidden" multiple>
+            <button class="attach-btn" title="Joindre un fichier" (click)="triggerFileInput()" [disabled]="isUploadingFile">
             <lucide-icon [img]="PaperclipIcon" class="icon-sm"></lucide-icon>
         </button>
         <input type="text" [(ngModel)]="newMessage" (keydown)="onKeydown($event)" placeholder="Écrivez un message…"

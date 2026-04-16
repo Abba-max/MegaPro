@@ -118,6 +118,44 @@ export class HomeComponent implements OnInit {
   toasts: Toast[] = [];
   private toastCounter = 0;
 
+  // ── Image swiper state (per estate id) ──────────────────
+  private slideIndexMap = new Map<number, number>();
+  private swipeTouchStartX = 0;
+  private swipeMouseStartX = 0;
+
+  getActiveIndex(h: { id: number }): number {
+    return this.slideIndexMap.get(h.id) ?? 0;
+  }
+
+  nextSlide(h: { id: number; images: any[] }): void {
+    const cur = this.slideIndexMap.get(h.id) ?? 0;
+    this.slideIndexMap.set(h.id, (cur + 1) % h.images.length);
+  }
+
+  prevSlide(h: { id: number; images: any[] }): void {
+    const cur = this.slideIndexMap.get(h.id) ?? 0;
+    this.slideIndexMap.set(h.id, (cur - 1 + h.images.length) % h.images.length);
+  }
+
+  onSwipeTouchStart(e: TouchEvent, h: any): void {
+    this.swipeTouchStartX = e.touches[0].clientX;
+  }
+  onSwipeTouchEnd(e: TouchEvent, h: any): void {
+    const dx = e.changedTouches[0].clientX - this.swipeTouchStartX;
+    if (Math.abs(dx) > 40) {
+      dx < 0 ? this.nextSlide(h) : this.prevSlide(h);
+    }
+  }
+  onSwipeMouseDown(e: MouseEvent, h: any): void {
+    this.swipeMouseStartX = e.clientX;
+  }
+  onSwipeMouseUp(e: MouseEvent, h: any): void {
+    const dx = e.clientX - this.swipeMouseStartX;
+    if (Math.abs(dx) > 40) {
+      dx < 0 ? this.nextSlide(h) : this.prevSlide(h);
+    }
+  }
+
   // ── FAQ ──────────────────────────────────────────────────
   faqs: { question: string; answer: string; open: boolean }[] = [];
 

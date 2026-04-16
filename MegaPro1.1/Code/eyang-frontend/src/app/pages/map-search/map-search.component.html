@@ -1,0 +1,235 @@
+<!-- src/app/pages/map-search/map-search.component.html -->
+
+<div class="ms" [ngClass]="{'ms--map': viewMode()==='map', 'ms--list': viewMode()==='list'}">
+
+  <!-- ════════════════════════════ TOP BAR ════════════════════════════════ -->
+  <header class="ms__bar">
+
+    <div class="ms__bar-l">
+      <button class="ms__back" (click)="router.navigate(['/'])" title="Accueil">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M11 14L6 9l5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <span class="ms__brand">Eyang Estate</span>
+      <span class="ms__sep">|</span>
+      <span class="ms__count" *ngIf="!loading()">
+        {{ visibleEstates().length }} logement{{ visibleEstates().length !== 1 ? 's' : '' }}
+      </span>
+      <span class="ms__count ms__count--spin" *ngIf="loading()">
+        <span class="ms__dot-spin"></span> Chargement…
+      </span>
+    </div>
+
+    <div class="ms__bar-r">
+      <!-- Search by location -->
+      <div class="ms__search-wrap">
+        <svg class="ms__search-ico" width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M9.5 9.5l2.5 2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <input
+          class="ms__search"
+          type="text"
+          placeholder="Quartier, zone…"
+          [ngModel]="filterLocation()"
+          (ngModelChange)="filterLocation.set($event); triggerSearch()"
+        />
+      </div>
+
+      <!-- Filter toggle -->
+      <button class="ms__btn ms__btn--filter"
+        [class.ms__btn--filter-on]="showFilters()"
+        (click)="showFilters.set(!showFilters())">
+        <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+          <path d="M1.5 3.5h12M3.5 7.5h8M5.5 11.5h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Filtres
+        <span class="ms__filter-dot" *ngIf="hasActiveFilters()"></span>
+      </button>
+
+      <!-- View switcher -->
+      <div class="ms__views" role="group">
+        <button class="ms__view-btn" [class.on]="viewMode()==='split'"  (click)="setViewMode('split')"  title="Vue partagée">
+          <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="14" rx="1.5" fill="currentColor"/><rect x="9" y="1" width="6" height="14" rx="1.5" fill="currentColor" opacity=".4"/></svg>
+        </button>
+        <button class="ms__view-btn" [class.on]="viewMode()==='map'"   (click)="setViewMode('map')"   title="Carte seule">
+          <svg width="16" height="16" viewBox="0 0 16 16"><path d="M8 2C5.24 2 3 4.24 3 7c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>
+        </button>
+        <button class="ms__view-btn" [class.on]="viewMode()==='list'"  (click)="setViewMode('list')"  title="Liste seule">
+          <svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="3.5" rx="1.2" fill="currentColor"/><rect x="1" y="7" width="14" height="3.5" rx="1.2" fill="currentColor" opacity=".55"/><rect x="1" y="11.5" width="14" height="3.5" rx="1.2" fill="currentColor" opacity=".25"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ════════════════════════ FILTER DRAWER ══════════════════════════════ -->
+  <div class="ms__drawer" [class.ms__drawer--open]="showFilters()">
+    <div class="ms__drawer-inner">
+
+      <!-- Équipements -->
+      <div class="ms__fgroup">
+        <label class="ms__flabel">Équipements</label>
+        <div class="ms__chips">
+          <button class="ms__chip" [class.on]="filterGenerator()==='1'"
+            (click)="filterGenerator.set(filterGenerator()==='1' ? '' : '1'); triggerSearch()">
+            ⚡ Groupe élec.
+          </button>
+          <button class="ms__chip" [class.on]="filterForage()==='1'"
+            (click)="filterForage.set(filterForage()==='1' ? '' : '1'); triggerSearch()">
+            💧 Forage
+          </button>
+          <button class="ms__chip" [class.on]="filterRestaurant()==='1'"
+            (click)="filterRestaurant.set(filterRestaurant()==='1' ? '' : '1'); triggerSearch()">
+            🍽️ Restaurant
+          </button>
+          <button class="ms__chip" [class.on]="filterWifi()==='1'"
+            (click)="filterWifi.set(filterWifi()==='1' ? '' : '1')">
+            📶 WiFi
+          </button>
+        </div>
+      </div>
+
+      <!-- Prix -->
+      <div class="ms__fgroup">
+        <label class="ms__flabel">Prix / mois (XAF)</label>
+        <div class="ms__range">
+          <input type="number" class="ms__range-in" placeholder="Min"
+            [ngModel]="filterMinPrice()"
+            (ngModelChange)="filterMinPrice.set($event)"/>
+          <span class="ms__range-sep">–</span>
+          <input type="number" class="ms__range-in" placeholder="Max"
+            [ngModel]="filterMaxPrice()"
+            (ngModelChange)="filterMaxPrice.set($event)"/>
+        </div>
+      </div>
+
+      <!-- Distance -->
+      <div class="ms__fgroup">
+        <label class="ms__flabel">Distance max du campus (m)</label>
+        <div class="ms__range">
+          <input type="number" class="ms__range-in ms__range-in--single" placeholder="ex: 500"
+            [ngModel]="filterMaxDist()"
+            (ngModelChange)="filterMaxDist.set($event); triggerSearch()"/>
+        </div>
+      </div>
+
+      <button class="ms__reset" (click)="resetFilters()">
+        Réinitialiser les filtres
+      </button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════ BODY ═══════════════════════════════════ -->
+  <div class="ms__body">
+
+    <!-- ── MAP PANEL ──────────────────────────────────────────────────── -->
+    <div class="ms__map-panel" [class.ms__map-panel--off]="viewMode()==='list'">
+      <div #mapContainer class="ms__map"></div>
+
+      <!-- Loading veil -->
+      <div class="ms__veil" *ngIf="loading()">
+        <div class="ms__spinner"></div>
+      </div>
+
+      <!-- Error pill -->
+      <div class="ms__err" *ngIf="error() && !loading()">
+        <svg width="13" height="13" viewBox="0 0 13 13"><circle cx="6.5" cy="6.5" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M6.5 3.5v3M6.5 8.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        {{ error() }}
+      </div>
+
+      <!-- Locate-me button -->
+      <button class="ms__locate" title="Centrer sur Eyang" (click)="map && map.flyTo([3.8622,11.5172], 15, {duration:0.8})">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.6"/>
+          <path d="M9 1v2M9 15v2M1 9h2M15 9h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <!-- ── LIST PANEL ─────────────────────────────────────────────────── -->
+    <aside class="ms__list-panel" [class.ms__list-panel--off]="viewMode()==='map'">
+
+      <!-- Empty state -->
+      <div class="ms__empty" *ngIf="!loading() && visibleEstates().length === 0">
+        <div class="ms__empty-icon">🏘️</div>
+        <p>Aucun logement trouvé</p>
+        <span *ngIf="hasActiveFilters()">Essayez de réduire vos filtres</span>
+        <span *ngIf="!hasActiveFilters()">Aucun logement publié pour le moment</span>
+        <button class="ms__reset ms__reset--sm" *ngIf="hasActiveFilters()" (click)="resetFilters()">
+          Effacer les filtres
+        </button>
+      </div>
+
+      <!-- Skeleton loaders -->
+      <div class="ms__cards" *ngIf="loading() && visibleEstates().length === 0">
+        <div class="ms__card ms__card--skeleton" *ngFor="let x of [1,2,3,4,5]">
+          <div class="ms__card-thumb ms__sk"></div>
+          <div class="ms__card-info">
+            <div class="ms__sk-line" style="width:70%"></div>
+            <div class="ms__sk-line" style="width:50%"></div>
+            <div class="ms__sk-line" style="width:40%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Estate cards -->
+      <div class="ms__cards" *ngIf="visibleEstates().length > 0">
+        <article
+          class="ms__card"
+          *ngFor="let e of visibleEstates(); trackBy: trackById"
+          [id]="'card-' + e.id"
+          [class.ms__card--active]="hoveredId() === e.id"
+          (mouseenter)="onCardHover(e.id)"
+          (mouseleave)="onCardLeave()"
+          (click)="flyTo(e)">
+
+          <!-- Thumbnail -->
+          <div class="ms__card-thumb">
+            <img *ngIf="e.image" [src]="e.image" [alt]="e.name" loading="lazy"/>
+            <div class="ms__card-thumb-ph" *ngIf="!e.image">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <rect x="2" y="2" width="20" height="20" rx="4" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M2 15l5-5 4 4 3-5 6 6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <!-- Rating badge -->
+            <div class="ms__card-rating" *ngIf="(e.average_rating?.value ?? 0) > 0">
+              ★ {{ e.average_rating.value.toFixed(1) }}
+            </div>
+
+            <!-- Available rooms badge -->
+            <div class="ms__card-free" *ngIf="e.free > 0">
+              {{ e.free }} libre{{ e.free > 1 ? 's' : '' }}
+            </div>
+          </div>
+
+          <!-- Info -->
+          <div class="ms__card-info">
+            <h3 class="ms__card-name">{{ e.name }}</h3>
+            <p class="ms__card-loc">
+              <svg width="11" height="11" viewBox="0 0 11 11"><path d="M5.5 1C3.57 1 2 2.57 2 4.5c0 2.63 3.5 6 3.5 6s3.5-3.37 3.5-6C9 2.57 7.43 1 5.5 1zm0 4.75a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z" fill="currentColor"/></svg>
+              {{ e.location }} · {{ e.distance }}m
+            </p>
+
+            <!-- Amenity pills -->
+            <div class="ms__card-amenities" *ngIf="amenityList(e).length > 0">
+              <span class="ms__amenity" *ngFor="let a of amenityList(e).slice(0,3)">{{ a }}</span>
+            </div>
+
+            <!-- Footer -->
+            <div class="ms__card-foot">
+              <span class="ms__card-price">{{ formatPrice(e.price) }}</span>
+              <a class="ms__card-cta" [href]="'/housing/' + e.id" (click)="$event.stopPropagation()">
+                Voir →
+              </a>
+            </div>
+          </div>
+
+        </article>
+      </div>
+
+    </aside>
+  </div>
+</div>

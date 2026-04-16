@@ -171,6 +171,20 @@ export class NotificationService implements OnDestroy {
           body: data.message, icon: '📋', link: '/dashboard' });
         break;
 
+      case 'booking_accepted':
+        this.toast({ type: 'success', title: 'Réservation acceptée !',
+          message: data.message, duration: 7000, icon: '✅' });
+        this.addNotification({ type: 'new_booking', title: 'Réservation acceptée',
+          body: data.message, icon: '✅', link: '/dashboard' });
+        break;
+
+      case 'booking_rejected':
+        this.toast({ type: 'warning', title: 'Réservation refusée',
+          message: data.message, duration: 7000, icon: '❌' });
+        this.addNotification({ type: 'new_booking', title: 'Réservation non retenue',
+          body: data.message, icon: '❌', link: '/' });
+        break;
+
       case 'new_review':
         this.toast({ type: 'info', title: 'Nouvel avis',
           message: data.message, duration: 5000, icon: '⭐' });

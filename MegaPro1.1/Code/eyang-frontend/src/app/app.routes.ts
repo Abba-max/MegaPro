@@ -42,7 +42,13 @@ export const routes: Routes = [
       }
     ]
   },
-
+  {
+    path: 'map-search',
+    loadComponent: () =>
+      import('./pages/map-search/map.search.component')
+        .then(c => c.MapSearchComponent),
+ 
+  },
   // ── Admin-only routes ──────────────────────────────────────────────
   {
     path: 'admin',

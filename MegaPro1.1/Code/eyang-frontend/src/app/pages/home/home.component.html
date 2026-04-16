@@ -115,28 +115,69 @@
 <div class="listings-grid" *ngIf="!isLoading && !errorMessage">
     <div class="housing-card" *ngFor="let h of pagedHousings" [routerLink]="['/housing', h.id]">
 
-    <!-- IMAGE -->
-    <div class="card-image-area">
-        <div class="image-wrapper" [class.no-image]="!h.images.length">
-            <img *ngIf="h.images.length" [src]="getFirstImage(h)" [alt]="h.name" loading="lazy">
-            <div class="placeholder-content" *ngIf="!h.images.length">
-                <lucide-icon [img]="BuildingIcon" class="icon-building"></lucide-icon>
-            </div>
+    <!-- IMAGE SWIPER (Studapart-style) -->
+    <div class="card-image-area"
+         (touchstart)="onSwipeTouchStart($event, h)"
+         (touchend)="onSwipeTouchEnd($event, h)"
+         (mousedown)="onSwipeMouseDown($event, h)"
+         (mouseup)="onSwipeMouseUp($event, h)">
+
+      <!-- Placeholder (no images) -->
+      <div class="image-wrapper no-image" *ngIf="!h.images.length">
+        <div class="placeholder-content">
+          <lucide-icon [img]="BuildingIcon" class="icon-building"></lucide-icon>
         </div>
-        <div class="badges-overlay">
-          <span class="badge-places" *ngIf="h.free > 0">{{ h.free }} {{ 'detail.places' | translate }}</span>
-          <!-- ── Dynamic rating badge from average_rating ── -->
-          <div class="badge-rating" *ngIf="h.average_rating && h.average_rating.value > 0">
-            <lucide-icon [img]="StarIcon" class="icon-star"></lucide-icon>
-            <span>{{ h.average_rating.display }}</span>
-            <span class="badge-rating-count">({{ h.average_rating.count }})</span>
-          </div>
+      </div>
+
+      <!-- Swiper track -->
+      <div class="card-swiper-track"
+           *ngIf="h.images.length"
+           [style.transform]="'translateX(-' + getActiveIndex(h) * 100 + '%)'">
+        <div class="card-swiper-slide" *ngFor="let img of h.images">
+          <img [src]="img.image" [alt]="h.name" loading="lazy">
         </div>
-        <div class="card-type-badge">
-            <ng-container *ngIf="h.capacity < 20">Mini Cité</ng-container>
-            <ng-container *ngIf="h.capacity >= 20 && h.capacity < 30">Cité</ng-container>
-            <ng-container *ngIf="h.capacity >= 30">Grande Cité</ng-container>
+      </div>
+
+      <!-- Arrow nav (only when multiple images) -->
+      <ng-container *ngIf="h.images.length > 1">
+        <button class="swiper-arrow swiper-arrow-left"
+                (click)="$event.stopPropagation(); $event.preventDefault(); prevSlide(h)"
+                aria-label="Photo précédente">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+        <button class="swiper-arrow swiper-arrow-right"
+                (click)="$event.stopPropagation(); $event.preventDefault(); nextSlide(h)"
+                aria-label="Photo suivante">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"></polyline>
+          </svg>
+        </button>
+
+        <!-- Dot indicators -->
+        <div class="swiper-dots">
+          <span *ngFor="let img of h.images; let i = index"
+                class="swiper-dot"
+                [class.active]="i === getActiveIndex(h)">
+          </span>
         </div>
+      </ng-container>
+
+      <!-- Overlay badges -->
+      <div class="badges-overlay">
+        <span class="badge-places" *ngIf="h.free > 0">{{ h.free }} {{ 'detail.places' | translate }}</span>
+        <div class="badge-rating" *ngIf="h.average_rating && h.average_rating.value > 0">
+          <lucide-icon [img]="StarIcon" class="icon-star"></lucide-icon>
+          <span>{{ h.average_rating.display }}</span>
+          <span class="badge-rating-count">({{ h.average_rating.count }})</span>
+        </div>
+      </div>
+      <div class="card-type-badge">
+        <ng-container *ngIf="h.capacity < 20">Mini Cité</ng-container>
+        <ng-container *ngIf="h.capacity >= 20 && h.capacity < 30">Cité</ng-container>
+        <ng-container *ngIf="h.capacity >= 30">Grande Cité</ng-container>
+      </div>
     </div>
 
     <!-- BODY -->
