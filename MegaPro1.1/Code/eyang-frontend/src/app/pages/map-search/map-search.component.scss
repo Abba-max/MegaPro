@@ -311,7 +311,7 @@
     min-height: 0;
   }
 
-  /* ── Map panel ── */
+  /* ── Map panel (Leaflet) ── */
   &__map-panel {
     flex:      1;
     position:  relative;
@@ -400,6 +400,127 @@
 
     &--off { width: 0; border: none; overflow: hidden; }
   }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     ── Map-grid section (Studapart-style inline campus map in list panel)
+  ═══════════════════════════════════════════════════════════════════════ */
+  &__map-section {
+    flex-shrink:  0;
+    border-bottom: 1px solid var(--ms-border);
+    background:   var(--ms-surface);
+  }
+
+  &__map-section-toggle {
+    width:        100%;
+    display:      flex;
+    align-items:  center;
+    gap:          7px;
+    padding:      11px 14px;
+    border:       none;
+    background:   transparent;
+    font-family:  var(--ms-font-b);
+    font-size:    13px;
+    font-weight:  700;
+    color:        var(--ms-forest);
+    cursor:       pointer;
+    text-align:   left;
+    transition:   background .14s;
+
+    &:hover { background: var(--ms-forest-l); }
+
+    &--open {
+      background: var(--ms-forest-l);
+      .ms__map-section-chevron { transform: rotate(180deg); }
+    }
+  }
+
+  &__map-section-count {
+    margin-left:  auto;
+    font-size:    11px;
+    font-weight:  400;
+    color:        var(--ms-ink-l);
+    white-space:  nowrap;
+  }
+
+  &__map-section-chevron {
+    flex-shrink:  0;
+    color:        var(--ms-ink-l);
+    transition:   transform .22s ease;
+  }
+
+  &__map-section-body {
+    max-height:   0;
+    overflow:     hidden;
+    transition:   max-height .30s cubic-bezier(.4,0,.2,1);
+
+    &--open { max-height: 300px; }
+  }
+
+  &__map-grid-wrap {
+    position: relative;
+    margin:   0;
+    line-height: 0;        /* remove inline-block gap below SVG */
+  }
+
+  &__map-grid-svg {
+    width:   100%;
+    height:  auto;
+    display: block;
+  }
+
+  /* Price pill markers rendered inside the SVG grid */
+  &__grid-marker {
+    cursor: pointer;
+
+    rect {
+      transition: fill .15s;
+    }
+
+    &--active rect {
+      filter: drop-shadow(0 0 4px rgba(191,74,26,.5));
+    }
+
+    &:hover rect { opacity: .85; }
+  }
+
+  /* Re-centre button overlaid on the grid map */
+  &__map-grid-locate {
+    position:   absolute;
+    bottom:     8px;
+    right:      8px;
+    width:      28px;
+    height:     28px;
+    border:     1px solid var(--ms-border);
+    border-radius: 6px;
+    background: rgba(255,255,255,.88);
+    color:      var(--ms-ink-m);
+    cursor:     pointer;
+    display:    flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+    transition: all .14s;
+
+    &:hover { background: var(--ms-forest-l); color: var(--ms-forest); }
+  }
+
+  /* Listing count pill over the grid map */
+  &__map-grid-badge {
+    position:    absolute;
+    top:         8px;
+    left:        8px;
+    padding:     3px 9px;
+    background:  rgba(255,255,255,.88);
+    backdrop-filter: blur(2px);
+    border:      1px solid var(--ms-border);
+    border-radius: 12px;
+    font-size:   11px;
+    font-weight: 700;
+    color:       var(--ms-forest);
+    line-height: 1;
+    pointer-events: none;
+  }
+  /* ═══════════════════════════════════════════════════════════════════════ */
 
   /* ── Empty ── */
   &__empty {
@@ -627,7 +748,6 @@
 }
 
 /* ── Map markers (DivIcon, injected into Leaflet canvas) ────────────────── */
-/* MUST be global — add these to styles.scss too for complete coverage */
 :host ::ng-deep .estate-marker,
 .estate-marker {
   height:      32px;
@@ -657,7 +777,7 @@
   }
 }
 
-/* ── Popup inner styles (DivIcon HTML, injected into Leaflet) ────────────── */
+/* ── Popup inner styles ──────────────────────────────────────────────────── */
 :host ::ng-deep .estate-popup-inner,
 .estate-popup-inner {
   font-family: 'Nunito', system-ui, sans-serif;

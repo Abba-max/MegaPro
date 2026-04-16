@@ -93,7 +93,52 @@ export class HomeComponent implements OnInit {
   private resetHomePage(): void {
     this.visibleCount = this.HOME_PAGE_SIZE;
   }
+// ─────────────────────────────────────────────────────────────────────────────
+// MAP PREVIEW SECTION helpers
+// Add these methods to HomeComponent (home.component.ts)
+// ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Maps a known location name to an approximate X coordinate inside the
+ * 620×380 SVG viewBox used by the home-page map preview section.
+ */
+mapGridX(h: Estate): number {
+  const key = h.location?.toLowerCase().trim() ?? '';
+  const base: Record<string, number> = {
+    eyang:    195,
+    lobo:     360,
+    vogt:     120,
+    nlongkak: 420,
+  };
+  // Small deterministic horizontal jitter so stacked markers spread out
+  return (base[key] ?? 280) + (h.id % 12) * 5;
+}
+
+/**
+ * Maps a known location name to an approximate Y coordinate.
+ */
+mapGridY(h: Estate): number {
+  const key = h.location?.toLowerCase().trim() ?? '';
+  const base: Record<string, number> = {
+    eyang:    140,
+    lobo:     165,
+    vogt:     240,
+    nlongkak: 258,
+  };
+  return (base[key] ?? 180) + (h.id % 8) * 6;
+}
+
+/**
+ * Formats a price value into a compact label for SVG markers:
+ *   1 500 000  →  "1.5M"
+ *   350 000    →  "350k"
+ *   75 000     →  "75k"
+ */
+mapGridLabel(price: number): string {
+  if (price >= 1_000_000) return `${(price / 1_000_000).toFixed(1)}M`;
+  if (price >= 1_000)     return `${Math.round(price / 1_000)}k`;
+  return String(price);
+}
   // ── Quick filter bar ─────────────────────────────────────
   filterWifi       = '';
   filterGenerator  = '';

@@ -11,7 +11,7 @@ import {
   Home, Settings, LayoutDashboard, X,
   GraduationCap, Users, Building, Globe,
   CheckCheck, Trash2, MessageCircle, Star, Calendar, Shield, Info,
-  ArrowLeft, Eye, EyeOff, Upload, CheckCircle, Check
+  ArrowLeft, Eye, EyeOff, Upload, CheckCircle, Check, MapPin
 } from 'lucide-angular';
 import { AuthService, User } from '../../services/auth.service';
 import { NotificationService, AppNotification } from '../../services/notification.service';
@@ -54,6 +54,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   readonly UploadIcon = Upload;
   readonly CheckCircleIcon = CheckCircle;
   readonly CheckIcon = Check;
+  readonly MapPinIcon = MapPin;
 
   // User state
   currentUser: User | null = null;

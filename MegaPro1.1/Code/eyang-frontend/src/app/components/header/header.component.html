@@ -5,7 +5,7 @@
       <img src="/assets/images/logo.png" alt="Eyang Estate" class="logo-img">
     </div>
 
-    <!-- Public nav: full menu -->
+    <!-- Public nav: full menu (desktop only) -->
     <nav class="nav-links" *ngIf="isPublic">
       <a class="nav-link" (click)="scrollTo('listings')">
         <span>{{ 'nav.listings' | translate }}</span>
@@ -19,6 +19,11 @@
       <a class="nav-link" routerLink="/contact" routerLinkActive="active">
         <span>{{ 'nav.contact' | translate }}</span>
       </a>
+      <!-- Map link always visible on desktop -->
+      <a class="nav-link nav-link--map" routerLink="/map-search" routerLinkActive="active">
+        <lucide-icon [img]="MapPinIcon" class="nav-link-icon"></lucide-icon>
+        <span>Carte</span>
+      </a>
     </nav>
 
     <!-- Dashboard/Private: Back to menu button only -->
@@ -28,24 +33,31 @@
     </a>
   </div>
 
-  <!-- RIGHT: Actions -->
+  <!-- RIGHT: Actions (desktop) -->
   <div class="nav-actions">
-    <!-- Language Toggle -->
-    <button class="lang-btn" (click)="toggleLang()"
+
+    <!-- Map CTA pill (desktop, public) -->
+    <a class="map-pill-btn" routerLink="/map-search" *ngIf="isPublic">
+      <lucide-icon [img]="MapPinIcon" class="map-pill-icon"></lucide-icon>
+      <span>Explorer la carte</span>
+    </a>
+
+    <!-- Language Toggle (desktop) -->
+    <button class="lang-btn desktop-only" (click)="toggleLang()"
       [title]="currentLang === 'fr' ? 'Switch to English' : 'Passer en français'">
       <lucide-icon [img]="GlobeIcon" class="nav-icon"></lucide-icon>
       <span class="lang-label">{{ currentLang === 'fr' ? 'EN' : 'FR' }}</span>
     </button>
 
-    <!-- Logged-in actions -->
+    <!-- Logged-in actions (desktop) -->
     <ng-container *ngIf="currentUser; else authButtons">
-      <!-- Messages link -->
-      <a routerLink="/messages" class="icon-btn" [title]="'nav.messages' | translate">
+      <!-- Messages link (desktop) -->
+      <a routerLink="/messages" class="icon-btn desktop-only" [title]="'nav.messages' | translate">
         <lucide-icon [img]="MessageIcon" class="nav-icon"></lucide-icon>
       </a>
 
-      <!-- Notification Bell -->
-      <div class="notif-container">
+      <!-- Notification Bell (desktop) -->
+      <div class="notif-container desktop-only">
         <button class="icon-btn notif-btn" (click)="toggleNotifPanel(); $event.stopPropagation()"
           [class.has-unread]="unreadCount > 0" title="Notifications">
           <lucide-icon [img]="BellIcon" class="nav-icon"></lucide-icon>
@@ -83,8 +95,8 @@
         </div>
       </div>
 
-      <!-- User Profile -->
-      <div class="user-profile-container">
+      <!-- User Profile (desktop) -->
+      <div class="user-profile-container desktop-only">
         <div class="user-profile" (click)="toggleMenu()">
           <div class="avatar" [class.blue-bg]="currentUser.role === 'Student'">
             {{ currentUser.initials }}
@@ -127,7 +139,7 @@
       </div>
     </ng-container>
 
-    <!-- Auth buttons (guest) -->
+    <!-- Auth buttons (guest, desktop) -->
     <ng-template #authButtons>
       <div class="auth-buttons desktop-auth">
         <span class="connexion-link" (click)="openLogin()">{{ 'nav.login' | translate }}</span>
@@ -135,21 +147,22 @@
       </div>
     </ng-template>
 
-    <!-- Hamburger (mobile, guest, public only) -->
-    <button class="hamburger-btn" *ngIf="!currentUser && isPublic" (click)="toggleMobileMenu()"
+    <!-- ══ HAMBURGER — shown on mobile for ALL users ══ -->
+    <button class="hamburger-btn" (click)="toggleMobileMenu()"
       [class.hamburger-open]="showMobileMenu" aria-label="Menu">
       <span class="ham-bar"></span>
       <span class="ham-bar"></span>
       <span class="ham-bar"></span>
     </button>
+
   </div>
 </header>
 
 <!-- Mobile nav overlay -->
 <div class="mobile-nav-overlay" *ngIf="showMobileMenu" (click)="closeMobileMenu()"></div>
 
-<!-- Mobile nav drawer (full-height, slides from right) -->
-<div class="mobile-nav-drawer" [class.mobile-nav-open]="showMobileMenu" *ngIf="!currentUser && isPublic">
+<!-- ══ MOBILE DRAWER — slides from right, works for ALL users ══ -->
+<div class="mobile-nav-drawer" [class.mobile-nav-open]="showMobileMenu">
 
   <!-- Drawer header: logo + close button -->
   <div class="mobile-drawer-header">
@@ -157,19 +170,84 @@
     <button class="mobile-drawer-close" (click)="closeMobileMenu()" aria-label="Fermer le menu">✕</button>
   </div>
 
+  <!-- ── LOGGED IN USER profile summary ── -->
+  <div class="mobile-user-banner" *ngIf="currentUser">
+    <div class="mobile-user-avatar" [class.blue-bg]="currentUser.role === 'Student'">
+      {{ currentUser.initials }}
+    </div>
+    <div class="mobile-user-info">
+      <span class="mobile-user-name">{{ currentUser.name }}</span>
+      <span class="mobile-user-role">{{ getRoleLabel(currentUser.role) }}</span>
+    </div>
+    <!-- Notification dot if unread -->
+    <div class="mobile-notif-pill" *ngIf="unreadCount > 0" (click)="toggleNotifPanel(); closeMobileMenu()">
+      <lucide-icon [img]="BellIcon" class="mobile-notif-icon"></lucide-icon>
+      <span>{{ unreadCount }}</span>
+    </div>
+  </div>
+
   <!-- Navigation links -->
   <div class="mobile-drawer-nav">
-    <span class="mobile-nav-section-label">Navigation</span>
-    <nav class="mobile-nav-links">
-      <a class="mobile-nav-link" (click)="scrollTo('listings'); closeMobileMenu()">{{ 'nav.listings' | translate }}</a>
-      <a class="mobile-nav-link" (click)="scrollTo('why'); closeMobileMenu()">{{ 'nav.why' | translate }}</a>
-      <a class="mobile-nav-link" (click)="scrollTo('faq'); closeMobileMenu()">{{ 'nav.faq' | translate }}</a>
-      <a class="mobile-nav-link" routerLink="/contact" (click)="closeMobileMenu()">{{ 'nav.contact' | translate }}</a>
-    </nav>
+
+    <!-- Navigation section (public pages) -->
+    <ng-container *ngIf="isPublic">
+      <span class="mobile-nav-section-label">Navigation</span>
+      <nav class="mobile-nav-links">
+        <a class="mobile-nav-link" (click)="scrollTo('listings'); closeMobileMenu()">
+          <span class="mobile-nav-link-icon">🏠</span>
+          {{ 'nav.listings' | translate }}
+        </a>
+        <a class="mobile-nav-link" (click)="scrollTo('why'); closeMobileMenu()">
+          <span class="mobile-nav-link-icon">✨</span>
+          {{ 'nav.why' | translate }}
+        </a>
+        <a class="mobile-nav-link" (click)="scrollTo('faq'); closeMobileMenu()">
+          <span class="mobile-nav-link-icon">❓</span>
+          {{ 'nav.faq' | translate }}
+        </a>
+        <a class="mobile-nav-link" routerLink="/contact" (click)="closeMobileMenu()">
+          <span class="mobile-nav-link-icon">📬</span>
+          {{ 'nav.contact' | translate }}
+        </a>
+      </nav>
+    </ng-container>
+
+    <!-- ── MAP LINK ── always prominent -->
+    <div class="mobile-map-cta" routerLink="/map-search" (click)="closeMobileMenu()">
+      <div class="mobile-map-cta-left">
+        <lucide-icon [img]="MapPinIcon" class="mobile-map-cta-icon"></lucide-icon>
+        <div>
+          <span class="mobile-map-cta-title">Explorer sur la carte</span>
+          <span class="mobile-map-cta-sub">Carte interactive · Eyang, YDE</span>
+        </div>
+      </div>
+      <span class="mobile-map-cta-arrow">→</span>
+    </div>
+
+    <!-- ── LOGGED IN: quick links ── -->
+    <ng-container *ngIf="currentUser">
+      <div class="mobile-nav-divider"></div>
+      <span class="mobile-nav-section-label">Mon espace</span>
+      <nav class="mobile-nav-links">
+        <a class="mobile-nav-link" routerLink="/dashboard" (click)="closeMobileMenu()">
+          <lucide-icon [img]="DashboardIcon" class="mobile-nav-lucide-icon"></lucide-icon>
+          {{ 'nav.dashboard' | translate }}
+        </a>
+        <a class="mobile-nav-link" routerLink="/messages" (click)="closeMobileMenu()">
+          <lucide-icon [img]="MessageIcon" class="mobile-nav-lucide-icon"></lucide-icon>
+          {{ 'nav.messages' | translate }}
+          <span class="mobile-nav-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+        </a>
+        <a class="mobile-nav-link" *ngIf="currentUser.role === 'Admin'" routerLink="/admin/overview" (click)="closeMobileMenu()">
+          <lucide-icon [img]="SettingsIcon" class="mobile-nav-lucide-icon"></lucide-icon>
+          {{ 'nav.admin' | translate }}
+        </a>
+      </nav>
+    </ng-container>
 
     <div class="mobile-nav-divider"></div>
 
-    <!-- Language switch inside drawer -->
+    <!-- Language switch -->
     <span class="mobile-nav-section-label">{{ currentLang === 'fr' ? 'Langue' : 'Language' }}</span>
     <button class="mobile-nav-link mobile-lang-toggle" (click)="toggleLang()">
       <span class="mobile-lang-flag">🌐</span>
@@ -178,12 +256,20 @@
     </button>
   </div>
 
-  <!-- Drawer footer: auth buttons -->
+  <!-- Drawer footer: auth buttons (guest) or logout (logged in) -->
   <div class="mobile-drawer-footer">
-    <div class="mobile-auth-btns">
-      <button class="mobile-login-btn" (click)="openLogin(); closeMobileMenu()">{{ 'nav.login' | translate }}</button>
-      <button class="mobile-signup-btn" (click)="openSignup(); closeMobileMenu()">{{ 'nav.signup' | translate }}</button>
-    </div>
+    <ng-container *ngIf="!currentUser">
+      <div class="mobile-auth-btns">
+        <button class="mobile-login-btn" (click)="openLogin(); closeMobileMenu()">{{ 'nav.login' | translate }}</button>
+        <button class="mobile-signup-btn" (click)="openSignup(); closeMobileMenu()">{{ 'nav.signup' | translate }}</button>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="currentUser">
+      <button class="mobile-logout-btn" (click)="onLogout(); closeMobileMenu()">
+        <lucide-icon [img]="ChevronRightIcon" class="mobile-logout-icon"></lucide-icon>
+        {{ 'nav.logout' | translate }}
+      </button>
+    </ng-container>
   </div>
 </div>
 
@@ -264,7 +350,7 @@
 
     <div class="modal-body">
 
-      <!-- ═══ STEP 1: Account type + credentials ═══ -->
+      <!-- ═══ STEP 1 ═══ -->
       <ng-container *ngIf="signupStep === 1">
         <div class="form-group">
           <label>{{ 'auth.account_type' | translate }}</label>
@@ -289,7 +375,6 @@
             </button>
           </div>
         </div>
-
         <div class="form-group mt-4">
           <label>{{ 'auth.email' | translate }}</label>
           <input type="email" [(ngModel)]="signupForm.email"
@@ -316,14 +401,13 @@
             <span class="pw-label" [class]="'pw-text-' + passwordStrength.level">{{ passwordStrength.label }}</span>
           </div>
         </div>
-
         <div class="error-msg" *ngIf="signupError">{{ signupError }}</div>
         <button class="btn btn-primary w-full mt-5" (click)="nextStep()">
           {{ 'auth.continue' | translate }} <lucide-icon [img]="ChevronRightIcon" class="btn-icon-right"></lucide-icon>
         </button>
       </ng-container>
 
-      <!-- ═══ STEP 2: Personal info ═══ -->
+      <!-- ═══ STEP 2 ═══ -->
       <ng-container *ngIf="signupStep === 2">
         <div class="form-row">
           <div class="form-group">
@@ -342,7 +426,6 @@
           <input type="tel" [(ngModel)]="signupForm.phone"
             [placeholder]="'auth.phone_placeholder' | translate" class="input">
         </div>
-
         <div class="error-msg" *ngIf="signupError">{{ signupError }}</div>
         <div class="form-step-nav">
           <button class="btn btn-outline" (click)="prevStep()">
@@ -359,22 +442,17 @@
         </div>
       </ng-container>
 
-      <!-- ═══ STEP 3 (Owner only): Business info + ID card ═══ -->
+      <!-- ═══ STEP 3 (Owner) ═══ -->
       <ng-container *ngIf="signupStep === 3">
-
-        <!-- Owner info notice -->
         <div class="owner-notice">
           <lucide-icon [img]="ShieldIcon" class="owner-notice-icon"></lucide-icon>
           <p [innerHTML]="'auth.owner_notice' | translate"></p>
         </div>
-
         <div class="form-group mt-3">
           <label>{{ 'auth.address' | translate }}</label>
           <input type="text" [(ngModel)]="signupForm.address"
             [placeholder]="'auth.address_placeholder' | translate" class="input">
         </div>
-
-        <!-- ID Card upload -->
         <div class="form-group mt-3">
           <label>{{ 'auth.id_card' | translate }} <span class="required-star">*</span></label>
           <div class="id-upload-area" [class.has-file]="signupForm.idCardFile"
@@ -406,7 +484,6 @@
             </ng-container>
           </div>
         </div>
-
         <div class="error-msg" *ngIf="signupError">{{ signupError }}</div>
         <div class="form-step-nav">
           <button class="btn btn-outline" (click)="prevStep()">

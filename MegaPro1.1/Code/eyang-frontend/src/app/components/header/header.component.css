@@ -1002,3 +1002,218 @@
 }
 .account-type-btn.active small { color: rgba(37,99,235,0.7); }
 .account-type-btn.owner-btn.active small { color: rgba(245,158,11,0.8); }
+/* ════════════════════════════════════════════════════════
+   DESKTOP-ONLY UTILITY — hide on mobile
+════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .hamburger-btn { display: flex !important; }
+}
+
+/* ── Map pill button (desktop CTA) ─────────────────── */
+.map-pill-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #10B981, #059669);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+  box-shadow: 0 2px 10px rgba(16,185,129,0.28);
+}
+.map-pill-btn:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(16,185,129,0.38);
+}
+.map-pill-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Nav link with icon (Carte) */
+.nav-link--map {
+  color: #059669 !important;
+  font-weight: 600;
+}
+.nav-link--map:hover { background: #ECFDF5 !important; }
+.nav-link--map .nav-link-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 2px;
+  color: #059669;
+  display: inline-flex;
+}
+.nav-link-icon { display: inline-flex; align-items: center; }
+
+/* ── Mobile user banner ─────────────────────────────── */
+.mobile-user-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 1rem 1.25rem;
+  background: linear-gradient(135deg, #F0FDF4, #ECFDF5);
+  border-bottom: 1px solid #D1FAE5;
+  flex-shrink: 0;
+}
+.mobile-user-avatar {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, #2563EB, #60A5FA);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.mobile-user-avatar.blue-bg { background: linear-gradient(135deg, #38BDF8, #0EA5E9); }
+.mobile-user-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.mobile-user-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mobile-user-role {
+  font-size: 11px;
+  font-weight: 600;
+  color: #059669;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.mobile-notif-pill {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #EF4444;
+  color: #fff;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.mobile-notif-icon {
+  width: 13px;
+  height: 13px;
+}
+
+/* ── Mobile map CTA card ────────────────────────────── */
+.mobile-map-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 0.75rem 0;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #EFF6FF, #DBEAFE);
+  border: 1.5px solid #BFDBFE;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.15s;
+  text-decoration: none;
+}
+.mobile-map-cta:hover {
+  background: linear-gradient(135deg, #DBEAFE, #BFDBFE);
+  transform: translateX(2px);
+}
+.mobile-map-cta-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mobile-map-cta-icon {
+  width: 20px;
+  height: 20px;
+  color: #2563EB;
+  flex-shrink: 0;
+}
+.mobile-map-cta-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1D4ED8;
+}
+.mobile-map-cta-sub {
+  display: block;
+  font-size: 11px;
+  color: #6B7280;
+  margin-top: 1px;
+}
+.mobile-map-cta-arrow {
+  font-size: 18px;
+  color: #2563EB;
+  font-weight: 700;
+}
+
+/* ── Mobile nav link icon (lucide) ─────────────────── */
+.mobile-nav-lucide-icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: #6B7280;
+}
+.mobile-nav-link-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+  width: 22px;
+  text-align: center;
+}
+.mobile-nav-badge {
+  margin-left: auto;
+  background: #EF4444;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+/* ── Mobile logout button ───────────────────────────── */
+.mobile-logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px;
+  border-radius: 12px;
+  border: 1.5px solid #FECACA;
+  background: #FEF2F2;
+  color: #DC2626;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.mobile-logout-btn:hover {
+  background: #FEE2E2;
+  border-color: #FCA5A5;
+}
+.mobile-logout-icon {
+  width: 16px;
+  height: 16px;
+}
+
+/* ── Hide map pill on smaller screens ───────────────── */
+@media (max-width: 900px) {
+  .map-pill-btn { display: none; }
+}
