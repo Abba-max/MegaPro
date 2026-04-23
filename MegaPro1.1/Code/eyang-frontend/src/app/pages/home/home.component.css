@@ -471,14 +471,6 @@
 .stat-number { display: block; font-size: 2.5rem; font-weight: 900; color: #fff; letter-spacing: -.03em; line-height: 1; }
 .stat-label { display: block; font-size: 13px; color: rgba(255,255,255,.6); margin-top: 6px; font-weight: 500; }
 .stat-divider { width: 1px; height: 50px; background: rgba(255,255,255,.15); }
-.stat-user-breakdown { display: flex; flex-direction: column; gap: 8px; text-align: left; }
-.stat-user-row {
-  display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.12); border-radius: 10px; padding: 7px 14px;
-  font-size: 13px; font-weight: 600; color: rgba(255,255,255,.88); white-space: nowrap;
-}
-.stat-user-icon { font-size: 16px; line-height: 1; }
-.stat-user-label { font-size: 13px; }
 
 /* ════════════════════════════════════════════════════════════
    TESTIMONIALS
@@ -678,8 +670,6 @@
   .listings-grid { grid-template-columns: repeat(2,1fr); gap: 1rem; }
   .stats-container { flex-direction: column; gap: 1.5rem; }
   .stat-number { font-size: 2rem; }
-  .stat-user-breakdown { flex-direction: row; flex-wrap: wrap; justify-content: center; }
-  .stat-user-row { padding: 6px 12px; font-size: 12px; }
   .listings-section { padding: 0 1rem; }
   .why-section, .faq-section, .testimonials-section { padding: 3rem 1rem; }
   .cta-section { padding: 3rem 1rem; }

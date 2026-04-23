@@ -156,7 +156,7 @@ mapGridLabel(price: number): string {
   filterMinFree  = 0;
 
   // ── Stats ────────────────────────────────────────────────
-  platformStats: PlatformStats = { estates: 0, users: 0, reviews: 0, campuses: 0, orders: 0 };
+  platformStats: PlatformStats = { estates: 0, users: 0, students: 0, reviews: 0, campuses: 0, orders: 0 };
   statsLoading = true;
 
   // ── Toast ────────────────────────────────────────────────

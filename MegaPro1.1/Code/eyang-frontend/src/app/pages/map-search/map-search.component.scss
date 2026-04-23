@@ -967,26 +967,54 @@
 
 /* ── Mobile ──────────────────────────────────────────────────────────────── */
 @media (max-width: 768px) {
-  :host { --ms-bar-h: 52px; }
+  :host { --ms-bar-h: auto; }
 
   .ms {
-    &__brand    { font-size: 15px; }
+    &__bar {
+      flex-wrap: wrap;
+      padding: 10px;
+      gap: 10px;
+    }
+
+    &__bar-l {
+      width: 100%;
+    }
+
+    &__brand    { font-size: 16px; margin-right: auto; }
     &__sep      { display: none; }
     &__count    { display: none; }
-    &__search   { width: 120px; &:focus { width: 150px; } }
+
+    &__bar-r {
+      width: 100%;
+      gap: 8px;
+    }
+
+    &__search-wrap {
+      flex: 1;
+      min-width: 0;
+    }
+
+    &__search { 
+      width: 100%; 
+      &:focus { width: 100%; } 
+    }
+
+    &__btn--filter {
+      padding: 0 10px;
+    }
 
     &__body     { flex-direction: column; }
     &__map-panel { flex: none; height: 45dvh; }
-    &__list-panel { width: 100%; border: none; flex: 1; }
+    &__list-panel { width: 100%; border-left: none; border-top: 1px solid var(--ms-border); flex: 1; }
   }
 
   .ms--map {
     .ms__map-panel  { height: 100%; }
-    .ms__list-panel { height: 0; flex: none; }
+    .ms__list-panel { height: 0; flex: none; border: none; }
   }
 
   .ms--list {
     .ms__map-panel  { height: 0; }
-    .ms__list-panel { height: 100%; flex: 1; }
+    .ms__list-panel { height: 100%; flex: 1; border-top: none; }
   }
 }

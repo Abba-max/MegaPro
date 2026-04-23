@@ -95,7 +95,7 @@ export interface Conversation {
   created_at: string; updated_at: string;
 }
 
-export interface PlatformStats { estates: number; users: number; reviews: number; campuses: number; orders: number; }
+export interface PlatformStats { estates: number; users: number; students: number; reviews: number; campuses: number; orders: number; }
 
 export interface OwnerDashboardStats { total_estates: number; occupancy_pct: number; pending_orders: number; avg_rating: number; }
 

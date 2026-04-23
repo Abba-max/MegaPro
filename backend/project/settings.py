@@ -10,13 +10,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-jt#l8zbav+z+1ens!08-6r#ko9f)%jlykv8nt@w9#kfebf5q$o')
 DEBUG      = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = ['127.0.0.1', 'eyang-estate.onrender.com', 'localhost']
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,eyang-estate.onrender.com,localhost,*').split(',')
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://eyang-estate.onrender.com',
-    'http://127.0.0.1:8000',
-    'http://localhost:8000',
-]
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='https://eyang-estate.onrender.com,http://127.0.0.1:8000,http://localhost:8000').split(',')
 
 INSTALLED_APPS = [
     'daphne',
@@ -85,7 +81,8 @@ if database_url:
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
     db_config = dj_database_url.parse(database_url)
     if db_config.get('ENGINE') == 'django.db.backends.postgresql':
-        db_config.setdefault('OPTIONS', {})['sslmode'] = 'require'
+        if config('REQUIRE_DB_SSL', default=False, cast=bool):
+            db_config.setdefault('OPTIONS', {})['sslmode'] = 'require'
     DATABASES['default'] = db_config
 
 

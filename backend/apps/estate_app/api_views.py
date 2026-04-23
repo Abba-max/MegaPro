@@ -319,6 +319,7 @@ def stats_view(request):
     return Response({
         'estates': Estate.objects.filter(status='published').count(),
         'users': User.objects.filter(is_active=True).count(),
+        'students': User.objects.filter(user_type='visitor', visitor_category='1').count(),
         'reviews': Review.objects.count(),
         'campuses': Estate.objects.filter(status='published').values('location').distinct().count(),
         'orders': QuickOrder.objects.count(),

@@ -129,21 +129,18 @@
   "stats": {
     "housings": "Logements disponibles",
     "reservations": "Réservations",
-    "students": "Étudiants logés",
-    "satisfaction": "Avis positifs",
-    "students_count": "Nombre d'étudiants",
-    "parents": "Parents",
-    "owners": "Bailleurs"
+    "students": "Total Étudiants",
+    "satisfaction": "Avis positifs"
   },
   "testimonials": {
     "title": "Ce que disent nos étudiants",
     "subtitle": "Des témoignages authentiques de notre communauté.",
     "t1_text": "J'ai trouvé ma chambre en moins de 48h ! La plateforme est vraiment intuitive et les logements sont exactement comme décrits.",
-    "t1_role": "Étudiante en médecine, UYI",
+    "t1_role": "Étudiante en Cycle Ingénieur, SJI",
     "t2_text": "En tant que parent, j'avais des inquiétudes pour la sécurité de mon fils. Eyang Estate m'a rassuré avec des logements vérifiés et des avis transparents.",
     "t2_role": "Parent d'étudiant",
     "t3_text": "Le processus de réservation est simple et rapide. J'ai pu contacter le propriétaire directement via la plateforme.",
-    "t3_role": "Étudiant en droit, UYII"
+    "t3_role": "Étudiant en Management et Finances, SJM"
   },
   "faq": {
     "title": "Questions fréquentes",

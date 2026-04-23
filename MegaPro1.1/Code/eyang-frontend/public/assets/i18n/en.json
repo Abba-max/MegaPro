@@ -129,21 +129,18 @@
   "stats": {
     "housings": "Available housing",
     "reservations": "Bookings",
-    "students": "Students housed",
-    "satisfaction": "Positive reviews",
-    "students_count": "Number of students",
-    "parents": "Parents",
-    "owners": "Landlords"
+    "students": "Total Students",
+    "satisfaction": "Positive reviews"
   },
   "testimonials": {
     "title": "What our students say",
     "subtitle": "Authentic testimonials from our community.",
     "t1_text": "I found my room in less than 48 hours! The platform is really intuitive and the housing is exactly as described.",
-    "t1_role": "Medical student, UYI",
+    "t1_role": "Engineering Student, SJI",
     "t2_text": "As a parent, I had concerns about my son's safety. Eyang Estate reassured me with verified listings and transparent reviews.",
     "t2_role": "Student's parent",
     "t3_text": "The booking process is simple and fast. I was able to contact the landlord directly through the platform.",
-    "t3_role": "Law student, UYII"
+    "t3_role": "MF Student, SJM"
   },
   "faq": {
     "title": "Frequently asked questions",

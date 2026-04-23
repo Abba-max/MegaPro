@@ -446,22 +446,10 @@
     <span class="stat-label">{{ 'stats.satisfaction' | translate }}</span>
     </div>
     <div class="stat-divider"></div>
-    <div class="stat-item stat-user-breakdown">
-        <ng-container *ngIf="!statsLoading">
-            <div class="stat-user-row">
-                <span class="stat-user-icon">🎓</span>
-                <span class="stat-user-label">{{ 'stats.students' | translate }}</span>
-            </div>
-            <div class="stat-user-row">
-                <span class="stat-user-icon">👨‍👩‍👧</span>
-                <span class="stat-user-label">{{ 'stats.parents' | translate }}</span>
-            </div>
-            <div class="stat-user-row">
-                <span class="stat-user-icon">🏠</span>
-                <span class="stat-user-label">{{ 'stats.owners' | translate }}</span>
-            </div>
-        </ng-container>
-        <span *ngIf="statsLoading" class="stat-number">…</span>
+    <div class="stat-item">
+    <span class="stat-number"><ng-container *ngIf="!statsLoading">{{ platformStats.students }}</ng-container><span
+            *ngIf="statsLoading">…</span></span>
+    <span class="stat-label">{{ 'stats.students' | translate }}</span>
     </div>
     </div>
 </section>

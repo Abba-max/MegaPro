@@ -1,5 +1,8 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://eyang-estate.onrender.com/api',
-  wsUrl: 'wss://eyang-estate.onrender.com/ws'
+  apiUrl: '/api',
+  get wsUrl() {
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    return `${wsProtocol}//${window.location.host}/ws`;
+  }
 };
