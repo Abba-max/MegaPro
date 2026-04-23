@@ -19,7 +19,11 @@
     "admin": "Administration",
     "logout": "Logout",
     "messages": "Messages",
-    "back_menu": "Back to menu"
+    "back_menu": "Back to menu",
+    "map": "Map",
+    "explore_map": "Explore map",
+    "explore_map_mobile": "Explore on map",
+    "my_space": "My space"
   },
   "sidebar": {
     "overview": "Overview",
@@ -41,7 +45,16 @@
     "water": "Borehole",
     "tv_label": "TV",
     "fridge_label": "Fridge",
-    "stars": "Highly rated"
+    "stars": "Highly rated",
+    "advanced": "Advanced filters",
+    "reset": "Reset",
+    "room_type": "Room type",
+    "equipment": "Equipment",
+    "budget": "Monthly budget (FCFA)",
+    "distance": "Max distance from campus (m)",
+    "min_free": "Minimum free places",
+    "apply": "Apply",
+    "all_types": "All types"
   },
   "listings": {
     "title": "Housing",
@@ -54,7 +67,8 @@
     "no_features": "No amenities listed",
     "show_more": "Show more",
     "remaining": "remaining",
-    "all_shown": "All housing shown"
+    "all_shown": "All housing shown",
+    "price_from": "From"
   },
   "detail": {
     "places": "places",
@@ -85,7 +99,16 @@
     "selected": "✓ Selected — click on Reserve",
     "estate_equipment": "Residence amenities",
     "place_available": "place available",
-    "places_available": "places available"
+    "places_available": "places available",
+    "photo_prev": "Previous photo",
+    "photo_next": "Next photo",
+    "price_per_month": "FCFA/month",
+    "all_inclusive": "All inclusive",
+    "deposit": "Deposit",
+    "min_duration": "Min. duration",
+    "select_first": "Select one above first",
+    "login_to_view": "Login to view all details",
+    "login_to_book": "Login to book"
   },
   "why": {
     "title": "Why choose Eyang Estate?",
@@ -107,7 +130,9 @@
     "housings": "Available housing",
     "students": "Students housed",
     "satisfaction": "Positive reviews",
-    "students_count": "Number of students"
+    "students_count": "Number of students",
+    "parents": "Parents",
+    "owners": "Landlords"
   },
   "testimonials": {
     "title": "What our students say",
@@ -140,6 +165,15 @@
     "subtitle": "Join thousands of students who trust Eyang Estate.",
     "contact_btn": "Contact us",
     "listings_btn": "View housing"
+  },
+  "common": {
+    "apply": "Apply",
+    "apply_filters": "Apply ({{ count }} filter{{ count !== 1 ? 's' : '' }})",
+    "reset": "Reset",
+    "reset_filters": "Reset filters",
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "auth": {
     "login_title": "Login",
@@ -335,6 +369,12 @@
     "cancel_reservation": "Cancel booking",
     "delete_conv": "Delete"
   },
+  "home": {
+    "interactive_location": "Interactive location",
+    "map_title": "Find your housing\non the map",
+    "map_desc": "View all housing around campus UYI · Eyang. Filter by price, amenities and distance directly on the map.",
+    "view_all_listings": "View all listings"
+  },
   "lang": {
     "switch_to_en": "English",
     "switch_to_fr": "Français"
@@ -396,6 +436,90 @@
     "msg_owner": "Describe your property, its location, available amenities and your conditions...",
     "msg_problem": "Describe the problem encountered and your user ID if available...",
     "msg_other": "Write your message here..."
+  },
+  "reviews": {
+    "client_title": "Client reviews",
+    "no_reviews_yet": "No reviews yet",
+    "be_first": "Be the first!",
+    "add_review": "Add a review",
+    "your_rating": "Your rating",
+    "your_review": "Your review",
+    "share_experience": "Share your experience with this housing...",
+    "submit": "Submit",
+    "submitting": "Submitting...",
+    "published": "Published",
+    "cancel": "Cancel",
+    "login_to_leave": "Login to leave a review",
+    "like": "Like",
+    "liked": "Liked",
+    "love_it": "Love it",
+    "view_more": "View more reviews"
+  },
+  "action": {
+    "reserve": "Reserve",
+    "book_room": "Book this room",
+    "login_reserve": "Login to book",
+    "send_message": "Send a message",
+    "contact": "Contact",
+    "negotiate": "Negotiate / Message"
+  },
+  "form": {
+    "name": "Your name",
+    "phone": "Phone",
+    "message_optional": "Message (optional)",
+    "your_request": "Specify your request...",
+    "send_request": "Send request",
+    "sending": "Sending...",
+    "request_sent": "Request sent! The owner will contact you soon."
+  },
+  "messages": {
+    "title": "Messages",
+    "connecting": "Connecting...",
+    "discuss": "Discuss price, conditions, or ask your questions.",
+    "start": "Start the conversation",
+    "your_message": "Your message...",
+    "sending": "Sending...",
+    "file_upload_error": "File too large",
+    "file_max_size": "Maximum size is 10 MB",
+    "file_sent": "File sent",
+    "file_sent_success": "{{ name }} was sent successfully",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "start_conv": "Start the conversation...",
+    "you_prefix": "You:",
+    "online": "Online",
+    "offline": "Offline",
+    "send_error": "Send error",
+    "retry_send": "Unable to send message. Try again."
+  },
+  "map": {
+    "title": "Map",
+    "home": "Home",
+    "housing_count": "{{ count }} housing",
+    "loading": "Loading...",
+    "search_location": "Neighbourhood, area...",
+    "filters": "Filters",
+    "view_split": "Split view",
+    "view_map": "Map only",
+    "view_list": "List only",
+    "equipment": "Equipment",
+    "price_month": "Price / month (XAF)",
+    "max_distance": "Max distance from campus (m)",
+    "reset_filters": "Reset filters",
+    "center_eyang": "Center on Eyang",
+    "view_map": "View on map",
+    "results": "{{ count }} result",
+    "no_housing": "No housing found",
+    "reduce_filters": "Try reducing your filters",
+    "no_published": "No housing published yet",
+    "clear_filters": "Clear filters"
+  },
+  "price": {
+    "from": "From",
+    "per_month": "FCFA/month",
+    "caution": "Deposit",
+    "min_duration": "Min. duration",
+    "free_places": "Places left"
   },
   "confirm": {
     "cancel": "Cancel",

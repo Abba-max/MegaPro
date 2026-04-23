@@ -3,3 +3,7 @@
 ../archive/
 static_root/
 static_cdn/
+venv/
+env/
+.venv/
+backend/venv/

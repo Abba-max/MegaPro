@@ -593,7 +593,7 @@ lucide-icon svg {
   transition:  transform .15s, background .15s;
 
   &:hover   { transform: scale(1.08); }
-  &--active {
+  &:is(--active) {
     background:   #BF4A1A;
     transform:    scale(1.14);
     z-index:      9999 !important;

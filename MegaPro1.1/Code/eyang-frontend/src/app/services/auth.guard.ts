@@ -2,19 +2,18 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AuthService } from './auth.service';
-import { filter, map, take } from 'rxjs';
-import { of } from 'rxjs';
+import { filter, map, take } from 'rxjs/operators';
+import { of, timer, race } from 'rxjs';
 
 /**
  * Waits for currentUser$ to resolve before checking role.
  *
- * THE BUG: On page reload, the token exists so isAuthenticated() = true,
- * but currentUser$ is still null while fetchMe() is in-flight.
- * The old synchronous guards checked isAdminUser / isOwnerUser immediately,
- * got null, and redirected to '/' — disconnecting the user.
- *
- * THE FIX: If the user object isn't loaded yet, wait for the first non-null
- * emission from currentUser$ before evaluating the role predicate.
+ * PROBLEMS FIXED:
+ * 1. On page reload, token exists but currentUser$ is null while fetchMe() is
+ *    in-flight. Old guards checked role immediately, got null, redirected away.
+ * 2. If fetchMe() errors for a non-401 reason (network, 500…), currentUser$
+ *    never emits non-null and the guard hung forever. Fixed with a 6-second
+ *    race timeout that redirects home if the user never loads.
  */
 function guardWithRole(
   auth: AuthService,
@@ -22,45 +21,60 @@ function guardWithRole(
   predicate: (a: AuthService) => boolean,
   fallbackRoute: string
 ) {
-  // No token at all — go home immediately
+  // No token at all → go home immediately
   if (!auth.isAuthenticated()) {
     router.navigate(['/']);
     return of(false);
   }
 
-  // User already loaded (subsequent navigations, not first reload)
+  // User already loaded (subsequent navigations after the first page load)
   if (auth.currentUser !== null) {
     if (predicate(auth)) return of(true);
     router.navigate([fallbackRoute]);
     return of(false);
   }
 
-  // Token exists but fetchMe() still running — wait for it
-  return auth.currentUser$.pipe(
-    filter(user => user !== null),  // skip the initial null
-    take(1),                        // unsubscribe after first real value
+  // Token exists but fetchMe() still running — race between:
+  //   A) currentUser$ emitting a real (non-null) user
+  //   B) a 6-second safety timeout (prevents hanging if fetchMe() errors)
+  const userLoaded$ = auth.currentUser$.pipe(
+    filter(user => user !== null),
+    take(1),
     map(() => {
       if (predicate(auth)) return true;
       router.navigate([fallbackRoute]);
       return false;
     })
   );
+
+  const timeout$ = timer(6000).pipe(
+    map(() => {
+      // fetchMe() didn't complete in 6 s → treat as unauthenticated
+      router.navigate(['/']);
+      return false;
+    })
+  );
+
+  // race() takes the first observable that emits
+  return race(userLoaded$, timeout$);
 }
 
-// ── authGuard: just needs a valid token, no role check ───────────────────
+// ── authGuard: waits for user to actually load (not just token) ──────────
+// BUG FIXED: the old guard returned true immediately when a token existed,
+// but DashboardComponent.ngOnInit subscribes to currentUser$ which still
+// emits null (fetchMe in-flight) and redirected the user back to "/".
 export const authGuard: CanActivateFn = () => {
   const auth   = inject(AuthService);
   const router = inject(Router);
-  if (auth.isAuthenticated()) return true;
-  router.navigate(['/']);
-  return false;
+  // 'any authenticated user' — predicate checks the loaded user object exists
+  return guardWithRole(auth, router, a => !!a.currentUser, '/');
 };
 
-// ── adminGuard: must be Admin ────────────────────────────────────────────
+// ── adminGuard: must be Admin ─────────────────────────────────────────────
 export const adminGuard: CanActivateFn = () => {
   const auth   = inject(AuthService);
   const router = inject(Router);
-  return guardWithRole(auth, router, a => a.isAdminUser, '/dashboard');
+  return guardWithRole(auth, router, a => a.isAdminUser, '/');
 };
 
 // ── ownerGuard: must be Owner or Admin ───────────────────────────────────

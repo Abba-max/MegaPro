@@ -2,13 +2,15 @@ import { Component, OnInit, OnDestroy, AfterViewChecked, ElementRef, ViewChild, 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import * as L from 'leaflet';
 import {
   LucideAngularModule,
   Home, BarChart3, Clock, Star, Plus, Trash2, X,
   Wifi, Utensils, Zap, Droplets, Tv, Thermometer,
   MessageSquare, FileText, Phone, MapPin, Calendar,
   CheckCircle, AlertCircle, Info, Send, ArrowLeft,
-  Edit, Package, User, Mail, Building, Pencil, ChevronDown
+  Edit, Package, User, Mail, Building, Pencil, ChevronDown,
+  Navigation
 } from 'lucide-angular';
 import { AuthService, User as AuthUser } from '../../services/auth.service';
 import { WebSocketService } from '../../services/websocket.service';
@@ -17,8 +19,18 @@ import {
   Conversation, ChatMessage, OwnerDashboardStats, ClientDashboardStats,
   enrichReview
 } from '../../services/estate.service';
-import { Subscription, interval } from 'rxjs';
+import { Subscription, filter, interval } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
+
+// ── Fix Leaflet icon paths when bundled by Angular ──────────────────────────
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'assets/leaflet/marker-icon-2x.png',
+  iconUrl:       'assets/leaflet/marker-icon.png',
+  shadowUrl:     'assets/leaflet/marker-shadow.png',
+});
+
+const EYANG_CENTER: L.LatLngTuple = [3.884041, 11.390736];
 
 export interface Toast {
   id: number;
@@ -39,42 +51,46 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   private shouldScroll = false;
 
   // ── Icons ─────────────────────────────────────────────────
-  readonly HomeIcon = Home;
-  readonly BarChartIcon = BarChart3;
-  readonly ClockIcon = Clock;
-  readonly StarIcon = Star;
-  readonly PlusIcon = Plus;
-  readonly TrashIcon = Trash2;
-  readonly XIcon = X;
-  readonly WifiIcon = Wifi;
-  readonly UtensilsIcon = Utensils;
-  readonly ZapIcon = Zap;
-  readonly DropletsIcon = Droplets;
-  readonly TvIcon = Tv;
-  readonly FridgeIcon = Thermometer;
-  readonly MessageIcon = MessageSquare;
-  readonly FileIcon = FileText;
-  readonly PhoneIcon = Phone;
-  readonly MapPinIcon = MapPin;
-  readonly CalendarIcon = Calendar;
-  readonly CheckIcon = CheckCircle;
-  readonly AlertIcon = AlertCircle;
-  readonly InfoIcon = Info;
-  readonly SendIcon = Send;
-  readonly BackIcon = ArrowLeft;
-  readonly EditIcon = Edit;
-  readonly PencilIcon = Pencil;
-  readonly PackageIcon = Package;
-  readonly UserIcon = User;
-  readonly MailIcon = Mail;
-  readonly BuildingIcon = Building;
+  readonly HomeIcon       = Home;
+  readonly BarChartIcon   = BarChart3;
+  readonly ClockIcon      = Clock;
+  readonly StarIcon       = Star;
+  readonly PlusIcon       = Plus;
+  readonly TrashIcon      = Trash2;
+  readonly XIcon          = X;
+  readonly WifiIcon       = Wifi;
+  readonly UtensilsIcon   = Utensils;
+  readonly ZapIcon        = Zap;
+  readonly DropletsIcon   = Droplets;
+  readonly TvIcon         = Tv;
+  readonly FridgeIcon     = Thermometer;
+  readonly MessageIcon    = MessageSquare;
+  readonly FileIcon       = FileText;
+  readonly PhoneIcon      = Phone;
+  readonly MapPinIcon     = MapPin;
+  readonly CalendarIcon   = Calendar;
+  readonly CheckIcon      = CheckCircle;
+  readonly AlertIcon      = AlertCircle;
+  readonly InfoIcon       = Info;
+  readonly SendIcon       = Send;
+  readonly BackIcon       = ArrowLeft;
+  readonly EditIcon       = Edit;
+  readonly PencilIcon     = Pencil;
+  readonly PackageIcon    = Package;
+  readonly UserIcon       = User;
+  readonly MailIcon       = Mail;
+  readonly BuildingIcon   = Building;
   readonly ChevronDownIcon = ChevronDown;
+  readonly NavigationIcon = Navigation;
 
   // ── State ─────────────────────────────────────────────────
   currentUser: AuthUser | null = null;
   isOwner = false;
   isLoading = true;
   activeTab = 'overview';
+
+  /** True only when the owner's account has been verified by an admin */
+  get isOwnerVerified(): boolean { return this.currentUser?.is_verified === true; }
 
   toasts: Toast[] = [];
   private toastCounter = 0;
@@ -97,24 +113,21 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     total_estates: 0, occupancy_pct: 0, pending_orders: 0, avg_rating: 0
   };
   myEstates: Estate[] = [];
-  myOrders: QuickOrder[] = [];
+  myOrders:  QuickOrder[] = [];
   myReviews: Review[] = [];
 
   // ── Review pagination (owner) ──────────────────────────────
   readonly REVIEW_PAGE_SIZE = 5;
   visibleReviewCount = this.REVIEW_PAGE_SIZE;
-  get pagedReviews(): Review[] { return this.myReviews.slice(0, this.visibleReviewCount); }
-  get hasMoreReviews(): boolean { return this.visibleReviewCount < this.myReviews.length; }
+  get pagedReviews(): Review[]    { return this.myReviews.slice(0, this.visibleReviewCount); }
+  get hasMoreReviews(): boolean   { return this.visibleReviewCount < this.myReviews.length; }
   showMoreReviews(): void { this.visibleReviewCount = Math.min(this.visibleReviewCount + this.REVIEW_PAGE_SIZE, this.myReviews.length); }
   resetReviewPage(): void { this.visibleReviewCount = this.REVIEW_PAGE_SIZE; }
 
   // ── Estate pagination ──────────────────────────────────────
-  /** Number of estate cards shown per page */
   readonly PAGE_SIZE = 6;
-  /** How many estates are currently visible */
   visibleEstateCount = this.PAGE_SIZE;
 
-  /** Estates sorted by rating (highest first), ready to display */
   get sortedEstates(): Estate[] {
     return [...this.myEstates].sort((a, b) => {
       const ra = a.average_rating?.value ?? parseFloat(a.rating ?? '0');
@@ -123,117 +136,111 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 
-  /** The slice currently shown in the grid */
-  get pagedEstates(): Estate[] {
-    return this.sortedEstates.slice(0, this.visibleEstateCount);
-  }
+  get pagedEstates(): Estate[]   { return this.sortedEstates.slice(0, this.visibleEstateCount); }
+  get hasMoreEstates(): boolean  { return this.visibleEstateCount < this.myEstates.length; }
+  showMoreEstates(): void { this.visibleEstateCount = Math.min(this.visibleEstateCount + this.PAGE_SIZE, this.myEstates.length); }
+  resetEstatePage(): void { this.visibleEstateCount = this.PAGE_SIZE; }
 
-  /** True when there are more estates to load */
-  get hasMoreEstates(): boolean {
-    return this.visibleEstateCount < this.myEstates.length;
-  }
-
-  /** Show 6 more */
-  showMoreEstates(): void {
-    this.visibleEstateCount = Math.min(
-      this.visibleEstateCount + this.PAGE_SIZE,
-      this.myEstates.length
-    );
-  }
-
-  /** Reset pagination when tab is re-opened */
-  resetEstatePage(): void {
-    this.visibleEstateCount = this.PAGE_SIZE;
-  }
-
+  // ── Estate modal ───────────────────────────────────────────
   showEstateModal = false;
-  isEditMode = false;
+  isEditMode      = false;
   editingId: number | null = null;
-  isSavingEstate = false;
+  isSavingEstate  = false;
   estateForm: any = {};
   distanceDisplay = '';
 
-  // ── Room management state ───────────────────────────────
+  // ── Leaflet map picker (estate modal — owner sets coords) ──
+  private mapPicker?: L.Map;
+  private mapPickerMarker?: L.Marker;
+
+  // ── Leaflet estate map (owner "Carte" view) ────────────────
+  showEstateMap = false;
+  private estateMap?: L.Map;
+  private estateMarkerLayer?: L.LayerGroup;
+
+  // ── Room management ────────────────────────────────────────
   showRoomModal = false;
   selectedEstateForRooms: Estate | null = null;
   isLoadingRooms = false;
   roomCategories: RoomCategory[] = [];
 
-  isRoomEditMode = false;
-  isSavingRoom = false;
+  isRoomEditMode  = false;
+  isSavingRoom    = false;
   roomEditId: number | null = null;
   roomForm: Partial<RoomCategory> = this.emptyRoomForm();
 
-  roomSelectedFiles: File[] = [];
+  roomSelectedFiles: File[]   = [];
   roomPreviewImages: string[] = [];
   roomExistingImages: RoomImage[] = [];
-  roomRemovedImageIds: number[] = [];
+  roomRemovedImageIds: number[]   = [];
 
   emptyRoomForm(): Partial<RoomCategory> {
-    return { name: '', price: 300000, occupancy: 'single', quantity_available: 1, wifi: '0', tv: '0', fridge: '0', room_size: '2', description: '' };
+    return { name: '', price: 300000, occupancy: 'single', quantity_available: 1,
+             wifi: '0', tv: '0', fridge: '0', room_size: '2', description: '' };
   }
 
-  newImageFiles: File[] = [];
+  newImageFiles:    File[]   = [];
   newImagePreviews: string[] = [];
 
   availableEquipments = [
-    { key: 'restaurant', label: 'Restaurant', icon: Utensils },
-    { key: 'generator', label: 'Générateur', icon: Zap },
-    { key: 'forage', label: 'Forage', icon: Droplets },
+    { key: 'restaurant', label: 'Restaurant',  icon: Utensils },
+    { key: 'generator',  label: 'Générateur',  icon: Zap      },
+    { key: 'forage',     label: 'Forage',      icon: Droplets },
   ];
 
-  // ── Owner messaging ───────────────────────────────────────
+  // ── Owner messaging ────────────────────────────────────────
   ownerConversationsLoading = false;
 
   // ── Client ────────────────────────────────────────────────
   clientStats: ClientDashboardStats = {
     total_reservations: 0, total_reviews: 0, total_messages: 0, total_contacts: 0
   };
-  myReservations: QuickOrder[] = [];
-  mySubmittedReviews: Review[] = [];
-  myContacts: ContactRequest[] = [];
-  conversations: Conversation[] = [];
-  onlineUsers: Set<number> = new Set();
+  myReservations:      QuickOrder[] = [];
+  mySubmittedReviews:  Review[]     = [];
+  myContacts:          ContactRequest[] = [];
+  conversations:       Conversation[]  = [];
+  onlineUsers:         Set<number>     = new Set();
 
   activeConversation: Conversation | null = null;
   newMessage = '';
   private pollSub?: Subscription;
 
-  // ── Review modal (create) ─────────────────────────────────
+  // ── Review modal (create) ──────────────────────────────────
   showReviewModal = false;
-  reviewForm = { estate: 0, rating: 0, comment: '' };
-  hoverRating = 0;
+  reviewForm      = { estate: 0, rating: 0, comment: '' };
+  hoverRating     = 0;
   allEstates: Estate[] = [];
 
-  // ── Review edit modal ─────────────────────────────────────
+  // ── Review edit modal ──────────────────────────────────────
   showEditReviewModal = false;
   editingReview: Review | null = null;
-  editReviewForm = { rating: 0, comment: '' };
+  editReviewForm  = { rating: 0, comment: '' };
   editHoverRating = 0;
-  isSavingReview = false;
+  isSavingReview  = false;
 
-  // ── Confirm dialog ────────────────────────────────────────
-  showConfirm = false;
-  confirmMessage = '';
+  // ── Confirm dialog ─────────────────────────────────────────
+  showConfirm     = false;
+  confirmMessage  = '';
   private confirmCallback: (() => void) | null = null;
 
   private subs: Subscription[] = [];
 
   constructor(
-    private authService: AuthService,
+    private authService:   AuthService,
     private estateService: EstateService,
-    private wsService: WebSocketService,
-    private router: Router,
-    private cdr: ChangeDetectorRef
+    private wsService:     WebSocketService,
+    private router:        Router,
+    private cdr:           ChangeDetectorRef
   ) { }
 
   ngOnInit(): void {
-    const sub = this.authService.currentUser$.subscribe(user => {
+    const sub = this.authService.currentUser$.pipe(
+      filter(user => user !== null)
+    ).subscribe(user => {
       this.currentUser = user;
-      if (!user) { this.router.navigate(['/']); return; }
-      this.isOwner = user.role === 'Owner';
-      this.activeTab = this.isOwner ? 'overview' : 'reservations';
-      this.isLoading = true;
+      this.isOwner     = user.role === 'Owner';
+      this.activeTab   = this.isOwner ? 'overview' : 'reservations';
+      this.isLoading   = true;
       if (this.isOwner) {
         this.loadOwnerData();
       } else {
@@ -243,6 +250,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
     this.subs.push(sub);
 
+    // ── WebSocket streams ──────────────────────────────────
+    // NOTE: WebSocketService.notifications$ is a Subject (hot) — subscribing here
+    // is safe alongside NotificationService subscribing to the same stream.
+    // Both receive every new frame; no second socket is opened.
     this.subs.push(
       this.wsService.notifications$.subscribe(notif => {
         this.handleRealtimeNotification(notif);
@@ -257,14 +268,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       })
     );
 
-    // Poll online users every 30 seconds
-    const sPoll = interval(30000).subscribe(() => this.refreshOnlineUsers());
+    const sPoll = interval(30_000).subscribe(() => this.refreshOnlineUsers());
     this.subs.push(sPoll);
   }
 
   ngOnDestroy(): void {
     this.subs.forEach(s => s.unsubscribe());
     this.pollSub?.unsubscribe();
+    this.destroyMapPicker();
+    this.destroyEstateMap();
   }
 
   ngAfterViewChecked(): void {
@@ -286,9 +298,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   // ══════════════════════════════════════════════════════════
 
   openConfirm(message: string, callback: () => void): void {
-    this.confirmMessage = message;
+    this.confirmMessage  = message;
     this.confirmCallback = callback;
-    this.showConfirm = true;
+    this.showConfirm     = true;
   }
 
   confirmYes(): void {
@@ -300,7 +312,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   confirmNo(): void {
-    this.showConfirm = false;
+    this.showConfirm     = false;
     this.confirmCallback = null;
   }
 
@@ -310,25 +322,26 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   loadOwnerData(): void {
     this.estateService.getOwnerStats().subscribe({
-      next: s => this.ownerStats = s,
-      error: () => { }
+      next: s => this.ownerStats = s, error: () => {}
     });
     this.estateService.getMyEstates().subscribe({
       next: e => {
         this.myEstates = e;
-        this.resetEstatePage();          // reset to first 6 on fresh load
+        this.resetEstatePage();
         this.isLoading = false;
+        // Refresh estate map markers if the map is already open
+        if (this.showEstateMap && this.estateMarkerLayer) {
+          this.renderEstateMapMarkers();
+        }
         this.cdr.detectChanges();
       },
       error: () => { this.isLoading = false; this.cdr.detectChanges(); }
     });
     this.estateService.getMyOrders().subscribe({
-      next: o => this.myOrders = o,
-      error: () => { }
+      next: o => this.myOrders = o, error: () => {}
     });
     this.estateService.getMyReviews().subscribe({
-      next: r => { this.myReviews = r; this.resetReviewPage(); },
-      error: () => { }
+      next: r => { this.myReviews = r; this.resetReviewPage(); }, error: () => {}
     });
   }
 
@@ -348,57 +361,292 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   getClientName(conv: Conversation): string {
     const c = conv.client;
-    return (`${c.first_name} ${c.last_name}`.trim()) || c.username;
+    return `${c.first_name} ${c.last_name}`.trim() || c.username;
   }
 
-  getOwnerConvColor(conv: Conversation): string {
+  getConvColor(conv: Conversation): string {
     const colors = ['#3B82F6', '#10B981', '#8B5CF6', '#F59E0B', '#EF4444', '#06B6D4'];
     return colors[conv.id % colors.length];
   }
 
-  // ── Estate modal ──────────────────────────────────────────
+  getOwnerConvColor(conv: Conversation): string {
+    return this.getConvColor(conv);
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  ESTATE MAP  (owner "Carte" toggle in Mes logements tab)
+  // ══════════════════════════════════════════════════════════
+
+  /**
+   * Toggle the Leaflet estate overview map.
+   * Works like the home-page map: real tiles + image-rich markers.
+   */
+  toggleEstateMap(): void {
+    this.showEstateMap = !this.showEstateMap;
+    if (this.showEstateMap) {
+      // Allow the *ngIf element to render first
+      setTimeout(() => this.initEstateMap(), 200);
+    } else {
+      this.destroyEstateMap();
+    }
+  }
+
+  private initEstateMap(): void {
+    const el = document.getElementById('estate-map');
+    if (!el || this.estateMap) return;
+
+    this.estateMap = L.map(el, {
+      center: EYANG_CENTER,
+      zoom: 15,
+      zoomControl: true,
+      attributionControl: false,
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+    }).addTo(this.estateMap);
+
+    L.control.attribution({ position: 'bottomright', prefix: '© OSM' }).addTo(this.estateMap);
+
+    this.estateMarkerLayer = L.layerGroup().addTo(this.estateMap);
+    this.renderEstateMapMarkers();
+  }
+
+  private renderEstateMapMarkers(): void {
+    if (!this.estateMap || !this.estateMarkerLayer) return;
+    this.estateMarkerLayer.clearLayers();
+
+    this.myEstates.forEach(estate => {
+      const lat = estate.lat && estate.lat !== 0 ? estate.lat : EYANG_CENTER[0];
+      const lng = estate.lng && estate.lng !== 0 ? estate.lng : EYANG_CENTER[1];
+
+      const coverImg = estate.images?.[0]?.image ?? '';
+      const priceK   = estate.price >= 1_000_000
+        ? `${(estate.price / 1_000_000).toFixed(1)}M`
+        : `${Math.round(estate.price / 1_000)}k`;
+
+      const statusColor = estate.status === 'published' ? '#10B981'
+        : estate.status === 'draft' ? '#6B7280' : '#000';
+
+      // Photo-card marker (matches home-page emk style)
+      const imgBlock = coverImg
+        ? `<img src="${coverImg}" alt="${estate.name.replace(/"/g, '&quot;')}"
+               style="width:100%;height:52px;object-fit:cover;display:block;border-radius:8px 8px 0 0">`
+        : `<div style="height:52px;background:#E2E8F0;border-radius:8px 8px 0 0;
+               display:flex;align-items:center;justify-content:center;font-size:22px">🏠</div>`;
+
+      const ratingStr = (estate.average_rating?.value ?? 0) > 0
+        ? `<span style="float:right;font-size:9px;color:#F59E0B">★ ${estate.average_rating.value.toFixed(1)}</span>`
+        : '';
+
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="width:96px;background:#fff;border-radius:8px;
+                    box-shadow:0 3px 16px rgba(0,0,0,.22);overflow:hidden;cursor:pointer;
+                    border:2px solid ${statusColor}">
+                 ${imgBlock}
+                 <div style="padding:3px 6px 4px">
+                   <div style="font-size:9px;font-weight:700;color:#1E293B;
+                               white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                     ${estate.name}
+                   </div>
+                   <div style="font-size:9px;color:#64748B;margin-top:1px">
+                     ${priceK} XAF${ratingStr}
+                   </div>
+                 </div>
+               </div>`,
+        iconSize:   [96, 82],
+        iconAnchor: [48, 82],
+      });
+
+      const statusLabel = estate.status === 'published' ? 'Publié'
+        : estate.status === 'draft' ? 'Brouillon' : 'Archivé';
+
+      const marker = L.marker([lat, lng], { icon });
+      marker.bindPopup(
+        `<div style="min-width:160px">
+           ${coverImg ? `<img src="${coverImg}" style="width:100%;height:80px;object-fit:cover;border-radius:6px;margin-bottom:6px">` : ''}
+           <b style="font-size:13px">${estate.name}</b><br>
+           <span style="font-size:11px;color:#64748B">📍 ${estate.location}</span><br>
+           <span style="font-size:11px;font-weight:600;color:#1E293B">
+             ${estate.price.toLocaleString('fr-CM')} XAF/mois
+           </span><br>
+           <span style="font-size:10px;color:${statusColor};font-weight:600">${statusLabel}</span>
+         </div>`,
+        { maxWidth: 200, className: 'estate-popup' }
+      );
+      marker.addTo(this.estateMarkerLayer!);
+    });
+
+    // Fit map to all markers if there are estates with coords
+    const coords = this.myEstates
+      .filter(e => e.lat && e.lat !== 0 && e.lng && e.lng !== 0)
+      .map(e => [e.lat!, e.lng!] as L.LatLngTuple);
+    if (coords.length > 1) {
+      this.estateMap.fitBounds(L.latLngBounds(coords), { padding: [30, 30], maxZoom: 16 });
+    }
+  }
+
+  private destroyEstateMap(): void {
+    this.estateMap?.remove();
+    this.estateMap        = undefined;
+    this.estateMarkerLayer = undefined;
+  }
+
+  // ══════════════════════════════════════════════════════════
+  //  ESTATE MODAL  (add / edit)
+  // ══════════════════════════════════════════════════════════
 
   openAddModal(): void {
-    this.isEditMode = false;
-    this.editingId = null;
-    this.estateForm = {
-      name: '', location: '',
-      description: '', status: 'published',
+    if (!this.isOwnerVerified) {
+      this.showToast('Votre compte doit être vérifié par un administrateur avant d\'ajouter un logement.', 'warning');
+      return;
+    }
+    this.isEditMode  = false;
+    this.editingId   = null;
+    this.estateForm  = {
+      name: '', location: '', description: '', status: 'published',
       restaurant: '0', generator: '0', forage: '0',
-      existingImages: []
+      existingImages: [],
+      lat: EYANG_CENTER[0], lng: EYANG_CENTER[1],
     };
-    this.distanceDisplay = '';
-    this.newImageFiles = [];
+    this.distanceDisplay  = '';
+    this.newImageFiles    = [];
     this.newImagePreviews = [];
-    this.showEstateModal = true;
+    this.showEstateModal  = true;
+    this.destroyMapPicker();
+    this.initMapPicker();
   }
 
   openEditModal(estate: Estate): void {
     this.isEditMode = true;
-    this.editingId = estate.id;
+    this.editingId  = estate.id;
     this.estateForm = {
-      name: estate.name, location: estate.location,
-      description: estate.description,
-      status: estate.status,
-      restaurant: estate.restaurant,
-      generator: estate.generator, forage: estate.forage,
-      existingImages: [...(estate.images ?? [])]
+      name:           estate.name,
+      location:       estate.location,
+      description:    estate.description,
+      status:         estate.status,
+      restaurant:     estate.restaurant,
+      generator:      estate.generator,
+      forage:         estate.forage,
+      existingImages: [...(estate.images ?? [])],
+      lat:            estate.lat ?? EYANG_CENTER[0],
+      lng:            estate.lng ?? EYANG_CENTER[1],
     };
-    this.distanceDisplay = String(estate.distance);
-    this.newImageFiles = [];
+    this.distanceDisplay  = String(estate.distance);
+    this.newImageFiles    = [];
     this.newImagePreviews = [];
-    this.showEstateModal = true;
+    this.showEstateModal  = true;
+    this.destroyMapPicker();
+    this.initMapPicker();
   }
 
   closeEstateModal(): void {
-    this.showEstateModal = false;
-    this.newImageFiles = [];
+    this.showEstateModal  = false;
+    this.newImageFiles    = [];
     this.newImagePreviews = [];
+    this.destroyMapPicker();
   }
 
   toggleEquipment(key: string): void {
     this.estateForm[key] = this.estateForm[key] === '1' ? '0' : '1';
   }
+
+  // ── Leaflet map picker (inside modal — owner pins exact coords) ─────────
+
+  private initMapPicker(): void {
+    setTimeout(() => {
+      const el = document.getElementById('map-picker');
+      if (!el || this.mapPicker) return;
+
+      const lat = this.estateForm.lat ?? EYANG_CENTER[0];
+      const lng = this.estateForm.lng ?? EYANG_CENTER[1];
+
+      this.mapPicker = L.map(el, { center: [lat, lng], zoom: 16 });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19, attribution: '© OpenStreetMap'
+      }).addTo(this.mapPicker);
+
+      // Branded red tear-drop SVG pin icon
+      const pinIcon = () => L.divIcon({
+        className: '',
+        iconSize:    [38, 50],
+        iconAnchor:  [19, 50],
+        popupAnchor: [0, -52],
+        html: `<svg width="38" height="50" viewBox="0 0 38 50" xmlns="http://www.w3.org/2000/svg"
+                    style="filter:drop-shadow(0 4px 8px rgba(255,107,107,.45))">
+          <path d="M19 1C9.61 1 2 8.61 2 18c0 11.75 15.68 28.5 16.34 29.28a.9.9 0 0 0 1.32 0C20.32 46.5 36 29.75 36 18 36 8.61 28.39 1 19 1z"
+                fill="#FF4444" stroke="rgba(255,255,255,.7)" stroke-width="1.5"/>
+          <circle cx="19" cy="18" r="10.5" fill="#fff" opacity=".97"/>
+          <g transform="translate(19,18)" fill="none" stroke="#FF4444" stroke-width="2.2"
+             stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0 -7C-3.5 -7 -6 -4.5 -6 -1.5C-6 2.5 0 8.5 0 8.5S6 2.5 6 -1.5C6 -4.5 3.5 -7 0 -7Z"/>
+            <circle cx="0" cy="-1.5" r="2.5"/>
+          </g>
+        </svg>`,
+      });
+
+      this.mapPickerMarker = L.marker([lat, lng], {
+        draggable: true,
+        icon: pinIcon(),
+      }).addTo(this.mapPicker);
+
+      // Drag → update form coords
+      this.mapPickerMarker.on('dragend', (e: any) => {
+        const pos = e.target.getLatLng();
+        this.estateForm.lat = +pos.lat.toFixed(7);
+        this.estateForm.lng = +pos.lng.toFixed(7);
+        this.cdr.detectChanges();
+      });
+
+      // Click on map → move pin + update coords
+      this.mapPicker.on('click', (e: L.LeafletMouseEvent) => {
+        const { lat, lng } = e.latlng;
+        this.estateForm.lat = +lat.toFixed(7);
+        this.estateForm.lng = +lng.toFixed(7);
+        this.mapPickerMarker?.setLatLng([lat, lng]);
+        this.cdr.detectChanges();
+      });
+    }, 150);
+  }
+
+  private destroyMapPicker(): void {
+    this.mapPicker?.remove();
+    this.mapPicker       = undefined;
+    this.mapPickerMarker = undefined;
+  }
+
+  /** Called when the user types directly into the lat/lng fields */
+  onLatLngInput(): void {
+    const lat = this.estateForm.lat;
+    const lng = this.estateForm.lng;
+    if (lat && lng && this.mapPicker && this.mapPickerMarker) {
+      this.mapPickerMarker.setLatLng([lat, lng]);
+      this.mapPicker.setView([lat, lng], this.mapPicker.getZoom());
+    }
+  }
+
+  /** Use the browser's geolocation API to auto-fill the estate coordinates */
+  useMyLocation(): void {
+    if (!navigator.geolocation) {
+      this.showToast('La géolocalisation n\'est pas supportée par votre navigateur.', 'warning');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const lat = +pos.coords.latitude.toFixed(7);
+        const lng = +pos.coords.longitude.toFixed(7);
+        this.estateForm.lat = lat;
+        this.estateForm.lng = lng;
+        this.mapPickerMarker?.setLatLng([lat, lng]);
+        this.mapPicker?.setView([lat, lng], 17);
+        this.cdr.detectChanges();
+      },
+      () => this.showToast('Impossible d\'obtenir votre position.', 'error')
+    );
+  }
+
+  // ── Image management ──────────────────────────────────────
 
   onImagesSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -432,53 +680,46 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 
-  // ── Room Category Methods ────────────────────────────────────────────────
+  // ── Room Category Methods ─────────────────────────────────
+
   openManageRooms(estate: Estate): void {
     this.selectedEstateForRooms = estate;
-    this.showRoomModal = true;
-    this.isRoomEditMode = false;
+    this.showRoomModal          = true;
+    this.isRoomEditMode         = false;
     this.loadRooms(estate.id);
   }
 
   closeRoomModal(): void {
-    this.showRoomModal = false;
+    this.showRoomModal          = false;
     this.selectedEstateForRooms = null;
   }
 
   loadRooms(estateId: number): void {
     this.isLoadingRooms = true;
     this.estateService.getRoomCategories(estateId).subscribe({
-      next: (rooms) => {
-        this.roomCategories = rooms;
-        this.isLoadingRooms = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.showToast('Erreur chargement chambres.', 'error');
-        this.isLoadingRooms = false;
-        this.cdr.detectChanges();
-      }
+      next: rooms => { this.roomCategories = rooms; this.isLoadingRooms = false; this.cdr.detectChanges(); },
+      error: () => { this.showToast('Erreur chargement chambres.', 'error'); this.isLoadingRooms = false; this.cdr.detectChanges(); }
     });
   }
 
   openCreateRoom(): void {
-    this.isRoomEditMode = true;
-    this.roomEditId = null;
-    this.roomForm = this.emptyRoomForm();
-    this.roomSelectedFiles = [];
-    this.roomPreviewImages = [];
-    this.roomExistingImages = [];
-    this.roomRemovedImageIds = [];
+    this.isRoomEditMode       = true;
+    this.roomEditId           = null;
+    this.roomForm             = this.emptyRoomForm();
+    this.roomSelectedFiles    = [];
+    this.roomPreviewImages    = [];
+    this.roomExistingImages   = [];
+    this.roomRemovedImageIds  = [];
   }
 
   openEditRoom(room: RoomCategory): void {
-    this.isRoomEditMode = true;
-    this.roomEditId = room.id;
-    this.roomForm = { ...room };
-    this.roomExistingImages = [...(room.images || [])];
-    this.roomSelectedFiles = [];
-    this.roomPreviewImages = [];
-    this.roomRemovedImageIds = [];
+    this.isRoomEditMode       = true;
+    this.roomEditId           = room.id;
+    this.roomForm             = { ...room };
+    this.roomExistingImages   = [...(room.images || [])];
+    this.roomSelectedFiles    = [];
+    this.roomPreviewImages    = [];
+    this.roomRemovedImageIds  = [];
   }
 
   deleteRoom(room: RoomCategory): void {
@@ -502,14 +743,13 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       : this.estateService.createRoomCategory(payload);
 
     req.subscribe({
-      next: (saved) => {
+      next: saved => {
         const afterSave = () => {
-          this.isSavingRoom = false;
+          this.isSavingRoom   = false;
           this.isRoomEditMode = false;
           this.showToast(`Chambre ${this.roomEditId ? 'mise à jour' : 'ajoutée'}.`, 'success');
           this.loadRooms(this.selectedEstateForRooms!.id);
         };
-
         if (this.roomSelectedFiles.length > 0) {
           this.estateService.uploadRoomImages(saved.id, this.roomSelectedFiles).subscribe(afterSave);
         } else {
@@ -556,7 +796,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
   }
 
-  // ── Save estate (create or update, then upload images) ────
+  // ── Save estate (create or update) ────────────────────────
 
   saveEstate(): void {
     if (!this.estateForm.name || !this.estateForm.location) {
@@ -564,7 +804,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       return;
     }
     this.isSavingEstate = true;
-    const payload = { ...this.estateForm, distance: parseFloat(this.distanceDisplay) || 0 };
+    const payload = {
+      ...this.estateForm,
+      distance: parseFloat(this.distanceDisplay) || 0,
+      lat: this.estateForm.lat ?? EYANG_CENTER[0],
+      lng: this.estateForm.lng ?? EYANG_CENTER[1],
+    };
     delete payload.existingImages;
 
     const req$ = this.isEditMode && this.editingId
@@ -572,23 +817,24 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       : this.estateService.createEstate(payload);
 
     req$.subscribe({
-      next: (savedEstate) => {
-        const estateId = savedEstate.id;
-
+      next: savedEstate => {
         const finalizeCreation = () => {
           this.isSavingEstate = false;
-          this.showToast(this.isEditMode ? 'Logement mis à jour.' : 'Logement créé avec succès. Veuillez configurer les chambres.', 'success');
+          this.showToast(
+            this.isEditMode
+              ? 'Logement mis à jour.'
+              : 'Logement créé avec succès. Veuillez configurer les chambres.',
+            'success'
+          );
           this.closeEstateModal();
           this.loadOwnerData();
-          if (!this.isEditMode) {
-            this.openManageRooms(savedEstate);
-          }
+          if (!this.isEditMode) this.openManageRooms(savedEstate);
         };
 
         if (this.newImageFiles.length > 0) {
-          this.estateService.uploadEstateImages(estateId, this.newImageFiles).subscribe({
-            next: () => finalizeCreation(),
-            error: () => finalizeCreation()
+          this.estateService.uploadEstateImages(savedEstate.id, this.newImageFiles).subscribe({
+            next:  () => finalizeCreation(),
+            error: () => finalizeCreation(),
           });
         } else {
           finalizeCreation();
@@ -604,7 +850,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   deleteEstate(estate: Estate): void {
     this.openConfirm(`Supprimer "${estate.name}" ?`, () => {
       this.estateService.deleteEstate(estate.id).subscribe({
-        next: () => { this.showToast('Logement supprimé.', 'success'); this.loadOwnerData(); },
+        next:  () => { this.showToast('Logement supprimé.', 'success'); this.loadOwnerData(); },
         error: () => this.showToast('Erreur lors de la suppression.', 'error')
       });
     });
@@ -619,30 +865,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   // ══════════════════════════════════════════════════════════
 
   loadClientData(): void {
-    this.estateService.getClientStats().subscribe({
-      next: s => this.clientStats = s,
-      error: () => { }
-    });
+    this.estateService.getClientStats().subscribe({ next: s => this.clientStats = s, error: () => {} });
     this.estateService.getMyReservations().subscribe({
       next: r => { this.myReservations = r; this.isLoading = false; },
       error: () => { this.isLoading = false; }
     });
-    this.estateService.getMySubmittedReviews().subscribe({
-      next: r => this.mySubmittedReviews = r,
-      error: () => { }
-    });
-    this.estateService.getMyContactRequests().subscribe({
-      next: c => this.myContacts = c,
-      error: () => { }
-    });
-    this.estateService.getConversations().subscribe({
-      next: c => this.conversations = c,
-      error: () => { }
-    });
-    this.estateService.getEstates({ status: 'published' }).subscribe({
-      next: e => this.allEstates = e,
-      error: () => { }
-    });
+    this.estateService.getMySubmittedReviews().subscribe({ next: r => this.mySubmittedReviews = r, error: () => {} });
+    this.estateService.getMyContactRequests().subscribe({ next: c => this.myContacts = c, error: () => {} });
+    this.estateService.getConversations().subscribe({ next: c => this.conversations = c, error: () => {} });
+    this.estateService.getEstates({ status: 'published' }).subscribe({ next: e => this.allEstates = e, error: () => {} });
   }
 
   // ── Owner: Reservation actions ────────────────────────────
@@ -691,16 +922,21 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   // ── Client: Reviews ───────────────────────────────────────
 
   openReviewModal(): void {
-    this.reviewForm = { estate: 0, rating: 0, comment: '' };
+    this.reviewForm  = { estate: 0, rating: 0, comment: '' };
     this.hoverRating = 0;
     this.showReviewModal = true;
   }
 
   closeReviewModal(): void { this.showReviewModal = false; }
 
-  setRating(r: number): void { this.reviewForm.rating = r; }
-  setHover(r: number): void { this.hoverRating = r; }
-  clearHover(): void { this.hoverRating = 0; }
+  setRating(r: number): void  { this.reviewForm.rating = r; }
+  setHover(r: number): void   { this.hoverRating = r; }
+  clearHover(): void          { this.hoverRating = 0; }
+
+  get selectedReviewEstate(): Estate | null {
+    if (!this.reviewForm.estate) return null;
+    return this.allEstates.find(e => e.id === this.reviewForm.estate) ?? null;
+  }
 
   submitReview(): void {
     if (!this.reviewForm.estate || !this.reviewForm.rating || !this.reviewForm.comment.trim()) {
@@ -709,35 +945,28 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
     const name = this.currentUser?.name || 'Anonyme';
     this.estateService.createReview({
-      estate: this.reviewForm.estate,
+      estate:  this.reviewForm.estate,
       name,
-      rating: this.reviewForm.rating,
+      rating:  this.reviewForm.rating,
       comment: this.reviewForm.comment,
     }).subscribe({
-      next: () => {
-        this.showToast('Avis publié avec succès !', 'success');
-        this.closeReviewModal();
-        this.loadClientData();
-      },
+      next:  () => { this.showToast('Avis publié avec succès !', 'success'); this.closeReviewModal(); this.loadClientData(); },
       error: () => this.showToast('Erreur lors de la publication.', 'error')
     });
   }
 
   openEditReviewModal(review: Review): void {
-    this.editingReview = review;
+    this.editingReview  = review;
     this.editReviewForm = { rating: review.rating, comment: review.comment };
     this.editHoverRating = 0;
     this.showEditReviewModal = true;
   }
 
-  closeEditReviewModal(): void {
-    this.showEditReviewModal = false;
-    this.editingReview = null;
-  }
+  closeEditReviewModal(): void { this.showEditReviewModal = false; this.editingReview = null; }
 
   setEditRating(r: number): void { this.editReviewForm.rating = r; }
-  setEditHover(r: number): void { this.editHoverRating = r; }
-  clearEditHover(): void { this.editHoverRating = 0; }
+  setEditHover(r: number): void  { this.editHoverRating = r; }
+  clearEditHover(): void         { this.editHoverRating = 0; }
 
   saveEditReview(): void {
     if (!this.editingReview || !this.editReviewForm.rating || !this.editReviewForm.comment.trim()) {
@@ -746,20 +975,17 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
     this.isSavingReview = true;
     this.estateService.updateReview(this.editingReview.id, {
-      rating: this.editReviewForm.rating,
+      rating:  this.editReviewForm.rating,
       comment: this.editReviewForm.comment.trim()
     }).subscribe({
-      next: (updated) => {
+      next: updated => {
         this.isSavingReview = false;
         const idx = this.mySubmittedReviews.findIndex(r => r.id === this.editingReview!.id);
         if (idx !== -1) this.mySubmittedReviews[idx] = enrichReview(updated);
         this.showToast('Avis mis à jour !', 'success');
         this.closeEditReviewModal();
       },
-      error: () => {
-        this.isSavingReview = false;
-        this.showToast('Erreur lors de la mise à jour.', 'error');
-      }
+      error: () => { this.isSavingReview = false; this.showToast('Erreur lors de la mise à jour.', 'error'); }
     });
   }
 
@@ -813,69 +1039,112 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   // ── Messaging (shared owner + client) ────────────────────
 
   openConversation(conv: Conversation): void {
-    this.activeConversation = conv;
-    this.estateService.markConversationRead(conv.id).subscribe({
-      next: () => { conv.unread_count = 0; },
-      error: () => { }
-    });
+    // Show instantly — don't block on HTTP
+    this.activeConversation = { ...conv, messages: conv.messages || [] };
+    conv.unread_count = 0;
+
+    this.estateService.markConversationRead(conv.id).subscribe({ error: () => {} });
+
+    // Connect WS BEFORE the HTTP fetch — no messages missed during load
+    this.wsService.connectChat(conv.id);
+
+    // Fetch full history; merge any WS frames that arrived during the request
     this.estateService.getConversation(conv.id).subscribe({
       next: full => {
-        this.activeConversation = full;
+        if (this.activeConversation?.id !== full.id) return; // user switched away
+        const serverIds = new Set(full.messages.map((m: ChatMessage) => m.id));
+        const pending   = (this.activeConversation.messages || []).filter(
+          (m: ChatMessage) => !serverIds.has(m.id)
+        );
+        this.activeConversation = { ...full, messages: [...full.messages, ...pending] };
         this.shouldScroll = true;
+        this.cdr.detectChanges();
       },
-      error: () => { }
+      error: () => {}
     });
-    this.wsService.connectChat(conv.id);
   }
-
   closeConversation(): void {
     this.activeConversation = null;
     this.wsService.disconnectChat();
     if (this.isOwner) {
       this.loadOwnerConversations();
     } else {
-      this.estateService.getConversations().subscribe({ next: c => this.conversations = c, error: () => { } });
+      this.estateService.getConversations().subscribe({ next: c => this.conversations = c, error: () => {} });
     }
   }
 
   handleRealtimeMessage(msg: any): void {
-    // msg fields (from ws_utils.broadcast_chat_message):
-    //   id, conversation, text, sender, sender_name, sender_username, read, created_at
+    if (!msg.id || msg.sender === undefined || !msg.created_at) return;
 
-    // Update sidebar conversation preview
+    // ── A. Background conversation — sidebar update only ─────────────────
     const conv = this.conversations.find(c => c.id === msg.conversation);
     if (conv) {
       conv.last_message = { text: msg.text, created_at: msg.created_at, sender_id: msg.sender };
+      conv.updated_at   = msg.created_at;
       if (!this.activeConversation || this.activeConversation.id !== msg.conversation) {
-        conv.unread_count = (conv.unread_count || 0) + 1;
+        if (msg.sender !== this.currentUser?.id) {
+          conv.unread_count = (conv.unread_count || 0) + 1;
+        }
       }
-      conv.updated_at = msg.created_at;
-      this.conversations.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
+      // Bubble to top of list
+      this.conversations = [conv, ...this.conversations.filter(c => c.id !== conv.id)];
     }
 
-    // Only mutate the active conversation's message list
-    if (!this.activeConversation || this.activeConversation.id !== msg.conversation) return;
+    if (!this.activeConversation || this.activeConversation.id !== msg.conversation) {
+      this.cdr.detectChanges();
+      return;
+    }
 
-    // Dedup: skip if a message with this DB id already exists
-    const alreadyExists = this.activeConversation.messages.some(m => m.id === msg.id);
-    if (alreadyExists) return;
+    // ── B. Active conversation ────────────────────────────────────────────
+    const isOwnEcho = msg.sender === this.currentUser?.id;
 
+    // B1. Own-echo: replace optimistic bubble (negative temp id)
+    if (isOwnEcho) {
+      const idx = this.activeConversation.messages.findIndex(
+        (m: ChatMessage) => (m.id as unknown as number) < 0 && m.text === msg.text
+      );
+      if (idx !== -1) {
+        this.activeConversation.messages[idx] = {
+          id: msg.id, sender: msg.sender, text: msg.text,
+          created_at: msg.created_at, read: msg.read ?? false,
+          conversation: msg.conversation,
+          sender_name: msg.sender_name || '', sender_username: msg.sender_username || '',
+        };
+        this.activeConversation.last_message = {
+          text: msg.text, created_at: msg.created_at, sender_id: msg.sender,
+        };
+        this.cdr.detectChanges();
+        return;
+      }
+    }
+
+    // B2. Exact duplicate guard
+    if (this.activeConversation.messages.some((m: ChatMessage) => m.id === msg.id)) {
+      this.cdr.detectChanges();
+      return;
+    }
+
+    // B3. Append
     const newMsg: ChatMessage = {
-      id:               msg.id,
-      sender:           msg.sender,
-      text:             msg.text,
-      created_at:       msg.created_at,
-      read:             msg.read ?? false,
-      conversation:     msg.conversation,
-      sender_name:      msg.sender_name || '',
-      sender_username:  msg.sender_username || '',
+      id: msg.id, sender: msg.sender, text: msg.text,
+      created_at: msg.created_at, read: msg.read ?? false,
+      conversation: msg.conversation,
+      sender_name: msg.sender_name || '', sender_username: msg.sender_username || '',
     };
     this.activeConversation.messages.push(newMsg);
-    this.activeConversation.last_message = { text: msg.text, created_at: msg.created_at, sender_id: msg.sender };
+    this.activeConversation.last_message = {
+      text: msg.text, created_at: msg.created_at, sender_id: msg.sender,
+    };
+
+    // Auto-mark as read — conversation is open
+    if (!isOwnEcho) {
+      this.estateService.markConversationRead(this.activeConversation.id)
+        .subscribe({ error: () => {} });
+    }
+
     this.shouldScroll = true;
     this.cdr.detectChanges();
   }
-
   handleRealtimeNotification(notif: any): void {
     switch (notif.type) {
       case 'new_message':
@@ -886,12 +1155,17 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
         }
         break;
       case 'verification_status':
-        this.showToast(notif.message || 'Compte vérifié !', 'success');
-        if (this.currentUser) this.currentUser.is_verified = true;
+        if (notif.status === 'verified' || !notif.status) {
+          this.showToast('✅ Compte vérifié ! ' + (notif.message || 'Vous pouvez désormais publier des logements.'), 'success');
+          if (this.currentUser) { this.currentUser.is_verified = true; }
+          this.cdr.detectChanges();
+        } else {
+          this.showToast('❌ Vérification refusée. ' + (notif.message || ''), 'error');
+        }
         break;
       case 'new_booking':
         this.showToast(`📋 ${notif.message}`, 'info');
-        this.loadOwnerData(); // refresh reservation list
+        this.loadOwnerData();
         break;
       case 'booking_accepted':
         this.showToast(`✅ ${notif.message}`, 'success');
@@ -906,45 +1180,71 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   sendMessage(): void {
     const text = this.newMessage.trim();
-    if (!text || !this.activeConversation) return;
-    this.newMessage = '';
+    if (!text || !this.activeConversation || !this.currentUser?.id) return;
 
     const convId = this.activeConversation.id;
+    this.newMessage = '';
 
-    // ── Strategy: single source of truth ──────────────────────────────────
-    // If the WebSocket is open, send via WS only. The server saves to DB,
-    // then signals.py broadcasts the saved record back to both participants
-    // via group_send. handleRealtimeMessage() adds it to the list — no HTTP.
-    //
-    // If WS is closed, fall back to HTTP POST. The response IS the record;
-    // add it directly. WS is not active so there is no echo to dedup.
-    // ─────────────────────────────────────────────────────────────────────
+    // ── Optimistic bubble (negative temp id for echo matching) ───────────
+    const tempId = -(Date.now());
+    const optimistic: ChatMessage = {
+      id:              tempId as unknown as number,
+      sender:          this.currentUser.id,
+      text,
+      created_at:      new Date().toISOString(),
+      read:            false,
+      conversation:    convId,
+      sender_name:     this.currentUser.name,
+      sender_username: this.currentUser.name || '',
+    };
+    this.activeConversation.messages.push(optimistic);
+    this.shouldScroll = true;
+    this.cdr.detectChanges();
 
-    if (this.wsService.isChatOpen) {
-      // Send via WS; the server echo will add the message via handleRealtimeMessage()
-      this.wsService.sendChatMessage(text, this.currentUser!.id!, this.currentUser!.name);
-    } else {
-      // HTTP fallback
-      this.estateService.sendMessage(convId, text).subscribe({
-        next: msg => {
-          if (this.activeConversation) {
-            this.activeConversation = {
-              ...this.activeConversation,
-              messages: [...this.activeConversation.messages, msg],
-              last_message: { text: msg.text, created_at: msg.created_at, sender_id: msg.sender }
-            };
-            this.shouldScroll = true;
-            this.cdr.detectChanges();
-          }
-        },
-        error: () => {
-          this.newMessage = text;
-          this.showToast("Erreur lors de l'envoi.", 'error');
-        }
-      });
-    }
+    const removeOptimistic = () => {
+      if (!this.activeConversation) return;
+      const i = this.activeConversation.messages.findIndex(
+        (m: ChatMessage) => m.id === tempId
+      );
+      if (i !== -1) this.activeConversation.messages.splice(i, 1);
+    };
+
+    const replaceOptimistic = (msg: ChatMessage) => {
+      if (!this.activeConversation) return;
+      const i = this.activeConversation.messages.findIndex(
+        (m: ChatMessage) => m.id === tempId
+      );
+      if (i !== -1) {
+        this.activeConversation.messages[i] = msg;
+      } else if (!this.activeConversation.messages.some((m: ChatMessage) => m.id === msg.id)) {
+        this.activeConversation.messages.push(msg);
+      }
+      this.activeConversation.last_message = {
+        text: msg.text, created_at: msg.created_at, sender_id: msg.sender,
+      };
+    };
+
+    // ── WebSocket path — server echoes → handleRealtimeMessage replaces bubble
+    const wsSent = this.wsService.sendChatMessage(
+      text, this.currentUser.id, this.currentUser.name
+    );
+    if (wsSent) return;
+
+    // ── HTTP fallback (WS not open) ───────────────────────────────────────
+    this.estateService.sendMessage(convId, text).subscribe({
+      next: msg => {
+        replaceOptimistic(msg);
+        this.shouldScroll = true;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        removeOptimistic();
+        this.newMessage = text;
+        this.showToast("Erreur lors de l'envoi. Réessayez.", 'error');
+        this.cdr.detectChanges();
+      }
+    });
   }
-
   isMine(msg: ChatMessage): boolean {
     return msg.sender === this.currentUser?.id;
   }
@@ -1017,21 +1317,18 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   private msgDateLabel(dateStr: string): string {
-    const d = new Date(dateStr);
+    const d    = new Date(dateStr);
     const diff = Math.floor((Date.now() - d.getTime()) / 86_400_000);
     if (diff === 0) return "Aujourd'hui";
     if (diff === 1) return 'Hier';
-    if (diff < 7) return d.toLocaleDateString('fr-FR', { weekday: 'long' });
+    if (diff < 7)   return d.toLocaleDateString('fr-FR', { weekday: 'long' });
     return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
   }
 
   refreshOnlineUsers(): void {
     this.estateService.getOnlineUsers().subscribe({
-      next: data => {
-        this.onlineUsers = new Set(data.online_user_ids);
-        this.cdr.detectChanges();
-      },
-      error: () => { }
+      next: data => { this.onlineUsers = new Set(data.online_user_ids); this.cdr.detectChanges(); },
+      error: () => {}
     });
   }
 }

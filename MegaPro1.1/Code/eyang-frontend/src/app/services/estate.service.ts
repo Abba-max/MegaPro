@@ -11,36 +11,27 @@ export interface RoomCategory {
   id: number;
   estate: number;
   name: string;
-  /** single | double | shared */
   occupancy: 'single' | 'double' | 'shared';
   price: number;
   quantity_available: number;
   wifi: '0' | '1';
   tv: '0' | '1';
   fridge: '0' | '1';
-  /** 1=Large 2=Medium 3=Small */
   room_size: '1' | '2' | '3';
   description: string;
   images: RoomImage[];
 }
 
-/** Shape returned by the backend for average_rating */
 export interface AverageRating {
-  /** Numeric average, e.g. 4.3 */
   value: number;
-  /** Formatted string, e.g. "4.3" */
   display: string;
-  /** Number of top-level reviews included in the average */
   count: number;
-  /** Per-star breakdown: { 1: n, 2: n, 3: n, 4: n, 5: n } */
   breakdown: { [star: number]: number };
 }
 
 export interface EstateRaw {
   id: number; name: string; location: string;
-  /** Stored string kept for backward-compat; prefer average_rating.value */
   rating: string;
-  /** Live-computed average from reviews (use this) */
   average_rating: AverageRating;
   distance: number;
   restaurant: '0' | '1'; generator: '0' | '1';
@@ -53,6 +44,10 @@ export interface EstateRaw {
   reviews_count: number; orders_count: number;
   price: number; capacity: number; free: number;
   wifi: '0' | '1'; tv: '0' | '1'; fridge: '0' | '1';
+  lat: number;
+  lng: number;
+  /** true = admin approved, badge shown on card */
+  is_verified?: boolean;
 }
 
 export interface Estate extends EstateRaw {
@@ -74,7 +69,6 @@ export interface QuickOrder {
   room_category?: number | null; room_category_name?: string | null;
   name: string; phone: string; note?: string; created_at?: string;
   user_email?: string;
-  /** pending | accepted | rejected */
   status?: 'pending' | 'accepted' | 'rejected';
 }
 
@@ -109,6 +103,7 @@ export interface ClientDashboardStats { total_reservations: number; total_review
 
 export interface AdminStats {
   total_users: number; total_estates: number; total_orders: number; total_reviews: number;
+  pending_verifications?: number;
   recent_activities: AdminActivity[];
   monthly_orders: { month: string; value: number }[];
 }
@@ -133,16 +128,13 @@ export function getAbsoluteUrl(url: string | null | undefined): string {
   return url.startsWith('/') ? `${base}${url}` : `${base}/${url}`;
 }
 
-/** Fallback AverageRating when the backend didn't return one (old data). */
 function defaultAverageRating(storedRating: string): AverageRating {
   const value = parseFloat(storedRating) || 0;
-  return {
-    value,
-    display: value.toFixed(1),
-    count: 0,
-    breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
-  };
+  return { value, display: value.toFixed(1), count: 0, breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } };
 }
+
+const EYANG_LAT = 3.884041;
+const EYANG_LNG = 11.390736;
 
 export function enrichEstate(raw: EstateRaw): Estate {
   const features: string[] = [];
@@ -150,25 +142,19 @@ export function enrichEstate(raw: EstateRaw): Estate {
   if (raw.forage === '1') features.push('droplets');
   if (raw.restaurant === '1') features.push('restaurant');
 
-  const images = (raw.images || []).map(img => ({
-    ...img,
-    image: getAbsoluteUrl(img.image)
-  }));
-
+  const images = (raw.images || []).map(img => ({ ...img, image: getAbsoluteUrl(img.image) }));
   const room_categories = (raw.room_categories || []).map(rc => ({
     ...rc,
     images: (rc.images || []).map(img => ({ ...img, image: getAbsoluteUrl(img.image) }))
   }));
 
-  // Ensure average_rating is always present (guard against old API versions)
-  const average_rating: AverageRating =
-    raw.average_rating ?? defaultAverageRating(raw.rating ?? '0.0');
+  const average_rating: AverageRating = raw.average_rating ?? defaultAverageRating(raw.rating ?? '0.0');
+  const lat = (raw.lat != null && raw.lat !== 0) ? Number(raw.lat) : EYANG_LAT;
+  const lng = (raw.lng != null && raw.lng !== 0) ? Number(raw.lng) : EYANG_LNG;
 
   return {
     ...raw,
-    images,
-    room_categories,
-    average_rating,
+    lat, lng, images, room_categories, average_rating,
     title: raw.name,
     image: images[0]?.image ?? '',
     type: 'Logement',
@@ -184,12 +170,10 @@ export function enrichReview(r: Review): Review {
   };
 }
 
-/** Helper: human-readable occupancy label */
 export function occupancyLabel(occ: string): string {
   return { single: 'Individuelle', double: 'Double', shared: 'Partagée' }[occ] ?? occ;
 }
 
-/** Helper: room size label */
 export function roomSizeLabel(s: string): string {
   return { '1': 'Grande', '2': 'Moyenne', '3': 'Petite' }[s] ?? '';
 }
@@ -373,6 +357,14 @@ export class EstateService {
 
   deleteEstate(id: number): Observable<void> {
     return this.http.delete<void>(`${this.BASE}/estates/${id}/`);
+  }
+
+  /**
+   * Admin-only: approve or reject an estate's verification.
+   * POST /api/estates/{id}/verify/ { action: 'approve' | 'reject' }
+   */
+  verifyEstate(id: number, action: 'approve' | 'reject'): Observable<{ id: number; is_verified: boolean }> {
+    return this.http.post<{ id: number; is_verified: boolean }>(`${this.BASE}/estates/${id}/verify/`, { action });
   }
 
   // ── Quick Orders ──────────────────────────────────────────

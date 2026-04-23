@@ -1,238 +1,278 @@
-// src/app/services/websocket.service.ts
-import { Injectable, OnDestroy } from '@angular/core';
+// src/app/services/websocket.service.ts  — OPTIMIZED
+//
+// Key improvements vs previous version:
+//  1. connectNotifications() is idempotent — calling it multiple times (once
+//     from NotificationService, once from DashboardComponent) opens only ONE
+//     socket thanks to a "connecting" guard.
+//  2. Chat socket: if the same convId is requested while a connection attempt
+//     is already in-flight (readyState === CONNECTING), we skip instead of
+//     creating a second socket.
+//  3. Heartbeat intervals reduced: 25 s chat / 30 s notif — keeps Nginx /
+//     AWS ALB from killing idle sockets without wasting bandwidth.
+//  4. ngOnDestroy cleans up both sockets reliably.
+//  5. Public helper isConnectingChat so components can show a "connecting"
+//     spinner if needed.
+
+import { Injectable, NgZone, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class WebSocketService implements OnDestroy {
-    private chatSocket: WebSocket | null = null;
-    private notificationSocket: WebSocket | null = null;
 
-    private messageSubject = new Subject<any>();
-    public messages$ = this.messageSubject.asObservable();
+  // ── Subjects ────────────────────────────────────────────────────────────
+  private messageSubject      = new Subject<any>();
+  public  messages$           = this.messageSubject.asObservable();
 
-    private notificationSubject = new Subject<any>();
-    public notifications$ = this.notificationSubject.asObservable();
+  private notificationSubject = new Subject<any>();
+  public  notifications$      = this.notificationSubject.asObservable();
 
-    private readonly WS_BASE = environment.wsUrl;
-    private currentConvId: number | null = null;
-    private chatReconnectAttempts = 0;
-    private notifReconnectAttempts = 0;
-    private chatHeartbeatInterval: any;
-    private notifHeartbeatInterval: any;
+  // ── Sockets ─────────────────────────────────────────────────────────────
+  private chatSocket:         WebSocket | null = null;
+  private notificationSocket: WebSocket | null = null;
 
-    constructor(private auth: AuthService) {
-        this.auth.currentUser$.subscribe(user => {
-            if (user) {
-                this.connectNotifications();
-            } else {
-                this.disconnectNotifications();
-                this.disconnectChat();
-            }
-        });
-    }
+  // ── State ────────────────────────────────────────────────────────────────
+  private currentConvId:          number | null = null;
+  private chatReconnectAttempts   = 0;
+  private notifReconnectAttempts  = 0;
+  private chatHeartbeatInterval:  ReturnType<typeof setInterval> | null = null;
+  private notifHeartbeatInterval: ReturnType<typeof setInterval> | null = null;
 
-    // ── Notifications ──────────────────────────────────────────────────────
+  /** True while we deliberately tore down the socket (no auto-reconnect). */
+  private intentionalChatClose  = false;
+  private intentionalNotifClose = false;
 
-    connectNotifications(): void {
-        if (this.notificationSocket && this.notificationSocket.readyState === WebSocket.OPEN) {
-            return; // Already connected
-        }
+  /** Guard against spawning a second CONNECTING socket for the same conv. */
+  private connectingChatConvId: number | null = null;
 
-        const token = this.auth.getAccessToken();
-        if (!token) return;
+  private readonly WS_BASE = environment.wsUrl;
 
-        try {
-            const url = `${this.WS_BASE}/notifications/?token=${token}`;
-            this.notificationSocket = new WebSocket(url);
-
-            this.notificationSocket.onopen = () => {
-                this.notifReconnectAttempts = 0; // reset on successful connection
-                this.startNotificationHeartbeat();
-                console.info('[WS] Notification socket connected');
-            };
-
-            this.notificationSocket.onmessage = (event) => {
-                try {
-                    this.notificationSubject.next(JSON.parse(event.data));
-                } catch { /* ignore malformed frames */ }
-            };
-
-            this.notificationSocket.onerror = (event) => {
-                console.warn('[WS] Notification error:', event);
-            };
-
-            this.notificationSocket.onclose = () => {
-                this.stopNotificationHeartbeat();
-                this.notificationSocket = null;
-                console.warn('[WS] Notification socket closed, reconnecting...');
-                
-                // Exponential backoff: 1s, 2s, 4s, 8s, max 30s
-                const delay = Math.min(1000 * Math.pow(2, this.notifReconnectAttempts), 30000);
-                this.notifReconnectAttempts++;
-                
-                setTimeout(() => {
-                    if (this.auth.isAuthenticated()) {
-                        this.connectNotifications();
-                    }
-                }, delay);
-            };
-        } catch (e) {
-            console.error('[WS] Error creating notification socket:', e);
-        }
-    }
-
-    private startNotificationHeartbeat(): void {
-        this.stopNotificationHeartbeat();
-        // Send ping every 30s to keep connection alive
-        this.notifHeartbeatInterval = setInterval(() => {
-            if (this.notificationSocket?.readyState === WebSocket.OPEN) {
-                try {
-                    this.notificationSocket.send(JSON.stringify({ type: 'ping' }));
-                } catch { /* ignore */ }
-            }
-        }, 30000);
-    }
-
-    private stopNotificationHeartbeat(): void {
-        if (this.notifHeartbeatInterval) {
-            clearInterval(this.notifHeartbeatInterval);
-            this.notifHeartbeatInterval = null;
-        }
-    }
-
-    disconnectNotifications(): void {
-        this.stopNotificationHeartbeat();
-        if (this.notificationSocket) {
-            this.notificationSocket.onclose = null; // prevent auto-reconnect
-            this.notificationSocket.close();
-            this.notificationSocket = null;
-        }
-    }
-
-    // ── Chat ───────────────────────────────────────────────────────────────
-
-    connectChat(convId: number): void {
-        // If already connected to the same conversation, do nothing
-        if (this.currentConvId === convId && 
-            this.chatSocket && 
-            this.chatSocket.readyState === WebSocket.OPEN) {
-            return;
-        }
-
-        // Disconnect from previous conversation
-        this.disconnectChat();
-
-        const token = this.auth.getAccessToken();
-        if (!token) return;
-
-        try {
-            const url = `${this.WS_BASE}/chat/${convId}/?token=${token}`;
-            this.chatSocket = new WebSocket(url);
-            this.currentConvId = convId;
-
-            this.chatSocket.onopen = () => {
-                this.chatReconnectAttempts = 0;
-                this.startChatHeartbeat();
-                console.info(`[WS] Chat socket connected for conversation ${convId}`);
-            };
-
-            this.chatSocket.onmessage = (event) => {
-                try {
-                    const data = JSON.parse(event.data);
-                    if (data.type !== 'pong') {
-                        this.messageSubject.next(data);
-                    }
-                } catch { /* ignore */ }
-            };
-
-            this.chatSocket.onerror = (event) => {
-                console.warn('[WS] Chat error:', event);
-            };
-
-            this.chatSocket.onclose = () => {
-                this.stopChatHeartbeat();
-                const wasConnId = this.currentConvId;
-                this.chatSocket = null;
-                this.currentConvId = null;
-                
-                console.warn(`[WS] Chat socket closed for conversation ${wasConnId}, will reconnect on next message`);
-                // Reconnect will be triggered when user sends a message or navigates
-            };
-        } catch (e) {
-            console.error('[WS] Error creating chat socket:', e);
-            this.currentConvId = null;
-        }
-    }
-
-    private startChatHeartbeat(): void {
-        this.stopChatHeartbeat();
-        // Send ping every 30s
-        this.chatHeartbeatInterval = setInterval(() => {
-            if (this.chatSocket?.readyState === WebSocket.OPEN) {
-                try {
-                    this.chatSocket.send(JSON.stringify({ type: 'ping' }));
-                } catch { /* ignore */ }
-            }
-        }, 30000);
-    }
-
-    private stopChatHeartbeat(): void {
-        if (this.chatHeartbeatInterval) {
-            clearInterval(this.chatHeartbeatInterval);
-            this.chatHeartbeatInterval = null;
-        }
-    }
-
-    /**
-     * Send a raw text message through the chat socket.
-     * Returns true if the socket was open and the message was queued.
-     * If false, caller should fall back to HTTP POST.
-     */
-    sendChatMessage(text: string, senderId: number, senderName: string): boolean {
-        // Try to reconnect if socket is closed
-        if (!this.chatSocket || this.chatSocket.readyState !== WebSocket.OPEN) {
-            if (this.currentConvId) {
-                // Attempt to reconnect in the background
-                this.connectChat(this.currentConvId);
-            }
-            return false;
-        }
-
-        try {
-            this.chatSocket.send(JSON.stringify({
-                message: text,
-                sender_id: senderId,
-                sender_name: senderName,
-            }));
-            return true;
-        } catch (e) {
-            console.error('[WS] Error sending chat message:', e);
-            return false;
-        }
-    }
-
-    get isChatOpen(): boolean {
-        return this.chatSocket?.readyState === WebSocket.OPEN;
-    }
-
-    disconnectChat(): void {
-        this.stopChatHeartbeat();
-        if (this.chatSocket) {
-            this.chatSocket.onclose = null; // prevent auto-reconnect triggers
-            try {
-                this.chatSocket.close();
-            } catch { /* ignore */ }
-            this.chatSocket = null;
-        }
-        this.currentConvId = null;
-    }
-
-    ngOnDestroy(): void {
-        this.stopChatHeartbeat();
-        this.stopNotificationHeartbeat();
-        this.disconnectChat();
+  constructor(private auth: AuthService, private ngZone: NgZone) {
+    this.auth.currentUser$.subscribe(user => {
+      if (user) {
+        this.connectNotifications();
+      } else {
         this.disconnectNotifications();
+        this.disconnectChat();
+      }
+    });
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  //  NOTIFICATIONS SOCKET
+  // ════════════════════════════════════════════════════════════════════════
+
+  connectNotifications(): void {
+    // Already open → nothing to do
+    if (this.notificationSocket?.readyState === WebSocket.OPEN) return;
+    // Still connecting → don't open a second socket
+    if (this.notificationSocket?.readyState === WebSocket.CONNECTING) return;
+
+    const token = this.auth.getAccessToken();
+    if (!token) return;
+
+    this.intentionalNotifClose = false;
+
+    try {
+      this.ngZone.runOutsideAngular(() => {
+        this.notificationSocket = new WebSocket(
+          `${this.WS_BASE}/notifications/?token=${token}`
+        );
+
+        this.notificationSocket.onopen = () => {
+          this.notifReconnectAttempts = 0;
+          this.startNotifHeartbeat();
+        };
+
+        this.notificationSocket.onmessage = ({ data }) => {
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.type === 'pong') return;
+            this.ngZone.run(() => this.notificationSubject.next(parsed));
+          } catch { /* ignore malformed frames */ }
+        };
+
+        this.notificationSocket.onerror = () => { /* server logs handle this */ };
+
+        this.notificationSocket.onclose = () => {
+          this.stopNotifHeartbeat();
+          this.notificationSocket = null;
+          if (this.intentionalNotifClose) return;
+
+          // Exponential back-off capped at 30 s
+          const delay = Math.min(1000 * 2 ** this.notifReconnectAttempts, 30_000);
+          this.notifReconnectAttempts++;
+          setTimeout(() => {
+            if (this.auth.isAuthenticated() && !this.intentionalNotifClose) {
+              this.connectNotifications();
+            }
+          }, delay);
+        };
+      });
+    } catch (e) {
+      console.error('[WS] Failed to create notification socket:', e);
     }
+  }
+
+  disconnectNotifications(): void {
+    this.intentionalNotifClose = true;
+    this.stopNotifHeartbeat();
+    if (this.notificationSocket) {
+      this.notificationSocket.onclose = null; // prevent auto-reconnect
+      this.notificationSocket.close();
+      this.notificationSocket = null;
+    }
+  }
+
+  private startNotifHeartbeat(): void {
+    this.stopNotifHeartbeat();
+    this.notifHeartbeatInterval = setInterval(() => {
+      if (this.notificationSocket?.readyState === WebSocket.OPEN) {
+        try { this.notificationSocket.send(JSON.stringify({ type: 'ping' })); } catch { /* ignore */ }
+      }
+    }, 30_000);
+  }
+
+  private stopNotifHeartbeat(): void {
+    if (this.notifHeartbeatInterval) {
+      clearInterval(this.notifHeartbeatInterval);
+      this.notifHeartbeatInterval = null;
+    }
+  }
+
+  // ════════════════════════════════════════════════════════════════════════
+  //  CHAT SOCKET
+  // ════════════════════════════════════════════════════════════════════════
+
+  connectChat(convId: number): void {
+    // Already open for this conversation → skip
+    if (this.currentConvId === convId &&
+        this.chatSocket?.readyState === WebSocket.OPEN) return;
+
+    // Already in the process of connecting to the same convId → skip
+    if (this.connectingChatConvId === convId &&
+        this.chatSocket?.readyState === WebSocket.CONNECTING) return;
+
+    // Tear down any existing socket for a different conversation
+    this.disconnectChat();
+
+    const token = this.auth.getAccessToken();
+    if (!token) return;
+
+    this.intentionalChatClose  = false;
+    this.connectingChatConvId  = convId;
+
+    try {
+      this.ngZone.runOutsideAngular(() => {
+        this.chatSocket    = new WebSocket(`${this.WS_BASE}/chat/${convId}/?token=${token}`);
+        this.currentConvId = convId;
+
+        this.chatSocket.onopen = () => {
+          this.chatReconnectAttempts = 0;
+          this.connectingChatConvId  = null;
+          this.startChatHeartbeat();
+        };
+
+        this.chatSocket.onmessage = ({ data }) => {
+          try {
+            const parsed = JSON.parse(data);
+            if (parsed.type === 'pong') return;
+            // Emit inside Angular zone so change-detection fires immediately
+            this.ngZone.run(() => this.messageSubject.next(parsed));
+          } catch { /* ignore */ }
+        };
+
+        this.chatSocket.onerror = () => { /* let onclose handle reconnect */ };
+
+        this.chatSocket.onclose = () => {
+          this.stopChatHeartbeat();
+          const closedConvId        = this.currentConvId;
+          this.chatSocket           = null;
+          this.currentConvId        = null;
+          this.connectingChatConvId = null;
+
+          if (this.intentionalChatClose) return;
+
+          // Back-off: 1 s → 2 s → 4 s … max 15 s
+          const delay = Math.min(1000 * 2 ** this.chatReconnectAttempts, 15_000);
+          this.chatReconnectAttempts++;
+          setTimeout(() => {
+            if (closedConvId && !this.intentionalChatClose && this.auth.isAuthenticated()) {
+              this.connectChat(closedConvId);
+            }
+          }, delay);
+        };
+      });
+    } catch (e) {
+      console.error('[WS] Failed to create chat socket:', e);
+      this.currentConvId        = null;
+      this.connectingChatConvId = null;
+    }
+  }
+
+  /**
+   * Send a chat message over the open WebSocket.
+   * Returns true if the frame was queued, false if WS is unavailable
+   * (caller should fall back to HTTP POST).
+   */
+  sendChatMessage(text: string, senderId: number, senderName: string): boolean {
+    if (!this.chatSocket || this.chatSocket.readyState !== WebSocket.OPEN) {
+      // Trigger a background reconnect; let the caller fall back to HTTP
+      if (this.currentConvId) this.connectChat(this.currentConvId);
+      return false;
+    }
+    try {
+      this.chatSocket.send(JSON.stringify({
+        message: text,
+        sender_id: senderId,
+        sender_name: senderName,
+      }));
+      return true;
+    } catch (e) {
+      console.error('[WS] Failed to send chat message:', e);
+      return false;
+    }
+  }
+
+  get isChatOpen(): boolean {
+    return this.chatSocket?.readyState === WebSocket.OPEN;
+  }
+
+  get isConnectingChat(): boolean {
+    return this.chatSocket?.readyState === WebSocket.CONNECTING;
+  }
+
+  disconnectChat(): void {
+    this.intentionalChatClose = true;
+    this.stopChatHeartbeat();
+    if (this.chatSocket) {
+      this.chatSocket.onclose = null; // prevent auto-reconnect
+      try { this.chatSocket.close(); } catch { /* ignore */ }
+      this.chatSocket = null;
+    }
+    this.currentConvId        = null;
+    this.connectingChatConvId = null;
+  }
+
+  private startChatHeartbeat(): void {
+    this.stopChatHeartbeat();
+    this.chatHeartbeatInterval = setInterval(() => {
+      if (this.chatSocket?.readyState === WebSocket.OPEN) {
+        try { this.chatSocket.send(JSON.stringify({ type: 'ping' })); } catch { /* ignore */ }
+      }
+    }, 25_000);
+  }
+
+  private stopChatHeartbeat(): void {
+    if (this.chatHeartbeatInterval) {
+      clearInterval(this.chatHeartbeatInterval);
+      this.chatHeartbeatInterval = null;
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.disconnectChat();
+    this.disconnectNotifications();
+  }
 }

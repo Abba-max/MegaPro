@@ -164,15 +164,22 @@
         </div>
       </ng-container>
 
-      <!-- Overlay badges -->
-      <div class="badges-overlay">
-        <span class="badge-places" *ngIf="h.free > 0">{{ h.free }} {{ 'detail.places' | translate }}</span>
-        <div class="badge-rating" *ngIf="h.average_rating && h.average_rating.value > 0">
-          <lucide-icon [img]="StarIcon" class="icon-star"></lucide-icon>
-          <span>{{ h.average_rating.display }}</span>
-          <span class="badge-rating-count">({{ h.average_rating.count }})</span>
-        </div>
-      </div>
+      <!-- Overlay badges: Vérifié LEFT, Rating RIGHT -->
+<div class="badges-overlay">
+  <!-- LEFT: Verified badge or empty spacer -->
+  <div class="badge-verified" *ngIf="h.is_verified">
+    <lucide-icon [img]="CheckIcon" class="icon-verified"></lucide-icon>
+    Vérifié
+  </div>
+  <span *ngIf="!h.is_verified" class="badge-spacer"></span>
+
+  <!-- RIGHT: Rating badge -->
+  <div class="badge-rating" *ngIf="h.average_rating && h.average_rating.value > 0">
+    <lucide-icon [img]="StarIcon" class="icon-star"></lucide-icon>
+    <span>{{ h.average_rating.display }}</span>
+    <span class="badge-rating-count">({{ h.average_rating.count }})</span>
+  </div>
+</div>
       <div class="card-type-badge">
         <ng-container *ngIf="h.capacity < 20">Mini Cité</ng-container>
         <ng-container *ngIf="h.capacity >= 20 && h.capacity < 30">Cité</ng-container>
@@ -254,7 +261,7 @@
         Localisation interactive
       </span>
       <h2 class="map-teaser-title">Trouvez votre logement<br>sur la carte</h2>
-      <p class="map-teaser-desc">Visualisez tous les logements autour du campus UYI · Eyang. Filtrez par prix, équipements et distance directement sur la carte.</p>
+      <p class="map-teaser-desc">Visualisez tous les logements autour de l'Institut Saint Jean Ingénieur · Eyang. Filtrez par prix, équipements et distance directement sur la carte.</p>
       <div class="map-teaser-pills">
         <span class="map-teaser-pill">📍 Eyang</span>
         <span class="map-teaser-pill">🗺️ Carte interactive</span>
@@ -269,52 +276,106 @@
       </a>
     </div>
     <div class="map-teaser-right">
-      <!-- Decorative mini campus SVG with animated ping -->
+      <!-- Decorative mini Eyang map — accurate geography -->
       <div class="map-teaser-preview">
+        <!--
+          Geographic layout (viewBox 340×220, North=top):
+          - Autoroute Yaoundé-Douala: diagonal band SW→NE (bottom-left → top-right)
+          - Saint Jean Ingénieur campus: center-left, just NE of autoroute
+          - Eyang village: north of campus
+          - Okola direction: top-right
+          - Ayène: bottom along autoroute
+          - Nkolbisson: far left (west)
+        -->
         <svg class="map-teaser-svg" viewBox="0 0 340 220" xmlns="http://www.w3.org/2000/svg">
-          <rect width="340" height="220" fill="#EDF2E8" rx="16"/>
-          <rect x="40" y="75" width="90" height="60" fill="#C5DCBA" rx="4"/>
-          <text x="85" y="109" text-anchor="middle" font-size="8" fill="#5A7A5A" font-weight="500">Parc</text>
-          <rect x="14" y="12" width="66" height="38" fill="#A8CDB6" stroke="#6FA08A" stroke-width="1" rx="3"/>
-          <text x="47" y="31" text-anchor="middle" font-size="7" font-weight="700" fill="#1A4A35">Campus UYI</text>
-          <path d="M14 53 H326" stroke="#A8B5A0" stroke-width="4" fill="none"/>
-          <path d="M172 0 V220" stroke="#A8B5A0" stroke-width="4" fill="none"/>
-          <path d="M14 114 H326" stroke="#C0CAB9" stroke-width="2" fill="none"/>
-          <path d="M86 0 V220" stroke="#C0CAB9" stroke-width="2" fill="none"/>
-          <path d="M256 0 V220" stroke="#C0CAB9" stroke-width="2" fill="none"/>
-          <rect x="184" y="13" width="50" height="28" fill="#D3D8CC" stroke="#B8BEB2" stroke-width="0.7" rx="2"/>
-          <rect x="244" y="13" width="38" height="28" fill="#D3D8CC" stroke="#B8BEB2" stroke-width="0.7" rx="2"/>
-          <rect x="184" y="64" width="56" height="38" fill="#D3D8CC" stroke="#B8BEB2" stroke-width="0.7" rx="2"/>
-          <rect x="268" y="64" width="54" height="32" fill="#D3D8CC" stroke="#B8BEB2" stroke-width="0.7" rx="2"/>
-          <rect x="22" y="128" width="54" height="38" fill="#D3D8CC" stroke="#B8BEB2" stroke-width="0.7" rx="2"/>
-          <rect x="100" y="138" width="52" height="36" fill="#D3D8CC" stroke="#B8BEB2" stroke-width="0.7" rx="2"/>
-          <rect x="196" y="128" width="44" height="36" fill="#D3D8CC" stroke="#B8BEB2" stroke-width="0.7" rx="2"/>
-          <rect x="270" y="124" width="54" height="38" fill="#D3D8CC" stroke="#B8BEB2" stroke-width="0.7" rx="2"/>
-          <!-- Price markers -->
-          <g style="cursor:pointer">
-            <rect x="64" y="64" width="46" height="20" rx="5" fill="#1F3D20"/>
-            <polygon points="87,86 82,82 92,82" fill="#1F3D20"/>
-            <text x="87" y="78" text-anchor="middle" font-size="8" font-weight="700" fill="#FDFCF9">75k</text>
-          </g>
-          <g style="cursor:pointer">
-            <rect x="178" y="130" width="52" height="20" rx="5" fill="#1D4ED8"/>
-            <polygon points="204,152 199,148 209,148" fill="#1D4ED8"/>
-            <text x="204" y="144" text-anchor="middle" font-size="8" font-weight="700" fill="#FDFCF9">120k</text>
-          </g>
-          <g style="cursor:pointer">
-            <rect x="280" y="88" width="46" height="20" rx="5" fill="#059669"/>
-            <polygon points="303,110 298,106 308,106" fill="#059669"/>
-            <text x="303" y="102" text-anchor="middle" font-size="8" font-weight="700" fill="#FDFCF9">90k</text>
-          </g>
+          <!-- Base terrain -->
+          <rect width="340" height="220" fill="#E8F0E2" rx="16"/>
+
+          <!-- Vegetation patches -->
+          <ellipse cx="280" cy="60"  rx="42" ry="26" fill="#C9DCC0" opacity=".7"/>
+          <ellipse cx="60"  cy="170" rx="36" ry="22" fill="#C9DCC0" opacity=".65"/>
+          <ellipse cx="310" cy="170" rx="30" ry="18" fill="#C9DCC0" opacity=".6"/>
+
+          <!-- ── AUTOROUTE Yaoundé-Douala ──────────────────────────── -->
+          <!-- Diagonal road: comes from bottom-left (Ayène/Nkolbisson side) → top-right (Okola direction) -->
+          <!-- Road body -->
+          <path d="M0,190 Q80,145 160,108 Q230,76 340,28" stroke="#B8B09A" stroke-width="11" fill="none" stroke-linecap="round"/>
+          <!-- Road surface -->
+          <path d="M0,190 Q80,145 160,108 Q230,76 340,28" stroke="#D4CCB6" stroke-width="7"  fill="none" stroke-linecap="round"/>
+          <!-- Centre dashes -->
+          <path d="M0,190 Q80,145 160,108 Q230,76 340,28" stroke="#EDE7CC" stroke-width="1.5" fill="none" stroke-dasharray="14,10" stroke-linecap="round"/>
+
+          <!-- Autoroute label -->
+          <text x="46" y="182" font-size="6.5" fill="#8A7F65" font-weight="600" transform="rotate(-27,46,182)">Autoroute Yaoundé-Douala</text>
+
+          <!-- ── Secondary roads ────────────────────────────────────── -->
+          <!-- Road heading north from campus toward Eyang / Okola -->
+          <path d="M148,104 V10"  stroke="#C8CBBE" stroke-width="5" fill="none"/>
+          <path d="M148,104 V10"  stroke="#DDE0D6" stroke-width="3" fill="none"/>
+          <!-- East-west road through Eyang -->
+          <path d="M0,68 H340"    stroke="#C8CBBE" stroke-width="3.5" fill="none"/>
+          <path d="M0,68 H340"    stroke="#DDE0D6" stroke-width="2"   fill="none"/>
+          <!-- South road to Ayène -->
+          <path d="M220,120 V220" stroke="#C8CBBE" stroke-width="3"   fill="none"/>
+          <path d="M220,120 V220" stroke="#DDE0D6" stroke-width="1.8" fill="none"/>
+
+          <!-- ── SAINT JEAN INGÉNIEUR campus ───────────────────────── -->
+          <!-- Main campus block (~7 ha → ~70×56 px at this scale) -->
+          <rect x="110" y="108" width="72" height="52" fill="#8BB89A" stroke="#5A8E6E" stroke-width="1.5" rx="5"/>
+          <!-- Campus buildings detail -->
+          <rect x="114" y="113" width="28" height="16" fill="#6EA480" rx="2"/>
+          <rect x="146" y="113" width="32" height="20" fill="#6EA480" rx="2"/>
+          <rect x="114" y="133" width="20" height="14" fill="#6EA480" rx="2"/>
+          <rect x="138" y="133" width="40" height="14" fill="#6EA480" rx="2"/>
+          <!-- Campus label -->
+          <text x="146" y="126" text-anchor="middle" font-size="6.2" font-weight="800" fill="#1A3E28">Saint Jean</text>
+          <text x="146" y="135" text-anchor="middle" font-size="5.8" font-weight="700" fill="#1A3E28">Ingénieur</text>
           <!-- Animated campus pin -->
-          <circle cx="47" cy="27" r="12" fill="#1D4ED8" opacity="0.12" class="ping-ring"/>
-          <circle cx="47" cy="27" r="5" fill="#1D4ED8"/>
-          <circle cx="47" cy="27" r="2" fill="#fff"/>
+          <circle cx="146" cy="108" r="13" fill="#1D4ED8" opacity="0.10" class="ping-ring"/>
+          <circle cx="146" cy="108" r="5.5" fill="#1D4ED8"/>
+          <circle cx="146" cy="108" r="2.2" fill="#fff"/>
+
+          <!-- ── EYANG village ──────────────────────────────────────── -->
+          <rect x="116" y="44" width="58" height="20" fill="#B2CEBC" stroke="#7AAA8E" stroke-width="1" rx="3"/>
+          <text x="145" y="58" text-anchor="middle" font-size="7" font-weight="700" fill="#1A4A35">Eyang</text>
+
+          <!-- ── OKOLA direction ────────────────────────────────────── -->
+          <rect x="232" y="10" width="52" height="18" fill="#C5D9BC" stroke="#8AAE8C" stroke-width="0.7" rx="3"/>
+          <text x="258" y="22" text-anchor="middle" font-size="6.5" fill="#2D5A34">→ Okola</text>
+
+          <!-- ── AYÈNE ──────────────────────────────────────────────── -->
+          <rect x="206" y="168" width="44" height="17" fill="#C5D9BC" stroke="#8AAE8C" stroke-width="0.7" rx="3"/>
+          <text x="228" y="180" text-anchor="middle" font-size="6.5" fill="#2D5A34">Ayène</text>
+
+          <!-- ── NKOLBISSON (west, on autoroute) ────────────────────── -->
+          <rect x="4" y="155" width="54" height="17" fill="#C5D9BC" stroke="#8AAE8C" stroke-width="0.7" rx="3"/>
+          <text x="31" y="167" text-anchor="middle" font-size="6" fill="#2D5A34">Nkolbisson</text>
+
+          <!-- ── Price markers (student housing spots) ──────────────── -->
+          <!-- Near campus, NE -->
+          <g style="cursor:pointer">
+            <rect x="200" y="88" width="48" height="20" rx="5" fill="#1F3D20"/>
+            <polygon points="224,110 219,106 229,106" fill="#1F3D20"/>
+            <text x="224" y="102" text-anchor="middle" font-size="8" font-weight="700" fill="#FDFCF9">75k</text>
+          </g>
+          <!-- North of campus -->
+          <g style="cursor:pointer">
+            <rect x="68" y="72" width="52" height="20" rx="5" fill="#1D4ED8"/>
+            <polygon points="94,94 89,90 99,90" fill="#1D4ED8"/>
+            <text x="94" y="86" text-anchor="middle" font-size="8" font-weight="700" fill="#FDFCF9">120k</text>
+          </g>
+          <!-- East side -->
+          <g style="cursor:pointer">
+            <rect x="270" y="118" width="48" height="20" rx="5" fill="#059669"/>
+            <polygon points="294,140 289,136 299,136" fill="#059669"/>
+            <text x="294" y="132" text-anchor="middle" font-size="8" font-weight="700" fill="#FDFCF9">90k</text>
+          </g>
         </svg>
-        <!-- Animated pulse rings -->
-        <div class="map-ping" style="top:40%;left:28%"></div>
-        <div class="map-ping map-ping--blue" style="top:63%;left:58%"></div>
-        <div class="map-ping map-ping--green" style="top:45%;left:82%"></div>
+
+        <!-- Animated pulse rings (housing locations) -->
+        <div class="map-ping"              style="top:58%;left:43%"></div>
+        <div class="map-ping map-ping--blue" style="top:37%;left:27%"></div>
+        <div class="map-ping map-ping--green" style="top:57%;left:79%"></div>
         <div class="map-teaser-overlay-badge">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1C4.79 1 3 2.79 3 5c0 2.62 4 8 4 8s4-5.38 4-8c0-2.21-1.79-4-4-4zm0 5.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/></svg>
           Voir tous les logements

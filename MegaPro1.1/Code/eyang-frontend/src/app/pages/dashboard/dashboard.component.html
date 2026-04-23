@@ -1,917 +1,667 @@
-<!-- ── Toasts ──────────────────────────────────────────── -->
-<div class="toast-container">
-    <div *ngFor="let t of toasts" class="toast toast-{{t.type}}" (click)="dismissToast(t.id)">
-        <lucide-icon [img]="t.type==='success' ? CheckIcon : t.type==='error' ? AlertIcon : InfoIcon"
-            class="toast-icon"></lucide-icon>
-        <span>{{ t.message }}</span>
-        <lucide-icon [img]="XIcon" class="toast-close"></lucide-icon>
-    </div>
+<!-- ══ Toasts ══════════════════════════════════════════════ -->
+<div class="toast-stack">
+  <div *ngFor="let t of toasts" class="toast toast--{{t.type}}" (click)="dismissToast(t.id)">
+    <span class="toast__dot"></span>
+    <span class="toast__msg">{{ t.message }}</span>
+    <button class="toast__close">×</button>
+  </div>
 </div>
 
-<!-- ── Confirm Dialog ────────────────────────────────── -->
-<div class="modal-overlay" *ngIf="showConfirm" (click)="confirmNo()">
-    <div class="modal-box modal-box-sm" (click)="$event.stopPropagation()">
-        <div class="confirm-icon-wrap">
-            <lucide-icon [img]="AlertIcon" class="confirm-icon"></lucide-icon>
-        </div>
-        <p class="confirm-msg">{{ confirmMessage }}</p>
-        <div class="confirm-actions">
-            <button class="btn-confirm-cancel" (click)="confirmNo()">{{ 'confirm.cancel' | translate }}</button>
-            <button class="btn-confirm-ok" (click)="confirmYes()">{{ 'confirm.confirm' | translate }}</button>
-        </div>
-    </div>
-</div>
+<div class="page-loading" *ngIf="isLoading"><div class="page-loading__ring"></div></div>
 
-<!-- ══ OWNER DASHBOARD ══ -->
-<ng-container *ngIf="isOwner">
-    <div class="page-header">
+<!-- ════════════════════════════════════════════════════════
+     OWNER DASHBOARD
+════════════════════════════════════════════════════════ -->
+<div class="db" *ngIf="!isLoading && isOwner">
+
+  <!-- ── Sidebar ──────────────────────────────────────────── -->
+  <aside class="sidebar">
+
+    <!-- Logo -->
+    <div class="sidebar__brand" routerLink="/">
+      <img src="/assets/images/logo.png" alt="Eyang Estate" class="sidebar__logo-img">
+      <span class="sidebar__wordmark">Eyang<strong>Estate</strong></span>
+    </div>
+
+    <!-- Back to site — prominent, right under logo -->
+    <a routerLink="/" class="sidebar__back">
+      <span class="sidebar__back-ico"><lucide-icon [img]="BackIcon"></lucide-icon></span>
+      <span class="sidebar__back-lbl">Retour à l'accueil</span>
+    </a>
+
+    <!-- Nav -->
+    <nav class="sidebar__nav">
+      <span class="sidebar__nav-sep">Tableau de bord</span>
+
+      <button class="snav" [class.snav--on]="activeTab==='overview'" (click)="selectTab('overview')">
+        <span class="snav__ico"><lucide-icon [img]="BarChartIcon"></lucide-icon></span>
+        <span class="snav__lbl">Vue d'ensemble</span>
+      </button>
+      <button class="snav" [class.snav--on]="activeTab==='estates'" (click)="selectTab('estates')">
+        <span class="snav__ico"><lucide-icon [img]="HomeIcon"></lucide-icon></span>
+        <span class="snav__lbl">Mes logements</span>
+        <span class="snav__count" *ngIf="myEstates.length>0">{{ myEstates.length }}</span>
+      </button>
+      <button class="snav" [class.snav--on]="activeTab==='orders'" (click)="selectTab('orders')">
+        <span class="snav__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></span>
+        <span class="snav__lbl">Réservations</span>
+        <span class="snav__badge" *ngIf="ownerStats.pending_orders>0">{{ ownerStats.pending_orders }}</span>
+      </button>
+      <button class="snav" [class.snav--on]="activeTab==='reviews'" (click)="selectTab('reviews')">
+        <span class="snav__ico"><lucide-icon [img]="StarIcon"></lucide-icon></span>
+        <span class="snav__lbl">Avis reçus</span>
+      </button>
+      <button class="snav" [class.snav--on]="activeTab==='messages'" (click)="selectTab('messages')">
+        <span class="snav__ico"><lucide-icon [img]="MessageIcon"></lucide-icon></span>
+        <span class="snav__lbl">Messages</span>
+        <span class="snav__badge" *ngIf="getTotalUnread()>0">{{ getTotalUnread() }}</span>
+      </button>
+    </nav>
+
+    <!-- Profile -->
+    <div class="sidebar__profile">
+      <div class="sidebar__avatar">{{ currentUser?.initials }}</div>
+      <div class="sidebar__profile-info">
+        <span class="sidebar__profile-name">{{ currentUser?.name }}</span>
+        <span class="sidebar__profile-role">Propriétaire</span>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── Mobile topbar ────────────────────────────────────── -->
+  <div class="topbar" (click)="$event.stopPropagation()">
+    <a routerLink="/" class="topbar__logo">
+      <img src="/assets/images/logo.png" alt="Eyang Estate" class="topbar__logo-img">
+    </a>
+    <a routerLink="/" class="topbar__back">
+      <lucide-icon [img]="BackIcon"></lucide-icon>
+      <span>Accueil</span>
+    </a>
+    <button class="topbar__trigger" (click)="toggleMobileTab()">
+      <span>{{ activeTab==='overview'?"Vue d'ensemble":activeTab==='estates'?'Logements':activeTab==='orders'?'Réservations':activeTab==='reviews'?'Avis':'Messages' }}</span>
+      <lucide-icon [img]="ChevronDownIcon" [style.transform]="mobileTabOpen?'rotate(180deg)':''"></lucide-icon>
+    </button>
+    <div class="topbar__drop" *ngIf="mobileTabOpen">
+      <button (click)="selectTab('overview')"><lucide-icon [img]="BarChartIcon"></lucide-icon>Vue d'ensemble</button>
+      <button (click)="selectTab('estates')"><lucide-icon [img]="HomeIcon"></lucide-icon>Mes logements</button>
+      <button (click)="selectTab('orders')"><lucide-icon [img]="PackageIcon"></lucide-icon>Réservations</button>
+      <button (click)="selectTab('reviews')"><lucide-icon [img]="StarIcon"></lucide-icon>Avis reçus</button>
+      <button (click)="selectTab('messages')"><lucide-icon [img]="MessageIcon"></lucide-icon>Messages</button>
+    </div>
+  </div>
+
+  <!-- ── Main ─────────────────────────────────────────────── -->
+  <main class="db__main">
+
+    <!-- OVERVIEW -->
+    <div class="panel" *ngIf="activeTab==='overview'">
+      <header class="panel__hd">
         <div>
-            <h1 class="page-title">{{ 'dashboard.owner_title' | translate }}</h1>
-            <p class="page-subtitle">{{ 'dashboard.welcome' | translate }}, {{ currentUser?.name }}</p>
-            <div class="verification-status mt-1">
-                <span *ngIf="currentUser?.is_verified" class="pill-published flex-row-inline">
-                    <lucide-icon [img]="CheckIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.verified' | translate }}
-                </span>
-                <span *ngIf="!currentUser?.is_verified" class="pill-draft flex-row-inline">
-                    <lucide-icon [img]="ClockIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.pending_verification' | translate }}
-                </span>
+          <h1 class="panel__title">Bonjour, {{ currentUser!.name!.split(' ')[0] }} 👋</h1>
+          <p class="panel__sub">Voici un résumé de votre activité</p>
+        </div>
+        <div class="add-estate-btn-wrap" [class.add-estate-btn-wrap--locked]="!isOwnerVerified">
+          <button class="btn btn--primary" [class.btn--locked]="!isOwnerVerified" (click)="openAddModal()">
+            <lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>Nouveau logement
+          </button>
+          <span class="add-estate-tooltip" *ngIf="!isOwnerVerified">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Compte non encore vérifié
+          </span>
+        </div>
+      </header>
+
+      <div class="kpi-row">
+        <div class="kpi kpi--indigo">
+          <div class="kpi__ico"><lucide-icon [img]="HomeIcon"></lucide-icon></div>
+          <div class="kpi__body"><span class="kpi__val">{{ ownerStats.total_estates }}</span><span class="kpi__lbl">Logements</span></div>
+        </div>
+        <div class="kpi kpi--amber">
+          <div class="kpi__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div>
+          <div class="kpi__body"><span class="kpi__val">{{ ownerStats.pending_orders }}</span><span class="kpi__lbl">En attente</span></div>
+        </div>
+        <div class="kpi kpi--yellow">
+          <div class="kpi__ico"><lucide-icon [img]="StarIcon"></lucide-icon></div>
+          <div class="kpi__body"><span class="kpi__val">{{ ownerStats.avg_rating | number:'1.1-1' }}</span><span class="kpi__lbl">Note / 5</span></div>
+        </div>
+        <div class="kpi kpi--emerald">
+          <div class="kpi__ico"><lucide-icon [img]="BarChartIcon"></lucide-icon></div>
+          <div class="kpi__body"><span class="kpi__val">{{ ownerStats.occupancy_pct }}%</span><span class="kpi__lbl">Occupation</span></div>
+        </div>
+      </div>
+
+      <div class="alert alert--amber" *ngIf="ownerStats.pending_orders>0">
+        <lucide-icon [img]="AlertIcon" class="alert__ico"></lucide-icon>
+        <p class="alert__txt"><strong>{{ ownerStats.pending_orders }} réservation(s)</strong> en attente de réponse.</p>
+        <button class="btn btn--ghost btn--xs" (click)="selectTab('orders')">Voir →</button>
+      </div>
+
+      <section *ngIf="myOrders.length>0" class="overview-recent">
+        <h2 class="section-h">Dernières réservations</h2>
+        <div class="timeline">
+          <div class="tl-item" *ngFor="let o of myOrders.slice(0,4)">
+            <div class="tl-dot tl-dot--{{o.status||'pending'}}"></div>
+            <div class="tl-body">
+              <div class="tl-row">
+                <span class="tl-who">{{ o.name }}</span>
+                <span class="chip chip--{{o.status||'pending'}}">{{ o.status==='accepted'?'Acceptée':o.status==='rejected'?'Rejetée':'En attente' }}</span>
+              </div>
+              <span class="tl-where">{{ o.estate_name }}</span>
+              <span class="tl-when">{{ formatDate(o.created_at) }}</span>
             </div>
+          </div>
         </div>
-        <div class="header-actions">
-            <a routerLink="/" class="btn-back-home">
-                <lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon>
-                {{ 'dashboard.back_home' | translate }}
-            </a>
-            <button class="btn-primary-action" (click)="openAddModal()" [disabled]="!currentUser?.is_verified"
-                [title]="!currentUser?.is_verified ? ('dashboard.verification_required' | translate) : ''">
-                <lucide-icon [img]="PlusIcon" class="icon-sm"></lucide-icon>
-                {{ 'dashboard.add_listing' | translate }}
-            </button>
-        </div>
+      </section>
     </div>
 
-    <div class="alert-banner warning mt-4 mb-4" *ngIf="!currentUser?.is_verified">
-        <lucide-icon [img]="AlertIcon" class="alert-icon"></lucide-icon>
-        <div class="alert-content">
-            <p class="alert-title">{{ 'dashboard.verification_warning_title' | translate }}</p>
-            <p class="alert-text">{{ 'dashboard.verification_warning_text' | translate }}</p>
+    <!-- ESTATES -->
+    <div class="panel" *ngIf="activeTab==='estates'">
+      <header class="panel__hd">
+        <div><h1 class="panel__title">Mes logements</h1><p class="panel__sub">{{ myEstates.length }} logement{{ myEstates.length!==1?'s':'' }}</p></div>
+        <div class="add-estate-btn-wrap" [class.add-estate-btn-wrap--locked]="!isOwnerVerified">
+          <button class="btn btn--primary" [class.btn--locked]="!isOwnerVerified" (click)="openAddModal()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>Ajouter</button>
+          <span class="add-estate-tooltip" *ngIf="!isOwnerVerified">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Compte non encore vérifié
+          </span>
         </div>
+      </header>
+      <div class="empty-state" *ngIf="myEstates.length===0">
+        <div class="empty-state__ico"><lucide-icon [img]="HomeIcon"></lucide-icon></div>
+        <h3>Aucun logement</h3><p>Ajoutez votre premier logement pour commencer.</p>
+        <div class="add-estate-btn-wrap" [class.add-estate-btn-wrap--locked]="!isOwnerVerified">
+          <button class="btn btn--primary" [class.btn--locked]="!isOwnerVerified" (click)="openAddModal()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>Ajouter</button>
+          <span class="add-estate-tooltip" *ngIf="!isOwnerVerified">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Compte non encore vérifié
+          </span>
+        </div>
+      </div>
+      <div class="e-grid" *ngIf="myEstates.length>0">
+        <article class="e-card" *ngFor="let e of pagedEstates">
+          <div class="e-card__img">
+            <img *ngIf="getEstateImage(e)" [src]="getEstateImage(e)" [alt]="e.name" loading="lazy">
+            <div class="e-card__ph" *ngIf="!getEstateImage(e)"><lucide-icon [img]="HomeIcon"></lucide-icon></div>
+            <div class="e-card__flags">
+              <span class="e-card__status e-card__status--{{e.status}}">{{ e.status==='published'?'Publié':e.status==='draft'?'Brouillon':'Archivé' }}</span>
+              <span *ngIf="e.is_verified" class="e-card__verified"><lucide-icon [img]="CheckIcon"></lucide-icon>Vérifié</span>
+              <span *ngIf="!e.is_verified&&e.status==='published'" class="e-card__pending">En attente</span>
+            </div>
+            <div class="e-card__rating" *ngIf="e.average_rating.value>0">★ {{ e.average_rating.value.toFixed(1) }}</div>
+          </div>
+          <div class="e-card__body">
+            <h3 class="e-card__name">{{ e.name }}</h3>
+            <p class="e-card__loc"><lucide-icon [img]="MapPinIcon"></lucide-icon>{{ e.location }}</p>
+            <div class="e-card__foot">
+              <span class="e-card__price">{{ formatPrice(e.price) }}<small>/mois</small></span>
+              <div class="e-card__btns">
+                <button class="ico-btn" (click)="openEditModal(e)" title="Modifier"><lucide-icon [img]="PencilIcon"></lucide-icon></button>
+                <button class="ico-btn" (click)="openManageRooms(e)" title="Chambres"><lucide-icon [img]="BuildingIcon"></lucide-icon></button>
+                <button class="ico-btn ico-btn--red" (click)="deleteEstate(e)" title="Supprimer"><lucide-icon [img]="TrashIcon"></lucide-icon></button>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+      <div class="load-more" *ngIf="hasMoreEstates"><button class="btn btn--ghost" (click)="showMoreEstates()">Voir plus</button></div>
     </div>
 
-    <div class="stats-grid">
-        <div class="stat-card" (click)="activeTab='logements'">
-            <div class="stat-icon blue"><lucide-icon [img]="HomeIcon" class="stat-icon-inner"></lucide-icon></div>
-            <div class="stat-content">
-                <div class="stat-value">{{ ownerStats.total_estates }}</div>
-                <div class="stat-label">{{ 'dashboard.stat_listings' | translate }}</div>
+    <!-- ORDERS (owner) -->
+    <div class="panel" *ngIf="activeTab==='orders'">
+      <header class="panel__hd"><div><h1 class="panel__title">Réservations reçues</h1><p class="panel__sub">{{ myOrders.length }} demande{{ myOrders.length!==1?'s':'' }}</p></div></header>
+      <div class="empty-state" *ngIf="myOrders.length===0"><div class="empty-state__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div><h3>Aucune réservation</h3><p>Les demandes apparaîtront ici.</p></div>
+      <div class="o-list" *ngIf="myOrders.length>0">
+        <div class="o-card" *ngFor="let o of myOrders">
+          <div class="o-card__av">{{ o.name.charAt(0).toUpperCase() }}</div>
+          <div class="o-card__body">
+            <div class="o-card__top">
+              <div><span class="o-card__name">{{ o.name }}</span><span class="o-card__where">{{ o.estate_name }}</span></div>
+              <span class="chip chip--{{o.status||'pending'}}">{{ o.status==='accepted'?'✓ Acceptée':o.status==='rejected'?'✗ Rejetée':'⏳ En attente' }}</span>
             </div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-icon green"><lucide-icon [img]="BarChartIcon" class="stat-icon-inner"></lucide-icon></div>
-            <div class="stat-content">
-                <div class="stat-value">{{ ownerStats.occupancy_pct }}%</div>
-                <div class="stat-label">{{ 'dashboard.stat_occupancy' | translate }}</div>
+            <div class="o-card__meta">
+              <span *ngIf="o.phone"><lucide-icon [img]="PhoneIcon"></lucide-icon>{{ o.phone }}</span>
+              <span *ngIf="o.room_category_name"><lucide-icon [img]="BuildingIcon"></lucide-icon>{{ o.room_category_name }}</span>
+              <span><lucide-icon [img]="CalendarIcon"></lucide-icon>{{ formatDate(o.created_at) }}</span>
             </div>
-        </div>
-        <div class="stat-card" (click)="activeTab='reservations'">
-            <div class="stat-icon orange"><lucide-icon [img]="PackageIcon" class="stat-icon-inner"></lucide-icon></div>
-            <div class="stat-content">
-                <div class="stat-value">{{ ownerStats.pending_orders }}</div>
-                <div class="stat-label">{{ 'dashboard.stat_reservations' | translate }}</div>
+            <p class="o-card__note" *ngIf="o.note">{{ o.note }}</p>
+            <div class="o-card__acts" *ngIf="!o.status||o.status==='pending'">
+              <button class="btn btn--accept" (click)="acceptReservation(o)"><lucide-icon [img]="CheckIcon" class="btn__ico"></lucide-icon>Accepter</button>
+              <button class="btn btn--reject" (click)="rejectReservation(o)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>Refuser</button>
             </div>
+          </div>
         </div>
-        <div class="stat-card" (click)="activeTab='avis'">
-            <div class="stat-icon purple"><lucide-icon [img]="StarIcon" class="stat-icon-inner"></lucide-icon></div>
-            <div class="stat-content">
-                <div class="stat-value">{{ ownerStats.avg_rating || '–' }}</div>
-                <div class="stat-label">{{ 'dashboard.stat_avg_rating' | translate }}</div>
-            </div>
-        </div>
+      </div>
     </div>
 
-    <!-- ── Mobile tab dropdown (≤768px) ────────────────────── -->
-    <div class="tabs-mobile" (click)="$event.stopPropagation()">
-        <button class="tabs-mobile-trigger" (click)="toggleMobileTab()">
-            <span class="tabs-mobile-label">
-                <ng-container *ngIf="activeTab==='overview'">{{ 'dashboard.tab_overview' | translate }}</ng-container>
-                <ng-container *ngIf="activeTab==='logements'">{{ 'dashboard.tab_listings' | translate }}</ng-container>
-                <ng-container *ngIf="activeTab==='reservations'">{{ 'dashboard.tab_reservations' | translate }}</ng-container>
-                <ng-container *ngIf="activeTab==='avis'">{{ 'dashboard.tab_reviews' | translate }}</ng-container>
-                <ng-container *ngIf="activeTab==='messages'">{{ 'dashboard.tab_messages' | translate }}</ng-container>
-            </span>
-            <lucide-icon [img]="ChevronDownIcon" class="tabs-mobile-chevron" [class.rotated]="mobileTabOpen"></lucide-icon>
-        </button>
-        <div class="tabs-mobile-dropdown" *ngIf="mobileTabOpen">
-            <div class="tabs-mobile-item" [class.active]="activeTab==='overview'"     (click)="selectTab('overview')">{{ 'dashboard.tab_overview' | translate }}</div>
-            <div class="tabs-mobile-item" [class.active]="activeTab==='logements'"    (click)="selectTab('logements')">{{ 'dashboard.tab_listings' | translate }}</div>
-            <div class="tabs-mobile-item" [class.active]="activeTab==='reservations'" (click)="selectTab('reservations')">{{ 'dashboard.tab_reservations' | translate }}</div>
-            <div class="tabs-mobile-item" [class.active]="activeTab==='avis'"         (click)="selectTab('avis')">{{ 'dashboard.tab_reviews' | translate }}</div>
-            <div class="tabs-mobile-item" [class.active]="activeTab==='messages'"     (click)="selectTab('messages')">
-                {{ 'dashboard.tab_messages' | translate }}
-                <span class="tab-badge ml-4" *ngIf="getTotalUnread() > 0">{{ getTotalUnread() }}</span>
+    <!-- REVIEWS (owner) -->
+    <div class="panel" *ngIf="activeTab==='reviews'">
+      <header class="panel__hd"><div><h1 class="panel__title">Avis reçus</h1><p class="panel__sub">{{ myReviews.length }} avis</p></div></header>
+      <div class="empty-state" *ngIf="myReviews.length===0"><div class="empty-state__ico"><lucide-icon [img]="StarIcon"></lucide-icon></div><h3>Aucun avis</h3><p>Les avis de vos locataires apparaîtront ici.</p></div>
+      <div class="rv-list" *ngIf="myReviews.length>0">
+        <div class="rv-card" *ngFor="let r of pagedReviews">
+          <div class="rv-card__head">
+            <div class="rv-card__av">{{ r.name.charAt(0).toUpperCase() }}</div>
+          </div>
+          <div class="rv-card__thumb">
+            <img *ngIf="r.estate_image" [src]="r.estate_image" [alt]="r.estate_name" loading="lazy">
+            <div class="rv-card__thumb-ph" *ngIf="!r.estate_image"><lucide-icon [img]="HomeIcon"></lucide-icon></div>
+          </div>
+          <div class="rv-card__body">
+            <div class="rv-card__top">
+              <div><span class="rv-card__estate">{{ r.estate_name }}</span><span class="rv-card__by">par {{ r.name }}</span></div>
+              <div class="rv-card__stars"><span *ngFor="let s of getStars(r.rating)" class="s-on">★</span><span *ngFor="let s of getStars(5-r.rating)" class="s-off">★</span></div>
             </div>
+            <p class="rv-card__txt">{{ r.comment }}</p>
+            <span class="rv-card__date">{{ r.date || formatDate(r.created_at) }}</span>
+          </div>
         </div>
+      </div>
+      <div class="load-more" *ngIf="hasMoreReviews"><button class="btn btn--ghost" (click)="showMoreReviews()">Voir plus</button></div>
     </div>
 
-    <!-- ── Desktop tabs (>768px) ────────────────────────────── -->
-    <div class="tabs tabs-desktop">
-        <div class="tab" [class.active]="activeTab==='overview'"     (click)="activeTab='overview'">{{ 'dashboard.tab_overview' | translate }}</div>
-        <div class="tab" [class.active]="activeTab==='logements'"    (click)="activeTab='logements'">{{ 'dashboard.tab_listings' | translate }}</div>
-        <div class="tab" [class.active]="activeTab==='reservations'" (click)="activeTab='reservations'">{{ 'dashboard.tab_reservations' | translate }}</div>
-        <div class="tab" [class.active]="activeTab==='avis'"         (click)="activeTab='avis'">{{ 'dashboard.tab_reviews' | translate }}</div>
-        <div class="tab" [class.active]="activeTab==='messages'"     (click)="activeTab='messages'; loadOwnerConversations()">
-            {{ 'dashboard.tab_messages' | translate }}
-            <span class="tab-badge" *ngIf="getTotalUnread() > 0">{{ getTotalUnread() }}</span>
+    <!-- MESSAGES (owner) -->
+    <div class="msg-shell" *ngIf="activeTab==='messages'">
+      <div class="msg-panel" [class.msg-panel--hide]="activeConversation">
+        <div class="msg-panel__hd">
+          <h2 class="msg-panel__title">Messages</h2>
+          <span class="msg-panel__badge" *ngIf="getTotalUnread()>0">{{ getTotalUnread() }}</span>
         </div>
+        <div class="msg-panel__loading" *ngIf="ownerConversationsLoading"><div class="page-loading__ring page-loading__ring--sm"></div></div>
+        <div class="msg-panel__empty" *ngIf="!ownerConversationsLoading&&conversations.length===0">
+          <lucide-icon [img]="MessageIcon"></lucide-icon><p>Aucune conversation</p>
+        </div>
+        <div class="conv-list">
+          <div class="conv-row" *ngFor="let c of conversations"
+               [class.conv-row--on]="activeConversation?.id===c.id"
+               (click)="openConversation(c)">
+            <div class="conv-row__av" [style.background]="getConvColor(c)">
+              {{ getConvInitials(c) }}
+              <span class="conv-row__dot" *ngIf="isPartnerOnline(c)"></span>
+            </div>
+            <div class="conv-row__info">
+              <div class="conv-row__top">
+                <span class="conv-row__name">{{ getClientName(c) }}</span>
+                <span class="conv-row__unread" *ngIf="c.unread_count>0">{{ c.unread_count }}</span>
+              </div>
+              <span class="conv-row__estate">{{ c.estate_name }}</span>
+              <span class="conv-row__last">{{ c.last_message?.text | slice:0:40 }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-area" *ngIf="activeConversation">
+        <div class="chat-area__hd">
+          <button class="ico-btn ico-btn--ghost" (click)="closeConversation()"><lucide-icon [img]="BackIcon"></lucide-icon></button>
+          <div class="chat-area__av" [style.background]="getConvColor(activeConversation)">{{ getConvInitials(activeConversation) }}</div>
+          <div class="chat-area__info">
+            <span class="chat-area__name">{{ getClientName(activeConversation) }}</span>
+            <span class="chat-area__sub">{{ activeConversation.estate_name }}</span>
+          </div>
+        </div>
+        <div class="chat-area__msgs" #ownerViewport>
+          <ng-container *ngFor="let item of getGroupedMessages(activeConversation.messages)">
+            <div *ngIf="item.type==='separator'" class="chat-sep">{{ item.label }}</div>
+            <div *ngIf="item.type==='message'" class="msg-row"
+                 [class.msg-row--out]="isMine(item.msg!)"
+                 [class.msg-row--in]="!isMine(item.msg!)">
+              <div class="bubble">{{ item.msg!.text }}</div>
+              <span class="msg-time">{{ formatMsgTime(item.msg!.created_at) }}</span>
+            </div>
+          </ng-container>
+        </div>
+        <div class="chat-area__compose">
+          <input class="chat-area__input" [(ngModel)]="newMessage" placeholder="Écrire un message…" (keyup.enter)="sendMessage()">
+          <button class="chat-area__send" [class.chat-area__send--on]="newMessage.trim()" (click)="sendMessage()" [disabled]="!newMessage.trim()">
+            <lucide-icon [img]="SendIcon"></lucide-icon>
+          </button>
+        </div>
+      </div>
+      <div class="chat-area chat-area--blank" *ngIf="!activeConversation">
+        <lucide-icon [img]="MessageIcon"></lucide-icon><p>Sélectionnez une conversation</p>
+      </div>
     </div>
 
-    <!-- Overview -->
-    <div *ngIf="activeTab==='overview'" class="fade-in">
-        <p class="section-title">{{ 'dashboard.recent_activity' | translate }}</p>
-        <div *ngIf="myOrders.length===0 && myReviews.length===0" class="empty-state">
-            <lucide-icon [img]="BarChartIcon" class="empty-icon"></lucide-icon>
-            <p>{{ 'dashboard.no_activity' | translate }}</p>
-        </div>
-        <div class="activity-list">
-            <div class="activity-item" *ngFor="let o of myOrders.slice(0,5)">
-                <div class="activity-dot orange"></div>
-                <div class="activity-body">
-                    <div class="activity-title">{{ 'dashboard.tab_reservations' | translate }} — {{ o.estate_name }}</div>
-                    <div class="activity-sub">{{ o.name }} · {{ o.phone }} · {{ formatDate(o.created_at) }}</div>
-                    <div class="activity-note" *ngIf="o.note">{{ o.note }}</div>
-                </div>
-            </div>
-            <div class="activity-item" *ngFor="let r of myReviews.slice(0,5)">
-                <div class="activity-dot purple"></div>
-                <div class="activity-body">
-                    <div class="activity-title">{{ 'dashboard.tab_reviews' | translate }} — {{ r.estate_name }}</div>
-                    <div class="activity-sub">{{ r.name }} · <span *ngFor="let s of getStars(r.rating)" class="star-sm">★</span> · {{ r.date }}</div>
-                    <div class="activity-note">{{ r.comment }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Logements -->
-    <div *ngIf="activeTab==='logements'" class="fade-in">
-        <div *ngIf="isLoading" class="loading-state">{{ 'dashboard.loading' | translate }}</div>
-        <div *ngIf="!isLoading && myEstates.length===0" class="empty-state">
-            <lucide-icon [img]="HomeIcon" class="empty-icon"></lucide-icon>
-            <p>{{ 'dashboard.no_listings' | translate }}</p>
-        </div>
-
-        <ng-container *ngIf="!isLoading && myEstates.length>0">
-            <!-- Sort label -->
-            <div class="listings-sort-label">
-                <lucide-icon [img]="StarIcon" class="icon-xs sort-star"></lucide-icon>
-                {{ 'dashboard.sorted_by_rating' | translate }}
-                <span class="listings-count-badge">{{ myEstates.length }}</span>
-            </div>
-
-            <div class="housings-grid">
-                <div class="housing-card" *ngFor="let e of pagedEstates">
-                    <div class="housing-image">
-                        <img *ngIf="getEstateImage(e)" [src]="getEstateImage(e)" alt="" class="housing-img">
-                        <div *ngIf="!getEstateImage(e)" class="housing-img-placeholder">
-                            <lucide-icon [img]="HomeIcon" class="placeholder-icon"></lucide-icon>
-                        </div>
-                        <span class="status-pill" [ngClass]="'pill-'+e.status">
-                            {{ e.status==='published' ? ('dashboard.status_published'|translate) : e.status==='draft' ? ('dashboard.status_draft'|translate) : ('dashboard.status_archived'|translate) }}
-                        </span>
-                        <!-- Rating badge overlay -->
-                        <span class="housing-rating-badge">
-                            <lucide-icon [img]="StarIcon" class="icon-xs"></lucide-icon>
-                            {{ (e.average_rating.value || e.rating || '–') }}
-                        </span>
-                    </div>
-                    <div class="housing-body">
-                        <h3 class="housing-name">{{ e.name }}</h3>
-                        <div class="housing-location"><lucide-icon [img]="MapPinIcon" class="icon-xs"></lucide-icon> {{ e.location }}</div>
-                        <div class="housing-price">{{ formatPrice(e.price) }}<span class="price-unit">{{ 'dashboard.per_month' | translate }}</span></div>
-                        <div class="housing-row">
-                            <span class="hbadge"><lucide-icon [img]="UserIcon" class="icon-xs"></lucide-icon> {{ e.free }} {{ 'detail.places'|translate }} / {{ e.capacity }}</span>
-                            <span class="hbadge star"><lucide-icon [img]="StarIcon" class="icon-xs"></lucide-icon> {{ e.average_rating.value || e.rating || 0 }}</span>
-                        </div>
-                        <div class="housing-actions">
-                            <button class="btn-edit" (click)="openEditModal(e)" style="margin-right:0.5rem;">
-                                <lucide-icon [img]="EditIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.edit' | translate }}
-                            </button>
-                            <button class="btn-edit" style="background:#0ea5e9; color:white; border-color:#0ea5e9; margin-right:0.5rem;" (click)="openManageRooms(e)">
-                                <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.tab_bookings' | translate }}
-                            </button>
-                            <button class="btn-delete" (click)="deleteEstate(e)">
-                                <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Show more button -->
-            <div class="show-more-wrap" *ngIf="hasMoreEstates">
-                <button class="btn-show-more" (click)="showMoreEstates()">
-                    <lucide-icon [img]="ChevronDownIcon" class="icon-sm"></lucide-icon>
-                    {{ 'dashboard.show_more' | translate }}
-                    <span class="show-more-count">({{ myEstates.length - visibleEstateCount }} {{ 'dashboard.remaining' | translate }})</span>
-                </button>
-            </div>
-
-            <!-- All loaded indicator -->
-            <div class="all-loaded-label" *ngIf="!hasMoreEstates && myEstates.length > PAGE_SIZE">
-                <span>✓ {{ 'dashboard.all_listings_shown' | translate }}</span>
-            </div>
-        </ng-container>
-    </div>
-
-    <!-- Reservations (Owner) -->
-    <div *ngIf="activeTab==='reservations'" class="fade-in">
-        <div *ngIf="myOrders.length===0" class="empty-state">
-            <lucide-icon [img]="PackageIcon" class="empty-icon"></lucide-icon>
-            <p>{{ 'dashboard.no_reservations' | translate }}</p>
-        </div>
-        <div class="data-list" *ngIf="myOrders.length>0">
-            <div class="data-row res-owner-row" *ngFor="let o of myOrders">
-                <div class="dr-col">
-                    <div class="dr-primary">{{ o.estate_name }}</div>
-                    <div class="dr-secondary">{{ formatDate(o.created_at) }}</div>
-                </div>
-                <div class="dr-col">
-                    <div class="dr-primary">{{ o.name }}</div>
-                    <div class="dr-secondary flex-row"><lucide-icon [img]="PhoneIcon" class="icon-xs"></lucide-icon> {{ o.phone }}</div>
-                </div>
-                <!-- Status badge -->
-                <div class="dr-col" style="flex: 0 0 auto; align-items: flex-end;">
-                    <span class="res-status-badge"
-                        [class.status-pending]="!o.status || o.status==='pending'"
-                        [class.status-accepted]="o.status==='accepted'"
-                        [class.status-rejected]="o.status==='rejected'">
-                        <ng-container *ngIf="!o.status || o.status==='pending'">⏳ {{ 'dashboard.status_pending' | translate }}</ng-container>
-                        <ng-container *ngIf="o.status==='accepted'">✅ {{ 'dashboard.status_accepted' | translate }}</ng-container>
-                        <ng-container *ngIf="o.status==='rejected'">❌ {{ 'dashboard.status_rejected' | translate }}</ng-container>
-                    </span>
-                    <!-- Action buttons (only when pending) -->
-                    <div class="res-owner-actions" *ngIf="!o.status || o.status==='pending'">
-                        <button class="btn-accept" (click)="acceptReservation(o)" title="Accepter">
-                            <lucide-icon [img]="CheckIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.accept' | translate }}
-                        </button>
-                        <button class="btn-reject" (click)="rejectReservation(o)" title="Rejeter">
-                            <lucide-icon [img]="XIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.reject' | translate }}
-                        </button>
-                    </div>
-                </div>
-                <div class="dr-note" *ngIf="o.note">{{ o.note }}</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Avis (Owner) -->
-    <div *ngIf="activeTab==='avis'" class="fade-in">
-        <div *ngIf="myReviews.length===0" class="empty-state">
-            <lucide-icon [img]="StarIcon" class="empty-icon"></lucide-icon>
-            <p>{{ 'dashboard.no_reviews' | translate }}</p>
-        </div>
-        <div class="reviews-list" *ngIf="myReviews.length>0">
-            <div class="review-card" *ngFor="let r of pagedReviews">
-                <div class="review-header">
-                    <div class="review-avatar">{{ r.initials }}</div>
-                    <div class="review-meta">
-                        <div class="review-author">{{ r.name }}</div>
-                        <div class="review-sub">{{ r.estate_name }} · {{ r.date }}</div>
-                    </div>
-                    <div class="star-row ml-auto">
-                        <span *ngFor="let s of getStars(5)" [class]="s<=r.rating?'star-on':'star-off'">★</span>
-                    </div>
-                </div>
-                <p class="review-comment">{{ r.comment }}</p>
-            </div>
-        </div>
-        <!-- Review show-more -->
-        <div class="show-more-wrap" *ngIf="hasMoreReviews">
-            <button class="btn-show-more" (click)="showMoreReviews()">
-                <lucide-icon [img]="ChevronDownIcon" class="icon-sm"></lucide-icon>
-                {{ 'dashboard.show_more' | translate }}
-                <span class="show-more-count">({{ myReviews.length - visibleReviewCount }} {{ 'dashboard.remaining' | translate }})</span>
-            </button>
-        </div>
-        <div class="all-loaded-label" *ngIf="!hasMoreReviews && myReviews.length > REVIEW_PAGE_SIZE">
-            <span>✓ {{ 'dashboard.all_reviews_shown' | translate }}</span>
-        </div>
-    </div>
-
-    <!-- Messages (Owner) -->
-    <div *ngIf="activeTab==='messages'" class="fade-in">
-        <div class="owner-messages">
-            <aside class="msg-sidebar">
-                <div class="msg-sidebar-header">
-                    <lucide-icon [img]="MessageIcon" class="icon-sm"></lucide-icon>
-                    <span>{{ 'dashboard.conversations' | translate }}</span>
-                    <span class="tab-badge ml-auto" *ngIf="getTotalUnread() > 0">{{ getTotalUnread() }}</span>
-                </div>
-                <div class="msg-conv-list">
-                    <div *ngIf="ownerConversationsLoading" class="msg-conv-loading">
-                        <div class="msg-conv-skeleton" *ngFor="let i of [1,2,3]"></div>
-                    </div>
-                    <div *ngIf="!ownerConversationsLoading && conversations.length===0" class="msg-sidebar-empty">
-                        <lucide-icon [img]="MessageIcon" class="msg-empty-icon"></lucide-icon>
-                        <p>{{ 'dashboard.no_conversations' | translate }}</p>
-                    </div>
-                    <div *ngFor="let c of conversations" class="msg-conv-item"
-                        [class.active]="activeConversation?.id === c.id" (click)="openConversation(c)">
-                        <div class="msg-conv-avatar-wrap">
-                            <div class="msg-conv-avatar" [style.background]="getOwnerConvColor(c)">{{ getConvInitials(c) }}</div>
-                            <span class="msg-online-dot" [class.online]="isPartnerOnline(c)"></span>
-                        </div>
-                        <div class="msg-conv-info">
-                            <div class="msg-conv-top-row">
-                                <span class="msg-conv-name">{{ getClientName(c) }}</span>
-                                <span class="msg-conv-time" *ngIf="c.last_message">{{ formatMsgTime(c.last_message.created_at) }}</span>
-                            </div>
-                            <div class="msg-conv-estate"><lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon>{{ c.estate_name }}</div>
-                            <div class="msg-conv-bottom-row">
-                                <span class="msg-conv-last" *ngIf="c.last_message">{{ c.last_message.text }}</span>
-                                <span class="msg-unread-pill" *ngIf="c.unread_count > 0">{{ c.unread_count }}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </aside>
-            <div class="msg-chat-panel">
-                <div *ngIf="!activeConversation" class="msg-chat-empty">
-                    <div class="msg-chat-empty-circle">💬</div>
-                    <h4>{{ 'dashboard.your_messages' | translate }}</h4>
-                    <span>{{ 'dashboard.select_conversation' | translate }}</span>
-                </div>
-                <ng-container *ngIf="activeConversation">
-                    <div class="msg-chat-header">
-                        <div class="msg-chat-avatar" [style.background]="getOwnerConvColor(activeConversation)">{{ getConvInitials(activeConversation) }}</div>
-                        <div class="msg-chat-header-info">
-                            <div class="msg-chat-name">{{ getClientName(activeConversation) }}</div>
-                            <div class="msg-chat-estate"><lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon> {{ activeConversation.estate_name }}</div>
-                        </div>
-                    </div>
-                    <div class="msg-viewport" #ownerViewport>
-                        <div class="msg-system-label"><lucide-icon [img]="HomeIcon" class="sys-icon-sm"></lucide-icon> {{ activeConversation.estate_name }}</div>
-                        <div *ngIf="activeConversation.messages.length===0" class="msg-no-messages">{{ 'dashboard.start_conversation' | translate }}</div>
-                        <ng-container *ngFor="let item of getGroupedMessages(activeConversation.messages)">
-                            <div *ngIf="item.type==='separator'" class="msg-date-sep"><span class="msg-date-label">{{ item.label }}</span></div>
-                            <div *ngIf="item.type==='message' && item.msg && !isMine(item.msg)" class="msg-row received">
-                                <div class="msg-row-avatar" [style.background]="getOwnerConvColor(activeConversation)">{{ getConvInitials(activeConversation) }}</div>
-                                <div class="msg-bubble received">
-                                    <p>{{ item.msg.text }}</p><span class="msg-time">{{ formatMsgTime(item.msg.created_at) }}</span>
-                                </div>
-                            </div>
-                            <div *ngIf="item.type==='message' && item.msg && isMine(item.msg)" class="msg-row sent">
-                                <div class="msg-bubble sent">
-                                    <p>{{ item.msg.text }}</p><span class="msg-time">{{ formatMsgTime(item.msg.created_at) }}</span>
-                                </div>
-                            </div>
-                        </ng-container>
-                    </div>
-                    <div class="msg-chat-footer">
-                        <div class="msg-input-row" [class.focused]="newMessage.length > 0">
-                            <input class="msg-text-input" [(ngModel)]="newMessage" [placeholder]="'dashboard.reply_placeholder' | translate" (keydown.enter)="sendMessage()">
-                            <button class="msg-send-btn" (click)="sendMessage()" [class.active]="newMessage.trim()" [disabled]="!newMessage.trim()">
-                                <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
-                            </button>
-                        </div>
-                    </div>
-                </ng-container>
-            </div>
-        </div>
-    </div>
-</ng-container>
-
-<!-- ══ CLIENT DASHBOARD ══ -->
-<ng-container *ngIf="!isOwner">
-    <div class="page-header">
-        <div>
-            <h1 class="page-title">{{ 'dashboard.my_space' | translate }}</h1>
-            <p class="page-subtitle">{{ 'dashboard.welcome' | translate }}, {{ currentUser?.name }}</p>
-        </div>
-        <div class="header-actions">
-            <a routerLink="/" class="btn-back-home">
-                <lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon>
-                {{ 'dashboard.back_home' | translate }}
-            </a>
-            <button class="btn-primary-action" (click)="openReviewModal()">
-                <lucide-icon [img]="StarIcon" class="icon-sm"></lucide-icon>
-                {{ 'dashboard.leave_review' | translate }}
-            </button>
-        </div>
-    </div>
-
-    <div class="stats-grid">
-        <div class="stat-card" style="cursor:pointer" (click)="activeTab='reservations'">
-            <div class="stat-icon blue"><lucide-icon [img]="PackageIcon" class="stat-icon-inner"></lucide-icon></div>
-            <div class="stat-content">
-                <div class="stat-value">{{ clientStats.total_reservations }}</div>
-                <div class="stat-label">{{ 'dashboard.my_reservations' | translate }}</div>
-            </div>
-        </div>
-        <div class="stat-card" style="cursor:pointer" (click)="activeTab='avis'">
-            <div class="stat-icon purple"><lucide-icon [img]="StarIcon" class="stat-icon-inner"></lucide-icon></div>
-            <div class="stat-content">
-                <div class="stat-value">{{ clientStats.total_reviews }}</div>
-                <div class="stat-label">{{ 'dashboard.my_reviews' | translate }}</div>
-            </div>
-        </div>
-        <div class="stat-card" style="cursor:pointer" (click)="activeTab='messages'">
-            <div class="stat-icon green"><lucide-icon [img]="MessageIcon" class="stat-icon-inner"></lucide-icon></div>
-            <div class="stat-content">
-                <div class="stat-value">{{ clientStats.total_messages }}</div>
-                <div class="stat-label">{{ 'dashboard.my_messages' | translate }}</div>
-            </div>
-        </div>
-        <div class="stat-card" style="cursor:pointer" (click)="activeTab='contacts'">
-            <div class="stat-icon orange"><lucide-icon [img]="MailIcon" class="stat-icon-inner"></lucide-icon></div>
-            <div class="stat-content">
-                <div class="stat-value">{{ clientStats.total_contacts }}</div>
-                <div class="stat-label">{{ 'dashboard.my_contacts' | translate }}</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ── Mobile tab dropdown (≤768px) ────────────────────── -->
-    <div class="tabs-mobile" (click)="$event.stopPropagation()">
-        <button class="tabs-mobile-trigger" (click)="toggleMobileTab()">
-            <span class="tabs-mobile-label">
-                <ng-container *ngIf="activeTab==='reservations'">{{ 'dashboard.tab_reservations' | translate }}</ng-container>
-                <ng-container *ngIf="activeTab==='avis'">{{ 'dashboard.tab_my_reviews' | translate }}</ng-container>
-                <ng-container *ngIf="activeTab==='messages'">{{ 'dashboard.tab_messages' | translate }}</ng-container>
-                <ng-container *ngIf="activeTab==='contacts'">{{ 'dashboard.tab_contacts' | translate }}</ng-container>
-            </span>
-            <lucide-icon [img]="ChevronDownIcon" class="tabs-mobile-chevron" [class.rotated]="mobileTabOpen"></lucide-icon>
-        </button>
-        <div class="tabs-mobile-dropdown" *ngIf="mobileTabOpen">
-            <div class="tabs-mobile-item" [class.active]="activeTab==='reservations'" (click)="selectTab('reservations')">{{ 'dashboard.tab_reservations' | translate }}</div>
-            <div class="tabs-mobile-item" [class.active]="activeTab==='avis'"         (click)="selectTab('avis')">{{ 'dashboard.tab_my_reviews' | translate }}</div>
-            <div class="tabs-mobile-item" [class.active]="activeTab==='messages'"     (click)="selectTab('messages')">{{ 'dashboard.tab_messages' | translate }}</div>
-            <div class="tabs-mobile-item" [class.active]="activeTab==='contacts'"     (click)="selectTab('contacts')">{{ 'dashboard.tab_contacts' | translate }}</div>
-        </div>
-    </div>
-
-    <!-- ── Desktop tabs (>768px) ────────────────────────────── -->
-    <div class="tabs tabs-desktop">
-        <div class="tab" [class.active]="activeTab==='reservations'" (click)="activeTab='reservations'">{{ 'dashboard.tab_reservations' | translate }}</div>
-        <div class="tab" [class.active]="activeTab==='avis'"         (click)="activeTab='avis'">{{ 'dashboard.tab_my_reviews' | translate }}</div>
-        <div class="tab" [class.active]="activeTab==='messages'"     (click)="activeTab='messages'">{{ 'dashboard.tab_messages' | translate }}</div>
-        <div class="tab" [class.active]="activeTab==='contacts'"     (click)="activeTab='contacts'">{{ 'dashboard.tab_contacts' | translate }}</div>
-    </div>
-
-    <!-- Réservations (Client) -->
-    <div *ngIf="activeTab==='reservations'" class="fade-in">
-        <div *ngIf="isLoading" class="loading-state">{{ 'dashboard.loading' | translate }}</div>
-        <div *ngIf="!isLoading && myReservations.length===0" class="empty-state">
-            <lucide-icon [img]="PackageIcon" class="empty-icon"></lucide-icon>
-            <p>{{ 'dashboard.no_reservations_client' | translate }}</p>
-            <a routerLink="/" class="btn-goto">{{ 'dashboard.find_listing' | translate }}</a>
-        </div>
-        <div class="res-list" *ngIf="!isLoading && myReservations.length>0">
-            <div class="res-card" *ngFor="let r of myReservations">
-                <div class="res-thumb" *ngIf="r.estate_image"><img [src]="r.estate_image" alt="" class="res-img"></div>
-                <div class="res-thumb placeholder-thumb" *ngIf="!r.estate_image">
-                    <lucide-icon [img]="HomeIcon" class="icon-sm"></lucide-icon>
-                </div>
-                <div class="res-body">
-                    <div class="res-name">{{ r.estate_name }}</div>
-                    <div class="res-meta">
-                        <span *ngIf="r.estate_location"><lucide-icon [img]="MapPinIcon" class="icon-xs"></lucide-icon> {{ r.estate_location }}</span>
-                        <span *ngIf="r.estate_price"><lucide-icon [img]="FileIcon" class="icon-xs"></lucide-icon> {{ formatPrice(r.estate_price!) }}</span>
-                    </div>
-                    <div class="res-contact"><lucide-icon [img]="PhoneIcon" class="icon-xs"></lucide-icon> {{ r.phone }}<span *ngIf="r.note"> · {{ r.note }}</span></div>
-                    <div class="res-date"><lucide-icon [img]="CalendarIcon" class="icon-xs"></lucide-icon> {{ formatDate(r.created_at) }}</div>
-                    <!-- Status badge for client reservations -->
-                    <div style="margin-top: 0.5rem;">
-                        <span class="res-status-badge"
-                            [class.status-pending]="!r.status || r.status==='pending'"
-                            [class.status-accepted]="r.status==='accepted'"
-                            [class.status-rejected]="r.status==='rejected'">
-                            <ng-container *ngIf="!r.status || r.status==='pending'">⏳ {{ 'dashboard.status_pending' | translate }}</ng-container>
-                            <ng-container *ngIf="r.status==='accepted'">✅ {{ 'dashboard.status_accepted' | translate }}</ng-container>
-                            <ng-container *ngIf="r.status==='rejected'">❌ {{ 'dashboard.status_rejected' | translate }}</ng-container>
-                        </span>
-                    </div>
-                </div>
-                <div class="res-actions">
-                    <button class="btn-danger-icon" (click)="deleteReservation(r)" title="Annuler la réservation">
-                        <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Avis (Client) -->
-    <div *ngIf="activeTab==='avis'" class="fade-in">
-        <div class="tab-actions">
-            <button class="btn-secondary-action" (click)="openReviewModal()">
-                <lucide-icon [img]="PlusIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.new_review' | translate }}
-            </button>
-        </div>
-        <div *ngIf="mySubmittedReviews.length===0" class="empty-state">
-            <lucide-icon [img]="StarIcon" class="empty-icon"></lucide-icon>
-            <p>{{ 'dashboard.no_my_reviews' | translate }}</p>
-        </div>
-        <div class="reviews-list" *ngIf="mySubmittedReviews.length>0">
-            <div class="review-card" *ngFor="let r of mySubmittedReviews">
-                <div class="review-header">
-                    <div class="review-estate-row">
-                        <img *ngIf="r.estate_image" [src]="r.estate_image" alt="" class="review-estate-thumb">
-                        <div>
-                            <div class="review-author">{{ r.estate_name }}</div>
-                            <div class="review-sub">{{ r.date }}</div>
-                        </div>
-                    </div>
-                    <div class="star-row ml-auto">
-                        <span *ngFor="let s of getStars(5)" [class]="s<=r.rating?'star-on':'star-off'">★</span>
-                    </div>
-                </div>
-                <p class="review-comment">{{ r.comment }}</p>
-                <div class="review-action-row">
-                    <button class="btn-edit-text" (click)="openEditReviewModal(r)">
-                        <lucide-icon [img]="PencilIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.edit' | translate }}
-                    </button>
-                    <button class="btn-danger-text" (click)="deleteReview(r)">
-                        <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.delete' | translate }}
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Messages (Client) -->
-    <div *ngIf="activeTab==='messages'" class="fade-in">
-        <div class="owner-messages client-messages">
-            <aside class="msg-sidebar">
-                <div class="msg-sidebar-header">
-                    <lucide-icon [img]="MessageIcon" class="icon-sm"></lucide-icon>
-                    <span>{{ 'dashboard.conversations' | translate }}</span>
-                </div>
-                <div class="msg-conv-list">
-                    <div *ngIf="conversations.length===0" class="msg-sidebar-empty">
-                        <lucide-icon [img]="MessageIcon" class="msg-empty-icon"></lucide-icon>
-                        <p>{{ 'dashboard.no_conversations_client' | translate }}</p>
-                    </div>
-                    <div *ngFor="let c of conversations" class="msg-conv-item"
-                        [class.active]="activeConversation?.id === c.id">
-                        <div class="msg-conv-avatar-wrap" (click)="openConversation(c)">
-                            <div class="msg-conv-avatar" style="background:#3B82F6">{{ getConvInitials(c) }}</div>
-                            <span class="msg-online-dot" [class.online]="isPartnerOnline(c)"></span>
-                        </div>
-                        <div class="msg-conv-info" (click)="openConversation(c)">
-                            <div class="msg-conv-top-row">
-                                <span class="msg-conv-name">{{ getConvPartner(c) }}</span>
-                                <span class="msg-conv-time" *ngIf="c.last_message">{{ formatMsgTime(c.last_message.created_at) }}</span>
-                            </div>
-                            <div class="msg-conv-estate"><lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon>{{ c.estate_name }}</div>
-                            <div class="msg-conv-bottom-row">
-                                <span class="msg-conv-last" *ngIf="c.last_message">{{ c.last_message.text }}</span>
-                                <span class="msg-unread-pill" *ngIf="c.unread_count > 0">{{ c.unread_count }}</span>
-                            </div>
-                        </div>
-                        <button class="msg-conv-delete-btn" (click)="deleteConversation(c)" title="Supprimer">
-                            <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
-                        </button>
-                    </div>
-                </div>
-            </aside>
-            <div class="msg-chat-panel">
-                <div *ngIf="!activeConversation" class="msg-chat-empty">
-                    <div class="msg-chat-empty-circle">💬</div>
-                    <h4>{{ 'dashboard.your_messages' | translate }}</h4>
-                    <span>{{ 'dashboard.select_conversation' | translate }}</span>
-                </div>
-                <ng-container *ngIf="activeConversation">
-                    <div class="msg-chat-header">
-                        <div class="msg-chat-avatar" style="background:#3B82F6">{{ getConvInitials(activeConversation) }}</div>
-                        <div class="msg-chat-header-info">
-                            <div class="msg-chat-name">{{ getConvPartner(activeConversation) }}</div>
-                            <div class="msg-chat-estate"><lucide-icon [img]="HomeIcon" class="icon-xs"></lucide-icon> {{ activeConversation.estate_name }}</div>
-                        </div>
-                    </div>
-                    <div class="msg-viewport" #ownerViewport>
-                        <div class="msg-system-label"><lucide-icon [img]="HomeIcon" class="sys-icon-sm"></lucide-icon> {{ activeConversation.estate_name }}</div>
-                        <div *ngIf="activeConversation.messages.length===0" class="msg-no-messages">{{ 'dashboard.start_conversation' | translate }}</div>
-                        <ng-container *ngFor="let item of getGroupedMessages(activeConversation.messages)">
-                            <div *ngIf="item.type==='separator'" class="msg-date-sep"><span class="msg-date-label">{{ item.label }}</span></div>
-                            <div *ngIf="item.type==='message' && item.msg && !isMine(item.msg)" class="msg-row received">
-                                <div class="msg-row-avatar" style="background:#3B82F6">{{ getConvInitials(activeConversation) }}</div>
-                                <div class="msg-bubble received">
-                                    <p>{{ item.msg.text }}</p><span class="msg-time">{{ formatMsgTime(item.msg.created_at) }}</span>
-                                </div>
-                            </div>
-                            <div *ngIf="item.type==='message' && item.msg && isMine(item.msg)" class="msg-row sent">
-                                <div class="msg-bubble sent">
-                                    <p>{{ item.msg.text }}</p><span class="msg-time">{{ formatMsgTime(item.msg.created_at) }}</span>
-                                </div>
-                            </div>
-                        </ng-container>
-                    </div>
-                    <div class="msg-chat-footer">
-                        <div class="msg-input-row" [class.focused]="newMessage.length > 0">
-                            <input class="msg-text-input" [(ngModel)]="newMessage" [placeholder]="'dashboard.message_placeholder' | translate" (keydown.enter)="sendMessage()">
-                            <button class="msg-send-btn" (click)="sendMessage()" [class.active]="newMessage.trim()" [disabled]="!newMessage.trim()">
-                                <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
-                            </button>
-                        </div>
-                    </div>
-                </ng-container>
-            </div>
-        </div>
-    </div>
-
-    <!-- Contacts (Client) -->
-    <div *ngIf="activeTab==='contacts'" class="fade-in">
-        <div *ngIf="myContacts.length===0" class="empty-state">
-            <lucide-icon [img]="MailIcon" class="empty-icon"></lucide-icon>
-            <p>{{ 'dashboard.no_contacts' | translate }}</p>
-        </div>
-        <div class="data-list" *ngIf="myContacts.length>0">
-            <div class="contact-card" *ngFor="let c of myContacts">
-                <div class="contact-header">
-                    <span class="contact-estate" *ngIf="c.estate_name">
-                        <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon> {{ c.estate_name }}
-                    </span>
-                    <span class="contact-date">{{ formatDate(c.submitted_at) }}</span>
-                    <button class="btn-danger-icon ml-auto" (click)="deleteContact(c)" title="Supprimer">
-                        <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
-                    </button>
-                </div>
-                <p class="review-comment">{{ c.message }}</p>
-            </div>
-        </div>
-    </div>
-</ng-container>
-
-<!-- ══ MODAL: Add/Edit Estate ══ -->
-<div class="modal-overlay" *ngIf="showEstateModal" (click)="closeEstateModal()">
-    <div class="modal-box modal-box-wide" (click)="$event.stopPropagation()">
-        <button class="modal-close" (click)="closeEstateModal()"><lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon></button>
-        <h2 class="modal-title">{{ isEditMode ? ('dashboard.modal_edit_title'|translate) : ('dashboard.modal_add_title'|translate) }}</h2>
-        <div class="form-group"><label>{{ 'dashboard.form_name' | translate }} *</label><input class="input" [(ngModel)]="estateForm.name" [placeholder]="'dashboard.form_name_ph' | translate"></div>
-        <div class="form-row">
-            <div class="form-group"><label>{{ 'dashboard.form_location' | translate }} *</label><input class="input" [(ngModel)]="estateForm.location" [placeholder]="'dashboard.form_location_ph' | translate"></div>
-            <div class="form-group"><label>{{ 'dashboard.form_price' | translate }} *</label><input class="input" type="number" [(ngModel)]="estateForm.price" placeholder="35000"></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label>{{ 'dashboard.form_capacity' | translate }}</label><input class="input" type="number" [(ngModel)]="estateForm.capacity" placeholder="10"></div>
-            <div class="form-group"><label>{{ 'dashboard.form_free' | translate }}</label><input class="input" type="number" [(ngModel)]="estateForm.free" placeholder="5"></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label>{{ 'dashboard.form_distance' | translate }}</label><input class="input" [(ngModel)]="distanceDisplay" placeholder="500"></div>
-            <div class="form-group"><label>{{ 'dashboard.form_room_type' | translate }}</label>
-                <select class="input" [(ngModel)]="estateForm.room_size">
-                    <option value="1">{{ 'dashboard.room_type_villa' | translate }}</option>
-                    <option value="2">{{ 'dashboard.room_type_studio' | translate }}</option>
-                    <option value="3">{{ 'dashboard.room_type_chamber' | translate }}</option>
-                </select>
-            </div>
-        </div>
-        <div class="form-group"><label>{{ 'dashboard.form_status' | translate }}</label>
-            <select class="input" [(ngModel)]="estateForm.status">
-                <option value="published">{{ 'dashboard.status_published'|translate }}</option>
-                <option value="draft">{{ 'dashboard.status_draft'|translate }}</option>
-                <option value="archived">{{ 'dashboard.status_archived'|translate }}</option>
-            </select>
-        </div>
-        <div class="form-group"><label>{{ 'dashboard.form_amenities' | translate }}</label>
-            <div class="equip-grid">
-                <label class="equip-item" *ngFor="let eq of availableEquipments">
-                    <input type="checkbox" [checked]="estateForm[eq.key]==='1'" (change)="toggleEquipment(eq.key)">
-                    <lucide-icon [img]="eq.icon" class="icon-xs"></lucide-icon>
-                    <span>{{ eq.label }}</span>
-                </label>
-            </div>
-        </div>
-        <div class="form-group"><label>{{ 'dashboard.form_description' | translate }}</label>
-            <textarea class="textarea" [(ngModel)]="estateForm.description" rows="3" [placeholder]="'dashboard.form_description_ph' | translate"></textarea>
-        </div>
-        <div class="form-group">
-            <label>{{ 'dashboard.form_photos' | translate }}</label>
-            <div class="image-preview-grid" *ngIf="isEditMode && estateForm.existingImages?.length > 0">
-                <div class="image-preview-item" *ngFor="let img of estateForm.existingImages">
-                    <img [src]="img.image" alt="photo" class="preview-thumb">
-                    <button class="img-delete-btn" (click)="removeExistingImage(img)"><lucide-icon [img]="XIcon" class="icon-xs"></lucide-icon></button>
-                </div>
-            </div>
-            <div class="image-preview-grid" *ngIf="newImagePreviews.length > 0">
-                <div class="image-preview-item" *ngFor="let p of newImagePreviews; let i = index">
-                    <img [src]="p" alt="nouveau" class="preview-thumb">
-                    <button class="img-delete-btn" (click)="removeNewImage(i)"><lucide-icon [img]="XIcon" class="icon-xs"></lucide-icon></button>
-                </div>
-            </div>
-            <label class="img-dropzone" for="imgFileInput">
-                <lucide-icon [img]="PlusIcon" class="icon-sm"></lucide-icon>
-                <span>{{ 'dashboard.form_photos_drop' | translate }}</span>
-                <span class="img-hint">{{ 'dashboard.form_photos_hint' | translate }}</span>
-            </label>
-            <input id="imgFileInput" type="file" accept="image/*" multiple style="display:none" (change)="onImagesSelected($event)">
-        </div>
-        <div style="display: flex; justify-content: space-between; gap: 0.5rem; margin-top: 1.5rem;">
-            <button *ngIf="isEditMode" class="btn-edit" style="background:#0ea5e9; color:white; border-color:#0ea5e9; padding:0.5rem 1rem;" (click)="switchToRoomManagerFromEdit()">
-                <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon> {{ 'dashboard.manage_rooms' | translate }}
-            </button>
-            <div style="flex: 1;"></div>
-            <button class="btn-cancel" style="padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; cursor: pointer;" (click)="closeEstateModal()">{{ 'dashboard.cancel' | translate }}</button>
-            <button class="btn-submit" style="width: auto; padding: 0.5rem 1.5rem; margin-top: 0;" (click)="saveEstate()" [disabled]="isSavingEstate">
-                <span *ngIf="!isSavingEstate">{{ isEditMode ? ('dashboard.save_changes'|translate) : ('dashboard.create_and_add_rooms'|translate) }}</span>
-                <span *ngIf="isSavingEstate">{{ 'dashboard.saving'|translate }}</span>
-            </button>
-        </div>
-    </div>
+  </main>
 </div>
 
-<!-- ══ Room Management Modal ══════════════════════════════════════ -->
-<div class="modal-overlay fade-in" *ngIf="showRoomModal" (click)="closeRoomModal()">
-    <div class="modal-box modal-box-wide" (click)="$event.stopPropagation()" style="background:white; border-radius:12px; max-width: 800px; padding: 2rem; width:100%; max-height: 90vh; overflow-y: auto;">
-        <button class="modal-close" style="position: absolute; right: 1rem; top: 1rem; border: none; background: transparent; cursor: pointer;" (click)="closeRoomModal()">
-            <lucide-icon [img]="XIcon" class="icon-xs"></lucide-icon>
-        </button>
 
-        <h2 class="modal-title" style="font-size: 1.5rem; font-weight: bold; margin-bottom: 1.5rem;">
-            {{ 'dashboard.rooms_for' | translate }} {{ selectedEstateForRooms?.name }}
-        </h2>
+<!-- ════════════════════════════════════════════════════════
+     CLIENT DASHBOARD
+════════════════════════════════════════════════════════ -->
+<div class="db" *ngIf="!isLoading && !isOwner">
 
-        <!-- Room List View -->
-        <div *ngIf="!isRoomEditMode">
-            <button class="btn-submit" style="width: auto; margin-bottom: 1rem; padding: 0.5rem 1rem; cursor: pointer;" (click)="openCreateRoom()">
-                <lucide-icon [img]="PlusIcon" class="icon-sm" style="display:inline-block; vertical-align:middle; margin-right:4px;"></lucide-icon>
-                {{ 'dashboard.add_room' | translate }}
-            </button>
-            <div *ngIf="isLoadingRooms" style="text-align: center; padding: 2rem;">
-                <lucide-icon [img]="ClockIcon" class="spin-icon"></lucide-icon>
-                <span>{{ 'dashboard.loading' | translate }}</span>
-            </div>
-            <div *ngIf="!isLoadingRooms && roomCategories.length === 0" style="text-align: center; padding: 2rem; color: #6b7280;">
-                {{ 'dashboard.no_rooms' | translate }}
-            </div>
-            
-            <div *ngIf="!isLoadingRooms && roomCategories.length > 0" style="display: grid; gap: 1rem;">
-                <div *ngFor="let rm of roomCategories" style="display: flex; align-items: center; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; background: #fff;">
-                    <div style="flex-shrink: 0; margin-right: 1rem;">
-                        <img *ngIf="rm.images && rm.images.length" [src]="rm.images[0].image" style="width: 60px; height: 60px; border-radius: 8px; object-fit: cover;">
-                        <div *ngIf="!rm.images || !rm.images.length" style="width: 60px; height: 60px; border-radius: 8px; background: #f3f4f6; display: flex; align-items: center; justify-content: center;">
-                            <lucide-icon [img]="BuildingIcon" style="color: #9ca3af; width: 24px; height: 24px;"></lucide-icon>
-                        </div>
-                    </div>
-                    <div style="flex-grow: 1;">
-                        <div style="font-weight: bold; font-size: 1.1rem; color: #111827;">{{ rm.name }}</div>
-                        <div style="color: #6b7280; font-size: 0.9rem;">{{ rm.occupancy | titlecase }} | {{ rm.quantity_available }} {{ 'dashboard.room_form_qty_available' | translate }}</div>
-                    </div>
-                    <div style="font-weight: bold; font-size: 1.1rem; flex-shrink: 0; margin-right: 2rem; color: #111827;">
-                        {{ rm.price }} FCFA
-                    </div>
-                    <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
-                        <button class="btn-edit" style="width:36px; height:36px; padding:0; display:flex; align-items:center; justify-content:center; cursor: pointer;" (click)="openEditRoom(rm)">
-                            <lucide-icon [img]="EditIcon" class="icon-xs"></lucide-icon>
-                        </button>
-                        <button class="btn-delete" style="width:36px; height:36px; padding:0; display:flex; align-items:center; justify-content:center; cursor: pointer;" (click)="deleteRoom(rm)">
-                            <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+  <!-- ── Sidebar ──────────────────────────────────────────── -->
+  <aside class="sidebar">
 
-        <!-- Room Edit Mode -->
-        <div *ngIf="isRoomEditMode">
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_name' | translate }} *</label>
-                    <input type="text" [(ngModel)]="roomForm.name" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.375rem;" [placeholder]="'dashboard.room_form_name_ph' | translate">
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_price' | translate }} *</label>
-                    <input type="number" [(ngModel)]="roomForm.price" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.375rem;" min="0">
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_capacity' | translate }}</label>
-                    <select [(ngModel)]="roomForm.occupancy" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.375rem; background:#fff;">
-                        <option value="single">{{ 'dashboard.room_form_occupancy_single' | translate }}</option>
-                        <option value="double">{{ 'dashboard.room_form_occupancy_double' | translate }}</option>
-                        <option value="shared">{{ 'dashboard.room_form_occupancy_shared' | translate }}</option>
-                    </select>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_qty' | translate }}</label>
-                    <input type="number" [(ngModel)]="roomForm.quantity_available" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.375rem;" min="1">
-                </div>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_size' | translate }}</label>
-                    <select [(ngModel)]="roomForm.room_size" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.375rem; background:#fff;">
-                        <option value="1">{{ 'dashboard.room_form_size_large' | translate }}</option>
-                        <option value="2">{{ 'dashboard.room_form_size_medium' | translate }}</option>
-                        <option value="3">{{ 'dashboard.room_form_size_small' | translate }}</option>
-                    </select>
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                    <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_desc_optional' | translate }}</label>
-                    <textarea [(ngModel)]="roomForm.description" style="width:100%; padding:0.75rem; border:1px solid #d1d5db; border-radius:0.375rem;" rows="2"></textarea>
-                </div>
-            </div>
-
-            <div class="form-group" style="margin-bottom: 1rem;">
-                <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_amenities' | translate }}</label>
-                <div style="display: flex; gap: 1rem; margin-top: 0.5rem;">
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
-                        <input type="checkbox" [checked]="roomForm.wifi === '1'" (change)="roomForm.wifi = $any($event.target).checked ? '1' : '0'">
-                        📶 WiFi
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
-                        <input type="checkbox" [checked]="roomForm.tv === '1'" (change)="roomForm.tv = $any($event.target).checked ? '1' : '0'">
-                        📺 TV
-                    </label>
-                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; padding: 0.5rem 1rem; border: 1px solid #d1d5db; border-radius: 0.375rem;">
-                        <input type="checkbox" [checked]="roomForm.fridge === '1'" (change)="roomForm.fridge = $any($event.target).checked ? '1' : '0'">
-                        ❄️ {{ 'filters.fridge_label' | translate }}
-                    </label>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label style="display:block; margin-bottom:0.5rem; font-weight:600; color:#374151;">{{ 'dashboard.room_form_photos' | translate }}</label>
-                <label class="img-dropzone" for="roomFileInput" style="margin-top: 0.5rem; display: block; border: 2px dashed #d1d5db; padding: 1.5rem; text-align: center; border-radius: 8px; background: #f9fafb; cursor: pointer;">
-                    <lucide-icon [img]="PlusIcon" class="icon-sm" style="margin: 0 auto 0.5rem auto; color: #9ca3af; display: block;"></lucide-icon>
-                    <span style="display: block; color: #4b5563;">{{ 'dashboard.room_form_add_photos' | translate }}</span>
-                </label>
-                <input id="roomFileInput" type="file" accept="image/*" multiple (change)="onRoomFilesSelected($event)" style="display:none">
-                
-                <div class="image-preview-grid" style="margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 8px;" *ngIf="roomPreviewImages.length > 0 || roomExistingImages.length > 0">
-                    <div class="image-preview-item" *ngFor="let pImg of roomPreviewImages; let i = index" style="position: relative; display: inline-block;">
-                        <img [src]="pImg" alt="preview" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
-                        <button class="img-delete-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.5); border: none; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white;" (click)="removeRoomPreview(i)"><lucide-icon [img]="XIcon" style="width: 12px; height: 12px;"></lucide-icon></button>
-                    </div>
-                    <div class="image-preview-item" *ngFor="let eImg of roomExistingImages; let i = index" style="position: relative; display: inline-block;">
-                        <img [src]="eImg.image" alt="existing" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;">
-                        <button class="img-delete-btn" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.5); border: none; border-radius: 50%; width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white;" (click)="removeExistingRoomImage(i)"><lucide-icon [img]="XIcon" style="width: 12px; height: 12px;"></lucide-icon></button>
-                    </div>
-                </div>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem;">
-                <button class="btn-cancel" style="padding: 0.5rem 1rem; border: 1px solid #ccc; border-radius: 6px; background: #fff; cursor: pointer;" (click)="isRoomEditMode = false">{{ 'dashboard.cancel' | translate }}</button>
-                <button class="btn-submit" style="width: auto; padding: 0.5rem 1.5rem; cursor: pointer;" (click)="saveRoom()" [disabled]="isSavingRoom">
-                    {{ isSavingRoom ? ('dashboard.saving' | translate) : (roomEditId ? ('dashboard.room_update' | translate) : ('dashboard.room_create' | translate)) }}
-                </button>
-            </div>
-        </div>
-
+    <div class="sidebar__brand" routerLink="/">
+      <img src="/assets/images/logo.png" alt="Eyang Estate" class="sidebar__logo-img">
+      <span class="sidebar__wordmark">Eyang<strong>Estate</strong></span>
     </div>
+
+    <a routerLink="/" class="sidebar__back">
+      <span class="sidebar__back-ico"><lucide-icon [img]="BackIcon"></lucide-icon></span>
+      <span class="sidebar__back-lbl">Retour à l'accueil</span>
+    </a>
+
+    <nav class="sidebar__nav">
+      <span class="sidebar__nav-sep">Mon espace</span>
+      <button class="snav" [class.snav--on]="activeTab==='reservations'" (click)="selectTab('reservations')">
+        <span class="snav__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></span>
+        <span class="snav__lbl">Réservations</span>
+        <span class="snav__badge" *ngIf="clientStats.total_reservations>0">{{ clientStats.total_reservations }}</span>
+      </button>
+      <button class="snav" [class.snav--on]="activeTab==='reviews'" (click)="selectTab('reviews')">
+        <span class="snav__ico"><lucide-icon [img]="StarIcon"></lucide-icon></span>
+        <span class="snav__lbl">Mes avis</span>
+      </button>
+      <button class="snav" [class.snav--on]="activeTab==='contacts'" (click)="selectTab('contacts')">
+        <span class="snav__ico"><lucide-icon [img]="PhoneIcon"></lucide-icon></span>
+        <span class="snav__lbl">Contacts</span>
+      </button>
+      <button class="snav" [class.snav--on]="activeTab==='messages'" (click)="selectTab('messages')">
+        <span class="snav__ico"><lucide-icon [img]="MessageIcon"></lucide-icon></span>
+        <span class="snav__lbl">Messages</span>
+        <span class="snav__badge" *ngIf="clientStats.total_messages>0">{{ clientStats.total_messages }}</span>
+      </button>
+    </nav>
+
+    <div class="sidebar__profile">
+      <div class="sidebar__avatar">{{ currentUser?.initials }}</div>
+      <div class="sidebar__profile-info">
+        <span class="sidebar__profile-name">{{ currentUser?.name }}</span>
+        <span class="sidebar__profile-role">{{ currentUser?.role }}</span>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- ── Mobile topbar ────────────────────────────────────── -->
+  <div class="topbar" (click)="$event.stopPropagation()">
+    <a routerLink="/" class="topbar__logo">
+      <img src="/assets/images/logo.png" alt="Eyang Estate" class="topbar__logo-img">
+    </a>
+    <a routerLink="/" class="topbar__back">
+      <lucide-icon [img]="BackIcon"></lucide-icon>
+      <span>Accueil</span>
+    </a>
+    <button class="topbar__trigger" (click)="toggleMobileTab()">
+      <span>{{ activeTab==='reservations'?'Réservations':activeTab==='reviews'?'Mes avis':activeTab==='contacts'?'Contacts':'Messages' }}</span>
+      <lucide-icon [img]="ChevronDownIcon" [style.transform]="mobileTabOpen?'rotate(180deg)':''"></lucide-icon>
+    </button>
+    <div class="topbar__drop" *ngIf="mobileTabOpen">
+      <button (click)="selectTab('reservations')"><lucide-icon [img]="PackageIcon"></lucide-icon>Réservations</button>
+      <button (click)="selectTab('reviews')"><lucide-icon [img]="StarIcon"></lucide-icon>Mes avis</button>
+      <button (click)="selectTab('contacts')"><lucide-icon [img]="PhoneIcon"></lucide-icon>Contacts</button>
+      <button (click)="selectTab('messages')"><lucide-icon [img]="MessageIcon"></lucide-icon>Messages</button>
+    </div>
+  </div>
+
+  <!-- ── Main ─────────────────────────────────────────────── -->
+  <main class="db__main">
+
+    <!-- RESERVATIONS -->
+    <div class="panel" *ngIf="activeTab==='reservations'">
+      <header class="panel__hd"><div><h1 class="panel__title">Mes réservations</h1><p class="panel__sub">{{ myReservations.length }} demande{{ myReservations.length!==1?'s':'' }}</p></div></header>
+      <div class="empty-state" *ngIf="myReservations.length===0">
+        <div class="empty-state__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div>
+        <h3>Aucune réservation</h3><p>Trouvez votre logement idéal.</p>
+        <a routerLink="/" class="btn btn--primary" style="text-decoration:none">Chercher un logement →</a>
+      </div>
+      <div class="o-list" *ngIf="myReservations.length>0">
+        <div class="o-card" *ngFor="let r of myReservations">
+          <div class="o-card__av o-card__av--img">
+            <img *ngIf="r.estate_image" [src]="r.estate_image" [alt]="r.estate_name">
+            <lucide-icon *ngIf="!r.estate_image" [img]="HomeIcon"></lucide-icon>
+          </div>
+          <div class="o-card__body">
+            <div class="o-card__top">
+              <div><span class="o-card__name">{{ r.estate_name }}</span><span class="o-card__where">{{ r.estate_location }}</span></div>
+              <span class="chip chip--{{r.status||'pending'}}">{{ r.status==='accepted'?'✓ Acceptée':r.status==='rejected'?'✗ Rejetée':'⏳ En attente' }}</span>
+            </div>
+            <div class="o-card__meta">
+              <span *ngIf="r.room_category_name"><lucide-icon [img]="BuildingIcon"></lucide-icon>{{ r.room_category_name }}</span>
+              <span *ngIf="r.estate_price">{{ formatPrice(r.estate_price) }}/mois</span>
+              <span><lucide-icon [img]="CalendarIcon"></lucide-icon>{{ formatDate(r.created_at) }}</span>
+            </div>
+            <div class="o-card__acts" *ngIf="!r.status||r.status==='pending'">
+              <button class="btn btn--ghost-red btn--xs" (click)="deleteReservation(r)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>Annuler</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEWS (client) -->
+    <div class="panel" *ngIf="activeTab==='reviews'">
+      <header class="panel__hd">
+        <div><h1 class="panel__title">Mes avis</h1><p class="panel__sub">{{ mySubmittedReviews.length }} avis soumis</p></div>
+        <button class="btn btn--primary" (click)="openReviewModal()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>Nouvel avis</button>
+      </header>
+      <div class="empty-state" *ngIf="mySubmittedReviews.length===0">
+        <div class="empty-state__ico"><lucide-icon [img]="StarIcon"></lucide-icon></div>
+        <h3>Aucun avis</h3><p>Partagez votre expérience sur les logements visités.</p>
+      </div>
+      <div class="rv-list" *ngIf="mySubmittedReviews.length>0">
+        <div class="rv-card" *ngFor="let r of mySubmittedReviews">
+          <div class="rv-card__thumb">
+            <img *ngIf="r.estate_image" [src]="r.estate_image" [alt]="r.estate_name" loading="lazy">
+            <div class="rv-card__thumb-ph" *ngIf="!r.estate_image"><lucide-icon [img]="HomeIcon"></lucide-icon></div>
+          </div>
+          <div class="rv-card__body">
+            <div class="rv-card__top">
+              <span class="rv-card__estate">{{ r.estate_name }}</span>
+              <div class="rv-card__stars"><span *ngFor="let s of getStars(r.rating)" class="s-on">★</span><span *ngFor="let s of getStars(5-r.rating)" class="s-off">★</span></div>
+            </div>
+            <p class="rv-card__txt">{{ r.comment }}</p>
+            <div class="rv-card__foot">
+              <span class="rv-card__date">{{ r.date || formatDate(r.created_at) }}</span>
+              <div class="rv-card__acts">
+                <button class="ico-btn" (click)="openEditReviewModal(r)" title="Modifier"><lucide-icon [img]="PencilIcon"></lucide-icon></button>
+                <button class="ico-btn ico-btn--red" (click)="deleteReview(r)" title="Supprimer"><lucide-icon [img]="TrashIcon"></lucide-icon></button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTACTS -->
+    <div class="panel" *ngIf="activeTab==='contacts'">
+      <header class="panel__hd"><div><h1 class="panel__title">Demandes de contact</h1><p class="panel__sub">{{ myContacts.length }} demande{{ myContacts.length!==1?'s':'' }}</p></div></header>
+      <div class="empty-state" *ngIf="myContacts.length===0"><div class="empty-state__ico"><lucide-icon [img]="PhoneIcon"></lucide-icon></div><h3>Aucune demande</h3><p>Vos demandes apparaîtront ici.</p></div>
+      <div class="ct-list" *ngIf="myContacts.length>0">
+        <div class="ct-card" *ngFor="let c of myContacts">
+          <div class="ct-card__hd"><span class="ct-card__estate">{{ c.estate_name }}</span><div class="ct-card__right"><span class="ct-card__date">{{ formatDate(c.submitted_at) }}</span><button class="ico-btn ico-btn--red ico-btn--xs" (click)="deleteContact(c)"><lucide-icon [img]="TrashIcon"></lucide-icon></button></div></div>
+          <p class="ct-card__msg">{{ c.message }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- MESSAGES (client) -->
+    <div class="msg-shell" *ngIf="activeTab==='messages'">
+      <div class="msg-panel" [class.msg-panel--hide]="activeConversation">
+        <div class="msg-panel__hd"><h2 class="msg-panel__title">Messages</h2></div>
+        <div class="msg-panel__empty" *ngIf="conversations.length===0"><lucide-icon [img]="MessageIcon"></lucide-icon><p>Aucune conversation</p></div>
+        <div class="conv-list">
+          <div class="conv-row" *ngFor="let c of conversations"
+               [class.conv-row--on]="activeConversation?.id===c.id"
+               (click)="openConversation(c)">
+            <div class="conv-row__av" [style.background]="getConvColor(c)">
+              {{ getConvInitials(c) }}<span class="conv-row__dot" *ngIf="isPartnerOnline(c)"></span>
+            </div>
+            <div class="conv-row__info">
+              <div class="conv-row__top"><span class="conv-row__name">{{ getConvPartner(c) }}</span><span class="conv-row__unread" *ngIf="c.unread_count>0">{{ c.unread_count }}</span></div>
+              <span class="conv-row__estate">{{ c.estate_name }}</span>
+              <span class="conv-row__last">{{ c.last_message?.text | slice:0:40 }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-area" *ngIf="activeConversation">
+        <div class="chat-area__hd">
+          <button class="ico-btn ico-btn--ghost" (click)="closeConversation()"><lucide-icon [img]="BackIcon"></lucide-icon></button>
+          <div class="chat-area__av" [style.background]="getConvColor(activeConversation)">{{ getConvInitials(activeConversation) }}</div>
+          <div class="chat-area__info"><span class="chat-area__name">{{ getConvPartner(activeConversation) }}</span><span class="chat-area__sub">{{ activeConversation.estate_name }}</span></div>
+        </div>
+        <div class="chat-area__msgs" #ownerViewport>
+          <ng-container *ngFor="let item of getGroupedMessages(activeConversation.messages)">
+            <div *ngIf="item.type==='separator'" class="chat-sep">{{ item.label }}</div>
+            <div *ngIf="item.type==='message'" class="msg-row" [class.msg-row--out]="isMine(item.msg!)" [class.msg-row--in]="!isMine(item.msg!)">
+              <div class="bubble">{{ item.msg!.text }}</div>
+              <span class="msg-time">{{ formatMsgTime(item.msg!.created_at) }}</span>
+            </div>
+          </ng-container>
+        </div>
+        <div class="chat-area__compose">
+          <input class="chat-area__input" [(ngModel)]="newMessage" placeholder="Écrire un message…" (keyup.enter)="sendMessage()">
+          <button class="chat-area__send" [class.chat-area__send--on]="newMessage.trim()" (click)="sendMessage()" [disabled]="!newMessage.trim()"><lucide-icon [img]="SendIcon"></lucide-icon></button>
+        </div>
+      </div>
+      <div class="chat-area chat-area--blank" *ngIf="!activeConversation"><lucide-icon [img]="MessageIcon"></lucide-icon><p>Sélectionnez une conversation</p></div>
+    </div>
+
+  </main>
 </div>
 
-<!-- ══ MODAL: Leave a Review ══ -->
-<div class="modal-overlay" *ngIf="showReviewModal" (click)="closeReviewModal()">
-    <div class="modal-box" (click)="$event.stopPropagation()">
-        <button class="modal-close" (click)="closeReviewModal()"><lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon></button>
-        <h2 class="modal-title">{{ 'dashboard.modal_review_title' | translate }}</h2>
-        <div class="form-group"><label>{{ 'dashboard.form_listing' | translate }} *</label>
-            <select class="input" [(ngModel)]="reviewForm.estate">
-                <option [value]="0" disabled>{{ 'dashboard.choose_listing' | translate }}</option>
-                <option *ngFor="let e of allEstates" [value]="e.id">{{ e.name }}</option>
-            </select>
-        </div>
-        <div class="form-group"><label>{{ 'dashboard.form_rating' | translate }} *</label>
-            <div class="star-picker">
-                <span *ngFor="let s of getStars(5)" class="star-pick"
-                    [class.active]="s<=(hoverRating || reviewForm.rating)"
-                    (mouseenter)="setHover(s)" (mouseleave)="clearHover()" (click)="setRating(s)">★</span>
-            </div>
-        </div>
-        <div class="form-group"><label>{{ 'dashboard.form_comment' | translate }} *</label>
-            <textarea class="textarea" [(ngModel)]="reviewForm.comment" rows="4" [placeholder]="'dashboard.form_comment_ph' | translate"></textarea>
-        </div>
-        <button class="btn-submit" (click)="submitReview()">{{ 'dashboard.publish_review' | translate }}</button>
+
+<!-- ════════════════════════════════════════════════════════
+     MODALS
+════════════════════════════════════════════════════════ -->
+
+<!-- Estate modal -->
+<div class="m-back" *ngIf="showEstateModal" (click)="closeEstateModal()">
+  <div class="m-box m-box--lg" (click)="$event.stopPropagation()">
+    <div class="m-head"><h2 class="m-title">{{ isEditMode?'Modifier le logement':'Nouveau logement' }}</h2><button class="m-close" (click)="closeEstateModal()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
+    <div class="m-body">
+      <div class="f-group"><label class="f-label">Nom *</label><input class="f-input" [(ngModel)]="estateForm.name" placeholder="Ex: Résidence Étoile du Campus"></div>
+      <div class="f-row"><div class="f-group"><label class="f-label">Localisation *</label><input class="f-input" [(ngModel)]="estateForm.location" placeholder="Eyang, Yaoundé"></div><div class="f-group"><label class="f-label">Prix de base (FCFA)</label><input class="f-input" type="number" [(ngModel)]="estateForm.price" placeholder="35000"></div></div>
+      <div class="f-row"><div class="f-group"><label class="f-label">Distance campus (m)</label><input class="f-input" [(ngModel)]="distanceDisplay" placeholder="500"></div><div class="f-group"><label class="f-label">Statut</label><select class="f-input" [(ngModel)]="estateForm.status"><option value="published">Publié</option><option value="draft">Brouillon</option><option value="archived">Archivé</option></select></div></div>
+      <div class="f-group">
+        <label class="f-label"><lucide-icon [img]="MapPinIcon" style="color:#EF4444;width:14px;height:14px"></lucide-icon> Position GPS <span class="f-hint">— cliquez sur la carte</span></label>
+        <div class="f-row" style="margin-bottom:.5rem"><div class="f-group" style="margin:0"><input class="f-input" type="number" step="0.0000001" [(ngModel)]="estateForm.lat" placeholder="3.884041" (ngModelChange)="onLatLngInput()"><small class="f-hint">Latitude</small></div><div class="f-group" style="margin:0"><input class="f-input" type="number" step="0.0000001" [(ngModel)]="estateForm.lng" placeholder="11.390736" (ngModelChange)="onLatLngInput()"><small class="f-hint">Longitude</small></div></div>
+        <div id="map-picker" style="height:200px;border-radius:10px;overflow:hidden;border:1.5px solid #E2E8F0;z-index:0;position:relative"></div>
+      </div>
+      <div class="f-group"><label class="f-label">Équipements</label><div class="equip-chips"><label class="equip-chip" *ngFor="let eq of availableEquipments" [class.equip-chip--on]="estateForm[eq.key]==='1'"><input type="checkbox" [checked]="estateForm[eq.key]==='1'" (change)="toggleEquipment(eq.key)" style="display:none"><lucide-icon [img]="eq.icon" style="width:14px;height:14px"></lucide-icon>{{ eq.label }}</label></div></div>
+      <div class="f-group"><label class="f-label">Description</label><textarea class="f-input f-textarea" [(ngModel)]="estateForm.description" rows="3" placeholder="Décrivez le logement…"></textarea></div>
+      <div class="f-group">
+        <label class="f-label">Photos</label>
+        <div class="photo-row" *ngIf="isEditMode&&estateForm.existingImages?.length>0"><div class="photo-item" *ngFor="let img of estateForm.existingImages"><img [src]="img.image"><button class="photo-del" (click)="removeExistingImage(img)">×</button></div></div>
+        <div class="photo-row" *ngIf="newImagePreviews.length>0"><div class="photo-item" *ngFor="let p of newImagePreviews; let i=index"><img [src]="p"><button class="photo-del" (click)="removeNewImage(i)">×</button></div></div>
+        <label class="photo-drop" for="imgInput"><lucide-icon [img]="PlusIcon" style="width:16px;height:16px"></lucide-icon><span>Ajouter des photos</span><small>JPG, PNG — max 5 Mo</small></label>
+        <input id="imgInput" type="file" accept="image/*" multiple style="display:none" (change)="onImagesSelected($event)">
+      </div>
     </div>
+    <div class="m-foot"><button *ngIf="isEditMode" class="btn btn--ghost" (click)="switchToRoomManagerFromEdit()"><lucide-icon [img]="BuildingIcon" class="btn__ico"></lucide-icon>Chambres</button><div style="flex:1"></div><button class="btn btn--ghost" (click)="closeEstateModal()">Annuler</button><button class="btn btn--primary" (click)="saveEstate()" [disabled]="isSavingEstate">{{ isSavingEstate?'Enregistrement…':isEditMode?'Enregistrer':'Créer' }}</button></div>
+  </div>
 </div>
 
-<!-- ══ MODAL: Edit Review ══ -->
-<div class="modal-overlay" *ngIf="showEditReviewModal" (click)="closeEditReviewModal()">
-    <div class="modal-box" (click)="$event.stopPropagation()">
-        <button class="modal-close" (click)="closeEditReviewModal()"><lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon></button>
-        <h2 class="modal-title">{{ 'dashboard.modal_edit_review_title' | translate }}</h2>
-        <div class="form-group" *ngIf="editingReview?.estate_name">
-            <label>{{ 'dashboard.form_listing' | translate }}</label>
-            <div class="input input-readonly">{{ editingReview?.estate_name }}</div>
-        </div>
-        <div class="form-group"><label>{{ 'dashboard.form_rating' | translate }} *</label>
-            <div class="star-picker">
-                <span *ngFor="let s of getStars(5)" class="star-pick"
-                    [class.active]="s<=(editHoverRating || editReviewForm.rating)"
-                    (mouseenter)="setEditHover(s)" (mouseleave)="clearEditHover()" (click)="setEditRating(s)">★</span>
-            </div>
-        </div>
-        <div class="form-group"><label>{{ 'dashboard.form_comment' | translate }} *</label>
-            <textarea class="textarea" [(ngModel)]="editReviewForm.comment" rows="4" [placeholder]="'dashboard.form_edit_comment_ph' | translate"></textarea>
-        </div>
-        <button class="btn-submit" (click)="saveEditReview()" [disabled]="isSavingReview">
-            <span *ngIf="!isSavingReview">{{ 'dashboard.save_changes' | translate }}</span>
-            <span *ngIf="isSavingReview">{{ 'dashboard.saving'|translate }}</span>
-        </button>
+<!-- Room modal -->
+<div class="m-back" *ngIf="showRoomModal" (click)="closeRoomModal()">
+  <div class="m-box m-box--lg" (click)="$event.stopPropagation()">
+    <div class="m-head"><h2 class="m-title">Chambres — {{ selectedEstateForRooms?.name }}</h2><button class="m-close" (click)="closeRoomModal()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
+    <div class="m-body">
+      <ng-container *ngIf="!isRoomEditMode">
+        <button class="btn btn--primary btn--sm" style="margin-bottom:1rem" (click)="openCreateRoom()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>Ajouter</button>
+        <div *ngIf="isLoadingRooms" style="display:flex;justify-content:center;padding:1.5rem"><div class="page-loading__ring page-loading__ring--sm"></div></div>
+        <table class="data-tbl" *ngIf="!isLoadingRooms"><thead><tr><th>Type</th><th>Prix</th><th>Qté</th><th></th></tr></thead><tbody><tr *ngFor="let rm of roomCategories"><td><span class="dt-primary">{{ rm.name }}</span><span class="dt-secondary">{{ rm.occupancy }}</span></td><td class="dt-mono">{{ formatPrice(rm.price) }}</td><td>{{ rm.quantity_available }}</td><td class="dt-acts"><button class="ico-btn ico-btn--xs" (click)="openEditRoom(rm)"><lucide-icon [img]="PencilIcon"></lucide-icon></button><button class="ico-btn ico-btn--red ico-btn--xs" (click)="deleteRoom(rm)"><lucide-icon [img]="TrashIcon"></lucide-icon></button></td></tr><tr *ngIf="roomCategories.length===0"><td colspan="4" class="dt-empty">Aucune chambre.</td></tr></tbody></table>
+      </ng-container>
+      <ng-container *ngIf="isRoomEditMode">
+        <div class="f-row"><div class="f-group"><label class="f-label">Nom *</label><input class="f-input" [(ngModel)]="roomForm.name"></div><div class="f-group"><label class="f-label">Prix (FCFA) *</label><input class="f-input" type="number" [(ngModel)]="roomForm.price" min="0"></div></div>
+        <div class="f-row"><div class="f-group"><label class="f-label">Capacité</label><select class="f-input" [(ngModel)]="roomForm.occupancy"><option value="single">1 Personne</option><option value="double">2 Personnes</option><option value="shared">Partagée</option></select></div><div class="f-group"><label class="f-label">Quantité</label><input class="f-input" type="number" [(ngModel)]="roomForm.quantity_available" min="1"></div></div>
+        <div class="f-group"><label class="f-label">Équipements</label><div class="equip-chips"><label class="equip-chip" [class.equip-chip--on]="roomForm.wifi==='1'"><input type="checkbox" [checked]="roomForm.wifi==='1'" (change)="roomForm.wifi=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="WifiIcon" style="width:14px;height:14px"></lucide-icon>WiFi</label><label class="equip-chip" [class.equip-chip--on]="roomForm.tv==='1'"><input type="checkbox" [checked]="roomForm.tv==='1'" (change)="roomForm.tv=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="TvIcon" style="width:14px;height:14px"></lucide-icon>TV</label><label class="equip-chip" [class.equip-chip--on]="roomForm.fridge==='1'"><input type="checkbox" [checked]="roomForm.fridge==='1'" (change)="roomForm.fridge=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="FridgeIcon" style="width:14px;height:14px"></lucide-icon>Frigo</label></div></div>
+        <div class="f-group"><label class="f-label">Description</label><textarea class="f-input f-textarea" [(ngModel)]="roomForm.description" rows="2"></textarea></div>
+        <div class="f-group"><label class="f-label">Photos</label><div class="photo-row" *ngIf="roomPreviewImages.length>0"><div class="photo-item" *ngFor="let p of roomPreviewImages;let i=index"><img [src]="p"><button class="photo-del" (click)="removeRoomPreview(i)">×</button></div></div><label class="photo-drop photo-drop--sm" for="roomImg"><lucide-icon [img]="PlusIcon" style="width:14px;height:14px"></lucide-icon>Ajouter photos</label><input id="roomImg" type="file" accept="image/*" multiple style="display:none" (change)="onRoomFilesSelected($event)"></div>
+      </ng-container>
     </div>
+    <div class="m-foot" *ngIf="isRoomEditMode"><button class="btn btn--ghost" (click)="isRoomEditMode=false">Annuler</button><button class="btn btn--primary" (click)="saveRoom()" [disabled]="isSavingRoom">{{ isSavingRoom?'Enregistrement…':roomEditId?'Mettre à jour':'Créer' }}</button></div>
+  </div>
+</div>
+
+<!-- Review modal — visual estate image picker -->
+<div class="m-back" *ngIf="showReviewModal" (click)="closeReviewModal()">
+  <div class="m-box m-box--rv" (click)="$event.stopPropagation()">
+    <div class="m-head">
+      <h2 class="m-title">Laisser un avis</h2>
+      <button class="m-close" (click)="closeReviewModal()"><lucide-icon [img]="XIcon"></lucide-icon></button>
+    </div>
+    <div class="m-body">
+
+      <!-- Step 1: choose estate -->
+      <div class="f-group">
+        <label class="f-label">Quel logement évaluez-vous ?</label>
+
+        <!-- Hero shown after selection -->
+        <div class="rv-hero" *ngIf="selectedReviewEstate">
+          <img *ngIf="getEstateImage(selectedReviewEstate)" [src]="getEstateImage(selectedReviewEstate)" [alt]="selectedReviewEstate.name" class="rv-hero__img">
+          <div class="rv-hero__ph" *ngIf="!getEstateImage(selectedReviewEstate)"><lucide-icon [img]="HomeIcon"></lucide-icon></div>
+          <div class="rv-hero__overlay">
+            <span class="rv-hero__name">{{ selectedReviewEstate.name }}</span>
+            <span class="rv-hero__loc">{{ selectedReviewEstate.location }}</span>
+          </div>
+          <button class="rv-hero__change" (click)="reviewForm.estate=0;reviewForm.rating=0;reviewForm.comment=''">Changer →</button>
+        </div>
+
+        <!-- Image card grid -->
+        <div class="rv-picker" *ngIf="!selectedReviewEstate">
+          <div *ngFor="let e of allEstates" class="rv-picker-card" [class.rv-picker-card--on]="reviewForm.estate===e.id" (click)="reviewForm.estate=e.id">
+            <div class="rv-picker-card__img">
+              <img *ngIf="getEstateImage(e)" [src]="getEstateImage(e)" [alt]="e.name" loading="lazy">
+              <div class="rv-picker-card__ph" *ngIf="!getEstateImage(e)"><lucide-icon [img]="HomeIcon"></lucide-icon></div>
+              <div class="rv-picker-card__check" *ngIf="reviewForm.estate===e.id"><lucide-icon [img]="CheckIcon"></lucide-icon></div>
+            </div>
+            <div class="rv-picker-card__info">
+              <span class="rv-picker-card__name">{{ e.name }}</span>
+              <span class="rv-picker-card__loc">{{ e.location }}</span>
+            </div>
+          </div>
+          <p class="rv-picker-empty" *ngIf="allEstates.length===0">Aucun logement disponible.</p>
+        </div>
+      </div>
+
+      <!-- Step 2: stars -->
+      <div class="f-group" *ngIf="selectedReviewEstate">
+        <label class="f-label">Votre note</label>
+        <div class="rv-stars">
+          <span *ngFor="let s of [1,2,3,4,5]" class="rv-star" [class.rv-star--on]="(hoverRating||reviewForm.rating)>=s" (mouseenter)="setHover(s)" (mouseleave)="clearHover()" (click)="setRating(s)">★</span>
+          <span class="rv-star-lbl" *ngIf="reviewForm.rating>0">{{ ['','Mauvais','Passable','Bien','Très bien','Excellent'][reviewForm.rating] }}</span>
+        </div>
+      </div>
+
+      <!-- Step 3: comment -->
+      <div class="f-group" *ngIf="reviewForm.rating>0">
+        <label class="f-label">Commentaire</label>
+        <textarea class="f-input f-textarea" [(ngModel)]="reviewForm.comment" rows="3" placeholder="Ambiance, équipements, proximité du campus…"></textarea>
+      </div>
+
+    </div>
+    <div class="m-foot">
+      <button class="btn btn--ghost" (click)="closeReviewModal()">Annuler</button>
+      <button class="btn btn--primary" [disabled]="!reviewForm.estate||!reviewForm.rating||!reviewForm.comment.trim()" (click)="submitReview()">Publier l'avis</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit review -->
+<div class="m-back" *ngIf="showEditReviewModal" (click)="closeEditReviewModal()">
+  <div class="m-box m-box--sm" (click)="$event.stopPropagation()">
+    <div class="m-head"><h2 class="m-title">Modifier l'avis</h2><button class="m-close" (click)="closeEditReviewModal()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
+    <div class="m-body">
+      <div class="f-group"><label class="f-label">Note</label>
+        <div class="rv-stars"><span *ngFor="let s of [1,2,3,4,5]" class="rv-star" [class.rv-star--on]="(editHoverRating||editReviewForm.rating)>=s" (mouseenter)="setEditHover(s)" (mouseleave)="clearEditHover()" (click)="setEditRating(s)">★</span></div>
+      </div>
+      <div class="f-group"><label class="f-label">Commentaire</label><textarea class="f-input f-textarea" [(ngModel)]="editReviewForm.comment" rows="4"></textarea></div>
+    </div>
+    <div class="m-foot"><button class="btn btn--ghost" (click)="closeEditReviewModal()">Annuler</button><button class="btn btn--primary" (click)="saveEditReview()" [disabled]="isSavingReview">{{ isSavingReview?'Enregistrement…':'Enregistrer' }}</button></div>
+  </div>
+</div>
+
+<!-- Confirm -->
+<div class="m-back" *ngIf="showConfirm" (click)="confirmNo()">
+  <div class="m-box m-box--xs" (click)="$event.stopPropagation()">
+    <div class="m-confirm-ico"><lucide-icon [img]="AlertIcon"></lucide-icon></div>
+    <h2 class="m-confirm-title">Confirmation</h2>
+    <p class="m-confirm-msg">{{ confirmMessage }}</p>
+    <div class="m-foot m-foot--center"><button class="btn btn--ghost" (click)="confirmNo()">Annuler</button><button class="btn btn--danger" (click)="confirmYes()">Confirmer</button></div>
+  </div>
 </div>

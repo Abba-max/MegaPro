@@ -570,7 +570,7 @@
   background: #F8FAFC;
   border: 1.5px solid #E2E8F0;
   border-radius: 26px;
-  padding: 5px 5px 5px 14px;
+  padding: 5px 8px 5px 18px;
   transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
 }
 .input-row:focus-within,
@@ -580,21 +580,7 @@
   box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
 }
 
-.attach-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #94A3B8;
-  padding: 4px;
-  border-radius: 8px;
-  display: inline-flex;
-  align-items: center;
-  transition: color 0.2s;
-  flex-shrink: 0;
-}
-.attach-btn:hover { color: #2563EB; }
-.attach-btn lucide-icon { display: inline-flex !important; width: 18px !important; height: 18px !important; }
-.attach-btn lucide-icon svg { width: 18px !important; height: 18px !important; display: block; }
+
 
 .chat-input {
   flex: 1;
@@ -635,48 +621,7 @@
 .send-btn lucide-icon { display: inline-flex !important; width: 17px !important; height: 17px !important; }
 .send-btn lucide-icon svg { width: 17px !important; height: 17px !important; display: block; }
 
-/* ── File upload ─────────────────────────────────────────── */
-.file-input-hidden {
-  display: none;
-}
 
-.attach-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.msg-file {
-  margin: 0.5rem 0;
-  padding: 0.75rem;
-  background: rgba(255,255,255,0.1);
-  border-radius: 8px;
-  display: inline-block;
-}
-
-.file-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: inherit;
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 600;
-  padding: 2px 0;
-}
-
-.file-link:hover {
-  text-decoration: underline;
-}
-
-.file-icon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
-.sent-file-link {
-  color: #fff;
-}
 
 /* Icon utility */
 .icon-sm {
@@ -804,4 +749,38 @@
   }
 
   .chat-contact-name { font-size: 13.5px; }
+}
+/* ═══════════════════════════════════════════════════════════
+   WS LIVE INDICATOR
+   Small pulsing dot in the chat header status row.
+   Green + pulse = real-time socket open.
+   Grey           = reconnecting (handled silently by WS service).
+═══════════════════════════════════════════════════════════ */
+
+.ws-live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #D1D5DB;
+  flex-shrink: 0;
+  margin-left: 5px;
+  transition: background 0.4s;
+}
+
+.ws-live-dot.ws-live-dot--on {
+  background: #22C55E;
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5);
+  animation: ws-live-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes ws-live-pulse {
+  0%   { box-shadow: 0 0 0 0   rgba(34, 197, 94, 0.5); }
+  70%  { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0);   }
+  100% { box-shadow: 0 0 0 0   rgba(34, 197, 94, 0);   }
+}
+
+/* Sending state on optimistic bubbles */
+.sending-bubble {
+  opacity: 0.75;
 }

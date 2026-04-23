@@ -6,13 +6,13 @@
 /* ── Tokens ──────────────────────────────────────────────────────────────── */
 :host {
   /* Palette */
-  --ms-bg:        #F7F3EC;       /* warm ivory */
+  --ms-bg:        #F7F3EC;
   --ms-surface:   #FFFFFF;
   --ms-border:    #DDD5C4;
-  --ms-forest:    #1F3D20;       /* deep forest */
-  --ms-forest-m:  #2E6B31;       /* mid green */
-  --ms-forest-l:  #E4EDDF;       /* tint */
-  --ms-terra:     #BF4A1A;       /* terracotta */
+  --ms-forest:    #1F3D20;
+  --ms-forest-m:  #2E6B31;
+  --ms-forest-l:  #E4EDDF;
+  --ms-terra:     #BF4A1A;
   --ms-terra-l:   #F5E6DE;
   --ms-ink:       #1A1710;
   --ms-ink-m:     #49453C;
@@ -95,7 +95,6 @@
   &__count {
     font-size:  13px;
     color:      var(--ms-ink-l);
-
     &--spin { display: flex; align-items: center; gap: 6px; font-style: italic; }
   }
 
@@ -459,7 +458,7 @@
   &__map-grid-wrap {
     position: relative;
     margin:   0;
-    line-height: 0;        /* remove inline-block gap below SVG */
+    line-height: 0;
   }
 
   &__map-grid-svg {
@@ -468,22 +467,13 @@
     display: block;
   }
 
-  /* Price pill markers rendered inside the SVG grid */
   &__grid-marker {
     cursor: pointer;
-
-    rect {
-      transition: fill .15s;
-    }
-
-    &--active rect {
-      filter: drop-shadow(0 0 4px rgba(191,74,26,.5));
-    }
-
+    rect { transition: fill .15s; }
+    &--active rect { filter: drop-shadow(0 0 4px rgba(191,74,26,.5)); }
     &:hover rect { opacity: .85; }
   }
 
-  /* Re-centre button overlaid on the grid map */
   &__map-grid-locate {
     position:   absolute;
     bottom:     8px;
@@ -504,7 +494,6 @@
     &:hover { background: var(--ms-forest-l); color: var(--ms-forest); }
   }
 
-  /* Listing count pill over the grid map */
   &__map-grid-badge {
     position:    absolute;
     top:         8px;
@@ -520,7 +509,6 @@
     line-height: 1;
     pointer-events: none;
   }
-  /* ═══════════════════════════════════════════════════════════════════════ */
 
   /* ── Empty ── */
   &__empty {
@@ -737,7 +725,7 @@
     box-shadow:    var(--ms-shadow-lg);
   }
 
-  .leaflet-popup-content { margin: 0; min-width: 230px; }
+  .leaflet-popup-content { margin: 0; min-width: 240px; }
   .leaflet-popup-tip { background: #fff; }
   .leaflet-popup-close-button {
     color: var(--ms-ink-l) !important;
@@ -747,7 +735,193 @@
   }
 }
 
-/* ── Map markers (DivIcon, injected into Leaflet canvas) ────────────────── */
+/* ══════════════════════════════════════════════════════════════════════════
+   ── Photo-card map marker  (.emk)
+   Renders as a mini property card pinned to the map — image on top,
+   price strip at the bottom. Falls back to a plain pill with no image.
+══════════════════════════════════════════════════════════════════════════ */
+
+:host ::ng-deep .emk,
+.emk {
+  width:         80px;
+  border-radius: 9px;
+  background:    #1F3D20;
+  border:        2.5px solid #fff;
+  box-shadow:    0 3px 10px rgba(0,0,0,.28);
+  overflow:      hidden;
+  cursor:        pointer;
+  font-family:   'Nunito', system-ui, sans-serif;
+  transition:    transform .15s, box-shadow .15s;
+
+  /* ── Photo thumbnail area ── */
+  &__img {
+    width:    100%;
+    height:   52px;
+    position: relative;
+    overflow: hidden;
+    background: #2E6B31;     /* shown while image loads */
+
+    img {
+      width:      100%;
+      height:     100%;
+      object-fit: cover;
+      display:    block;
+    }
+  }
+
+  /* Star rating badge over the photo */
+  &__rating {
+    position:   absolute;
+    top:        4px;
+    left:       4px;
+    padding:    1px 5px;
+    background: rgba(0,0,0,.55);
+    backdrop-filter: blur(3px);
+    border-radius: 4px;
+    font-size:  10px;
+    font-weight: 800;
+    color:      #FFD700;
+    line-height: 1.4;
+  }
+
+  /* ── Price strip ── */
+  &__price {
+    padding:     3px 4px;
+    text-align:  center;
+    font-size:   11px;
+    font-weight: 800;
+    color:       #FDFCF9;
+    white-space: nowrap;
+    line-height: 1.3;
+    background:  #1F3D20;
+  }
+
+  /* ── Hover ── */
+  &:hover {
+    transform:  scale(1.07);
+    box-shadow: 0 5px 16px rgba(0,0,0,.35);
+  }
+
+  /* ── Active / selected ── */
+  &--active {
+    border-color: #BF4A1A !important;
+    transform:    scale(1.14) !important;
+    box-shadow:   0 6px 20px rgba(191,74,26,.45) !important;
+    z-index:      9999 !important;
+
+    .emk__price { background: #BF4A1A; }
+  }
+
+  /* ── Pill fallback (no image) ── */
+  &--pill {
+    height:      32px;
+    width:       auto;
+    min-width:   80px;
+    display:     flex;
+    align-items: center;
+    justify-content: center;
+    padding:     0 12px;
+    border-radius: 16px;
+    font-size:   12px;
+    font-weight: 800;
+    color:       #FDFCF9;
+
+    &.emk--active { background: #BF4A1A; }
+  }
+}
+
+/* ── Popup inner styles ──────────────────────────────────────────────────── */
+:host ::ng-deep .estate-popup-inner,
+.estate-popup-inner {
+  font-family: 'Nunito', system-ui, sans-serif;
+  min-width:   240px;
+
+  .pop-img {
+    img {
+      width:      100%;
+      height:     140px;
+      object-fit: cover;
+      display:    block;
+    }
+  }
+
+  .pop-body { padding: 12px 14px 14px; }
+
+  .pop-name {
+    font-size:   14px;
+    font-weight: 800;
+    color:       #1A1710;
+    margin:      0 0 3px;
+    white-space: nowrap;
+    overflow:    hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pop-rating {
+    font-size: 12px;
+    color:     #FFB800;
+    margin:    0 0 3px;
+    span { color: #908C81; font-size: 11px; }
+  }
+
+  .pop-location {
+    font-size:  12px;
+    color:      #908C81;
+    margin:     0 0 5px;
+    white-space: nowrap;
+    overflow:   hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pop-badges {
+    display:       flex;
+    gap:           4px;
+    flex-wrap:     wrap;
+    margin-bottom: 8px;
+  }
+
+  .pop-badge {
+    padding:     2px 6px;
+    background:  #E4EDDF;
+    border-radius: 4px;
+    font-size:   10px;
+    font-weight: 700;
+    color:       #1F3D20;
+  }
+
+  .pop-footer {
+    display:     flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top:  4px;
+  }
+
+  .pop-price {
+    font-size:   14px;
+    font-weight: 800;
+    color:       #1F3D20;
+    em { font-size: 11px; font-style: normal; color: #908C81; font-weight: 400; }
+  }
+
+  .pop-link {
+    font-size:       13px;
+    font-weight:     700;
+    color:           #BF4A1A;
+    text-decoration: none;
+    padding:         4px 10px;
+    border:          1px solid #BF4A1A;
+    border-radius:   6px;
+    transition:      background .14s, color .14s;
+
+    &:hover {
+      background:      #BF4A1A;
+      color:           #fff;
+      text-decoration: none;
+    }
+  }
+}
+
+/* ── Old plain marker (kept for any legacy uses) ─────────────────────────── */
 :host ::ng-deep .estate-marker,
 .estate-marker {
   height:      32px;
@@ -774,81 +948,6 @@
     transform:    scale(1.14);
     z-index:      9999 !important;
     border-color: rgba(255,255,255,.9);
-  }
-}
-
-/* ── Popup inner styles ──────────────────────────────────────────────────── */
-:host ::ng-deep .estate-popup-inner,
-.estate-popup-inner {
-  font-family: 'Nunito', system-ui, sans-serif;
-  min-width:   230px;
-
-  .pop-img {
-    img {
-      width:      100%;
-      height:     130px;
-      object-fit: cover;
-      display:    block;
-    }
-  }
-
-  .pop-body { padding: 12px 14px 14px; }
-
-  .pop-name {
-    font-size:   14px;
-    font-weight: 800;
-    color:       #1A1710;
-    margin:      0 0 3px;
-  }
-
-  .pop-rating {
-    font-size: 12px;
-    color:     #FFB800;
-    margin:    0 0 3px;
-    span { color: #908C81; font-size: 11px; }
-  }
-
-  .pop-location {
-    font-size:  12px;
-    color:      #908C81;
-    margin:     0 0 5px;
-  }
-
-  .pop-badges {
-    display: flex;
-    gap: 4px;
-    flex-wrap: wrap;
-    margin-bottom: 8px;
-  }
-
-  .pop-badge {
-    padding:     2px 6px;
-    background:  #E4EDDF;
-    border-radius: 4px;
-    font-size:   10px;
-    font-weight: 700;
-    color:       #1F3D20;
-  }
-
-  .pop-footer {
-    display:     flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .pop-price {
-    font-size:   14px;
-    font-weight: 800;
-    color:       #1F3D20;
-    em { font-size: 11px; font-style: normal; color: #908C81; font-weight: 400; }
-  }
-
-  .pop-link {
-    font-size:       13px;
-    font-weight:     700;
-    color:           #BF4A1A;
-    text-decoration: none;
-    &:hover { text-decoration: underline; }
   }
 }
 

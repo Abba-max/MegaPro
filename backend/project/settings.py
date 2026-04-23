@@ -80,7 +80,6 @@ DATABASES = {
     }
 }
 
-
 database_url = os.environ.get('DATABASE_URL', '') or ''
 if database_url:
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
@@ -96,21 +95,31 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
-LOGIN_URL = '/login/'
+LOGIN_URL       = '/login/'
 AUTH_USER_MODEL = 'estate_app.User'
-
 
 LANGUAGE_CODE = 'fr-fr'
 TIME_ZONE     = 'Africa/Douala'
 USE_I18N      = True
 USE_TZ        = True
 
+# ── Static & Media ─────────────────────────────────────────────────────────
+STATIC_URL  = '/static/'
+MEDIA_URL   = '/media/'
 
-STATIC_URL       = '/static/'
-MEDIA_URL        = '/media/'
+# Static files collected by collectstatic (whitenoise serves these in prod)
 STATICFILES_DIRS = []
-MEDIA_ROOT  = os.path.join(BASE_DIR, 'static_cdn', 'media_root')
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_cdn', 'static_root')
+
+# ── FIX: use the standard BASE_DIR/media/ directory for uploaded files.
+#    The old value ('static_cdn/media_root') didn't match where Django
+#    actually writes uploaded files, causing every image to 404.
+#
+#    If you had files in static_cdn/media_root/, move them:
+#      Windows: xcopy /E /I backend\static_cdn\media_root backend\media
+#      macOS/Linux: cp -r backend/static_cdn/media_root/. backend/media/
+# ────────────────────────────────────────────────────────────────────────────
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_BACKEND      = 'django.core.mail.backends.console.EmailBackend'

@@ -19,7 +19,11 @@
     "admin": "Administration",
     "logout": "Déconnexion",
     "messages": "Messages",
-    "back_menu": "Retour au menu"
+    "back_menu": "Retour au menu",
+    "map": "Carte",
+    "explore_map": "Explorer la carte",
+    "explore_map_mobile": "Explorer sur la carte",
+    "my_space": "Mon espace"
   },
   "sidebar": {
     "overview": "Vue d'ensemble",
@@ -41,7 +45,16 @@
     "water": "Forage",
     "tv_label": "TV",
     "fridge_label": "Frigo",
-    "stars": "Bien notés"
+    "stars": "Bien notés",
+    "advanced": "Filtres avancés",
+    "reset": "Réinitialiser",
+    "room_type": "Type de chambre",
+    "equipment": "Équipements",
+    "budget": "Budget mensuel (FCFA)",
+    "distance": "Distance max du campus (m)",
+    "min_free": "Places libres minimum",
+    "apply": "Appliquer",
+    "all_types": "Tous les types"
   },
   "listings": {
     "title": "Logements",
@@ -54,7 +67,8 @@
     "no_features": "Aucun équipement renseigné",
     "show_more": "Afficher plus",
     "remaining": "restant(s)",
-    "all_shown": "Tous les logements affichés"
+    "all_shown": "Tous les logements affichés",
+    "price_from": "À partir de"
   },
   "detail": {
     "places": "places",
@@ -85,7 +99,16 @@
     "selected": "✓ Sélectionné cliquez sur Réserver",
     "estate_equipment": "Équipements de la résidence",
     "place_available": "place libre",
-    "places_available": "places libres"
+    "places_available": "places libres",
+    "photo_prev": "Photo précédente",
+    "photo_next": "Photo suivante",
+    "price_per_month": "FCFA/mois",
+    "all_inclusive": "Tout inclus",
+    "deposit": "Caution",
+    "min_duration": "Durée min.",
+    "select_first": "Sélectionnez un type ci-dessus",
+    "login_to_view": "Connectez-vous pour voir tous les détails",
+    "login_to_book": "Connectez-vous pour réserver"
   },
   "why": {
     "title": "Pourquoi choisir Eyang Estate ?",
@@ -107,7 +130,9 @@
     "housings": "Logements disponibles",
     "students": "Étudiants logés",
     "satisfaction": "Avis positifs",
-    "students_count": "Nombre d'étudiants"
+    "students_count": "Nombre d'étudiants",
+    "parents": "Parents",
+    "owners": "Bailleurs"
   },
   "testimonials": {
     "title": "Ce que disent nos étudiants",
@@ -140,6 +165,15 @@
     "subtitle": "Rejoignez des milliers d'étudiants qui font confiance à Eyang Estate.",
     "contact_btn": "Nous contacter",
     "listings_btn": "Voir les logements"
+  },
+  "common": {
+    "apply": "Appliquer",
+    "apply_filters": "Appliquer ({{ count }} filtre{{ count !== 1 ? 's' : '' }})",
+    "reset": "Réinitialiser",
+    "reset_filters": "Réinitialiser les filtres",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "cancel": "Annuler"
   },
   "auth": {
     "login_title": "Connexion",
@@ -335,6 +369,12 @@
     "cancel_reservation": "Annuler la réservation",
     "delete_conv": "Supprimer"
   },
+  "home": {
+    "interactive_location": "Localisation interactive",
+    "map_title": "Trouvez votre logement\nsur la carte",
+    "map_desc": "Visualisez tous les logements autour du campus UYI · Eyang. Filtrez par prix, équipements et distance directement sur la carte.",
+    "view_all_listings": "Voir tous les logements"
+  },
   "lang": {
     "switch_to_en": "English",
     "switch_to_fr": "Français"
@@ -396,6 +436,90 @@
     "msg_owner": "Décrivez votre logement, sa localisation, les équipements disponibles et vos conditions...",
     "msg_problem": "Décrivez le problème rencontré et votre identifiant utilisateur si disponible...",
     "msg_other": "Écrivez votre message ici..."
+  },
+  "reviews": {
+    "client_title": "Avis clients",
+    "no_reviews_yet": "Aucun avis pour le moment",
+    "be_first": "Soyez le premier !",
+    "add_review": "Laisser un avis",
+    "your_rating": "Votre note",
+    "your_review": "Votre avis",
+    "share_experience": "Partagez votre expérience avec ce logement...",
+    "submit": "Publier",
+    "submitting": "Publication...",
+    "published": "Publié",
+    "cancel": "Annuler",
+    "login_to_leave": "Connectez-vous pour laisser un avis",
+    "like": "J'aime",
+    "liked": "Aimé",
+    "love_it": "J'adore",
+    "view_more": "Voir plus d'avis"
+  },
+  "action": {
+    "reserve": "Réserver",
+    "book_room": "Réserver cette chambre",
+    "login_reserve": "Connectez-vous pour réserver",
+    "send_message": "Envoyer un message",
+    "contact": "Contacter",
+    "negotiate": "Négocier / Message"
+  },
+  "form": {
+    "name": "Votre nom",
+    "phone": "Téléphone",
+    "message_optional": "Message (optionnel)",
+    "your_request": "Précisez votre demande...",
+    "send_request": "Envoyer la demande",
+    "sending": "Envoi en cours...",
+    "request_sent": "Demande envoyée ! Le propriétaire vous contactera bientôt."
+  },
+  "messages": {
+    "title": "Messages",
+    "connecting": "Connexion en cours...",
+    "discuss": "Discutez du prix, des conditions, ou posez vos questions.",
+    "start": "Démarrez la conversation",
+    "your_message": "Votre message...",
+    "sending": "Envoi...",
+    "file_upload_error": "Fichier trop volumineux",
+    "file_max_size": "La taille maximale est 10 Mo",
+    "file_sent": "Fichier envoyé",
+    "file_sent_success": "{{ name }} a été envoyé avec succès",
+    "today": "Aujourd'hui",
+    "yesterday": "Hier",
+    "start_conv": "Démarrez la conversation…",
+    "you_prefix": "Vous:",
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "send_error": "Erreur d'envoi",
+    "retry_send": "Impossible d'envoyer le message. Réessayez."
+  },
+  "map": {
+    "title": "Carte",
+    "home": "Accueil",
+    "housing_count": "{{ count }} logement",
+    "loading": "Chargement...",
+    "search_location": "Quartier, zone...",
+    "filters": "Filtres",
+    "view_split": "Vue partagée",
+    "view_map": "Carte seule",
+    "view_list": "Liste seule",
+    "equipment": "Équipements",
+    "price_month": "Prix / mois (XAF)",
+    "max_distance": "Distance max du campus (m)",
+    "reset_filters": "Réinitialiser les filtres",
+    "center_eyang": "Centrer sur Eyang",
+    "view_map": "Voir sur la carte",
+    "results": "{{ count }} résultat",
+    "no_housing": "Aucun logement trouvé",
+    "reduce_filters": "Essayez de réduire vos filtres",
+    "no_published": "Aucun logement publié pour le moment",
+    "clear_filters": "Effacer les filtres"
+  },
+  "price": {
+    "from": "À partir de",
+    "per_month": "FCFA/mois",
+    "caution": "Caution",
+    "min_duration": "Durée min.",
+    "free_places": "Places libres"
   },
   "confirm": {
     "cancel": "Annuler",

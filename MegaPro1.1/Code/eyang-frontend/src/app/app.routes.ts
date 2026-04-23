@@ -55,6 +55,7 @@ export const routes: Routes = [
     component: LayoutComponent,
     canActivate: [adminGuard],
     children: [
+      { path: '', redirectTo: 'overview', pathMatch: 'full' }, 
       {
         path: 'overview',
         loadComponent: () => import('./pages/admin-overview/admin-overview.component').then(c => c.AdminOverviewComponent)

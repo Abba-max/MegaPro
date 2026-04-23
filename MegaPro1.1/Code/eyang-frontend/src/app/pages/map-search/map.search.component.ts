@@ -8,9 +8,10 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import * as L from 'leaflet';
 import {
-  EstateService, Estate, EstateFilters, getAbsoluteUrl,
+  EstateService, Estate, EstateFilters,
 } from '../../services/estate.service';
 import { AuthService } from '../../services/auth.service';
+import { TranslateModule } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, switchMap, tap, catchError } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
@@ -23,27 +24,27 @@ L.Icon.Default.mergeOptions({
   shadowUrl:     'assets/leaflet/marker-shadow.png',
 });
 
-const EYANG_CENTER: L.LatLngTuple = [3.8622, 11.5172];
+// Centre = Institut Universitaire Saint Jean Ingénieur, Eyang
+// (2 km de l'autoroute Yaoundé-Douala, arrondissement de Lobo, Lékié)
+const EYANG_CENTER: L.LatLngTuple = [3.8852, 11.3912];
 const DEFAULT_ZOOM = 15;
 
-const LOCATION_COORDS: Record<string, L.LatLngTuple> = {
-  'eyang':    [3.8622, 11.5172],
-  'lobo':     [3.8580, 11.5130],
-  'vogt':     [3.8700, 11.5200],
-  'nlongkak': [3.8810, 11.5260],
-};
-
 function estateCoords(estate: Estate): L.LatLngTuple {
-  const key  = estate.location?.toLowerCase().trim() ?? '';
-  const base = LOCATION_COORDS[key] ?? EYANG_CENTER;
-  const jitter = (estate.id % 100) * 0.00005;
-  return [base[0] + jitter, base[1] + (jitter * 1.3)];
+  const lat = estate.lat, lng = estate.lng;
+  if (lat && lng && lat !== 0 && lng !== 0) return [lat, lng];
+  return EYANG_CENTER;
+}
+
+function priceLabel(price: number): string {
+  if (price >= 1_000_000) return `${(price / 1_000_000).toFixed(1)}M`;
+  if (price >= 1_000)     return `${Math.round(price / 1_000)}k`;
+  return String(price);
 }
 
 @Component({
   selector:    'app-map-search',
   standalone:  true,
-  imports:     [CommonModule, FormsModule],
+  imports:     [CommonModule, FormsModule, TranslateModule],
   templateUrl: './map-search.component.html',
   styleUrls:   ['./map-search.component.scss'],
 })
@@ -55,19 +56,17 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
   router                = inject(Router);
 
   // ── UI state ──────────────────────────────────────────────────────────
-  estates          = signal<Estate[]>([]);
-  loading          = signal(false);
-  error            = signal<string | null>(null);
-  activeId         = signal<number | null>(null);
-  hoveredId        = signal<number | null>(null);
-  viewMode         = signal<'split' | 'map' | 'list'>('split');
-  showFilters      = signal(false);
-  mapReady         = signal(false);
+  estates        = signal<Estate[]>([]);
+  loading        = signal(false);
+  error          = signal<string | null>(null);
+  activeId       = signal<number | null>(null);
+  hoveredId      = signal<number | null>(null);
+  viewMode       = signal<'split' | 'map' | 'list'>('split');
+  showFilters    = signal(false);
+  mapReady       = signal(false);
+  showMapSection = signal(false);
 
-  /** Whether the inline map-grid section is expanded (list panel) */
-  showMapSection   = signal(false);
-
-  // Filters
+  // ── Filters ───────────────────────────────────────────────────────────
   filterLocation   = signal('');
   filterGenerator  = signal('');
   filterForage     = signal('');
@@ -82,7 +81,17 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
        this.filterWifi() || this.filterMinPrice() || this.filterMaxPrice() || this.filterMaxDist())
   );
 
-  count = computed(() => this.estates().length);
+  /** Client-side filtered list — drives BOTH the card list AND the map markers. */
+  visibleEstates = computed(() => {
+    let list = this.estates();
+    const minP = this.filterMinPrice();
+    const maxP = this.filterMaxPrice();
+    const wifi = this.filterWifi();
+    if (minP != null) list = list.filter(e => e.price >= minP);
+    if (maxP != null) list = list.filter(e => e.price <= maxP);
+    if (wifi)         list = list.filter(e => e.wifi === wifi);
+    return list;
+  });
 
   // ── Leaflet internals ─────────────────────────────────────────────────
   map!:                 L.Map;
@@ -93,10 +102,14 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
   private filterTrigger$ = new Subject<EstateFilters>();
   private subs: Subscription[] = [];
 
+  /**
+   * Re-render markers whenever visibleEstates() changes (catches both
+   * server-side and client-side filter changes) or activeId changes.
+   */
   private markersEffect = effect(() => {
-    const list   = this.estates();
-    const active = this.activeId();
-    if (this.mapReady()) this.renderMarkers(list, active);
+    const visible = this.visibleEstates();
+    const active  = this.activeId();
+    if (this.mapReady()) this.renderMarkers(visible, active);
   });
 
   ngOnInit(): void {
@@ -117,9 +130,7 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subs.push(sub);
   }
 
-  ngAfterViewInit(): void {
-    this.initMap();
-  }
+  ngAfterViewInit(): void { this.initMap(); }
 
   ngOnDestroy(): void {
     this.subs.forEach(s => s.unsubscribe());
@@ -127,28 +138,21 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.map?.remove();
   }
 
-  // ── Map initialisation ────────────────────────────────────────────────
+  // ── Map init ──────────────────────────────────────────────────────────
   private initMap(): void {
     this.map = L.map(this.mapContainerRef.nativeElement, {
-      center:             EYANG_CENTER,
-      zoom:               DEFAULT_ZOOM,
-      zoomControl:        false,
-      attributionControl: false,
+      center: EYANG_CENTER, zoom: DEFAULT_ZOOM,
+      zoomControl: false, attributionControl: false,
     });
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-    }).addTo(this.map);
-
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(this.map);
     L.control.zoom({ position: 'bottomright' }).addTo(this.map);
     L.control.attribution({ position: 'bottomright', prefix: '© OSM' }).addTo(this.map);
-
     this.markerLayer = L.layerGroup().addTo(this.map);
     this.mapReady.set(true);
     this.triggerSearch();
   }
 
-  // ── Trigger / filter ──────────────────────────────────────────────────
+  // ── Server-side search ────────────────────────────────────────────────
   triggerSearch(): void {
     const f: EstateFilters = { status: 'published' };
     if (this.filterLocation())   f.location   = this.filterLocation();
@@ -159,62 +163,40 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
     this.filterTrigger$.next(f);
   }
 
-  visibleEstates = computed(() => {
-    let list = this.estates();
-    const minP = this.filterMinPrice();
-    const maxP = this.filterMaxPrice();
-    const wifi  = this.filterWifi();
-    if (minP) list = list.filter(e => e.price >= minP);
-    if (maxP) list = list.filter(e => e.price <= maxP);
-    if (wifi) list = list.filter(e => e.wifi === wifi);
-    return list;
-  });
-
   resetFilters(): void {
-    this.filterGenerator.set('');
-    this.filterForage.set('');
-    this.filterRestaurant.set('');
-    this.filterWifi.set('');
-    this.filterMinPrice.set(null);
-    this.filterMaxPrice.set(null);
-    this.filterMaxDist.set(null);
-    this.filterLocation.set('');
+    this.filterGenerator.set(''); this.filterForage.set('');
+    this.filterRestaurant.set(''); this.filterWifi.set('');
+    this.filterMinPrice.set(null); this.filterMaxPrice.set(null);
+    this.filterMaxDist.set(null);  this.filterLocation.set('');
     this.triggerSearch();
   }
 
-  // ── Map section toggle (list panel) ──────────────────────────────────
+  // ── Map section toggle ────────────────────────────────────────────────
   toggleMapSection(): void {
     this.showMapSection.set(!this.showMapSection());
-    // Give the Leaflet map time to re-measure after the section expands
-    if (this.showMapSection()) {
-      setTimeout(() => this.map?.invalidateSize(), 320);
-    }
+    if (this.showMapSection()) setTimeout(() => this.map?.invalidateSize(), 320);
   }
 
-  /** Called from the mini map-section "locate" button — re-centres the Leaflet map */
   centreMap(): void {
     this.map?.flyTo(EYANG_CENTER, DEFAULT_ZOOM, { duration: 0.7 });
   }
 
   // ── Marker rendering ──────────────────────────────────────────────────
-  private renderMarkers(estates: Estate[], activeId: number | null): void {
+  private renderMarkers(visible: Estate[], activeId: number | null): void {
     this.markerLayer.clearLayers();
     this.markerMap.clear();
-
-    const visible = this.visibleEstates();
 
     visible.forEach(estate => {
       const [lat, lng] = estateCoords(estate);
       const isActive   = estate.id === activeId;
 
       const marker = L.marker([lat, lng], {
-        icon: this.buildPriceIcon(estate.price, isActive),
+        icon:         this.buildMarkerIcon(estate, isActive),
         zIndexOffset: isActive ? 1000 : 0,
       });
 
       marker.bindPopup(this.buildPopupHtml(estate), {
-        maxWidth:  260,
-        className: 'estate-popup',
+        maxWidth: 280, className: 'estate-popup',
       });
 
       marker.on('click', () => {
@@ -229,36 +211,65 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  private buildPriceIcon(price: number, active: boolean): L.DivIcon {
-    const label = price >= 1_000_000
-      ? `${(price / 1_000_000).toFixed(1)}M`
-      : price >= 1_000 ? `${Math.round(price / 1_000)}k` : String(price);
+  /**
+   * Photo-card marker when the estate has an image,
+   * plain price pill as fallback.
+   */
+  private buildMarkerIcon(estate: Estate, active: boolean): L.DivIcon {
+    const label = priceLabel(estate.price);
+    const cls   = active ? ' emk--active' : '';
 
+    if (estate.image) {
+      const rating = (estate.average_rating?.value ?? 0) > 0
+        ? `<span class="emk__rating">★ ${estate.average_rating.value.toFixed(1)}</span>`
+        : '';
+      return L.divIcon({
+        className:  '',
+        html: `<div class="emk${cls}">
+                 <div class="emk__img">
+                   <img src="${estate.image}" alt="${estate.name.replace(/"/g, '&quot;')}" />
+                   ${rating}
+                 </div>
+                 <div class="emk__price">${label} XAF</div>
+               </div>`,
+        iconSize:    [80, 74],
+        iconAnchor:  [40, 74],
+        popupAnchor: [0, -76],
+      });
+    }
+
+    // No image — plain pill
     return L.divIcon({
-      className: '',
-      html: `<div class="estate-marker${active ? ' estate-marker--active' : ''}">${label}</div>`,
-      iconSize:   [80, 32],
-      iconAnchor: [40, 16],
+      className:  '',
+      html: `<div class="emk emk--pill${cls}">${label} XAF</div>`,
+      iconSize:    [94, 32],
+      iconAnchor:  [47, 16],
+      popupAnchor: [0, -18],
     });
   }
 
   private buildPopupHtml(e: Estate): string {
-    const img   = e.image ? `<img src="${e.image}" alt="${e.name}" />` : '';
-    const stars = '★'.repeat(Math.round(e.average_rating?.value ?? 0))
-                + '☆'.repeat(5 - Math.round(e.average_rating?.value ?? 0));
+    const img    = e.image
+      ? `<div class="pop-img"><img src="${e.image}" alt="${e.name}" /></div>`
+      : '';
+    const stars  = '★'.repeat(Math.round(e.average_rating?.value ?? 0))
+                 + '☆'.repeat(5 - Math.round(e.average_rating?.value ?? 0));
     const badges = [
-      e.wifi      === '1' ? '<span class="pop-badge">WiFi</span>'        : '',
-      e.generator === '1' ? '<span class="pop-badge">Groupe élec.</span>' : '',
-      e.forage    === '1' ? '<span class="pop-badge">Forage</span>'       : '',
+      e.wifi      === '1' ? '<span class="pop-badge">WiFi</span>'         : '',
+      e.generator === '1' ? '<span class="pop-badge">Groupe élec.</span>'  : '',
+      e.forage    === '1' ? '<span class="pop-badge">Forage</span>'        : '',
+      e.restaurant=== '1' ? '<span class="pop-badge">Restaurant</span>'    : '',
     ].filter(Boolean).join('');
 
     return `
       <div class="estate-popup-inner">
-        <div class="pop-img">${img}</div>
+        ${img}
         <div class="pop-body">
           <p class="pop-name">${e.name}</p>
-          <p class="pop-rating">${stars} <span>(${e.reviews_count ?? 0})</span></p>
-          <p class="pop-location">📍 ${e.location} · ${e.distance}m du campus</p>
+          ${(e.average_rating?.value ?? 0) > 0
+            ? `<p class="pop-rating">${stars} <span>(${e.reviews_count ?? 0} avis)</span></p>`
+            : ''}
+          <p class="pop-location">📍 ${e.location} · ${e.distance}m de Saint Jean</p>
           ${badges ? `<div class="pop-badges">${badges}</div>` : ''}
           <div class="pop-footer">
             <span class="pop-price">${e.price.toLocaleString('fr-CM')} XAF<em>/mois</em></span>
@@ -269,43 +280,22 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // ── Card interactions ─────────────────────────────────────────────────
-  onCardHover(id: number): void {
-    this.hoveredId.set(id);
-    this.activeId.set(id);
-  }
-
-  onCardLeave(): void {
-    this.hoveredId.set(null);
-    this.activeId.set(null);
-  }
+  onCardHover(id: number): void { this.hoveredId.set(id); this.activeId.set(id); }
+  onCardLeave(): void            { this.hoveredId.set(null); this.activeId.set(null); }
 
   flyTo(estate: Estate): void {
     const [lat, lng] = estateCoords(estate);
-    this.map.flyTo([lat, lng], 17, { duration: 0.7 });
-    setTimeout(() => this.markerMap.get(estate.id)?.openPopup(), 700);
+    this.map.flyTo([lat, lng], 17, { duration: 0.6 });
+    setTimeout(() => this.markerMap.get(estate.id)?.openPopup(), 650);
   }
 
-  // ── View mode ─────────────────────────────────────────────────────────
   setViewMode(m: 'split' | 'map' | 'list'): void {
     this.viewMode.set(m);
     if (m !== 'list') setTimeout(() => this.map?.invalidateSize(), 50);
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────
-  formatPrice(p: number): string {
-    return `${p.toLocaleString('fr-CM')} XAF/mois`;
-  }
-
-  ratingStars(val: number): string[] {
-    const full  = Math.floor(val);
-    const half  = val - full >= 0.5 ? 1 : 0;
-    const empty = 5 - full - half;
-    return [
-      ...Array(full).fill('full'),
-      ...Array(half).fill('half'),
-      ...Array(empty).fill('empty'),
-    ];
-  }
+  formatPrice(p: number): string { return `${p.toLocaleString('fr-CM')} XAF/mois`; }
 
   amenityList(e: Estate): string[] {
     const a: string[] = [];
@@ -318,52 +308,27 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
     return a;
   }
 
-  // ── Map-grid section helpers ──────────────────────────────────────────
-  /**
-   * Map a known location name to an approximate SVG X coordinate
-   * inside the 520×300 viewBox of the campus grid SVG.
-   */
+  // ── Map-grid helpers ──────────────────────────────────────────────────
+  gridMarkerLabel(price: number): string { return priceLabel(price); }
+
   gridMarkerX(e: Estate): number {
-    const key = e.location?.toLowerCase().trim() ?? '';
-    const base: Record<string, number> = {
-      eyang:    165,
-      lobo:     300,
-      vogt:     100,
-      nlongkak: 350,
-    };
-    // Small deterministic horizontal jitter so stacked markers spread out
-    return (base[key] ?? 230) + (e.id % 10) * 4;
+    return Math.round(260 + (e.lng - EYANG_CENTER[1]) * 3000 + (e.id % 5) * 3);
   }
 
   gridMarkerY(e: Estate): number {
-    const key = e.location?.toLowerCase().trim() ?? '';
-    const base: Record<string, number> = {
-      eyang:    115,
-      lobo:     135,
-      vogt:     200,
-      nlongkak: 215,
-    };
-    return (base[key] ?? 150) + (e.id % 7) * 5;
-  }
-
-  gridMarkerLabel(price: number): string {
-    if (price >= 1_000_000) return `${(price / 1_000_000).toFixed(1)}M`;
-    if (price >= 1_000)     return `${Math.round(price / 1_000)}k`;
-    return String(price);
+    return Math.round(150 + (EYANG_CENTER[0] - e.lat) * 3000 + (e.id % 5) * 3);
   }
 
   onGridMarkerClick(estate: Estate): void {
     this.activeId.set(estate.id);
     this.hoveredId.set(estate.id);
-    // Scroll the corresponding card into view
     document.getElementById(`card-${estate.id}`)
       ?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    // Also fly the main Leaflet map to this estate
     if (this.mapReady()) this.flyTo(estate);
   }
 
   trackById(_: number, e: Estate): number { return e.id; }
 
-  get currentUser()    { return this.auth.currentUser; }
-  get isAuthenticated(){ return this.auth.isAuthenticated(); }
+  get currentUser()     { return this.auth.currentUser; }
+  get isAuthenticated() { return this.auth.isAuthenticated(); }
 }

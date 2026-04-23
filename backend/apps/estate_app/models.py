@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
+
 class User(AbstractUser):
     USER_TYPE_CHOICES = (
         ('visitor', 'Visitor/Student'),
@@ -11,8 +12,7 @@ class User(AbstractUser):
     contact = models.CharField(max_length=13, null=True, blank=True)
     address = models.CharField(max_length=50, null=True, blank=True)
     visitor_category = models.CharField(
-        max_length=20,
-        default="1",
+        max_length=20, default="1",
         choices=(("1", "Student"), ("2", "Parent"), ("3", "Local resident"), ("4", "Visitor")),
         null=True, blank=True
     )
@@ -28,18 +28,29 @@ class User(AbstractUser):
 
 class Estate(models.Model):
     name = models.CharField(max_length=255)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='estates', limit_choices_to={'user_type': 'owner'})
-    location = models.CharField(max_length=255, default="Eyang")
-    rating = models.CharField(max_length=10, default="0.0")
-    distance = models.IntegerField(default=100)
-    restaurant = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
-    generator = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
-    forage = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='estates', limit_choices_to={'user_type': 'owner'}
+    )
+    location    = models.CharField(max_length=255, default="Eyang")
+    rating      = models.CharField(max_length=10, default="0.0")
+    distance    = models.IntegerField(default=100)
+    restaurant  = models.CharField(max_length=1, choices=(('1','Yes'),('0','No')), default='0')
+    generator   = models.CharField(max_length=1, choices=(('1','Yes'),('0','No')), default='0')
+    forage      = models.CharField(max_length=1, choices=(('1','Yes'),('0','No')), default='0')
     description = models.TextField(blank=True, default="")
     publishedAt = models.DateTimeField(auto_now=True)
-    status = models.CharField(
+    status      = models.CharField(
         max_length=20, default="published",
-        choices=(("draft", "Draft"), ("published", "Published"), ("archived", "Archived"))
+        choices=(("draft","Draft"),("published","Published"),("archived","Archived"))
+    )
+    # ── GPS coordinates ──────────────────────────────────────────────────────
+    lat = models.DecimalField(max_digits=10, decimal_places=7, default=3.8840410)
+    lng = models.DecimalField(max_digits=10, decimal_places=7, default=11.3907360)
+    # ── Admin verification ───────────────────────────────────────────────────
+    is_verified = models.BooleanField(
+        default=False,
+        help_text="Approved by an admin. Resets to False when owner edits the estate."
     )
 
     def __str__(self):
@@ -48,24 +59,17 @@ class Estate(models.Model):
 
 class RoomCategory(models.Model):
     estate = models.ForeignKey(Estate, related_name='room_categories', on_delete=models.CASCADE)
-    name = models.CharField(max_length=100) # e.g., "Standard Single Room", "Deluxe Double Room"
-    
-    OCCUPANCY_CHOICES = (
-        ('single', 'Single Person'),
-        ('double', 'Two Persons'),
-        ('shared', 'Shared/Multiple Persons')
-    )
-    occupancy = models.CharField(max_length=10, choices=OCCUPANCY_CHOICES, default='single')
-    
-    price = models.IntegerField(default=300000)
+    name   = models.CharField(max_length=100)
+    OCCUPANCY_CHOICES = (('single','Single Person'),('double','Two Persons'),('shared','Shared'))
+    occupancy          = models.CharField(max_length=10, choices=OCCUPANCY_CHOICES, default='single')
+    price              = models.IntegerField(default=300000)
     quantity_available = models.IntegerField(default=1)
-    
-    # Category-Specific Amenities
-    wifi = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
-    tv = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
-    fridge = models.CharField(max_length=1, choices=(('1', 'Yes'), ('0', 'No')), default='0')
-    room_size = models.CharField(max_length=1, choices=(('1', 'Large'), ('2', 'Medium'), ('3', 'Small')), default='2')
-    
+    wifi      = models.CharField(max_length=1, choices=(('1','Yes'),('0','No')), default='0')
+    tv        = models.CharField(max_length=1, choices=(('1','Yes'),('0','No')), default='0')
+    fridge    = models.CharField(max_length=1, choices=(('1','Yes'),('0','No')), default='0')
+    room_size = models.CharField(
+        max_length=1, choices=(('1','Large'),('2','Medium'),('3','Small')), default='2'
+    )
     description = models.TextField(blank=True, default="")
 
     def __str__(self):
@@ -74,7 +78,7 @@ class RoomCategory(models.Model):
 
 class RoomImage(models.Model):
     room_category = models.ForeignKey(RoomCategory, related_name='images', on_delete=models.CASCADE)
-    image  = models.ImageField(upload_to='estates/rooms/images/')
+    image   = models.ImageField(upload_to='estates/rooms/images/')
     caption = models.CharField(max_length=100, blank=True)
 
     def __str__(self):
@@ -91,8 +95,10 @@ class EstateImage(models.Model):
 
 class Review(models.Model):
     estate     = models.ForeignKey(Estate, on_delete=models.CASCADE, related_name='reviews')
-    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='reviews')
-    parent     = models.ForeignKey('self', null=True, blank=True, on_delete=models.CASCADE, related_name='replies')
+    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+                                   null=True, blank=True, related_name='reviews')
+    parent     = models.ForeignKey('self', null=True, blank=True,
+                                   on_delete=models.CASCADE, related_name='replies')
     name       = models.CharField(max_length=100)
     rating     = models.IntegerField()
     comment    = models.TextField()
@@ -107,12 +113,20 @@ class Review(models.Model):
 
 
 class QuickOrder(models.Model):
-    estate     = models.ForeignKey(Estate, on_delete=models.CASCADE, related_name='quick_orders')
-    room_category = models.ForeignKey(RoomCategory, on_delete=models.SET_NULL, null=True, blank=True, related_name='quick_orders')
-    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='quick_orders')
+    STATUS_CHOICES = (
+        ('pending',  'En attente'),
+        ('accepted', 'Acceptée'),
+        ('rejected', 'Rejetée'),
+    )
+    estate        = models.ForeignKey(Estate, on_delete=models.CASCADE, related_name='quick_orders')
+    room_category = models.ForeignKey(RoomCategory, on_delete=models.SET_NULL,
+                                       null=True, blank=True, related_name='quick_orders')
+    user          = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+                                       null=True, blank=True, related_name='quick_orders')
     name       = models.CharField(max_length=100)
     phone      = models.CharField(max_length=20)
     note       = models.TextField(blank=True)
+    status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -120,8 +134,10 @@ class QuickOrder(models.Model):
 
 
 class ContactRequest(models.Model):
-    user         = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='contact_requests')
-    estate       = models.ForeignKey(Estate, on_delete=models.SET_NULL, null=True, blank=True, related_name='contact_requests')
+    user         = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+                                      null=True, blank=True, related_name='contact_requests')
+    estate       = models.ForeignKey(Estate, on_delete=models.SET_NULL,
+                                      null=True, blank=True, related_name='contact_requests')
     name         = models.CharField(max_length=255)
     email        = models.EmailField()
     phone        = models.CharField(max_length=20)
@@ -133,8 +149,10 @@ class ContactRequest(models.Model):
 
 
 class Conversation(models.Model):
-    client     = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='client_conversations')
-    owner      = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='owner_conversations')
+    client     = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                    related_name='client_conversations')
+    owner      = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                    related_name='owner_conversations')
     estate     = models.ForeignKey(Estate, on_delete=models.CASCADE, related_name='conversations')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -149,10 +167,11 @@ class Conversation(models.Model):
 
 class Message(models.Model):
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
-    sender       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='sent_messages')
-    text         = models.TextField()
-    read         = models.BooleanField(default=False)
-    created_at   = models.DateTimeField(auto_now_add=True)
+    sender       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                      related_name='sent_messages')
+    text       = models.TextField()
+    read       = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['created_at']

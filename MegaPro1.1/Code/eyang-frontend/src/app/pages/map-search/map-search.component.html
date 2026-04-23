@@ -6,7 +6,7 @@
   <header class="ms__bar">
 
     <div class="ms__bar-l">
-      <button class="ms__back" (click)="router.navigate(['/'])" title="Accueil">
+      <button class="ms__back" (click)="router.navigate(['/'])" [title]="'map.home' | translate">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <path d="M11 14L6 9l5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -14,10 +14,10 @@
       <span class="ms__brand">Eyang Estate</span>
       <span class="ms__sep">|</span>
       <span class="ms__count" *ngIf="!loading()">
-        {{ visibleEstates().length }} logement{{ visibleEstates().length !== 1 ? 's' : '' }}
+        {{ visibleEstates().length }} {{ 'map.housing_count' | translate }}
       </span>
       <span class="ms__count ms__count--spin" *ngIf="loading()">
-        <span class="ms__dot-spin"></span> Chargement…
+        <span class="ms__dot-spin"></span> {{ 'map.loading' | translate }}
       </span>
     </div>
 
@@ -31,7 +31,7 @@
         <input
           class="ms__search"
           type="text"
-          placeholder="Quartier, zone…"
+          [placeholder]="'map.search_location' | translate"
           [ngModel]="filterLocation()"
           (ngModelChange)="filterLocation.set($event); triggerSearch()"
         />
@@ -44,24 +44,24 @@
         <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
           <path d="M1.5 3.5h12M3.5 7.5h8M5.5 11.5h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
-        Filtres
+        {{ 'map.filters' | translate }}
         <span class="ms__filter-dot" *ngIf="hasActiveFilters()"></span>
       </button>
 
       <!-- View switcher -->
       <div class="ms__views" role="group">
-        <button class="ms__view-btn" [class.on]="viewMode()==='split'" (click)="setViewMode('split')" title="Vue partagée">
+        <button class="ms__view-btn" [class.on]="viewMode()==='split'" (click)="setViewMode('split')" [title]="'map.view_split' | translate">
           <svg width="16" height="16" viewBox="0 0 16 16">
             <rect x="1" y="1" width="6" height="14" rx="1.5" fill="currentColor"/>
             <rect x="9" y="1" width="6" height="14" rx="1.5" fill="currentColor" opacity=".4"/>
           </svg>
         </button>
-        <button class="ms__view-btn" [class.on]="viewMode()==='map'" (click)="setViewMode('map')" title="Carte seule">
+        <button class="ms__view-btn" [class.on]="viewMode()==='map'" (click)="setViewMode('map')" [title]="'map.view_map' | translate">
           <svg width="16" height="16" viewBox="0 0 16 16">
             <path d="M8 2C5.24 2 3 4.24 3 7c0 3.75 5 9 5 9s5-5.25 5-9c0-2.76-2.24-5-5-5zm0 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z" fill="currentColor"/>
           </svg>
         </button>
-        <button class="ms__view-btn" [class.on]="viewMode()==='list'" (click)="setViewMode('list')" title="Liste seule">
+        <button class="ms__view-btn" [class.on]="viewMode()==='list'" (click)="setViewMode('list')" [title]="'map.view_list' | translate">
           <svg width="16" height="16" viewBox="0 0 16 16">
             <rect x="1" y="2" width="14" height="3.5" rx="1.2" fill="currentColor"/>
             <rect x="1" y="7" width="14" height="3.5" rx="1.2" fill="currentColor" opacity=".55"/>
@@ -77,51 +77,52 @@
     <div class="ms__drawer-inner">
 
       <div class="ms__fgroup">
-        <label class="ms__flabel">Équipements</label>
+        <label class="ms__flabel">{{ 'map.equipment' | translate }}</label>
         <div class="ms__chips">
           <button class="ms__chip" [class.on]="filterGenerator()==='1'"
             (click)="filterGenerator.set(filterGenerator()==='1' ? '' : '1'); triggerSearch()">
-            ⚡ Groupe élec.
+            ⚡ {{ 'filters.generator' | translate }}
           </button>
           <button class="ms__chip" [class.on]="filterForage()==='1'"
             (click)="filterForage.set(filterForage()==='1' ? '' : '1'); triggerSearch()">
-            💧 Forage
+            💧 {{ 'filters.water' | translate }}
           </button>
           <button class="ms__chip" [class.on]="filterRestaurant()==='1'"
             (click)="filterRestaurant.set(filterRestaurant()==='1' ? '' : '1'); triggerSearch()">
-            🍽️ Restaurant
+            🍽️ {{ 'filters.restaurant' | translate }}
           </button>
+          <!-- WiFi is a client-side filter — updates visibleEstates() immediately -->
           <button class="ms__chip" [class.on]="filterWifi()==='1'"
             (click)="filterWifi.set(filterWifi()==='1' ? '' : '1')">
-            📶 WiFi
+            📶 {{ 'filters.wifi' | translate }}
           </button>
         </div>
       </div>
 
       <div class="ms__fgroup">
-        <label class="ms__flabel">Prix / mois (XAF)</label>
+        <label class="ms__flabel">{{ 'map.price_month' | translate }}</label>
         <div class="ms__range">
           <input type="number" class="ms__range-in" placeholder="Min"
             [ngModel]="filterMinPrice()"
-            (ngModelChange)="filterMinPrice.set($event)"/>
+            (ngModelChange)="filterMinPrice.set($event ? +$event : null)"/>
           <span class="ms__range-sep">–</span>
           <input type="number" class="ms__range-in" placeholder="Max"
             [ngModel]="filterMaxPrice()"
-            (ngModelChange)="filterMaxPrice.set($event)"/>
+            (ngModelChange)="filterMaxPrice.set($event ? +$event : null)"/>
         </div>
       </div>
 
       <div class="ms__fgroup">
-        <label class="ms__flabel">Distance max du campus (m)</label>
+        <label class="ms__flabel">{{ 'map.max_distance' | translate }}</label>
         <div class="ms__range">
           <input type="number" class="ms__range-in ms__range-in--single" placeholder="ex: 500"
             [ngModel]="filterMaxDist()"
-            (ngModelChange)="filterMaxDist.set($event); triggerSearch()"/>
+            (ngModelChange)="filterMaxDist.set($event ? +$event : null); triggerSearch()"/>
         </div>
       </div>
 
       <button class="ms__reset" (click)="resetFilters()">
-        Réinitialiser les filtres
+        {{ 'map.reset_filters' | translate }}
       </button>
     </div>
   </div>
@@ -147,9 +148,8 @@
         {{ error() }}
       </div>
 
-      <!-- Locate / re-centre button -->
-      <button class="ms__locate" title="Centrer sur Eyang"
-        (click)="map && map.flyTo([3.8622,11.5172], 15, {duration:0.8})">
+      <!-- Re-centre on Eyang button -->
+      <button class="ms__locate" [title]="'map.center_eyang' | translate" (click)="centreMap()">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
           <circle cx="9" cy="9" r="3" stroke="currentColor" stroke-width="1.6"/>
           <path d="M9 1v2M9 15v2M1 9h2M15 9h2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
@@ -170,9 +170,9 @@
             <path d="M7 1C4.24 1 2 3.24 2 6c0 3.75 5 8 5 8s5-4.25 5-8c0-2.76-2.24-5-5-5zm0 6.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"
               fill="currentColor"/>
           </svg>
-          Voir sur la carte
+          {{ 'map.view_map' | translate }}
           <span class="ms__map-section-count" *ngIf="!loading()">
-            {{ visibleEstates().length }} résultat{{ visibleEstates().length !== 1 ? 's' : '' }}
+            {{ visibleEstates().length }} {{ 'map.results' | translate }}
           </span>
           <svg class="ms__map-section-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -183,39 +183,99 @@
         <div class="ms__map-section-body" [class.ms__map-section-body--open]="showMapSection()">
           <div class="ms__map-grid-wrap">
 
-            <!-- SVG campus map grid -->
+            <!-- SVG Eyang map grid — geographie reelle
+                 Nord=haut. Autoroute Yaounde-Douala diagonale SO->NE.
+                 Saint Jean Ingenieur ancre centre-gauche.
+                 Eyang village au-dessus. Okola haut-droite. Ayene bas. Nkolbisson gauche.
+            -->
             <svg class="ms__map-grid-svg" viewBox="0 0 520 300" xmlns="http://www.w3.org/2000/svg">
-              <!-- Base fill -->
+              <!-- Terrain de base -->
               <rect width="520" height="300" fill="#EEF2EA"/>
-              <!-- Park -->
-              <rect x="60" y="110" width="130" height="90" fill="#C8DABB" rx="5"/>
-              <text x="125" y="160" text-anchor="middle" font-size="9" fill="#6A8A6A">Parc Eyang</text>
-              <!-- Campus -->
-              <rect x="20" y="18" width="90" height="50" fill="#B2CEBC" stroke="#8AAE9A" stroke-width="1" rx="4"/>
-              <text x="65" y="48" text-anchor="middle" font-size="8" fill="#1F5C3E">Campus UYI</text>
-              <!-- Roads -->
-              <path d="M20 78 H500" stroke="#B0BCA9" stroke-width="4" fill="none"/>
-              <path d="M260 0 V300" stroke="#B0BCA9" stroke-width="4" fill="none"/>
-              <path d="M20 160 H500" stroke="#C9D0C4" stroke-width="2" fill="none"/>
-              <path d="M130 0 V300" stroke="#C9D0C4" stroke-width="2" fill="none"/>
-              <path d="M390 0 V300" stroke="#C9D0C4" stroke-width="2" fill="none"/>
-              <!-- Buildings -->
-              <rect x="280" y="18" width="70" height="40" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
-              <rect x="360" y="18" width="50" height="38" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
-              <rect x="420" y="18" width="60" height="44" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
-              <rect x="280" y="100" width="80" height="52" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
-              <rect x="380" y="100" width="100" height="46" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
-              <rect x="30" y="185" width="80" height="55" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
-              <rect x="150" y="200" width="75" height="50" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
-              <rect x="300" y="185" width="60" height="50" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
-              <rect x="400" y="180" width="80" height="55" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
-              <rect x="30" y="256" width="140" height="40" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
-              <rect x="280" y="250" width="200" height="44" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
-              <!-- Water -->
-              <ellipse cx="460" cy="262" rx="24" ry="14" fill="#B3D4E8"/>
-              <text x="460" y="266" text-anchor="middle" font-size="7" fill="#3A7CA5">Bassin</text>
-              <!-- Road labels -->
-              <text x="260" y="72" text-anchor="middle" font-size="8" fill="#6A7C69">Av. de l'Indépendance</text>
+
+              <!-- Zones de vegetation -->
+              <ellipse cx="430" cy="72"  rx="62" ry="36" fill="#C8DABB" opacity=".72"/>
+              <ellipse cx="76"  cy="238" rx="50" ry="30" fill="#C8DABB" opacity=".62"/>
+              <ellipse cx="468" cy="240" rx="42" ry="26" fill="#C8DABB" opacity=".58"/>
+              <ellipse cx="290" cy="270" rx="34" ry="18" fill="#C8DABB" opacity=".55"/>
+
+              <!-- AUTOROUTE Yaounde-Douala (diagonale SO->NE) -->
+              <!-- Corps de la route -->
+              <path d="M0,288 Q130,224 258,162 Q368,108 520,50" stroke="#B0A88E" stroke-width="16" fill="none" stroke-linecap="round"/>
+              <!-- Surface de la route -->
+              <path d="M0,288 Q130,224 258,162 Q368,108 520,50" stroke="#CEC4A4" stroke-width="11" fill="none" stroke-linecap="round"/>
+              <!-- Bandes centrales -->
+              <path d="M0,288 Q130,224 258,162 Q368,108 520,50" stroke="#E8E0C0" stroke-width="2" fill="none" stroke-dasharray="20,14" stroke-linecap="round"/>
+              <!-- Label autoroute -->
+              <text font-size="8" fill="#8A7F65" font-weight="600">
+                <textPath href="#autorouteP" startOffset="4%">Autoroute Yaounde-Douala</textPath>
+              </text>
+              <defs>
+                <path id="autorouteP" d="M0,288 Q130,224 258,162 Q368,108 520,50"/>
+              </defs>
+
+              <!-- Routes secondaires -->
+              <!-- Route nord vers Eyang / Okola -->
+              <path d="M228,158 V0"  stroke="#C0C8B6" stroke-width="7" fill="none"/>
+              <path d="M228,158 V0"  stroke="#D8DDD2" stroke-width="4" fill="none"/>
+              <!-- Route est-ouest principale (Eyang) -->
+              <path d="M0,90 H520"   stroke="#C0C8B6" stroke-width="6" fill="none"/>
+              <path d="M0,90 H520"   stroke="#D8DDD2" stroke-width="3.5" fill="none"/>
+              <!-- Route vers Ayene au sud -->
+              <path d="M340,172 V300" stroke="#C0C8B6" stroke-width="5" fill="none"/>
+              <path d="M340,172 V300" stroke="#D8DDD2" stroke-width="3" fill="none"/>
+              <!-- Route locale est du campus -->
+              <path d="M310,90 V300" stroke="#CDD3C6" stroke-width="3.5" fill="none"/>
+              <path d="M310,90 V300" stroke="#DDE0D8" stroke-width="2" fill="none"/>
+
+              <!-- CAMPUS SAINT JEAN INGENIEUR (ancre centrale) -->
+              <!-- Terrain du campus ~7 ha -->
+              <rect x="162" y="160" width="118" height="86" fill="#8BB89A" stroke="#5A8E6E" stroke-width="2.5" rx="7"/>
+              <!-- Batiment 1 admin/labo (4 niveaux) -->
+              <rect x="169" y="167" width="48" height="28" fill="#6EA480" rx="3"/>
+              <!-- Batiment 2 academique (6 niveaux - plus grand) -->
+              <rect x="222" y="164" width="52" height="36" fill="#6EA480" rx="3"/>
+              <!-- Residence universitaire 128 chambres -->
+              <rect x="169" y="202" width="40" height="22" fill="#7AB890" rx="2"/>
+              <!-- Infrastructure sportive -->
+              <rect x="216" y="206" width="58" height="18" fill="#95C8A0" rx="2" stroke="#6EA480" stroke-width="0.5"/>
+              <text x="245" y="218" text-anchor="middle" font-size="6.5" fill="#2D5A34">Terrain sport</text>
+              <!-- Labels campus -->
+              <text x="221" y="181" text-anchor="middle" font-size="9.5" font-weight="800" fill="#0F2E1A">Saint Jean</text>
+              <text x="221" y="193" text-anchor="middle" font-size="8.5" font-weight="700" fill="#0F2E1A">Ingenieur</text>
+              <!-- Pin anime du campus -->
+              <circle cx="221" cy="160" r="18" fill="#1D4ED8" opacity="0.10" class="ping-ring"/>
+              <circle cx="221" cy="160" r="8"  fill="#1D4ED8"/>
+              <circle cx="221" cy="160" r="3.2" fill="#fff"/>
+
+              <!-- EYANG village -->
+              <rect x="178" y="56" width="90" height="28" fill="#B2CEBC" stroke="#7AAA8E" stroke-width="1.2" rx="4"/>
+              <text x="223" y="74" text-anchor="middle" font-size="9" font-weight="700" fill="#1A4A35">Eyang</text>
+
+              <!-- OKOLA direction (nord-est) -->
+              <rect x="368" y="12" width="80" height="24" fill="#C5D9BC" stroke="#8AAE8C" stroke-width="0.8" rx="4"/>
+              <text x="408" y="28" text-anchor="middle" font-size="8" fill="#2D5A34">&#8594; Okola</text>
+
+              <!-- AYENE (sud, sur autoroute) -->
+              <rect x="324" y="250" width="66" height="24" fill="#C5D9BC" stroke="#8AAE8C" stroke-width="0.8" rx="4"/>
+              <text x="357" y="266" text-anchor="middle" font-size="8" fill="#2D5A34">Ay&#232;ne</text>
+
+              <!-- NKOLBISSON (ouest, sur autoroute) -->
+              <rect x="6" y="248" width="80" height="24" fill="#C5D9BC" stroke="#8AAE8C" stroke-width="0.8" rx="4"/>
+              <text x="46" y="264" text-anchor="middle" font-size="7.5" fill="#2D5A34">Nkolbisson</text>
+
+              <!-- Logements autour du campus -->
+              <rect x="308" y="102" width="72" height="50" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
+              <rect x="390" y="96"  width="82" height="46" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
+              <rect x="450" y="156" width="60" height="46" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
+              <rect x="36"  y="114" width="72" height="44" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
+              <rect x="40"  y="172" width="74" height="50" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
+              <rect x="318" y="186" width="66" height="50" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
+              <rect x="400" y="206" width="78" height="54" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
+              <rect x="36"  y="238" width="68" height="42" fill="#D6D9D1" stroke="#BFC4B9" stroke-width="0.5" rx="2"/>
+
+              <!-- Labels de voirie -->
+              <text x="228" y="44" text-anchor="middle" font-size="8.5" fill="#6A7C69">Rue d'Eyang</text>
+              <text x="470" y="78" text-anchor="middle" font-size="7.5" fill="#6A7C69">Vers Okola</text>
 
               <!-- Price markers — rendered for each visible estate -->
               <ng-container *ngFor="let e of visibleEstates(); trackBy: trackById">
@@ -224,7 +284,6 @@
                    (click)="onGridMarkerClick(e)"
                    (mouseenter)="onCardHover(e.id)"
                    (mouseleave)="onCardLeave()">
-                  <!-- position is derived from a small inline helper below -->
                   <rect
                     [attr.x]="gridMarkerX(e) - 26"
                     [attr.y]="gridMarkerY(e) - 11"
@@ -263,11 +322,11 @@
       <!-- Empty state -->
       <div class="ms__empty" *ngIf="!loading() && visibleEstates().length === 0">
         <div class="ms__empty-icon">🏘️</div>
-        <p>Aucun logement trouvé</p>
-        <span *ngIf="hasActiveFilters()">Essayez de réduire vos filtres</span>
-        <span *ngIf="!hasActiveFilters()">Aucun logement publié pour le moment</span>
+        <p>{{ 'map.no_housing' | translate }}</p>
+        <span *ngIf="hasActiveFilters()">{{ 'map.reduce_filters' | translate }}</span>
+        <span *ngIf="!hasActiveFilters()">{{ 'map.no_published' | translate }}</span>
         <button class="ms__reset ms__reset--sm" *ngIf="hasActiveFilters()" (click)="resetFilters()">
-          Effacer les filtres
+          {{ 'map.clear_filters' | translate }}
         </button>
       </div>
 
@@ -304,7 +363,7 @@
                   stroke-linecap="round" stroke-linejoin="round"/>
               </svg>
             </div>
-            <div class="ms__card-rating" *ngIf="(e.average_rating?.value ?? 0) > 0">
+            <div class="ms__card-rating" *ngIf="e.average_rating.value > 0">
               ★ {{ e.average_rating.value.toFixed(1) }}
             </div>
             <div class="ms__card-free" *ngIf="e.free > 0">

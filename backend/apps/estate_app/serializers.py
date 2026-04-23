@@ -39,10 +39,10 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = User
-        fields = ['username', 'email', 'password', 'first_name', 'last_name', 'phone', 'address', 'role', 'id_card']
+        fields = ['username', 'email', 'password', 'first_name', 'last_name',
+                  'phone', 'address', 'role', 'id_card']
 
     def validate_password(self, value):
-        from django.contrib.auth.password_validation import validate_password
         from django.core.exceptions import ValidationError as DjangoValidationError
         try:
             validate_password(value)
@@ -64,9 +64,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         phone   = validated_data.pop('phone', '')
         address = validated_data.pop('address', '')
         role    = validated_data.pop('role', 'Student')
-        user_type = 'owner' if role == 'Owner' else 'visitor'
+        user_type        = 'owner' if role == 'Owner' else 'visitor'
         visitor_category = '1' if role == 'Student' else ('2' if role == 'Parent' else None)
-        user = User.objects.create_user(
+        return User.objects.create_user(
             **validated_data,
             user_type=user_type,
             contact=phone,
@@ -74,23 +74,21 @@ class RegisterSerializer(serializers.ModelSerializer):
             visitor_category=visitor_category,
             is_verified=False
         )
-        return user
 
 
 class UserSerializer(serializers.ModelSerializer):
     id_card = serializers.SerializerMethodField()
 
     class Meta:
-        model = User
-        fields = ['id', 'username', 'email', 'first_name', 'last_name', 'user_type', 'contact', 'address', 'is_verified', 'id_card']
+        model  = User
+        fields = ['id', 'username', 'email', 'first_name', 'last_name',
+                  'user_type', 'contact', 'address', 'is_verified', 'id_card']
 
     def get_id_card(self, obj):
         request = self.context.get('request')
         if obj.id_card:
             url = obj.id_card.url
-            if request:
-                return request.build_absolute_uri(url)
-            return f"http://localhost:8000{url}"
+            return request.build_absolute_uri(url) if request else f"http://localhost:8000{url}"
         return None
 
 
@@ -105,9 +103,7 @@ class EstateImageSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if obj.image:
             url = obj.image.url
-            if request:
-                return request.build_absolute_uri(url)
-            return f"http://localhost:8000{url}"
+            return request.build_absolute_uri(url) if request else f"http://localhost:8000{url}"
         return None
 
 
@@ -115,20 +111,19 @@ class EstateImageSerializer(serializers.ModelSerializer):
 
 from .models import RoomCategory, RoomImage
 
+
 class RoomImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
 
     class Meta:
-        model = RoomImage
+        model  = RoomImage
         fields = ['id', 'room_category', 'image', 'caption']
 
     def get_image(self, obj):
         request = self.context.get('request')
         if obj.image:
             url = obj.image.url
-            if request:
-                return request.build_absolute_uri(url)
-            return f"http://localhost:8000{url}"
+            return request.build_absolute_uri(url) if request else f"http://localhost:8000{url}"
         return None
 
 
@@ -136,12 +131,10 @@ class RoomCategorySerializer(serializers.ModelSerializer):
     images = RoomImageSerializer(many=True, read_only=True)
 
     class Meta:
-        model = RoomCategory
-        fields = [
-            'id', 'estate', 'name', 'occupancy', 'price',
-            'quantity_available', 'wifi', 'tv', 'fridge',
-            'room_size', 'description', 'images'
-        ]
+        model  = RoomCategory
+        fields = ['id', 'estate', 'name', 'occupancy', 'price',
+                  'quantity_available', 'wifi', 'tv', 'fridge',
+                  'room_size', 'description', 'images']
 
 
 # ── Estate Serializer ─────────────────────────────────────────────────────────
@@ -158,60 +151,41 @@ class EstateSerializer(serializers.ModelSerializer):
     fridge          = serializers.SerializerMethodField()
     reviews_count   = serializers.SerializerMethodField()
     orders_count    = serializers.SerializerMethodField()
-    # ── Dynamic rating: always computed live from reviews ──────────────────────
     average_rating  = serializers.SerializerMethodField()
 
     class Meta:
         model  = Estate
         fields = [
             'id', 'owner', 'name', 'location',
-            'rating',           # kept for backward-compat (stored value, auto-updated by signal)
-            'average_rating',   # ← live-computed from reviews; use this on the frontend
-            'distance', 'restaurant',
-            'generator', 'forage',
-            'description', 'publishedAt', 'status', 'images',
-            'room_categories',
+            'rating', 'average_rating',
+            'distance', 'restaurant', 'generator', 'forage',
+            'description', 'publishedAt', 'status',
+            'images', 'room_categories',
             'capacity', 'free', 'price',
             'wifi', 'tv', 'fridge',
             'reviews_count', 'orders_count',
+            'lat', 'lng',
+            # ── Admin verification ────────────────────────────────────────────
+            'is_verified',
         ]
 
-    # ── average_rating ────────────────────────────────────────────────────────
     def get_average_rating(self, obj) -> dict:
-        """
-        Returns a dict with:
-          - value   : float  – the average (0.0 when no reviews)
-          - display : str    – e.g. "4.3"
-          - count   : int    – number of top-level reviews used in the average
-          - breakdown: dict  – count per star level  {1: n, 2: n, 3: n, 4: n, 5: n}
-        """
         from django.db.models import Avg, Count
-        top_level_reviews = obj.reviews.filter(parent__isnull=True)
-        agg = top_level_reviews.aggregate(avg=Avg('rating'), count=Count('id'))
+        top = obj.reviews.filter(parent__isnull=True)
+        agg = top.aggregate(avg=Avg('rating'), count=Count('id'))
         avg   = agg['avg']
         count = agg['count'] or 0
-
-        # Breakdown per star level
         breakdown = {i: 0 for i in range(1, 6)}
-        for row in top_level_reviews.values('rating').annotate(n=Count('id')):
+        for row in top.values('rating').annotate(n=Count('id')):
             if 1 <= row['rating'] <= 5:
                 breakdown[row['rating']] = row['n']
-
         value = round(avg, 1) if avg is not None else 0.0
-        return {
-            'value':     value,
-            'display':   f"{value:.1f}",
-            'count':     count,
-            'breakdown': breakdown,
-        }
-
-    # ── Other computed fields ─────────────────────────────────────────────────
+        return {'value': value, 'display': f"{value:.1f}", 'count': count, 'breakdown': breakdown}
 
     def get_capacity(self, obj) -> int:
         total = 0
         for rc in obj.room_categories.all():
-            multiplier = {'single': 1, 'double': 2, 'shared': 4}.get(rc.occupancy, 1)
-            total += rc.quantity_available * multiplier
+            total += rc.quantity_available * {'single':1,'double':2,'shared':4}.get(rc.occupancy, 1)
         return total
 
     def get_free(self, obj) -> int:
@@ -252,13 +226,11 @@ class ReviewSerializer(serializers.ModelSerializer):
                   'comment', 'created_at', 'parent', 'likes_count', 'liked_by_me']
 
     def get_estate_image(self, obj):
-        request = self.context.get('request')
+        request     = self.context.get('request')
         first_image = obj.estate.images.first()
         if first_image:
             url = first_image.image.url
-            if request:
-                return request.build_absolute_uri(url)
-            return f"http://localhost:8000{url}"
+            return request.build_absolute_uri(url) if request else f"http://localhost:8000{url}"
         return None
 
     def get_likes_count(self, obj):
@@ -289,17 +261,15 @@ class QuickOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model  = QuickOrder
         fields = ['id', 'estate', 'estate_name', 'estate_image', 'estate_location',
-                  'room_category','estate_price', 'room_category_name',
-                  'name', 'phone', 'note', 'created_at']
+                  'room_category', 'estate_price', 'room_category_name',
+                  'name', 'phone', 'note', 'status', 'created_at']
 
     def get_estate_image(self, obj):
-        request = self.context.get('request')
+        request     = self.context.get('request')
         first_image = obj.estate.images.first()
         if first_image:
             url = first_image.image.url
-            if request:
-                return request.build_absolute_uri(url)
-            return f"http://localhost:8000{url}"
+            return request.build_absolute_uri(url) if request else f"http://localhost:8000{url}"
         return None
 
     def create(self, validated_data):
@@ -334,12 +304,12 @@ class MessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model  = Message
-        fields = ['id', 'conversation', 'sender', 'sender_name', 'sender_username', 'text', 'read', 'created_at']
+        fields = ['id', 'conversation', 'sender', 'sender_name', 'sender_username',
+                  'text', 'read', 'created_at']
         read_only_fields = ['sender', 'read', 'created_at']
 
     def create(self, validated_data):
-        request = self.context.get('request')
-        validated_data['sender'] = request.user
+        validated_data['sender'] = self.context['request'].user
         return super().create(validated_data)
 
 
@@ -358,13 +328,11 @@ class ConversationSerializer(serializers.ModelSerializer):
                   'last_message', 'unread_count', 'messages', 'created_at', 'updated_at']
 
     def get_estate_image(self, obj):
-        request = self.context.get('request')
+        request     = self.context.get('request')
         first_image = obj.estate.images.first()
         if first_image:
             url = first_image.image.url
-            if request:
-                return request.build_absolute_uri(url)
-            return f"http://localhost:8000{url}"
+            return request.build_absolute_uri(url) if request else f"http://localhost:8000{url}"
         return None
 
     def get_last_message(self, obj):
