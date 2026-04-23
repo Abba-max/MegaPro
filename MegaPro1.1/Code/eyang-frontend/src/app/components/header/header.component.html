@@ -39,7 +39,7 @@
     <!-- Map CTA pill (desktop, public) -->
     <a class="map-pill-btn" routerLink="/map-search" *ngIf="isPublic">
       <lucide-icon [img]="MapPinIcon" class="map-pill-icon"></lucide-icon>
-      <span>Explorer la carte</span>
+      <span>{{ 'nav.explore_map' | translate }}</span>
     </a>
 
     <!-- Language Toggle (desktop) -->
@@ -59,7 +59,7 @@
       <!-- Notification Bell (desktop) -->
       <div class="notif-container desktop-only">
         <button class="icon-btn notif-btn" (click)="toggleNotifPanel(); $event.stopPropagation()"
-          [class.has-unread]="unreadCount > 0" title="Notifications">
+          [class.has-unread]="unreadCount > 0" [title]="'auth.notifications' | translate">
           <lucide-icon [img]="BellIcon" class="nav-icon"></lucide-icon>
           <span class="notif-badge" *ngIf="unreadCount > 0">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
         </button>
@@ -191,7 +191,7 @@
 
     <!-- Navigation section (public pages) -->
     <ng-container *ngIf="isPublic">
-      <span class="mobile-nav-section-label">Navigation</span>
+      <span class="mobile-nav-section-label">{{ 'footer.nav_title' | translate }}</span>
       <nav class="mobile-nav-links">
         <a class="mobile-nav-link" (click)="scrollTo('listings'); closeMobileMenu()">
           <span class="mobile-nav-link-icon">🏠</span>
@@ -217,8 +217,8 @@
       <div class="mobile-map-cta-left">
         <lucide-icon [img]="MapPinIcon" class="mobile-map-cta-icon"></lucide-icon>
         <div>
-          <span class="mobile-map-cta-title">Explorer sur la carte</span>
-          <span class="mobile-map-cta-sub">Carte interactive · Eyang, YDE</span>
+          <span class="mobile-map-cta-title">{{ 'nav.explore_map_mobile' | translate }}</span>
+          <span class="mobile-map-cta-sub">{{ 'home.interactive_location' | translate }} · Eyang, YDE</span>
         </div>
       </div>
       <span class="mobile-map-cta-arrow">→</span>
@@ -227,7 +227,7 @@
     <!-- ── LOGGED IN: quick links ── -->
     <ng-container *ngIf="currentUser">
       <div class="mobile-nav-divider"></div>
-      <span class="mobile-nav-section-label">Mon espace</span>
+      <span class="mobile-nav-section-label">{{ 'nav.my_space' | translate }}</span>
       <nav class="mobile-nav-links">
         <a class="mobile-nav-link" routerLink="/dashboard" (click)="closeMobileMenu()">
           <lucide-icon [img]="DashboardIcon" class="mobile-nav-lucide-icon"></lucide-icon>
@@ -248,7 +248,7 @@
     <div class="mobile-nav-divider"></div>
 
     <!-- Language switch -->
-    <span class="mobile-nav-section-label">{{ currentLang === 'fr' ? 'Langue' : 'Language' }}</span>
+    <span class="mobile-nav-section-label">{{ 'footer.lang_title' | translate }}</span>
     <button class="mobile-nav-link mobile-lang-toggle" (click)="toggleLang()">
       <span class="mobile-lang-flag">🌐</span>
       <span>{{ currentLang === 'fr' ? 'Switch to English' : 'Passer en français' }}</span>

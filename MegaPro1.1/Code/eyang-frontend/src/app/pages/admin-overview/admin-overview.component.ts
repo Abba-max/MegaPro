@@ -1,5 +1,6 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { TranslateModule } from '@ngx-translate/core';
 import {
   LucideAngularModule, Users, Home, Calendar, Star,
   ShoppingBag, TrendingUp
@@ -21,7 +22,7 @@ interface MonthBar { month: string; value: number; }
 @Component({
   selector: 'app-admin-overview',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, TranslateModule],
   templateUrl: './admin-overview.component.html',
   styleUrl: './admin-overview.component.css'
 })
@@ -57,33 +58,33 @@ export class AdminOverviewComponent implements OnInit {
 
         this.stats = [
           {
-            title: 'Total utilisateurs',
+            title: 'sidebar.users',
             value: String(data.total_users ?? 0),
-            change: 'Utilisateurs actifs',
+            change: 'sidebar.users',
             changeType: 'positive',
             icon: Users,
             iconColor: '#3B82F6'
           },
           {
-            title: 'Logements',
+            title: 'sidebar.logements',
             value: String(data.total_estates ?? 0),
-            change: 'Logements enregistrés',
+            change: 'sidebar.logements',
             changeType: 'positive',
             icon: Home,
             iconColor: '#10B981'
           },
           {
-            title: 'Réservations',
+            title: 'sidebar.bookings',
             value: String(data.total_orders ?? 0),
-            change: 'Total des réservations',
+            change: 'sidebar.bookings',
             changeType: 'warning',
             icon: Calendar,
             iconColor: '#F59E0B'
           },
           {
-            title: 'Avis',
+            title: 'sidebar.reviews',
             value: String(data.total_reviews ?? 0),
-            change: 'Total des avis',
+            change: 'sidebar.reviews',
             changeType: 'positive',
             icon: Star,
             iconColor: '#8B5CF6'

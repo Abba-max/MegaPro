@@ -128,6 +128,7 @@
   },
   "stats": {
     "housings": "Available housing",
+    "reservations": "Bookings",
     "students": "Students housed",
     "satisfaction": "Positive reviews",
     "students_count": "Number of students",

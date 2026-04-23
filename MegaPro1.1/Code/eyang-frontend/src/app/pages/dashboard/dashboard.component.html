@@ -26,34 +26,34 @@
     <!-- Back to site — prominent, right under logo -->
     <a routerLink="/" class="sidebar__back">
       <span class="sidebar__back-ico"><lucide-icon [img]="BackIcon"></lucide-icon></span>
-      <span class="sidebar__back-lbl">Retour à l'accueil</span>
+      <span class="sidebar__back-lbl">{{ 'dashboard.back_home' | translate }}</span>
     </a>
 
     <!-- Nav -->
     <nav class="sidebar__nav">
-      <span class="sidebar__nav-sep">Tableau de bord</span>
+      <span class="sidebar__nav-sep">{{ 'nav.dashboard' | translate }}</span>
 
       <button class="snav" [class.snav--on]="activeTab==='overview'" (click)="selectTab('overview')">
         <span class="snav__ico"><lucide-icon [img]="BarChartIcon"></lucide-icon></span>
-        <span class="snav__lbl">Vue d'ensemble</span>
+        <span class="snav__lbl">{{ 'dashboard.tab_overview' | translate }}</span>
       </button>
       <button class="snav" [class.snav--on]="activeTab==='estates'" (click)="selectTab('estates')">
         <span class="snav__ico"><lucide-icon [img]="HomeIcon"></lucide-icon></span>
-        <span class="snav__lbl">Mes logements</span>
+        <span class="snav__lbl">{{ 'dashboard.tab_listings' | translate }}</span>
         <span class="snav__count" *ngIf="myEstates.length>0">{{ myEstates.length }}</span>
       </button>
       <button class="snav" [class.snav--on]="activeTab==='orders'" (click)="selectTab('orders')">
         <span class="snav__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></span>
-        <span class="snav__lbl">Réservations</span>
+        <span class="snav__lbl">{{ 'dashboard.tab_bookings' | translate }}</span>
         <span class="snav__badge" *ngIf="ownerStats.pending_orders>0">{{ ownerStats.pending_orders }}</span>
       </button>
       <button class="snav" [class.snav--on]="activeTab==='reviews'" (click)="selectTab('reviews')">
         <span class="snav__ico"><lucide-icon [img]="StarIcon"></lucide-icon></span>
-        <span class="snav__lbl">Avis reçus</span>
+        <span class="snav__lbl">{{ 'dashboard.tab_reviews' | translate }}</span>
       </button>
       <button class="snav" [class.snav--on]="activeTab==='messages'" (click)="selectTab('messages')">
         <span class="snav__ico"><lucide-icon [img]="MessageIcon"></lucide-icon></span>
-        <span class="snav__lbl">Messages</span>
+        <span class="snav__lbl">{{ 'dashboard.tab_messages' | translate }}</span>
         <span class="snav__badge" *ngIf="getTotalUnread()>0">{{ getTotalUnread() }}</span>
       </button>
     </nav>
@@ -63,7 +63,7 @@
       <div class="sidebar__avatar">{{ currentUser?.initials }}</div>
       <div class="sidebar__profile-info">
         <span class="sidebar__profile-name">{{ currentUser?.name }}</span>
-        <span class="sidebar__profile-role">Propriétaire</span>
+        <span class="sidebar__profile-role">{{ 'auth.role_badge_owner' | translate }}</span>
       </div>
     </div>
 
@@ -76,18 +76,18 @@
     </a>
     <a routerLink="/" class="topbar__back">
       <lucide-icon [img]="BackIcon"></lucide-icon>
-      <span>Accueil</span>
+      <span>{{ 'footer.hero' | translate }}</span>
     </a>
     <button class="topbar__trigger" (click)="toggleMobileTab()">
-      <span>{{ activeTab==='overview'?"Vue d'ensemble":activeTab==='estates'?'Logements':activeTab==='orders'?'Réservations':activeTab==='reviews'?'Avis':'Messages' }}</span>
+      <span>{{ activeTab==='overview'?('dashboard.tab_overview'|translate):activeTab==='estates'?('dashboard.tab_listings'|translate):activeTab==='orders'?('dashboard.tab_bookings'|translate):activeTab==='reviews'?('dashboard.tab_reviews'|translate):('dashboard.tab_messages'|translate) }}</span>
       <lucide-icon [img]="ChevronDownIcon" [style.transform]="mobileTabOpen?'rotate(180deg)':''"></lucide-icon>
     </button>
     <div class="topbar__drop" *ngIf="mobileTabOpen">
-      <button (click)="selectTab('overview')"><lucide-icon [img]="BarChartIcon"></lucide-icon>Vue d'ensemble</button>
-      <button (click)="selectTab('estates')"><lucide-icon [img]="HomeIcon"></lucide-icon>Mes logements</button>
-      <button (click)="selectTab('orders')"><lucide-icon [img]="PackageIcon"></lucide-icon>Réservations</button>
-      <button (click)="selectTab('reviews')"><lucide-icon [img]="StarIcon"></lucide-icon>Avis reçus</button>
-      <button (click)="selectTab('messages')"><lucide-icon [img]="MessageIcon"></lucide-icon>Messages</button>
+      <button (click)="selectTab('overview')"><lucide-icon [img]="BarChartIcon"></lucide-icon>{{ 'dashboard.tab_overview' | translate }}</button>
+      <button (click)="selectTab('estates')"><lucide-icon [img]="HomeIcon"></lucide-icon>{{ 'dashboard.tab_listings' | translate }}</button>
+      <button (click)="selectTab('orders')"><lucide-icon [img]="PackageIcon"></lucide-icon>{{ 'dashboard.tab_bookings' | translate }}</button>
+      <button (click)="selectTab('reviews')"><lucide-icon [img]="StarIcon"></lucide-icon>{{ 'dashboard.tab_reviews' | translate }}</button>
+      <button (click)="selectTab('messages')"><lucide-icon [img]="MessageIcon"></lucide-icon>{{ 'dashboard.tab_messages' | translate }}</button>
     </div>
   </div>
 
@@ -115,19 +115,19 @@
       <div class="kpi-row">
         <div class="kpi kpi--indigo">
           <div class="kpi__ico"><lucide-icon [img]="HomeIcon"></lucide-icon></div>
-          <div class="kpi__body"><span class="kpi__val">{{ ownerStats.total_estates }}</span><span class="kpi__lbl">Logements</span></div>
+          <div class="kpi__body"><span class="kpi__val">{{ ownerStats.total_estates }}</span><span class="kpi__lbl">{{ 'dashboard.stat_listings' | translate }}</span></div>
         </div>
         <div class="kpi kpi--amber">
           <div class="kpi__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div>
-          <div class="kpi__body"><span class="kpi__val">{{ ownerStats.pending_orders }}</span><span class="kpi__lbl">En attente</span></div>
+          <div class="kpi__body"><span class="kpi__val">{{ ownerStats.pending_orders }}</span><span class="kpi__lbl">{{ 'dashboard.status_pending' | translate }}</span></div>
         </div>
         <div class="kpi kpi--yellow">
           <div class="kpi__ico"><lucide-icon [img]="StarIcon"></lucide-icon></div>
-          <div class="kpi__body"><span class="kpi__val">{{ ownerStats.avg_rating | number:'1.1-1' }}</span><span class="kpi__lbl">Note / 5</span></div>
+          <div class="kpi__body"><span class="kpi__val">{{ ownerStats.avg_rating | number:'1.1-1' }}</span><span class="kpi__lbl">{{ 'dashboard.stat_avg_rating' | translate }}</span></div>
         </div>
         <div class="kpi kpi--emerald">
           <div class="kpi__ico"><lucide-icon [img]="BarChartIcon"></lucide-icon></div>
-          <div class="kpi__body"><span class="kpi__val">{{ ownerStats.occupancy_pct }}%</span><span class="kpi__lbl">Occupation</span></div>
+          <div class="kpi__body"><span class="kpi__val">{{ ownerStats.occupancy_pct }}%</span><span class="kpi__lbl">{{ 'dashboard.stat_occupancy' | translate }}</span></div>
         </div>
       </div>
 
@@ -341,27 +341,27 @@
 
     <a routerLink="/" class="sidebar__back">
       <span class="sidebar__back-ico"><lucide-icon [img]="BackIcon"></lucide-icon></span>
-      <span class="sidebar__back-lbl">Retour à l'accueil</span>
+      <span class="sidebar__back-lbl">{{ 'dashboard.back_home' | translate }}</span>
     </a>
 
     <nav class="sidebar__nav">
-      <span class="sidebar__nav-sep">Mon espace</span>
+      <span class="sidebar__nav-sep">{{ 'dashboard.my_space' | translate }}</span>
       <button class="snav" [class.snav--on]="activeTab==='reservations'" (click)="selectTab('reservations')">
         <span class="snav__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></span>
-        <span class="snav__lbl">Réservations</span>
+        <span class="snav__lbl">{{ 'dashboard.tab_reservations' | translate }}</span>
         <span class="snav__badge" *ngIf="clientStats.total_reservations>0">{{ clientStats.total_reservations }}</span>
       </button>
       <button class="snav" [class.snav--on]="activeTab==='reviews'" (click)="selectTab('reviews')">
         <span class="snav__ico"><lucide-icon [img]="StarIcon"></lucide-icon></span>
-        <span class="snav__lbl">Mes avis</span>
+        <span class="snav__lbl">{{ 'dashboard.tab_my_reviews' | translate }}</span>
       </button>
       <button class="snav" [class.snav--on]="activeTab==='contacts'" (click)="selectTab('contacts')">
         <span class="snav__ico"><lucide-icon [img]="PhoneIcon"></lucide-icon></span>
-        <span class="snav__lbl">Contacts</span>
+        <span class="snav__lbl">{{ 'dashboard.tab_contacts' | translate }}</span>
       </button>
       <button class="snav" [class.snav--on]="activeTab==='messages'" (click)="selectTab('messages')">
         <span class="snav__ico"><lucide-icon [img]="MessageIcon"></lucide-icon></span>
-        <span class="snav__lbl">Messages</span>
+        <span class="snav__lbl">{{ 'dashboard.tab_messages' | translate }}</span>
         <span class="snav__badge" *ngIf="clientStats.total_messages>0">{{ clientStats.total_messages }}</span>
       </button>
     </nav>
@@ -383,17 +383,17 @@
     </a>
     <a routerLink="/" class="topbar__back">
       <lucide-icon [img]="BackIcon"></lucide-icon>
-      <span>Accueil</span>
+      <span>{{ 'footer.hero' | translate }}</span>
     </a>
     <button class="topbar__trigger" (click)="toggleMobileTab()">
-      <span>{{ activeTab==='reservations'?'Réservations':activeTab==='reviews'?'Mes avis':activeTab==='contacts'?'Contacts':'Messages' }}</span>
+      <span>{{ activeTab==='reservations'?('dashboard.tab_reservations'|translate):activeTab==='reviews'?('dashboard.tab_my_reviews'|translate):activeTab==='contacts'?('dashboard.tab_contacts'|translate):('dashboard.tab_messages'|translate) }}</span>
       <lucide-icon [img]="ChevronDownIcon" [style.transform]="mobileTabOpen?'rotate(180deg)':''"></lucide-icon>
     </button>
     <div class="topbar__drop" *ngIf="mobileTabOpen">
-      <button (click)="selectTab('reservations')"><lucide-icon [img]="PackageIcon"></lucide-icon>Réservations</button>
-      <button (click)="selectTab('reviews')"><lucide-icon [img]="StarIcon"></lucide-icon>Mes avis</button>
-      <button (click)="selectTab('contacts')"><lucide-icon [img]="PhoneIcon"></lucide-icon>Contacts</button>
-      <button (click)="selectTab('messages')"><lucide-icon [img]="MessageIcon"></lucide-icon>Messages</button>
+      <button (click)="selectTab('reservations')"><lucide-icon [img]="PackageIcon"></lucide-icon>{{ 'dashboard.tab_reservations' | translate }}</button>
+      <button (click)="selectTab('reviews')"><lucide-icon [img]="StarIcon"></lucide-icon>{{ 'dashboard.tab_my_reviews' | translate }}</button>
+      <button (click)="selectTab('contacts')"><lucide-icon [img]="PhoneIcon"></lucide-icon>{{ 'dashboard.tab_contacts' | translate }}</button>
+      <button (click)="selectTab('messages')"><lucide-icon [img]="MessageIcon"></lucide-icon>{{ 'dashboard.tab_messages' | translate }}</button>
     </div>
   </div>
 
