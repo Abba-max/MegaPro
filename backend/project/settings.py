@@ -68,11 +68,11 @@ TEMPLATES = [{
 DATABASES = {
     'default': {
         'ENGINE':   'django.db.backends.postgresql',
-        'NAME':     'eyang',
-        'USER':     'prisma',
-        'PASSWORD': 'prisma',
-        'HOST':     '147.93.47.169',
-        'PORT':     '5432',
+        'NAME':     config('DB_NAME', default='eyang'),
+        'USER':     config('DB_USER', default='prisma'),
+        'PASSWORD': config('DB_PASSWORD', default='***'),
+        'HOST':     config('DB_HOST', default='147.93.47.169'),
+        'PORT':     config('DB_PORT', default='5432'),
     }
 }
 
