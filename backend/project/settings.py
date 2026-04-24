@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-jt#l8zbav+z+1ens!08-6r#ko9f)%jlykv8nt@w9#kfebf5q$o')
 DEBUG      = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,eyang-estate.onrender.com,localhost,*').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,eyang-estate.onrender.com,localhost,').split(',')
 
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='https://eyang-estate.onrender.com,http://127.0.0.1:8000,http://localhost:8000').split(',')
 
@@ -68,10 +68,10 @@ TEMPLATES = [{
 DATABASES = {
     'default': {
         'ENGINE':   'django.db.backends.postgresql',
-        'NAME':     'Estatedb',
-        'USER':     'estateuser',
-        'PASSWORD': '1234567',
-        'HOST':     '127.0.0.1',
+        'NAME':     'eyang',
+        'USER':     'prisma',
+        'PASSWORD': 'prisma',
+        'HOST':     '147.93.47.169',
         'PORT':     '5432',
     }
 }
