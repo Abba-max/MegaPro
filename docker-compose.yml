@@ -4,9 +4,9 @@ services:
   db:
     image: postgres:15-alpine
     environment:
-      POSTGRES_DB: Estatedb
-      POSTGRES_USER: estateuser
-      POSTGRES_PASSWORD: 1234567
+      POSTGRES_DB: ${POSTGRES_DB:-eyang}
+      POSTGRES_USER: ${POSTGRES_USER:-prisma}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-***}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
@@ -18,7 +18,7 @@ services:
              python manage.py migrate &&
              daphne -b 0.0.0.0 -p 8000 project.asgi:application"
     environment:
-      - DATABASE_URL=postgres://estateuser:1234567@db:5432/Estatedb
+      - DATABASE_URL=${DATABASE_URL:-postgres://prisma:***@db:5432/eyang}
       - ALLOWED_HOSTS=*
       # Update CSRF_TRUSTED_ORIGINS with your VPS IP/Domain once deployed
       - CSRF_TRUSTED_ORIGINS=http://localhost:3005,http://127.0.0.1:3005
@@ -37,7 +37,7 @@ services:
     ports:
       - "3005:80"
     volumes:
-      # Mount the volumes so Nginx can serve these files directly
+      # Mount the volumes so the web server can serve these files directly
       - media_data:/app/media
       - static_data:/app/static_cdn
     depends_on:

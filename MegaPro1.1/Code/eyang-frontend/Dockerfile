@@ -11,16 +11,14 @@ RUN npm ci
 COPY . .
 RUN npm run build -- --configuration production
 
-# Stage 2: Serve with Nginx
-FROM nginx:alpine
+# Stage 2: Serve application
+FROM caddy:alpine
 
-# Copy custom Nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy custom Caddy configuration
+COPY Caddyfile /etc/caddy/Caddyfile
 
 # Copy compiled files from the build stage
-COPY --from=build /app/dist/eyang-frontend/browser /usr/share/nginx/html
+COPY --from=build /app/dist/eyang-frontend/browser /srv
 
 # Expose port 80 (internal to Docker network)
 EXPOSE 80
-
-CMD ["nginx", "-g", "daemon off;"]
