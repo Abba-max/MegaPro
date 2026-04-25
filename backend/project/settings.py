@@ -55,7 +55,7 @@ CHANNEL_LAYERS = {
 
 TEMPLATES = [{
     'BACKEND': 'django.template.backends.django.DjangoTemplates',
-    'DIRS': [],
+    'DIRS': [os.path.join(BASE_DIR, 'frontend_build')],
     'APP_DIRS': True,
     'OPTIONS': {'context_processors': [
         'django.template.context_processors.debug',
@@ -105,7 +105,7 @@ STATIC_URL  = '/static/'
 MEDIA_URL   = '/media/'
 
 # Static files collected by collectstatic (whitenoise serves these in prod)
-STATICFILES_DIRS = []
+STATICFILES_DIRS = [os.path.join(BASE_DIR, 'frontend_build')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_cdn', 'static_root')
 
 # ── FIX: use the standard BASE_DIR/media/ directory for uploaded files.

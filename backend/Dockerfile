@@ -1,3 +1,16 @@
+# Stage 1: Build the Angular application
+FROM node:20-alpine AS build
+
+WORKDIR /frontend
+
+# Copy frontend source
+COPY MegaPro1.1/Code/eyang-frontend/package*.json ./
+RUN npm ci
+
+COPY MegaPro1.1/Code/eyang-frontend/ ./
+RUN npm run build -- --configuration production
+
+# Stage 2: Python Backend
 FROM python:3.13-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -12,11 +25,14 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
-COPY requirements.txt .
+COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code
-COPY . .
+COPY backend/ .
+
+# Copy the built frontend files from Stage 1
+COPY --from=build /frontend/dist/eyang-frontend/browser /app/frontend_build
 
 # Expose the internal port
 EXPOSE 8000

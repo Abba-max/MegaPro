@@ -5,6 +5,8 @@ from django.conf import settings
 from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenRefreshView
 from apps.estate_app.api_views import MyTokenObtainPairView
+from django.views.generic import TemplateView
+from django.urls import re_path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -16,6 +18,7 @@ urlpatterns = [
     # MyTokenObtainPairView injecte role/name/initials dans le token
     path('api/token/',         MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(),      name='token_refresh'),
+    re_path(r'^.*$', TemplateView.as_view(template_name='index.html')),
 ]
 
 if settings.DEBUG:
