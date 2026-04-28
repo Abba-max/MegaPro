@@ -1,6 +1,5 @@
-# Stage 1: Build the Angular application
-FROM node:20-alpine AS build
-
+# Stage 1: Build Angular Frontend
+FROM node:20-alpine AS frontend-builder
 WORKDIR /frontend
 
 # Copy frontend source
@@ -10,7 +9,7 @@ RUN npm ci
 COPY MegaPro1.1/Code/eyang-frontend/ ./
 RUN npm run build -- --configuration production
 
-# Stage 2: Python Backend
+# Stage 2: Django Backend
 FROM python:3.13-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -28,11 +27,13 @@ RUN apt-get update && apt-get install -y \
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code
+# Copy the backend code
 COPY backend/ .
 
-# Copy the built frontend files from Stage 1
-COPY --from=build /frontend/dist/eyang-frontend/browser /app/frontend_build
+# Copy the freshly built Angular files from Stage 1 into the frontend_build directory.
+# This ensures Django and WhiteNoise always serve the absolute latest frontend code.
+RUN rm -rf frontend_build
+COPY --from=frontend-builder /frontend/dist/eyang-frontend/browser ./frontend_build/
 
 # Expose the internal port
 EXPOSE 8000

@@ -108,6 +108,10 @@ MEDIA_URL   = '/media/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'frontend_build')]
 STATIC_ROOT = os.path.join(BASE_DIR, 'static_cdn', 'static_root')
 
+# Serve files from the frontend_build directory directly at the root URL (/, /styles.css, etc.)
+WHITENOISE_ROOT = os.path.join(BASE_DIR, 'frontend_build')
+
+
 # ── FIX: use the standard BASE_DIR/media/ directory for uploaded files.
 #    The old value ('static_cdn/media_root') didn't match where Django
 #    actually writes uploaded files, causing every image to 404.

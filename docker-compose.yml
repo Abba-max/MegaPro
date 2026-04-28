@@ -19,7 +19,8 @@ services:
       sh -c "python manage.py collectstatic --noinput &&
              python manage.py migrate &&
              daphne -b 0.0.0.0 -p 8000 project.asgi:application"
-
+    ports:
+      - "3006:8000"
     environment:
       - DATABASE_URL=${DATABASE_URL:-postgres://prisma:***@db:5432/eyang}
       - ALLOWED_HOSTS=*
@@ -35,17 +36,6 @@ services:
       - db
     restart: unless-stopped
 
-  frontend:
-    build: ./MegaPro1.1/Code/eyang-frontend
-    ports:
-      - "3006:80"
-    volumes:
-      # Mount the volumes so Nginx can serve media/static files directly
-      - media_data:/app/media
-      - static_data:/app/static_cdn
-    depends_on:
-      - backend
-    restart: unless-stopped
 
 volumes:
   postgres_data:
