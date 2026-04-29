@@ -19,17 +19,22 @@ services:
       sh -c "python manage.py collectstatic --noinput &&
              python manage.py makemigrations &&
              python manage.py migrate &&
+             python manage.py seed_admin &&
              daphne -b 0.0.0.0 -p 8000 project.asgi:application"
     ports:
       - "3006:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL:-postgres://prisma:***@db:5432/eyang}
+      - DATABASE_URL=${DATABASE_URL}
       - ALLOWED_HOSTS=*
-      # Update CSRF_TRUSTED_ORIGINS with your VPS IP/Domain once deployed
       - CSRF_TRUSTED_ORIGINS=http://localhost:3006,http://127.0.0.1:3006,https://eyangestate.com/,http://147.93.47.169:3006
       - REQUIRE_DB_SSL=False
       - DEBUG=False
-      - SECRET_KEY=django-insecure-prod-key-change-me
+      - SECRET_KEY=${SECRET_KEY}
+      - ADMIN_USERNAME=${ADMIN_USERNAME}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+    env_file:
+      - backend/project/.env
     volumes:
       - media_data:/app/media
       - static_data:/app/static_cdn
