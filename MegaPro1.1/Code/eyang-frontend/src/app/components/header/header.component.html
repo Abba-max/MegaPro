@@ -124,7 +124,7 @@
               </a>
             </li>
             <li *ngIf="currentUser.role === 'Admin'">
-              <a routerLink="/admin/overview" (click)="showMenu = false">
+              <a routerLink="/app-admin/overview" (click)="showMenu = false">
                 <lucide-icon [img]="SettingsIcon" class="menu-icon"></lucide-icon>
                 <span>{{ 'nav.admin' | translate }}</span>
               </a>
@@ -238,7 +238,7 @@
           {{ 'nav.messages' | translate }}
           <span class="mobile-nav-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
         </a>
-        <a class="mobile-nav-link" *ngIf="currentUser.role === 'Admin'" routerLink="/admin/overview" (click)="closeMobileMenu()">
+        <a class="mobile-nav-link" *ngIf="currentUser.role === 'Admin'" routerLink="/app-admin/overview" (click)="closeMobileMenu()">
           <lucide-icon [img]="SettingsIcon" class="mobile-nav-lucide-icon"></lucide-icon>
           {{ 'nav.admin' | translate }}
         </a>

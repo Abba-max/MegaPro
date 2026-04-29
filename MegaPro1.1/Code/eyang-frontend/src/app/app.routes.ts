@@ -51,7 +51,7 @@ export const routes: Routes = [
   },
   // ── Admin-only routes ──────────────────────────────────────────────
   {
-    path: 'admin',
+    path: 'app-admin',
     component: LayoutComponent,
     canActivate: [adminGuard],
     children: [
