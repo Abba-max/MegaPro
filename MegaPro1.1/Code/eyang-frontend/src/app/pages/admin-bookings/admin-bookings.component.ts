@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Calendar, Loader, Phone, Trash2, Search, CheckCircle, XCircle, Info, AlertCircle } from 'lucide-angular';
 import { EstateService, QuickOrder } from '../../services/estate.service';
 import { catchError, of } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 
 export interface Toast { id: number; type: 'success'|'error'|'info'|'warning'; message: string; }
 
 @Component({
   selector: 'app-admin-bookings',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, TranslateModule],
   templateUrl: './admin-bookings.component.html',
   styleUrl: './admin-bookings.component.css'
 })

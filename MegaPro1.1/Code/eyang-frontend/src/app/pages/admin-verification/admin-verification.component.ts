@@ -2,11 +2,12 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, RefreshCw, CheckCircle, X, Eye } from 'lucide-angular';
 import { EstateService } from '../../services/estate.service';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
     selector: 'app-admin-verification',
     standalone: true,
-    imports: [CommonModule, LucideAngularModule],
+    imports: [CommonModule, LucideAngularModule, TranslateModule],
     templateUrl: './admin-verification.component.html',
     styleUrl: './admin-verification.component.css'
 })

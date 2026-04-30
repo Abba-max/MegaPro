@@ -10,6 +10,7 @@ import { EstateService, AdminUser } from '../../services/estate.service';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, of } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 
 export interface Toast { id: number; type: 'success'|'error'|'info'|'warning'; message: string; }
 
@@ -25,7 +26,7 @@ interface UserForm {
 @Component({
   selector: 'app-admin-users',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, TranslateModule],
   templateUrl: './admin-users.component.html',
   styleUrl: './admin-users.component.css'
 })

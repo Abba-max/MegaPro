@@ -10,6 +10,7 @@ import {
 import { EstateService, Estate, EstateRaw, EstateImage, RoomCategory, RoomImage } from '../../services/estate.service';
 import { environment } from '../../../environments/environment';
 import { catchError, of, forkJoin, Observable } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 
 export interface Toast { id: number; type: 'success' | 'error' | 'info' | 'warning'; message: string; }
 
@@ -22,7 +23,7 @@ interface EstateForm {
 @Component({
   selector: 'app-admin-logements',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, TranslateModule],
   templateUrl: './admin-logements.component.html',
   styleUrl: './admin-logements.component.css'
 })

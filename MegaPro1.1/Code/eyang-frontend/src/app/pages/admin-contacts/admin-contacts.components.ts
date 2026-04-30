@@ -7,13 +7,14 @@ import {
 } from 'lucide-angular';
 import { EstateService, ContactRequest } from '../../services/estate.service';
 import { catchError, of } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 
 export interface Toast { id: number; type: 'success'|'error'|'info'|'warning'; message: string; }
 
 @Component({
   selector: 'app-admin-contacts',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, TranslateModule],
   templateUrl: './admin-contacts.component.html',
   styleUrl: './admin-contacts.component.css'
 })
