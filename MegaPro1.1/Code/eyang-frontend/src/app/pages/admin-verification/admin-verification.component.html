@@ -1,18 +1,18 @@
 <div class="admin-verification">
     <div class="page-header">
-        <h1 class="page-title">Vérification des Propriétaires</h1>
-        <p class="page-subtitle">Examinez les pièces d'identité et approuvez les nouveaux propriétaires.</p>
+        <h1 class="page-title">{{ 'admin.owner_verification' | translate }}</h1>
+        <p class="page-subtitle">{{ 'admin.verification_desc' | translate }}</p>
     </div>
 
     <div *ngIf="isLoading()" class="loading-spinner">
         <lucide-icon [img]="RefreshIcon" class="icon-lg animate-spin"></lucide-icon>
-        <p>Chargement des demandes...</p>
+        <p>{{ 'admin.loading_requests' | translate }}</p>
     </div>
 
     <div *ngIf="!isLoading() && pendingOwners.length === 0" class="empty-state">
         <lucide-icon [img]="CheckCircleIcon" class="empty-icon"></lucide-icon>
-        <h3>Tout est à jour !</h3>
-        <p>Aucune demande de vérification en attente pour le moment.</p>
+        <h3>{{ 'admin.everything_up_to_date' | translate }}</h3>
+        <p>{{ 'admin.no_pending_verification' | translate }}</p>
     </div>
 
     <div *ngIf="!isLoading() && pendingOwners.length > 0" class="verification-grid">
@@ -27,26 +27,26 @@
 
             <div class="card-body">
                 <div class="detail-row">
-                    <span class="detail-label">Rôle :</span>
-                    <span class="detail-value">Bailleur</span>
+                    <span class="detail-label">{{ 'admin.role_label' | translate }}</span>
+                    <span class="detail-value">{{ 'admin.owner_role' | translate }}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Inscrit le :</span>
+                    <span class="detail-label">{{ 'admin.joined_on' | translate }}</span>
                     <span class="detail-value">{{ formatDate(owner.joined) }}</span>
                 </div>
 
                 <div class="id-preview-box mt-4" (click)="viewIdCard(owner)">
                     <lucide-icon [img]="EyeIcon" class="icon-xs"></lucide-icon>
-                    Voir la pièce d'identité
+                    {{ 'admin.view_id' | translate }}
                 </div>
             </div>
 
             <div class="card-actions">
                 <button class="btn-approve" (click)="verifyOwner(owner.id, 'approve')">
-                    Approuver
+                    {{ 'admin.approve' | translate }}
                 </button>
                 <button class="btn-reject" (click)="verifyOwner(owner.id, 'reject')">
-                    Rejeter
+                    {{ 'admin.reject' | translate }}
                 </button>
             </div>
         </div>
@@ -57,7 +57,7 @@
 <div class="modal-overlay" *ngIf="selectedOwner" (click)="closeModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
-            <h2 class="modal-title">Pièce d'identité : {{ selectedOwner.name }}</h2>
+            <h2 class="modal-title">{{ 'admin.id_card_for' | translate:{name: selectedOwner.name} }}</h2>
             <button class="btn-close" (click)="closeModal()">
                 <lucide-icon [img]="XIcon" class="icon-sm"></lucide-icon>
             </button>

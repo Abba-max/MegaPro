@@ -12,16 +12,16 @@
 
 <!-- Header -->
 <div class="page-header page-header-row">
-    <h1 class="page-title">Gestion des utilisateurs</h1>
+    <h1 class="page-title">{{ 'admin.manage_users' | translate }}</h1>
 <button class="btn-add" (click)="openCreate()">
     <lucide-icon [img]="PlusIcon" class="icon-btn-sm"></lucide-icon>
-    Nouvel utilisateur
+    {{ 'admin.new_user' | translate }}
 </button>
 </div>
 <!-- Loading -->
 <div *ngIf="isLoading()" class="loader-center mt-8">
     <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
-    <span>Chargement…</span>
+    <span>{{ 'admin.loading' | translate }}</span>
 </div>
 
 <!-- Table Card -->
@@ -29,25 +29,25 @@
     <div class="toolbar">
         <div class="search-input-group">
             <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
-            <input type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)" placeholder="Rechercher par nom ou email…"
+            <input type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)" [placeholder]="'admin.search_users_ph' | translate"
                 class="search-input">
         </div>
-    <select class="select-input" [ngModel]="filterType()" (ngModelChange)="onFilter($event)">
-        <option value="">Tous les rôles</option>
+        <select class="select-input" [ngModel]="filterType()" (ngModelChange)="onFilter($event)">
+        <option value="">{{ 'admin.all_roles' | translate }}</option>
         <option *ngFor="let t of userTypes" [value]="t">{{ t }}</option>
     </select>
-    <span class="total-counter">{{ filtered().length }} utilisateur{{ filtered().length !== 1 ? 's' : '' }}</span>
+    <span class="total-counter">{{ 'admin.total_users' | translate:{count: filtered().length} }}</span>
 </div>
 
 <table class="table">
     <thead>
         <tr>
-        <th>UTILISATEUR</th>
-        <th>EMAIL</th>
-        <th>RÔLE</th>
-        <th>INSCRIPTION</th>
-        <th>STATUT</th>
-        <th class="text-right">ACTIONS</th>
+        <th>{{ 'admin.col_user' | translate }}</th>
+        <th>{{ 'admin.col_email' | translate }}</th>
+        <th>{{ 'admin.col_role' | translate }}</th>
+        <th>{{ 'admin.col_joined' | translate }}</th>
+        <th>{{ 'admin.col_status' | translate }}</th>
+        <th class="text-right">{{ 'admin.col_actions' | translate }}</th>
         </tr>
         </thead>
         <tbody>
@@ -63,9 +63,9 @@
             <span class="role-badge" [style.background]="u.color + '20'" [style.color]="u.color">{{ u.type }}</span>
         </td>
         <td data-label="INSCRIPTION"><span class="text-sm">{{ u.joined }}</span></td>
-        <td data-label="STATUT">
+        <td [attr.data-label]="'admin.col_status' | translate">
             <span [class]="u.active ? 'active-badge' : 'inactive-badge'">
-                {{ u.active ? 'Actif' : 'Inactif' }}
+                {{ u.active ? ('admin.status_active' | translate) : ('admin.status_inactive' | translate) }}
             </span>
         </td>
         <td class="text-right" data-label="ACTIONS">
@@ -87,23 +87,22 @@
         </td>
         </tr>
         <tr *ngIf="filtered().length === 0">
-            <td colspan="6" class="empty-row">Aucun utilisateur trouvé.</td>
+            <td colspan="6" class="empty-row">{{ 'admin.no_users_found' | translate }}</td>
         </tr>
     </tbody>
 </table>
 
 <!-- Pagination -->
 <div class="pagination-footer" *ngIf="totalPages() > 1">
-    <div class="page-info">
-        Page <b>{{ currentPage() }}</b> sur <b>{{ totalPages() }}</b>
+    <div class="page-info" [innerHTML]="'admin.page_info' | translate:{current: currentPage(), total: totalPages()}">
     </div>
     <div class="pagination-actions">
         <button class="pagination-btn" [disabled]="currentPage() === 1" (click)="prevPage()">
             <lucide-icon [img]="PrevIcon" class="icon-btn-sm"></lucide-icon>
-            Précédent
+            {{ 'admin.prev' | translate }}
         </button>
         <button class="pagination-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
-            Suivant
+            {{ 'admin.next' | translate }}
             <lucide-icon [img]="NextIcon" class="icon-btn-sm"></lucide-icon>
         </button>
     </div>
@@ -117,7 +116,7 @@
         </button>
 
         <h2 class="modal-title">
-            {{ isEditMode ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur' }}
+            {{ isEditMode ? ('admin.edit_user' | translate) : ('admin.new_user' | translate) }}
         </h2>
 
         <div class="modal-form">
@@ -165,11 +164,11 @@
         </div>
 
         <div class="modal-actions">
-            <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+            <button class="btn-cancel" (click)="closeModal()">{{ 'admin.cancel' | translate }}</button>
             <button class="btn-save-modal" (click)="saveUser()" [disabled]="isSaving()">
                 <lucide-icon *ngIf="isSaving()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
                 <lucide-icon *ngIf="!isSaving()" [img]="SaveIcon" class="icon-xs"></lucide-icon>
-                {{ isSaving() ? 'Enregistrement…' : (isEditMode ? 'Mettre à jour' : 'Créer') }}
+                {{ isSaving() ? ('admin.saving' | translate) : (isEditMode ? ('admin.update' | translate) : ('admin.create' | translate)) }}
             </button>
         </div>
     </div>
@@ -178,14 +177,12 @@
 <!-- ══ Delete Confirm Modal ══════════════════════════════════════ -->
 <div class="modal-overlay fade-in" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
     <div class="modal-card modal-card-sm" (click)="$event.stopPropagation()">
-        <h2 class="modal-title">Confirmer la suppression</h2>
-        <p class="delete-msg">
-            Êtes-vous sûr de vouloir supprimer <strong>{{ userToDelete?.name }}</strong> ?
-            Cette action est irréversible.
+        <h2 class="modal-title">{{ 'admin.delete_title' | translate }}</h2>
+        <p class="delete-msg" [innerHTML]="'admin.delete_confirm_user' | translate:{name: '<strong>' + userToDelete?.name + '</strong>'}">
         </p>
         <div class="modal-actions">
-            <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
-            <button class="btn-delete" (click)="deleteUser()">Supprimer</button>
+            <button class="btn-cancel" (click)="cancelDelete()">{{ 'admin.cancel' | translate }}</button>
+            <button class="btn-delete" (click)="deleteUser()">{{ 'dashboard.delete' | translate }}</button>
         </div>
     </div>
 </div>

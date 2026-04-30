@@ -98,16 +98,16 @@
     <div class="panel" *ngIf="activeTab==='overview'">
       <header class="panel__hd">
         <div>
-          <h1 class="panel__title">Bonjour, {{ currentUser!.name!.split(' ')[0] }} 👋</h1>
-          <p class="panel__sub">Voici un résumé de votre activité</p>
+          <h1 class="panel__title">{{ 'dashboard.hello' | translate }}, {{ currentUser!.name!.split(' ')[0] }} 👋</h1>
+          <p class="panel__sub">{{ 'dashboard.summary' | translate }}</p>
         </div>
         <div class="add-estate-btn-wrap" [class.add-estate-btn-wrap--locked]="!isOwnerVerified">
           <button class="btn btn--primary" [class.btn--locked]="!isOwnerVerified" (click)="openAddModal()">
-            <lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>Nouveau logement
+            <lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.new_housing' | translate }}
           </button>
           <span class="add-estate-tooltip" *ngIf="!isOwnerVerified">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Compte non encore vérifié
+            {{ 'dashboard.not_verified' | translate }}
           </span>
         </div>
       </header>
@@ -133,19 +133,19 @@
 
       <div class="alert alert--amber" *ngIf="ownerStats.pending_orders>0">
         <lucide-icon [img]="AlertIcon" class="alert__ico"></lucide-icon>
-        <p class="alert__txt"><strong>{{ ownerStats.pending_orders }} réservation(s)</strong> en attente de réponse.</p>
-        <button class="btn btn--ghost btn--xs" (click)="selectTab('orders')">Voir →</button>
+        <p class="alert__txt"><strong>{{ 'dashboard.orders_pending' | translate:{count: ownerStats.pending_orders} }}</strong></p>
+        <button class="btn btn--ghost btn--xs" (click)="selectTab('orders')">{{ 'dashboard.view_arrow' | translate }}</button>
       </div>
 
       <section *ngIf="myOrders.length>0" class="overview-recent">
-        <h2 class="section-h">Dernières réservations</h2>
+        <h2 class="section-h">{{ 'dashboard.recent_orders' | translate }}</h2>
         <div class="timeline">
           <div class="tl-item" *ngFor="let o of myOrders.slice(0,4)">
             <div class="tl-dot tl-dot--{{o.status||'pending'}}"></div>
             <div class="tl-body">
               <div class="tl-row">
                 <span class="tl-who">{{ o.name }}</span>
-                <span class="chip chip--{{o.status||'pending'}}">{{ o.status==='accepted'?'Acceptée':o.status==='rejected'?'Rejetée':'En attente' }}</span>
+                <span class="chip chip--{{o.status||'pending'}}">{{ o.status==='accepted'?('dashboard.status_accepted'|translate):o.status==='rejected'?('dashboard.status_rejected'|translate):('dashboard.status_pending'|translate) }}</span>
               </div>
               <span class="tl-where">{{ o.estate_name }}</span>
               <span class="tl-when">{{ formatDate(o.created_at) }}</span>
@@ -158,23 +158,23 @@
     <!-- ESTATES -->
     <div class="panel" *ngIf="activeTab==='estates'">
       <header class="panel__hd">
-        <div><h1 class="panel__title">Mes logements</h1><p class="panel__sub">{{ myEstates.length }} logement{{ myEstates.length!==1?'s':'' }}</p></div>
+        <div><h1 class="panel__title">{{ 'dashboard.my_housings' | translate }}</h1><p class="panel__sub">{{ 'admin.total_housings' | translate:{count: myEstates.length} }}</p></div>
         <div class="add-estate-btn-wrap" [class.add-estate-btn-wrap--locked]="!isOwnerVerified">
-          <button class="btn btn--primary" [class.btn--locked]="!isOwnerVerified" (click)="openAddModal()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>Ajouter</button>
+          <button class="btn btn--primary" [class.btn--locked]="!isOwnerVerified" (click)="openAddModal()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.add' | translate }}</button>
           <span class="add-estate-tooltip" *ngIf="!isOwnerVerified">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Compte non encore vérifié
+            {{ 'dashboard.not_verified' | translate }}
           </span>
         </div>
       </header>
       <div class="empty-state" *ngIf="myEstates.length===0">
         <div class="empty-state__ico"><lucide-icon [img]="HomeIcon"></lucide-icon></div>
-        <h3>Aucun logement</h3><p>Ajoutez votre premier logement pour commencer.</p>
+        <h3>{{ 'dashboard.empty_housings' | translate }}</h3><p>{{ 'dashboard.add_first_housing' | translate }}</p>
         <div class="add-estate-btn-wrap" [class.add-estate-btn-wrap--locked]="!isOwnerVerified">
-          <button class="btn btn--primary" [class.btn--locked]="!isOwnerVerified" (click)="openAddModal()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>Ajouter</button>
+          <button class="btn btn--primary" [class.btn--locked]="!isOwnerVerified" (click)="openAddModal()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.add' | translate }}</button>
           <span class="add-estate-tooltip" *ngIf="!isOwnerVerified">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-            Compte non encore vérifié
+            {{ 'dashboard.not_verified' | translate }}
           </span>
         </div>
       </div>
@@ -184,9 +184,9 @@
             <img *ngIf="getEstateImage(e)" [src]="getEstateImage(e)" [alt]="e.name" loading="lazy">
             <div class="e-card__ph" *ngIf="!getEstateImage(e)"><lucide-icon [img]="HomeIcon"></lucide-icon></div>
             <div class="e-card__flags">
-              <span class="e-card__status e-card__status--{{e.status}}">{{ e.status==='published'?'Publié':e.status==='draft'?'Brouillon':'Archivé' }}</span>
-              <span *ngIf="e.is_verified" class="e-card__verified"><lucide-icon [img]="CheckIcon"></lucide-icon>Vérifié</span>
-              <span *ngIf="!e.is_verified&&e.status==='published'" class="e-card__pending">En attente</span>
+              <span class="e-card__status e-card__status--{{e.status}}">{{ e.status==='published'?('dashboard.status_published'|translate):e.status==='draft'?('dashboard.status_draft'|translate):('dashboard.status_archived'|translate) }}</span>
+              <span *ngIf="e.is_verified" class="e-card__verified"><lucide-icon [img]="CheckIcon"></lucide-icon>{{ 'admin.status_verified' | translate }}</span>
+              <span *ngIf="!e.is_verified&&e.status==='published'" class="e-card__pending">{{ 'dashboard.status_pending' | translate }}</span>
             </div>
             <div class="e-card__rating" *ngIf="e.average_rating.value>0">★ {{ e.average_rating.value.toFixed(1) }}</div>
           </div>
@@ -204,20 +204,20 @@
           </div>
         </article>
       </div>
-      <div class="load-more" *ngIf="hasMoreEstates"><button class="btn btn--ghost" (click)="showMoreEstates()">Voir plus</button></div>
+      <div class="load-more" *ngIf="hasMoreEstates"><button class="btn btn--ghost" (click)="showMoreEstates()">{{ 'home.view_more' | translate }}</button></div>
     </div>
 
     <!-- ORDERS (owner) -->
     <div class="panel" *ngIf="activeTab==='orders'">
-      <header class="panel__hd"><div><h1 class="panel__title">Réservations reçues</h1><p class="panel__sub">{{ myOrders.length }} demande{{ myOrders.length!==1?'s':'' }}</p></div></header>
-      <div class="empty-state" *ngIf="myOrders.length===0"><div class="empty-state__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div><h3>Aucune réservation</h3><p>Les demandes apparaîtront ici.</p></div>
+      <header class="panel__hd"><div><h1 class="panel__title">{{ 'dashboard.received_orders' | translate }}</h1><p class="panel__sub">{{ 'dashboard.orders_count' | translate:{count: myOrders.length} }}</p></div></header>
+      <div class="empty-state" *ngIf="myOrders.length===0"><div class="empty-state__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div><h3>{{ 'dashboard.empty_orders' | translate }}</h3><p>{{ 'dashboard.orders_will_appear' | translate }}</p></div>
       <div class="o-list" *ngIf="myOrders.length>0">
         <div class="o-card" *ngFor="let o of myOrders">
           <div class="o-card__av">{{ o.name.charAt(0).toUpperCase() }}</div>
           <div class="o-card__body">
             <div class="o-card__top">
               <div><span class="o-card__name">{{ o.name }}</span><span class="o-card__where">{{ o.estate_name }}</span></div>
-              <span class="chip chip--{{o.status||'pending'}}">{{ o.status==='accepted'?'✓ Acceptée':o.status==='rejected'?'✗ Rejetée':'⏳ En attente' }}</span>
+              <span class="chip chip--{{o.status||'pending'}}">{{ o.status==='accepted'?'✓ ' + ('dashboard.status_accepted'|translate):o.status==='rejected'?'✗ ' + ('dashboard.status_rejected'|translate):'⏳ ' + ('dashboard.status_pending'|translate) }}</span>
             </div>
             <div class="o-card__meta">
               <span *ngIf="o.phone"><lucide-icon [img]="PhoneIcon"></lucide-icon>{{ o.phone }}</span>
@@ -226,8 +226,8 @@
             </div>
             <p class="o-card__note" *ngIf="o.note">{{ o.note }}</p>
             <div class="o-card__acts" *ngIf="!o.status||o.status==='pending'">
-              <button class="btn btn--accept" (click)="acceptReservation(o)"><lucide-icon [img]="CheckIcon" class="btn__ico"></lucide-icon>Accepter</button>
-              <button class="btn btn--reject" (click)="rejectReservation(o)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>Refuser</button>
+              <button class="btn btn--accept" (click)="acceptReservation(o)"><lucide-icon [img]="CheckIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.accept' | translate }}</button>
+              <button class="btn btn--reject" (click)="rejectReservation(o)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.refuse' | translate }}</button>
             </div>
           </div>
         </div>
@@ -236,8 +236,8 @@
 
     <!-- REVIEWS (owner) -->
     <div class="panel" *ngIf="activeTab==='reviews'">
-      <header class="panel__hd"><div><h1 class="panel__title">Avis reçus</h1><p class="panel__sub">{{ myReviews.length }} avis</p></div></header>
-      <div class="empty-state" *ngIf="myReviews.length===0"><div class="empty-state__ico"><lucide-icon [img]="StarIcon"></lucide-icon></div><h3>Aucun avis</h3><p>Les avis de vos locataires apparaîtront ici.</p></div>
+      <header class="panel__hd"><div><h1 class="panel__title">{{ 'dashboard.received_reviews' | translate }}</h1><p class="panel__sub">{{ 'dashboard.reviews_count' | translate:{count: myReviews.length} }}</p></div></header>
+      <div class="empty-state" *ngIf="myReviews.length===0"><div class="empty-state__ico"><lucide-icon [img]="StarIcon"></lucide-icon></div><h3>{{ 'dashboard.empty_reviews' | translate }}</h3><p>{{ 'dashboard.reviews_will_appear' | translate }}</p></div>
       <div class="rv-list" *ngIf="myReviews.length>0">
         <div class="rv-card" *ngFor="let r of pagedReviews">
           <div class="rv-card__head">
@@ -257,19 +257,19 @@
           </div>
         </div>
       </div>
-      <div class="load-more" *ngIf="hasMoreReviews"><button class="btn btn--ghost" (click)="showMoreReviews()">Voir plus</button></div>
+      <div class="load-more" *ngIf="hasMoreReviews"><button class="btn btn--ghost" (click)="showMoreReviews()">{{ 'home.view_more' | translate }}</button></div>
     </div>
 
     <!-- MESSAGES (owner) -->
     <div class="msg-shell" *ngIf="activeTab==='messages'">
       <div class="msg-panel" [class.msg-panel--hide]="activeConversation">
         <div class="msg-panel__hd">
-          <h2 class="msg-panel__title">Messages</h2>
+          <h2 class="msg-panel__title">{{ 'dashboard.messages' | translate }}</h2>
           <span class="msg-panel__badge" *ngIf="getTotalUnread()>0">{{ getTotalUnread() }}</span>
         </div>
         <div class="msg-panel__loading" *ngIf="ownerConversationsLoading"><div class="page-loading__ring page-loading__ring--sm"></div></div>
         <div class="msg-panel__empty" *ngIf="!ownerConversationsLoading&&conversations.length===0">
-          <lucide-icon [img]="MessageIcon"></lucide-icon><p>Aucune conversation</p>
+          <lucide-icon [img]="MessageIcon"></lucide-icon><p>{{ 'dashboard.no_conversations' | translate }}</p>
         </div>
         <div class="conv-list">
           <div class="conv-row" *ngFor="let c of conversations"
@@ -311,14 +311,14 @@
           </ng-container>
         </div>
         <div class="chat-area__compose">
-          <input class="chat-area__input" [(ngModel)]="newMessage" placeholder="Écrire un message…" (keyup.enter)="sendMessage()">
+          <input class="chat-area__input" [(ngModel)]="newMessage" [placeholder]="'dashboard.write_message_ph' | translate" (keyup.enter)="sendMessage()">
           <button class="chat-area__send" [class.chat-area__send--on]="newMessage.trim()" (click)="sendMessage()" [disabled]="!newMessage.trim()">
             <lucide-icon [img]="SendIcon"></lucide-icon>
           </button>
         </div>
       </div>
       <div class="chat-area chat-area--blank" *ngIf="!activeConversation">
-        <lucide-icon [img]="MessageIcon"></lucide-icon><p>Sélectionnez une conversation</p>
+        <lucide-icon [img]="MessageIcon"></lucide-icon><p>{{ 'dashboard.select_conversation' | translate }}</p>
       </div>
     </div>
 
@@ -402,11 +402,11 @@
 
     <!-- RESERVATIONS -->
     <div class="panel" *ngIf="activeTab==='reservations'">
-      <header class="panel__hd"><div><h1 class="panel__title">Mes réservations</h1><p class="panel__sub">{{ myReservations.length }} demande{{ myReservations.length!==1?'s':'' }}</p></div></header>
+      <header class="panel__hd"><div><h1 class="panel__title">{{ 'dashboard.my_reservations' | translate }}</h1><p class="panel__sub">{{ 'dashboard.orders_count' | translate:{count: myReservations.length} }}</p></div></header>
       <div class="empty-state" *ngIf="myReservations.length===0">
         <div class="empty-state__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div>
-        <h3>Aucune réservation</h3><p>Trouvez votre logement idéal.</p>
-        <a routerLink="/" class="btn btn--primary" style="text-decoration:none">Chercher un logement →</a>
+        <h3>{{ 'dashboard.empty_reservations' | translate }}</h3><p>{{ 'dashboard.find_ideal' | translate }}</p>
+        <a routerLink="/" class="btn btn--primary" style="text-decoration:none">{{ 'dashboard.search_housing_link' | translate }}</a>
       </div>
       <div class="o-list" *ngIf="myReservations.length>0">
         <div class="o-card" *ngFor="let r of myReservations">
@@ -417,7 +417,7 @@
           <div class="o-card__body">
             <div class="o-card__top">
               <div><span class="o-card__name">{{ r.estate_name }}</span><span class="o-card__where">{{ r.estate_location }}</span></div>
-              <span class="chip chip--{{r.status||'pending'}}">{{ r.status==='accepted'?'✓ Acceptée':r.status==='rejected'?'✗ Rejetée':'⏳ En attente' }}</span>
+              <span class="chip chip--{{r.status||'pending'}}">{{ r.status==='accepted'?'✓ ' + ('dashboard.status_accepted'|translate):r.status==='rejected'?'✗ ' + ('dashboard.status_rejected'|translate):'⏳ ' + ('dashboard.status_pending'|translate) }}</span>
             </div>
             <div class="o-card__meta">
               <span *ngIf="r.room_category_name"><lucide-icon [img]="BuildingIcon"></lucide-icon>{{ r.room_category_name }}</span>
@@ -425,7 +425,7 @@
               <span><lucide-icon [img]="CalendarIcon"></lucide-icon>{{ formatDate(r.created_at) }}</span>
             </div>
             <div class="o-card__acts" *ngIf="!r.status||r.status==='pending'">
-              <button class="btn btn--ghost-red btn--xs" (click)="deleteReservation(r)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>Annuler</button>
+              <button class="btn btn--ghost-red btn--xs" (click)="deleteReservation(r)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.cancel_reservation' | translate }}</button>
             </div>
           </div>
         </div>
@@ -435,12 +435,12 @@
     <!-- REVIEWS (client) -->
     <div class="panel" *ngIf="activeTab==='reviews'">
       <header class="panel__hd">
-        <div><h1 class="panel__title">Mes avis</h1><p class="panel__sub">{{ mySubmittedReviews.length }} avis soumis</p></div>
-        <button class="btn btn--primary" (click)="openReviewModal()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>Nouvel avis</button>
+        <div><h1 class="panel__title">{{ 'dashboard.my_submitted_reviews' | translate }}</h1><p class="panel__sub">{{ 'dashboard.submitted_reviews_count' | translate:{count: mySubmittedReviews.length} }}</p></div>
+        <button class="btn btn--primary" (click)="openReviewModal()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.new_review_btn' | translate }}</button>
       </header>
       <div class="empty-state" *ngIf="mySubmittedReviews.length===0">
         <div class="empty-state__ico"><lucide-icon [img]="StarIcon"></lucide-icon></div>
-        <h3>Aucun avis</h3><p>Partagez votre expérience sur les logements visités.</p>
+        <h3>{{ 'dashboard.empty_submitted_reviews' | translate }}</h3><p>{{ 'dashboard.share_experience_desc' | translate }}</p>
       </div>
       <div class="rv-list" *ngIf="mySubmittedReviews.length>0">
         <div class="rv-card" *ngFor="let r of mySubmittedReviews">
@@ -468,8 +468,8 @@
 
     <!-- CONTACTS -->
     <div class="panel" *ngIf="activeTab==='contacts'">
-      <header class="panel__hd"><div><h1 class="panel__title">Demandes de contact</h1><p class="panel__sub">{{ myContacts.length }} demande{{ myContacts.length!==1?'s':'' }}</p></div></header>
-      <div class="empty-state" *ngIf="myContacts.length===0"><div class="empty-state__ico"><lucide-icon [img]="PhoneIcon"></lucide-icon></div><h3>Aucune demande</h3><p>Vos demandes apparaîtront ici.</p></div>
+      <header class="panel__hd"><div><h1 class="panel__title">{{ 'dashboard.contact_requests' | translate }}</h1><p class="panel__sub">{{ 'dashboard.contact_requests_count' | translate:{count: myContacts.length} }}</p></div></header>
+      <div class="empty-state" *ngIf="myContacts.length===0"><div class="empty-state__ico"><lucide-icon [img]="PhoneIcon"></lucide-icon></div><h3>{{ 'dashboard.empty_contact_requests' | translate }}</h3><p>{{ 'dashboard.requests_will_appear' | translate }}</p></div>
       <div class="ct-list" *ngIf="myContacts.length>0">
         <div class="ct-card" *ngFor="let c of myContacts">
           <div class="ct-card__hd"><span class="ct-card__estate">{{ c.estate_name }}</span><div class="ct-card__right"><span class="ct-card__date">{{ formatDate(c.submitted_at) }}</span><button class="ico-btn ico-btn--red ico-btn--xs" (click)="deleteContact(c)"><lucide-icon [img]="TrashIcon"></lucide-icon></button></div></div>
@@ -481,8 +481,8 @@
     <!-- MESSAGES (client) -->
     <div class="msg-shell" *ngIf="activeTab==='messages'">
       <div class="msg-panel" [class.msg-panel--hide]="activeConversation">
-        <div class="msg-panel__hd"><h2 class="msg-panel__title">Messages</h2></div>
-        <div class="msg-panel__empty" *ngIf="conversations.length===0"><lucide-icon [img]="MessageIcon"></lucide-icon><p>Aucune conversation</p></div>
+        <div class="msg-panel__hd"><h2 class="msg-panel__title">{{ 'dashboard.messages' | translate }}</h2></div>
+        <div class="msg-panel__empty" *ngIf="conversations.length===0"><lucide-icon [img]="MessageIcon"></lucide-icon><p>{{ 'dashboard.no_conversations' | translate }}</p></div>
         <div class="conv-list">
           <div class="conv-row" *ngFor="let c of conversations"
                [class.conv-row--on]="activeConversation?.id===c.id"
@@ -518,7 +518,7 @@
           <button class="chat-area__send" [class.chat-area__send--on]="newMessage.trim()" (click)="sendMessage()" [disabled]="!newMessage.trim()"><lucide-icon [img]="SendIcon"></lucide-icon></button>
         </div>
       </div>
-      <div class="chat-area chat-area--blank" *ngIf="!activeConversation"><lucide-icon [img]="MessageIcon"></lucide-icon><p>Sélectionnez une conversation</p></div>
+      <div class="chat-area chat-area--blank" *ngIf="!activeConversation"><lucide-icon [img]="MessageIcon"></lucide-icon><p>{{ 'dashboard.select_conversation' | translate }}</p></div>
     </div>
 
   </main>
@@ -532,7 +532,7 @@
 <!-- Estate modal -->
 <div class="m-back" *ngIf="showEstateModal" (click)="closeEstateModal()">
   <div class="m-box m-box--lg" (click)="$event.stopPropagation()">
-    <div class="m-head"><h2 class="m-title">{{ isEditMode?'Modifier le logement':'Nouveau logement' }}</h2><button class="m-close" (click)="closeEstateModal()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
+    <div class="m-head"><h2 class="m-title">{{ isEditMode?('dashboard.modal_edit_title'|translate):('dashboard.modal_add_title'|translate) }}</h2><button class="m-close" (click)="closeEstateModal()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
     <div class="m-body">
       <div class="f-group"><label class="f-label">Nom *</label><input class="f-input" [(ngModel)]="estateForm.name" placeholder="Ex: Résidence Étoile du Campus"></div>
       <div class="f-row"><div class="f-group"><label class="f-label">Localisation *</label><input class="f-input" [(ngModel)]="estateForm.location" placeholder="Eyang, Yaoundé"></div><div class="f-group"><label class="f-label">Prix de base (FCFA)</label><input class="f-input" type="number" [(ngModel)]="estateForm.price" placeholder="35000"></div></div>
@@ -552,19 +552,19 @@
         <input id="imgInput" type="file" accept="image/*" multiple style="display:none" (change)="onImagesSelected($event)">
       </div>
     </div>
-    <div class="m-foot"><button *ngIf="isEditMode" class="btn btn--ghost" (click)="switchToRoomManagerFromEdit()"><lucide-icon [img]="BuildingIcon" class="btn__ico"></lucide-icon>Chambres</button><div style="flex:1"></div><button class="btn btn--ghost" (click)="closeEstateModal()">Annuler</button><button class="btn btn--primary" (click)="saveEstate()" [disabled]="isSavingEstate">{{ isSavingEstate?'Enregistrement…':isEditMode?'Enregistrer':'Créer' }}</button></div>
+    <div class="m-foot"><button *ngIf="isEditMode" class="btn btn--ghost" (click)="switchToRoomManagerFromEdit()"><lucide-icon [img]="BuildingIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.rooms_title' | translate }}</button><div style="flex:1"></div><button class="btn btn--ghost" (click)="closeEstateModal()">{{ 'dashboard.cancel' | translate }}</button><button class="btn btn--primary" (click)="saveEstate()" [disabled]="isSavingEstate">{{ isSavingEstate?('dashboard.saving'|translate):isEditMode?('dashboard.save_changes'|translate):('dashboard.create'|translate) }}</button></div>
   </div>
 </div>
 
 <!-- Room modal -->
 <div class="m-back" *ngIf="showRoomModal" (click)="closeRoomModal()">
   <div class="m-box m-box--lg" (click)="$event.stopPropagation()">
-    <div class="m-head"><h2 class="m-title">Chambres — {{ selectedEstateForRooms?.name }}</h2><button class="m-close" (click)="closeRoomModal()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
+    <div class="m-head"><h2 class="m-title">{{ 'dashboard.rooms_title' | translate }} — {{ selectedEstateForRooms?.name }}</h2><button class="m-close" (click)="closeRoomModal()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
     <div class="m-body">
       <ng-container *ngIf="!isRoomEditMode">
-        <button class="btn btn--primary btn--sm" style="margin-bottom:1rem" (click)="openCreateRoom()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>Ajouter</button>
+        <button class="btn btn--primary btn--sm" style="margin-bottom:1rem" (click)="openCreateRoom()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.add' | translate }}</button>
         <div *ngIf="isLoadingRooms" style="display:flex;justify-content:center;padding:1.5rem"><div class="page-loading__ring page-loading__ring--sm"></div></div>
-        <table class="data-tbl" *ngIf="!isLoadingRooms"><thead><tr><th>Type</th><th>Prix</th><th>Qté</th><th></th></tr></thead><tbody><tr *ngFor="let rm of roomCategories"><td><span class="dt-primary">{{ rm.name }}</span><span class="dt-secondary">{{ rm.occupancy }}</span></td><td class="dt-mono">{{ formatPrice(rm.price) }}</td><td>{{ rm.quantity_available }}</td><td class="dt-acts"><button class="ico-btn ico-btn--xs" (click)="openEditRoom(rm)"><lucide-icon [img]="PencilIcon"></lucide-icon></button><button class="ico-btn ico-btn--red ico-btn--xs" (click)="deleteRoom(rm)"><lucide-icon [img]="TrashIcon"></lucide-icon></button></td></tr><tr *ngIf="roomCategories.length===0"><td colspan="4" class="dt-empty">Aucune chambre.</td></tr></tbody></table>
+        <table class="data-tbl" *ngIf="!isLoadingRooms"><thead><tr><th>{{ 'dashboard.col_type' | translate }}</th><th>{{ 'dashboard.col_price' | translate }}</th><th>{{ 'dashboard.col_qty' | translate }}</th><th></th></tr></thead><tbody><tr *ngFor="let rm of roomCategories"><td><span class="dt-primary">{{ rm.name }}</span><span class="dt-secondary">{{ rm.occupancy }}</span></td><td class="dt-mono">{{ formatPrice(rm.price) }}</td><td>{{ rm.quantity_available }}</td><td class="dt-acts"><button class="ico-btn ico-btn--xs" (click)="openEditRoom(rm)"><lucide-icon [img]="PencilIcon"></lucide-icon></button><button class="ico-btn ico-btn--red ico-btn--xs" (click)="deleteRoom(rm)"><lucide-icon [img]="TrashIcon"></lucide-icon></button></td></tr><tr *ngIf="roomCategories.length===0"><td colspan="4" class="dt-empty">{{ 'dashboard.empty_rooms' | translate }}</td></tr></tbody></table>
       </ng-container>
       <ng-container *ngIf="isRoomEditMode">
         <div class="f-row"><div class="f-group"><label class="f-label">Nom *</label><input class="f-input" [(ngModel)]="roomForm.name"></div><div class="f-group"><label class="f-label">Prix (FCFA) *</label><input class="f-input" type="number" [(ngModel)]="roomForm.price" min="0"></div></div>
@@ -574,7 +574,7 @@
         <div class="f-group"><label class="f-label">Photos</label><div class="photo-row" *ngIf="roomPreviewImages.length>0"><div class="photo-item" *ngFor="let p of roomPreviewImages;let i=index"><img [src]="p"><button class="photo-del" (click)="removeRoomPreview(i)">×</button></div></div><label class="photo-drop photo-drop--sm" for="roomImg"><lucide-icon [img]="PlusIcon" style="width:14px;height:14px"></lucide-icon>Ajouter photos</label><input id="roomImg" type="file" accept="image/*" multiple style="display:none" (change)="onRoomFilesSelected($event)"></div>
       </ng-container>
     </div>
-    <div class="m-foot" *ngIf="isRoomEditMode"><button class="btn btn--ghost" (click)="isRoomEditMode=false">Annuler</button><button class="btn btn--primary" (click)="saveRoom()" [disabled]="isSavingRoom">{{ isSavingRoom?'Enregistrement…':roomEditId?'Mettre à jour':'Créer' }}</button></div>
+    <div class="m-foot" *ngIf="isRoomEditMode"><button class="btn btn--ghost" (click)="isRoomEditMode=false">{{ 'dashboard.cancel' | translate }}</button><button class="btn btn--primary" (click)="saveRoom()" [disabled]="isSavingRoom">{{ isSavingRoom?('dashboard.saving'|translate):roomEditId?('dashboard.update'|translate):('dashboard.create'|translate) }}</button></div>
   </div>
 </div>
 
@@ -582,14 +582,14 @@
 <div class="m-back" *ngIf="showReviewModal" (click)="closeReviewModal()">
   <div class="m-box m-box--rv" (click)="$event.stopPropagation()">
     <div class="m-head">
-      <h2 class="m-title">Laisser un avis</h2>
+      <h2 class="m-title">{{ 'dashboard.modal_review_title' | translate }}</h2>
       <button class="m-close" (click)="closeReviewModal()"><lucide-icon [img]="XIcon"></lucide-icon></button>
     </div>
     <div class="m-body">
 
       <!-- Step 1: choose estate -->
       <div class="f-group">
-        <label class="f-label">Quel logement évaluez-vous ?</label>
+        <label class="f-label">{{ 'dashboard.what_evaluating' | translate }}</label>
 
         <!-- Hero shown after selection -->
         <div class="rv-hero" *ngIf="selectedReviewEstate">
@@ -599,7 +599,7 @@
             <span class="rv-hero__name">{{ selectedReviewEstate.name }}</span>
             <span class="rv-hero__loc">{{ selectedReviewEstate.location }}</span>
           </div>
-          <button class="rv-hero__change" (click)="reviewForm.estate=0;reviewForm.rating=0;reviewForm.comment=''">Changer →</button>
+          <button class="rv-hero__change" (click)="reviewForm.estate=0;reviewForm.rating=0;reviewForm.comment=''">{{ 'dashboard.change_link' | translate }}</button>
         </div>
 
         <!-- Image card grid -->
@@ -615,13 +615,13 @@
               <span class="rv-picker-card__loc">{{ e.location }}</span>
             </div>
           </div>
-          <p class="rv-picker-empty" *ngIf="allEstates.length===0">Aucun logement disponible.</p>
+          <p class="rv-picker-empty" *ngIf="allEstates.length===0">{{ 'dashboard.no_housing_available' | translate }}</p>
         </div>
       </div>
 
       <!-- Step 2: stars -->
       <div class="f-group" *ngIf="selectedReviewEstate">
-        <label class="f-label">Votre note</label>
+        <label class="f-label">{{ 'dashboard.your_rating' | translate }}</label>
         <div class="rv-stars">
           <span *ngFor="let s of [1,2,3,4,5]" class="rv-star" [class.rv-star--on]="(hoverRating||reviewForm.rating)>=s" (mouseenter)="setHover(s)" (mouseleave)="clearHover()" (click)="setRating(s)">★</span>
           <span class="rv-star-lbl" *ngIf="reviewForm.rating>0">{{ ['','Mauvais','Passable','Bien','Très bien','Excellent'][reviewForm.rating] }}</span>
@@ -630,14 +630,14 @@
 
       <!-- Step 3: comment -->
       <div class="f-group" *ngIf="reviewForm.rating>0">
-        <label class="f-label">Commentaire</label>
-        <textarea class="f-input f-textarea" [(ngModel)]="reviewForm.comment" rows="3" placeholder="Ambiance, équipements, proximité du campus…"></textarea>
+        <label class="f-label">{{ 'dashboard.comment_label' | translate }}</label>
+        <textarea class="f-input f-textarea" [(ngModel)]="reviewForm.comment" rows="3" [placeholder]="'dashboard.comment_ph' | translate"></textarea>
       </div>
 
     </div>
     <div class="m-foot">
-      <button class="btn btn--ghost" (click)="closeReviewModal()">Annuler</button>
-      <button class="btn btn--primary" [disabled]="!reviewForm.estate||!reviewForm.rating||!reviewForm.comment.trim()" (click)="submitReview()">Publier l'avis</button>
+      <button class="btn btn--ghost" (click)="closeReviewModal()">{{ 'dashboard.cancel' | translate }}</button>
+      <button class="btn btn--primary" [disabled]="!reviewForm.estate||!reviewForm.rating||!reviewForm.comment.trim()" (click)="submitReview()">{{ 'dashboard.publish_review_btn' | translate }}</button>
     </div>
   </div>
 </div>
@@ -645,14 +645,14 @@
 <!-- Edit review -->
 <div class="m-back" *ngIf="showEditReviewModal" (click)="closeEditReviewModal()">
   <div class="m-box m-box--sm" (click)="$event.stopPropagation()">
-    <div class="m-head"><h2 class="m-title">Modifier l'avis</h2><button class="m-close" (click)="closeEditReviewModal()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
+    <div class="m-head"><h2 class="m-title">{{ 'dashboard.edit_review_title' | translate }}</h2><button class="m-close" (click)="closeEditReviewModal()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
     <div class="m-body">
       <div class="f-group"><label class="f-label">Note</label>
         <div class="rv-stars"><span *ngFor="let s of [1,2,3,4,5]" class="rv-star" [class.rv-star--on]="(editHoverRating||editReviewForm.rating)>=s" (mouseenter)="setEditHover(s)" (mouseleave)="clearEditHover()" (click)="setEditRating(s)">★</span></div>
       </div>
       <div class="f-group"><label class="f-label">Commentaire</label><textarea class="f-input f-textarea" [(ngModel)]="editReviewForm.comment" rows="4"></textarea></div>
     </div>
-    <div class="m-foot"><button class="btn btn--ghost" (click)="closeEditReviewModal()">Annuler</button><button class="btn btn--primary" (click)="saveEditReview()" [disabled]="isSavingReview">{{ isSavingReview?'Enregistrement…':'Enregistrer' }}</button></div>
+    <div class="m-foot"><button class="btn btn--ghost" (click)="closeEditReviewModal()">{{ 'dashboard.cancel' | translate }}</button><button class="btn btn--primary" (click)="saveEditReview()" [disabled]="isSavingReview">{{ isSavingReview?('dashboard.saving'|translate):('dashboard.save_changes'|translate) }}</button></div>
   </div>
 </div>
 
@@ -660,8 +660,8 @@
 <div class="m-back" *ngIf="showConfirm" (click)="confirmNo()">
   <div class="m-box m-box--xs" (click)="$event.stopPropagation()">
     <div class="m-confirm-ico"><lucide-icon [img]="AlertIcon"></lucide-icon></div>
-    <h2 class="m-confirm-title">Confirmation</h2>
+    <h2 class="m-confirm-title">{{ 'dashboard.confirmation_title' | translate }}</h2>
     <p class="m-confirm-msg">{{ confirmMessage }}</p>
-    <div class="m-foot m-foot--center"><button class="btn btn--ghost" (click)="confirmNo()">Annuler</button><button class="btn btn--danger" (click)="confirmYes()">Confirmer</button></div>
+    <div class="m-foot m-foot--center"><button class="btn btn--ghost" (click)="confirmNo()">{{ 'dashboard.cancel' | translate }}</button><button class="btn btn--danger" (click)="confirmYes()">{{ 'dashboard.confirm_yes' | translate }}</button></div>
   </div>
 </div>

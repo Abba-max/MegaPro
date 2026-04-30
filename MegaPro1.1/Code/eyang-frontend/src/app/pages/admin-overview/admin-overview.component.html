@@ -10,8 +10,8 @@
 
 <!-- Error -->
 <div *ngIf="!isLoading() && hasError()" class="error-banner mt-8">
-    <span>⚠️ Impossible de charger les données. Vérifiez la connexion au serveur.</span>
-    <button class="btn-retry" (click)="load()">Réessayer</button>
+    <span>{{ 'admin.error_load' | translate }}</span>
+    <button class="btn-retry" (click)="load()">{{ 'admin.retry' | translate }}</button>
 </div>
 
 <!-- Stats Cards -->
@@ -55,7 +55,7 @@
 
 <!-- Monthly Reservations Chart -->
 <div class="chart-card card">
-    <h3 class="card-title">Réservations par mois</h3>
+    <h3 class="card-title">{{ 'admin.manage_bookings' | translate }}</h3>
     <div class="chart-container" *ngIf="monthlyReservations.length > 0; else noChart">
         <div class="chart-area">
             <div class="chart-bars">
@@ -68,7 +68,7 @@
             </div>
             </div>
     <ng-template #noChart>
-        <p class="no-data">Pas encore de données de réservations.</p>
+        <p class="no-data">{{ 'dashboard.no_activity' | translate }}</p>
     </ng-template>
     </div>
 

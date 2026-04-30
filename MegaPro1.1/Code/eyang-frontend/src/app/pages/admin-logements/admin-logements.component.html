@@ -13,7 +13,7 @@
 <!-- Header -->
 <div class="page-header page-header-row">
     <div>
-        <h1 class="page-title">Gestion des logements</h1>
+        <h1 class="page-title">{{ 'admin.manage_housings' | translate }}</h1>
         <!-- Pending verification badge -->
         <span *ngIf="pendingVerificationCount() > 0"
               class="pending-badge"
@@ -22,19 +22,19 @@
                      border:1px solid #FDE68A;border-radius:12px;
                      padding:2px 10px;font-size:12px;font-weight:700;margin-top:4px">
             <lucide-icon [img]="AlertIcon" style="width:12px;height:12px"></lucide-icon>
-            {{ pendingVerificationCount() }} en attente de vérification
+            {{ 'admin.pending_verification' | translate:{count: pendingVerificationCount()} }}
         </span>
     </div>
     <button class="btn-add" (click)="openCreate()">
         <lucide-icon [img]="PlusIcon" class="icon-btn-sm"></lucide-icon>
-        Nouveau logement
+        {{ 'admin.new_housing' | translate }}
     </button>
 </div>
 
 <!-- Loading -->
 <div *ngIf="isLoading()" class="loader-center mt-8">
     <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
-    <span>Chargement…</span>
+    <span>{{ 'admin.loading' | translate }}</span>
 </div>
 
 <!-- Table Card -->
@@ -43,32 +43,32 @@
         <div class="search-input-group">
             <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
             <input type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)"
-                placeholder="Rechercher par nom, ville…" class="search-input">
+                [placeholder]="'admin.search_housings_ph' | translate" class="search-input">
         </div>
         <select class="select-input" [ngModel]="filterStatus()" (ngModelChange)="onFilter($event)">
-            <option value="">Tous les statuts</option>
-            <option value="published">Publié</option>
-            <option value="draft">Brouillon</option>
-            <option value="archived">Archivé</option>
+            <option value="">{{ 'admin.all_status' | translate }}</option>
+            <option value="published">{{ 'admin.status_published' | translate }}</option>
+            <option value="draft">{{ 'admin.status_draft' | translate }}</option>
+            <option value="archived">{{ 'admin.status_archived' | translate }}</option>
         </select>
         <!-- Verification filter -->
         <select class="select-input" [ngModel]="filterVerified()" (ngModelChange)="onFilterVerified($event)">
-            <option value="">Toute vérification</option>
-            <option value="verified">Vérifié ✓</option>
-            <option value="pending">En attente ⏳</option>
+            <option value="">{{ 'admin.all_verifications' | translate }}</option>
+            <option value="verified">{{ 'admin.verified_check' | translate }}</option>
+            <option value="pending">{{ 'admin.pending_wait' | translate }}</option>
         </select>
-        <span class="total-counter">{{ filtered().length }} logement{{ filtered().length !== 1 ? 's' : '' }}</span>
+        <span class="total-counter">{{ 'admin.total_housings' | translate:{count: filtered().length} }}</span>
     </div>
 
     <table class="table">
         <thead>
             <tr>
-                <th>LOGEMENT</th>
-                <th>PROPRIÉTAIRE</th>
-                <th>NOTE</th>
-                <th>VÉRIFIÉ</th>
-                <th>STATUT</th>
-                <th class="text-right">ACTIONS</th>
+                <th>{{ 'admin.col_housing' | translate }}</th>
+                <th>{{ 'admin.col_owner' | translate }}</th>
+                <th>{{ 'admin.col_rating' | translate }}</th>
+                <th>{{ 'admin.col_verified' | translate }}</th>
+                <th>{{ 'admin.col_status' | translate }}</th>
+                <th class="text-right">{{ 'admin.col_actions' | translate }}</th>
             </tr>
         </thead>
         <tbody>
@@ -108,20 +108,20 @@
                                  border:1px solid #6EE7B7;border-radius:12px;
                                  padding:2px 8px;font-size:11px;font-weight:700">
                         <lucide-icon [img]="CheckIcon" style="width:11px;height:11px"></lucide-icon>
-                        Vérifié
+                        {{ 'admin.status_verified' | translate }}
                     </span>
                     <span *ngIf="!isVerified(l)"
                           style="display:inline-flex;align-items:center;gap:4px;
                                  background:#FEF3C7;color:#92400E;
                                  border:1px solid #FDE68A;border-radius:12px;
                                  padding:2px 8px;font-size:11px;font-weight:700">
-                        En attente
+                        {{ 'admin.status_pending' | translate }}
                     </span>
                 </td>
                 <!-- Status -->
                 <td data-label="STATUT">
                     <span [class]="'status-lbl status-' + l.status">
-                        {{ l.status === 'published' ? 'Publié' : l.status === 'draft' ? 'Brouillon' : 'Archivé' }}
+                        {{ l.status === 'published' ? ('admin.status_published' | translate) : l.status === 'draft' ? ('admin.status_draft' | translate) : ('admin.status_archived' | translate) }}
                     </span>
                 </td>
                 <!-- Actions -->
@@ -163,20 +163,20 @@
                 </td>
             </tr>
             <tr *ngIf="filtered().length === 0">
-                <td colspan="6" class="empty-row">Aucun logement trouvé.</td>
+                <td colspan="6" class="empty-row">{{ 'admin.no_housings_found' | translate }}</td>
             </tr>
         </tbody>
     </table>
 
     <!-- Pagination -->
     <div class="pagination-footer" *ngIf="totalPages() > 1">
-        <div class="page-info">Page <b>{{ currentPage() }}</b> sur <b>{{ totalPages() }}</b></div>
+        <div class="page-info" [innerHTML]="'admin.page_info' | translate:{current: currentPage(), total: totalPages()}"></div>
         <div class="pagination-actions">
             <button class="pagination-btn" [disabled]="currentPage() === 1" (click)="prevPage()">
-                <lucide-icon [img]="PrevIcon" class="icon-btn-sm"></lucide-icon> Précédent
+                <lucide-icon [img]="PrevIcon" class="icon-btn-sm"></lucide-icon> {{ 'admin.prev' | translate }}
             </button>
             <button class="pagination-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
-                Suivant <lucide-icon [img]="NextIcon" class="icon-btn-sm"></lucide-icon>
+                {{ 'admin.next' | translate }} <lucide-icon [img]="NextIcon" class="icon-btn-sm"></lucide-icon>
             </button>
         </div>
     </div>
@@ -189,7 +189,7 @@
             <lucide-icon [img]="CloseIcon" class="icon-xs"></lucide-icon>
         </button>
 
-        <h2 class="modal-title">{{ isEditMode ? 'Modifier le logement' : 'Nouveau logement' }}</h2>
+        <h2 class="modal-title">{{ isEditMode ? ('admin.edit_housing' | translate) : ('admin.new_housing' | translate) }}</h2>
 
         <!-- Edit mode: verification notice -->
         <div *ngIf="isEditMode"
@@ -289,11 +289,11 @@
                 </button>
             </div>
             <div style="display: flex; gap: 0.5rem;">
-                <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+                <button class="btn-cancel" (click)="closeModal()">{{ 'admin.cancel' | translate }}</button>
                 <button class="btn-save-modal" (click)="save()" [disabled]="isSaving()">
                     <lucide-icon *ngIf="isSaving()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
                     <lucide-icon *ngIf="!isSaving()" [img]="SaveIcon" class="icon-xs"></lucide-icon>
-                    {{ isSaving() ? 'Enregistrement…' : (isEditMode ? 'Mettre à jour' : 'Créer & Ajouter des chambres') }}
+                    {{ isSaving() ? ('admin.saving' | translate) : (isEditMode ? ('admin.update' | translate) : ('admin.create' | translate)) }}
                 </button>
             </div>
         </div>
@@ -303,16 +303,14 @@
 <!-- ══ Delete Confirm Modal ══════════════════════════════════════ -->
 <div class="modal-overlay fade-in" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
     <div class="modal-card modal-card-sm" (click)="$event.stopPropagation()">
-        <h2 class="modal-title">Confirmer la suppression</h2>
-        <p class="delete-msg">
-            Êtes-vous sûr de vouloir supprimer <strong>{{ estateToDelete?.name }}</strong> ?
-            Cette action est irréversible.
+        <h2 class="modal-title">{{ 'admin.delete_title' | translate }}</h2>
+        <p class="delete-msg" [innerHTML]="'admin.delete_confirm_housing' | translate:{name: '<strong>' + estateToDelete?.name + '</strong>'}">
         </p>
         <div class="modal-actions">
-            <button class="btn-cancel" (click)="cancelDelete()">Annuler</button>
+            <button class="btn-cancel" (click)="cancelDelete()">{{ 'admin.cancel' | translate }}</button>
             <button class="btn-delete" (click)="deleteConfirmed()" [disabled]="isSaving()">
                 <lucide-icon *ngIf="isSaving()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
-                {{ isSaving() ? 'Suppression…' : 'Supprimer' }}
+                {{ isSaving() ? ('admin.deleting' | translate) : ('dashboard.delete' | translate) }}
             </button>
         </div>
     </div>

@@ -22,7 +22,7 @@
       <!-- Map link always visible on desktop -->
       <a class="nav-link nav-link--map" routerLink="/map-search" routerLinkActive="active">
         <lucide-icon [img]="MapPinIcon" class="nav-link-icon"></lucide-icon>
-        <span>Carte</span>
+        <span>{{ 'nav.map' | translate }}</span>
       </a>
     </nav>
 
@@ -44,7 +44,7 @@
 
     <!-- Language Toggle (desktop) -->
     <button class="lang-btn desktop-only" (click)="toggleLang()"
-      [title]="currentLang === 'fr' ? 'Switch to English' : 'Passer en français'">
+      [title]="currentLang === 'fr' ? ('nav.switch_en' | translate) : ('nav.switch_fr' | translate)">
       <lucide-icon [img]="GlobeIcon" class="nav-icon"></lucide-icon>
       <span class="lang-label">{{ currentLang === 'fr' ? 'EN' : 'FR' }}</span>
     </button>
@@ -167,7 +167,7 @@
   <!-- Drawer header: logo + close button -->
   <div class="mobile-drawer-header">
     <img src="/assets/images/logo.png" alt="Eyang Estate" class="mobile-drawer-logo">
-    <button class="mobile-drawer-close" (click)="closeMobileMenu()" aria-label="Fermer le menu">✕</button>
+    <button class="mobile-drawer-close" (click)="closeMobileMenu()" [attr.aria-label]="'nav.close_menu' | translate">✕</button>
   </div>
 
   <!-- ── LOGGED IN USER profile summary ── -->
@@ -251,7 +251,7 @@
     <span class="mobile-nav-section-label">{{ 'footer.lang_title' | translate }}</span>
     <button class="mobile-nav-link mobile-lang-toggle" (click)="toggleLang()">
       <span class="mobile-lang-flag">🌐</span>
-      <span>{{ currentLang === 'fr' ? 'Switch to English' : 'Passer en français' }}</span>
+      <span>{{ currentLang === 'fr' ? ('nav.switch_en' | translate) : ('nav.switch_fr' | translate) }}</span>
       <span class="mobile-lang-current">{{ currentLang === 'fr' ? 'EN' : 'FR' }}</span>
     </button>
   </div>
