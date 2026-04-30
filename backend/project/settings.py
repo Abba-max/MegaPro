@@ -71,12 +71,12 @@ DATABASES = {
         'NAME':     config('DB_NAME', default='eyang'),
         'USER':     config('DB_USER', default='prisma'),
         'PASSWORD': config('DB_PASSWORD', default='***'),
-        'HOST':     config('DB_HOST', default='147.93.47.169'),
+        'HOST':     config('DB_HOST', default='db'),
         'PORT':     config('DB_PORT', default='5432'),
     }
 }
 
-database_url = os.environ.get('DATABASE_URL', '') or ''
+database_url = config('DATABASE_URL', default=None)
 if database_url:
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
     db_config = dj_database_url.parse(database_url)

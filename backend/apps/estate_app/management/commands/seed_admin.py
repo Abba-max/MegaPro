@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
-import os
+from decouple import config
 
 class Command(BaseCommand):
     help = 'Seeds an initial admin user'
@@ -9,9 +9,9 @@ class Command(BaseCommand):
         User = get_user_model()
         
         # Get credentials from environment variables with fallbacks
-        username = os.environ.get('ADMIN_USERNAME', 'admin')
-        email    = os.environ.get('ADMIN_EMAIL', 'admin@eyangestate.com')
-        password = os.environ.get('ADMIN_PASSWORD', 'adminpassword123')
+        username = config('ADMIN_USERNAME', default='admin')
+        email    = config('ADMIN_EMAIL',    default='admin@eyangestate.com')
+        password = config('ADMIN_PASSWORD', default='adminpassword123')
 
         self.stdout.write(self.style.NOTICE(f'Using credentials: {username} / {email}'))
 
