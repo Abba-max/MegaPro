@@ -23,7 +23,7 @@
         <div class="search-group">
             <lucide-icon [img]="SearchIcon" class="search-icon-abs"></lucide-icon>
             <input type="text" [(ngModel)]="searchQuery" (input)="applyFilter()"
-                placeholder="Rechercher par auteur, logement…" class="search-input">
+                [placeholder]="'admin.search_reviews_ph' | translate" class="search-input">
         </div>
     <select class="select-input" [(ngModel)]="filterRating" (change)="applyFilter()">
         <option value="">Toutes les notes</option>

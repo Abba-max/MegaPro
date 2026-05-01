@@ -612,7 +612,7 @@
                 <span class="adv-price-sep">–</span>
                 <div class="adv-input-wrap">
                     <label class="adv-input-label">Max</label>
-                    <input class="adv-input" type="number" placeholder="Illimité" [(ngModel)]="filterMaxPrice" min="0">
+                    <input class="adv-input" type="number" [placeholder]="'filters.unlimited' | translate" [(ngModel)]="filterMaxPrice" min="0">
                 </div>
             </div>
         </div>
@@ -625,7 +625,7 @@
                 <button class="adv-chip" [class.adv-chip-on]="filterMaxDist===2000" (click)="filterMaxDist=filterMaxDist===2000?null:2000">≤ 2 km</button>
             </div>
             <div class="adv-input-wrap mt-3">
-                <input class="adv-input" type="number" placeholder="Saisir distance max" [(ngModel)]="filterMaxDist" min="0">
+                <input class="adv-input" type="number" [placeholder]="'filters.distance' | translate" [(ngModel)]="filterMaxDist" min="0">
             </div>
         </div>
         <div class="adv-section">

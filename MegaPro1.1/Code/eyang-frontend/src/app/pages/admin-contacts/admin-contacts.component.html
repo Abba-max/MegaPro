@@ -25,7 +25,7 @@
             <input type="text" [(ngModel)]="searchQuery" (input)="applyFilter()"
                 [placeholder]="'admin.search_contacts_ph' | translate" class="search-input">
         </div>
-        <span class="total-counter">{{ 'admin.total_contacts' | translate:{count: filtered.length} }}</span>
+        <span class="total-counter">{{ 'admin.total_contacts' | translate:{count: filtered.length, plural: filtered.length !== 1 ? 's' : ''} }}</span>
     </div>
 
     <p *ngIf="filtered.length === 0" class="empty-row">{{ 'admin.no_contacts_found' | translate }}</p>

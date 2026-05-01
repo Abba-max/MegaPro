@@ -24,15 +24,8 @@ services:
     ports:
       - "3006:8000"
     environment:
-      - DATABASE_URL=${DATABASE_URL:-}
       - ALLOWED_HOSTS=*
-      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-http://localhost:3006,http://127.0.0.1:3006,https://eyangestate.com/,http://147.93.47.169:3006}
       - REQUIRE_DB_SSL=False
-      - DEBUG=${DEBUG:-False}
-      - SECRET_KEY=${SECRET_KEY:-django-insecure-fallback-key}
-      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@eyangestate.com}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-adminpassword123}
     env_file:
       - path: ./backend/project/.env
         required: false

@@ -158,7 +158,7 @@
     <!-- ESTATES -->
     <div class="panel" *ngIf="activeTab==='estates'">
       <header class="panel__hd">
-        <div><h1 class="panel__title">{{ 'dashboard.my_housings' | translate }}</h1><p class="panel__sub">{{ 'admin.total_housings' | translate:{count: myEstates.length} }}</p></div>
+        <div><h1 class="panel__title">{{ 'dashboard.my_housings' | translate }}</h1><p class="panel__sub">{{ 'admin.total_housings' | translate:{count: myEstates.length, plural: myEstates.length !== 1 ? 's' : ''} }}</p></div>
         <div class="add-estate-btn-wrap" [class.add-estate-btn-wrap--locked]="!isOwnerVerified">
           <button class="btn btn--primary" [class.btn--locked]="!isOwnerVerified" (click)="openAddModal()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.add' | translate }}</button>
           <span class="add-estate-tooltip" *ngIf="!isOwnerVerified">
@@ -209,7 +209,7 @@
 
     <!-- ORDERS (owner) -->
     <div class="panel" *ngIf="activeTab==='orders'">
-      <header class="panel__hd"><div><h1 class="panel__title">{{ 'dashboard.received_orders' | translate }}</h1><p class="panel__sub">{{ 'dashboard.orders_count' | translate:{count: myOrders.length} }}</p></div></header>
+      <header class="panel__hd"><div><h1 class="panel__title">{{ 'dashboard.received_orders' | translate }}</h1><p class="panel__sub">{{ 'dashboard.orders_count' | translate:{count: myOrders.length, plural: myOrders.length !== 1 ? 's' : ''} }}</p></div></header>
       <div class="empty-state" *ngIf="myOrders.length===0"><div class="empty-state__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div><h3>{{ 'dashboard.empty_orders' | translate }}</h3><p>{{ 'dashboard.orders_will_appear' | translate }}</p></div>
       <div class="o-list" *ngIf="myOrders.length>0">
         <div class="o-card" *ngFor="let o of myOrders">
@@ -402,7 +402,7 @@
 
     <!-- RESERVATIONS -->
     <div class="panel" *ngIf="activeTab==='reservations'">
-      <header class="panel__hd"><div><h1 class="panel__title">{{ 'dashboard.my_reservations' | translate }}</h1><p class="panel__sub">{{ 'dashboard.orders_count' | translate:{count: myReservations.length} }}</p></div></header>
+      <header class="panel__hd"><div><h1 class="panel__title">{{ 'dashboard.my_reservations' | translate }}</h1><p class="panel__sub">{{ 'dashboard.orders_count' | translate:{count: myReservations.length, plural: myReservations.length !== 1 ? 's' : ''} }}</p></div></header>
       <div class="empty-state" *ngIf="myReservations.length===0">
         <div class="empty-state__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div>
         <h3>{{ 'dashboard.empty_reservations' | translate }}</h3><p>{{ 'dashboard.find_ideal' | translate }}</p>
@@ -468,7 +468,7 @@
 
     <!-- CONTACTS -->
     <div class="panel" *ngIf="activeTab==='contacts'">
-      <header class="panel__hd"><div><h1 class="panel__title">{{ 'dashboard.contact_requests' | translate }}</h1><p class="panel__sub">{{ 'dashboard.contact_requests_count' | translate:{count: myContacts.length} }}</p></div></header>
+      <header class="panel__hd"><div><h1 class="panel__title">{{ 'dashboard.contact_requests' | translate }}</h1><p class="panel__sub">{{ 'dashboard.contact_requests_count' | translate:{count: myContacts.length, plural: myContacts.length !== 1 ? 's' : ''} }}</p></div></header>
       <div class="empty-state" *ngIf="myContacts.length===0"><div class="empty-state__ico"><lucide-icon [img]="PhoneIcon"></lucide-icon></div><h3>{{ 'dashboard.empty_contact_requests' | translate }}</h3><p>{{ 'dashboard.requests_will_appear' | translate }}</p></div>
       <div class="ct-list" *ngIf="myContacts.length>0">
         <div class="ct-card" *ngFor="let c of myContacts">
@@ -514,7 +514,7 @@
           </ng-container>
         </div>
         <div class="chat-area__compose">
-          <input class="chat-area__input" [(ngModel)]="newMessage" placeholder="Écrire un message…" (keyup.enter)="sendMessage()">
+          <input class="chat-area__input" [(ngModel)]="newMessage" [placeholder]="'dashboard.message_placeholder' | translate" (keyup.enter)="sendMessage()">
           <button class="chat-area__send" [class.chat-area__send--on]="newMessage.trim()" (click)="sendMessage()" [disabled]="!newMessage.trim()"><lucide-icon [img]="SendIcon"></lucide-icon></button>
         </div>
       </div>
@@ -534,8 +534,8 @@
   <div class="m-box m-box--lg" (click)="$event.stopPropagation()">
     <div class="m-head"><h2 class="m-title">{{ isEditMode?('dashboard.modal_edit_title'|translate):('dashboard.modal_add_title'|translate) }}</h2><button class="m-close" (click)="closeEstateModal()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
     <div class="m-body">
-      <div class="f-group"><label class="f-label">Nom *</label><input class="f-input" [(ngModel)]="estateForm.name" placeholder="Ex: Résidence Étoile du Campus"></div>
-      <div class="f-row"><div class="f-group"><label class="f-label">Localisation *</label><input class="f-input" [(ngModel)]="estateForm.location" placeholder="Eyang, Yaoundé"></div><div class="f-group"><label class="f-label">Prix de base (FCFA)</label><input class="f-input" type="number" [(ngModel)]="estateForm.price" placeholder="35000"></div></div>
+      <div class="f-group"><label class="f-label">Nom *</label><input class="f-input" [(ngModel)]="estateForm.name" [placeholder]="'dashboard.form_name_ph' | translate"></div>
+      <div class="f-row"><div class="f-group"><label class="f-label">Localisation *</label><input class="f-input" [(ngModel)]="estateForm.location" [placeholder]="'dashboard.form_location_ph' | translate"></div><div class="f-group"><label class="f-label">Prix de base (FCFA)</label><input class="f-input" type="number" [(ngModel)]="estateForm.price" placeholder="35000"></div></div>
       <div class="f-row"><div class="f-group"><label class="f-label">Distance campus (m)</label><input class="f-input" [(ngModel)]="distanceDisplay" placeholder="500"></div><div class="f-group"><label class="f-label">Statut</label><select class="f-input" [(ngModel)]="estateForm.status"><option value="published">Publié</option><option value="draft">Brouillon</option><option value="archived">Archivé</option></select></div></div>
       <div class="f-group">
         <label class="f-label"><lucide-icon [img]="MapPinIcon" style="color:#EF4444;width:14px;height:14px"></lucide-icon> Position GPS <span class="f-hint">— cliquez sur la carte</span></label>
@@ -543,7 +543,7 @@
         <div id="map-picker" style="height:200px;border-radius:10px;overflow:hidden;border:1.5px solid #E2E8F0;z-index:0;position:relative"></div>
       </div>
       <div class="f-group"><label class="f-label">Équipements</label><div class="equip-chips"><label class="equip-chip" *ngFor="let eq of availableEquipments" [class.equip-chip--on]="estateForm[eq.key]==='1'"><input type="checkbox" [checked]="estateForm[eq.key]==='1'" (change)="toggleEquipment(eq.key)" style="display:none"><lucide-icon [img]="eq.icon" style="width:14px;height:14px"></lucide-icon>{{ eq.label }}</label></div></div>
-      <div class="f-group"><label class="f-label">Description</label><textarea class="f-input f-textarea" [(ngModel)]="estateForm.description" rows="3" placeholder="Décrivez le logement…"></textarea></div>
+      <div class="f-group"><label class="f-label">Description</label><textarea class="f-input f-textarea" [(ngModel)]="estateForm.description" rows="3" [placeholder]="'dashboard.form_description_ph' | translate"></textarea></div>
       <div class="f-group">
         <label class="f-label">Photos</label>
         <div class="photo-row" *ngIf="isEditMode&&estateForm.existingImages?.length>0"><div class="photo-item" *ngFor="let img of estateForm.existingImages"><img [src]="img.image"><button class="photo-del" (click)="removeExistingImage(img)">×</button></div></div>

@@ -13,7 +13,7 @@
     <div class="conv-search-bar">
       <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
       <input type="text" [(ngModel)]="searchQuery"
-             placeholder="Rechercher…" class="conv-search-input">
+             [placeholder]="'messages.search_ph' | translate" class="conv-search-input">
     </div>
   </div>
 
@@ -192,7 +192,7 @@
           type="text"
           [(ngModel)]="newMessage"
           (keydown)="onKeydown($event)"
-          placeholder="Écrivez un message…"
+          [placeholder]="'dashboard.message_placeholder' | translate"
           class="chat-input"
           [disabled]="isSending">
         <button

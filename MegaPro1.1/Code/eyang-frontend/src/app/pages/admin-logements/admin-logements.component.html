@@ -22,7 +22,7 @@
                      border:1px solid #FDE68A;border-radius:12px;
                      padding:2px 10px;font-size:12px;font-weight:700;margin-top:4px">
             <lucide-icon [img]="AlertIcon" style="width:12px;height:12px"></lucide-icon>
-            {{ 'admin.pending_verification' | translate:{count: pendingVerificationCount()} }}
+            {{ 'admin.pending_verification' | translate:{count: pendingVerificationCount(), plural: pendingVerificationCount() !== 1 ? 's' : ''} }}
         </span>
     </div>
     <button class="btn-add" (click)="openCreate()">
@@ -57,7 +57,7 @@
             <option value="verified">{{ 'admin.verified_check' | translate }}</option>
             <option value="pending">{{ 'admin.pending_wait' | translate }}</option>
         </select>
-        <span class="total-counter">{{ 'admin.total_housings' | translate:{count: filtered().length} }}</span>
+        <span class="total-counter">{{ 'admin.total_housings' | translate:{count: filtered().length, plural: filtered().length !== 1 ? 's' : ''} }}</span>
     </div>
 
     <table class="table">
@@ -205,11 +205,11 @@
             <div class="form-row-modal">
                 <div class="form-group">
                     <label>Nom <span class="required">*</span></label>
-                    <input type="text" [(ngModel)]="form.name" class="input" placeholder="Ex: Résidence Le Campus">
+                    <input type="text" [(ngModel)]="form.name" class="input" [placeholder]="'dashboard.form_name_ph' | translate">
                 </div>
                 <div class="form-group">
                     <label>Ville / Localisation <span class="required">*</span></label>
-                    <input type="text" [(ngModel)]="form.location" class="input" placeholder="Ex: Yaoundé, Ngoa-Ekelle">
+                    <input type="text" [(ngModel)]="form.location" class="input" [placeholder]="'dashboard.form_location_ph' | translate">
                 </div>
             </div>
             <div class="form-row-modal">
@@ -229,7 +229,7 @@
             <div class="form-group">
                 <label>Description</label>
                 <textarea [(ngModel)]="form.description" class="input textarea-field" rows="3"
-                    placeholder="Décrivez le logement…"></textarea>
+                    [placeholder]="'dashboard.form_description_ph' | translate"></textarea>
             </div>
             <div class="form-group">
                 <label>Équipements</label>
@@ -379,7 +379,7 @@
             <div class="form-row-modal">
                 <div class="form-group">
                     <label>Nom <span class="required">*</span></label>
-                    <input type="text" [(ngModel)]="roomForm.name" class="input" placeholder="Ex: Chambre VIP">
+                    <input type="text" [(ngModel)]="roomForm.name" class="input" [placeholder]="'dashboard.room_form_name_ph' | translate">
                 </div>
                 <div class="form-group">
                     <label>Prix (FCFA) <span class="required">*</span></label>

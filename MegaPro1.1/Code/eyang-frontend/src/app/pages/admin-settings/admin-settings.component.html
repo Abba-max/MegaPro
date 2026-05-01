@@ -19,27 +19,27 @@
     <div class="form-row">
         <div class="form-group">
     <label>Nom du site</label>
-    <input type="text" [(ngModel)]="siteSettings.siteName" class="input" placeholder="Ex: Eyang Estate">
+    <input type="text" [(ngModel)]="siteSettings.siteName" class="input" [placeholder]="'admin.settings_name_ph' | translate">
     </div>
     <div class="form-group">
         <label>Email de contact</label>
-    <input type="email" [(ngModel)]="siteSettings.siteEmail" class="input" placeholder="contact@example.cm">
+    <input type="email" [(ngModel)]="siteSettings.siteEmail" class="input" [placeholder]="'auth.email_placeholder' | translate">
     </div>
 </div>
 <div class="form-row">
     <div class="form-group">
         <label>Téléphone</label>
-    <input type="text" [(ngModel)]="siteSettings.sitePhone" class="input" placeholder="+237 6XX XXX XXX">
+    <input type="text" [(ngModel)]="siteSettings.sitePhone" class="input" [placeholder]="'auth.phone_placeholder' | translate">
     </div>
     <div class="form-group">
         <label>Adresse</label>
-        <input type="text" [(ngModel)]="siteSettings.siteAddress" class="input" placeholder="Yaoundé, Cameroun">
+        <input type="text" [(ngModel)]="siteSettings.siteAddress" class="input" [placeholder]="'auth.address_placeholder' | translate">
     </div>
     </div>
     <div class="form-group">
         <label>Description</label>
         <textarea [(ngModel)]="siteSettings.description" class="textarea" rows="3"
-            placeholder="Description de la plateforme…"></textarea>
+            [placeholder]="'admin.settings_desc_ph' | translate"></textarea>
     </div>
     </div>
 

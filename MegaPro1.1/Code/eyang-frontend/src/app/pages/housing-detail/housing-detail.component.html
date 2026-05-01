@@ -338,7 +338,7 @@
                   <span class="star-pick-hint" *ngIf="reviewForm.rating > 0">{{ reviewRatingLabel() }}</span>
                 </div>
                 <textarea class="review-textarea" [(ngModel)]="reviewForm.comment" rows="3"
-                  placeholder="Partagez votre expérience avec ce logement…"
+                  [placeholder]="'dashboard.form_comment_ph' | translate"
                   [disabled]="isSubmittingReview"></textarea>
                 <div class="review-form-actions">
                   <button class="review-cancel-btn" (click)="toggleReviewForm()" [disabled]="isSubmittingReview">
@@ -614,18 +614,18 @@
           <div class="modal-divider"></div>
           <div class="form-group">
             <label>Votre nom</label>
-            <input type="text" [(ngModel)]="contactForm.name" placeholder="Ex: Jean Dupont"
+            <input type="text" [(ngModel)]="contactForm.name" [placeholder]="'dashboard.form_name_ph' | translate"
               class="input" [disabled]="isSubmitting">
           </div>
           <div class="form-group mt-3">
             <label>Téléphone</label>
-            <input type="text" [(ngModel)]="contactForm.phone" placeholder="Ex: 6XX XXX XXX"
+            <input type="text" [(ngModel)]="contactForm.phone" [placeholder]="'auth.phone_placeholder' | translate"
               class="input" [disabled]="isSubmitting">
           </div>
           <div class="form-group mt-3">
             <label>Message (optionnel)</label>
             <textarea [(ngModel)]="contactForm.message" class="input" rows="3"
-              placeholder="Précisez votre demande..." [disabled]="isSubmitting"></textarea>
+              [placeholder]="'form.your_request' | translate" [disabled]="isSubmitting"></textarea>
           </div>
           <button class="action-btn btn-primary w-full mt-4" (click)="handleSendRequest()"
             [disabled]="isSubmitting || !contactForm.name.trim() || !contactForm.phone.trim()">
@@ -712,7 +712,7 @@
           <div class="msg-footer" *ngIf="!isLoadingConversation && activeConversation">
             <div class="msg-input-row" [class.focused]="messageText.length > 0">
               <input type="text" class="msg-input" [(ngModel)]="messageText"
-                placeholder="Votre message…" [disabled]="isSendingMessage"
+                [placeholder]="'dashboard.message_placeholder' | translate" [disabled]="isSendingMessage"
                 (keydown.enter)="$event.preventDefault(); sendMessage()">
               <button class="msg-send-btn"
                 [class.active]="messageText.trim() && !isSendingMessage"

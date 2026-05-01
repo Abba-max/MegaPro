@@ -102,11 +102,11 @@
       <div class="ms__fgroup">
         <label class="ms__flabel">{{ 'map.price_month' | translate }}</label>
         <div class="ms__range">
-          <input type="number" class="ms__range-in" placeholder="Min"
+          <input type="number" class="ms__range-in" [placeholder]="'map.min_placeholder' | translate"
             [ngModel]="filterMinPrice()"
             (ngModelChange)="filterMinPrice.set($event ? +$event : null)"/>
           <span class="ms__range-sep">–</span>
-          <input type="number" class="ms__range-in" placeholder="Max"
+          <input type="number" class="ms__range-in" [placeholder]="'map.max_placeholder' | translate"
             [ngModel]="filterMaxPrice()"
             (ngModelChange)="filterMaxPrice.set($event ? +$event : null)"/>
         </div>
@@ -115,7 +115,7 @@
       <div class="ms__fgroup">
         <label class="ms__flabel">{{ 'map.max_distance' | translate }}</label>
         <div class="ms__range">
-          <input type="number" class="ms__range-in ms__range-in--single" placeholder="ex: 500"
+          <input type="number" class="ms__range-in ms__range-in--single" [placeholder]="'map.ex_distance' | translate"
             [ngModel]="filterMaxDist()"
             (ngModelChange)="filterMaxDist.set($event ? +$event : null); triggerSearch()"/>
         </div>
