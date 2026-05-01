@@ -21,7 +21,9 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary_storage',
     'django.contrib.staticfiles',
+    'cloudinary',
     'apps.estate_app',
     'rest_framework',
     'rest_framework_simplejwt',
@@ -121,6 +123,16 @@ WHITENOISE_ROOT = os.path.join(BASE_DIR, 'frontend_build')
 #      macOS/Linux: cp -r backend/static_cdn/media_root/. backend/media/
 # ────────────────────────────────────────────────────────────────────────────
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# ── Cloudinary ─────────────────────────────────────────────────────────────
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
+    'API_KEY': config('CLOUDINARY_API_KEY', default=''),
+    'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
+}
+
+if config('CLOUDINARY_CLOUD_NAME', default=''):
+    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_BACKEND      = 'django.core.mail.backends.console.EmailBackend'

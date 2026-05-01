@@ -485,7 +485,7 @@ def admin_users_view(request):
         result.append({'id': u.id, 'name': name, 'email': u.email or u.username,
                        'type': role, 'active': u.is_active, 'initials': initials,
                        'color': color_map.get(role, '#64748B'),
-                       'joined': u.date_joined.strftime('%d/%m/%Y'),
+                       'joined': u.date_joined.isoformat(),
                        'is_verified': u.is_verified,
                        'id_card': request.build_absolute_uri(u.id_card.url) if u.id_card else None,
                        'phone': u.contact})
