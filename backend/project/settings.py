@@ -97,6 +97,12 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGIN_URL       = '/login/'
 AUTH_USER_MODEL = 'estate_app.User'
 
+AUTHENTICATION_BACKENDS = [
+    'apps.estate_app.backends.EmailOrUsernameModelBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+
 LANGUAGE_CODE = 'fr-fr'
 TIME_ZONE     = 'Africa/Douala'
 USE_I18N      = True
