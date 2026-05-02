@@ -572,6 +572,7 @@ def admin_users_view(request):
         name = f"{u.first_name} {u.last_name}".strip() or u.username
         initials = ''.join(w[0].upper() for w in name.split()[:2]) or '??'
         result.append({'id': u.id, 'name': name, 'email': u.email or u.username,
+                       'username': u.username,
                        'type': role, 'active': u.is_active, 'initials': initials,
                        'color': color_map.get(role, '#64748B'),
                        'joined': u.date_joined.isoformat(),
