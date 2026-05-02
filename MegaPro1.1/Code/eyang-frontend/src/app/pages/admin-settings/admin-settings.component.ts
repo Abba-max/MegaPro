@@ -2,7 +2,7 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Save, Loader, CheckCircle, XCircle, Info, AlertCircle, Globe } from 'lucide-angular';
-import { TranslateService } from '@ngx-translate/core';
+import { TranslateService, TranslateModule } from '@ngx-translate/core';
 import { SiteSettingsService, SiteSettings } from '../../services/site-settings.service';
 
 export interface Toast { id: number; type: 'success'|'error'|'info'|'warning'; message: string; }
@@ -10,7 +10,7 @@ export interface Toast { id: number; type: 'success'|'error'|'info'|'warning'; m
 @Component({
   selector: 'app-admin-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, TranslateModule],
   templateUrl: './admin-settings.component.html',
   styleUrl: './admin-settings.component.css'
 })
