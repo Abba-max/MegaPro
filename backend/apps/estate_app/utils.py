@@ -6,21 +6,33 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 
+import threading
+
 def send_styled_email(subject, template_name, context, to_email):
     """
-    Sends a professional HTML email using a template.
+    Sends a professional HTML email using a template in a background thread.
     """
-    html_content = render_to_string(f'emails/{template_name}', context)
-    text_content = strip_tags(html_content)
-    
-    msg = EmailMultiAlternatives(
-        subject,
-        text_content,
-        settings.DEFAULT_FROM_EMAIL,
-        [to_email]
-    )
-    msg.attach_alternative(html_content, "text/html")
-    msg.send()
+    def _send():
+        try:
+            html_content = render_to_string(f'emails/{template_name}', context)
+            text_content = strip_tags(html_content)
+            
+            msg = EmailMultiAlternatives(
+                subject,
+                text_content,
+                settings.DEFAULT_FROM_EMAIL,
+                [to_email]
+            )
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+        except Exception as e:
+            # Since this is in a thread, we just log the error
+            print(f"Background email error for {to_email}: {e}")
+
+    # Launch in a separate thread to avoid blocking the main request
+    thread = threading.Thread(target=_send)
+    thread.daemon = True
+    thread.start()
 
 def send_verification_email(user, request=None):
     """
