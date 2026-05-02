@@ -35,6 +35,9 @@ COPY backend/ .
 RUN rm -rf frontend_build
 COPY --from=frontend-builder /frontend/dist/eyang-frontend/browser ./frontend_build/
 
+# Collect static files for production (includes Django admin + Angular build)
+RUN python manage.py collectstatic --noinput
+
 # Expose the internal port
 EXPOSE 8000
 
