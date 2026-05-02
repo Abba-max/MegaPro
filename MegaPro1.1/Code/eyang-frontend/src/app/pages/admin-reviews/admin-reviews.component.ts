@@ -4,13 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule, Star, Trash2, Search, Loader, CheckCircle, XCircle, Info, AlertCircle } from 'lucide-angular';
 import { EstateService, Review } from '../../services/estate.service';
 import { catchError, of } from 'rxjs';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 export interface Toast { id: number; type: 'success'|'error'|'info'|'warning'; message: string; }
 
 @Component({
   selector: 'app-admin-reviews',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule, TranslateModule],
   templateUrl: './admin-reviews.component.html',
   styleUrl: './admin-reviews.component.css'
 })
@@ -33,7 +34,10 @@ export class AdminReviewsComponent implements OnInit {
   toasts: Toast[]      = [];
   private toastCounter = 0;
 
-  constructor(private estateService: EstateService) {}
+  constructor(
+    private estateService: EstateService,
+    private translate:     TranslateService
+  ) {}
 
   ngOnInit(): void { this.load(); }
 
@@ -58,14 +62,15 @@ export class AdminReviewsComponent implements OnInit {
   }
 
   delete(review: Review): void {
-    if (!confirm(`Supprimer l'avis de "${review.name}" ?`)) return;
+    const msg = this.translate.instant('admin.delete_confirm_review', { name: review.name });
+    if (!confirm(msg || `Supprimer l'avis de "${review.name}" ?`)) return;
     this.estateService.deleteAdminReview(review.id).subscribe({
       next: () => {
         this.allReviews = this.allReviews.filter(r => r.id !== review.id);
         this.applyFilter();
-        this.showToast('Avis supprimé.', 'info');
+        this.showToast(this.translate.instant('admin.delete_success'), 'info');
       },
-      error: () => this.showToast('Erreur lors de la suppression.', 'error')
+      error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
     });
   }
 

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { Router } from '@angular/router';
 import {
     LucideAngularModule,
     Mail,
@@ -15,7 +16,8 @@ import {
     MessageSquare,
     Building,
     AlertCircle,
-    RefreshCw
+    RefreshCw,
+    ArrowLeft
 } from 'lucide-angular';
 
 @Component({
@@ -38,6 +40,9 @@ export class ContactComponent {
     readonly BuildingIcon  = Building;
     readonly AlertIcon     = AlertCircle;
     readonly RefreshIcon   = RefreshCw;
+    readonly ArrowLeftIcon = ArrowLeft;
+
+    constructor(private router: Router) {}
 
     selectedReason = 'question';
     submitted = false;
@@ -100,5 +105,9 @@ export class ContactComponent {
         this.hasError  = false;
         this.contactForm = { name: '', email: '', phone: '', organization: '', subject: '', message: '' };
         this.selectedReason = 'question';
+    }
+
+    goHome(): void {
+        this.router.navigate(['/']);
     }
 }

@@ -64,6 +64,7 @@ class RoomCategory(models.Model):
     occupancy          = models.CharField(max_length=10, choices=OCCUPANCY_CHOICES, default='single')
     price              = models.IntegerField(default=300000)
     quantity_available = models.IntegerField(default=1)
+    occupied_count     = models.IntegerField(default=0)
     wifi      = models.CharField(max_length=1, choices=(('1','Yes'),('0','No')), default='0')
     tv        = models.CharField(max_length=1, choices=(('1','Yes'),('0','No')), default='0')
     fridge    = models.CharField(max_length=1, choices=(('1','Yes'),('0','No')), default='0')
@@ -178,3 +179,28 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Msg from {self.sender} in conv {self.conversation_id}"
+
+
+class Notification(models.Model):
+    TYPE_CHOICES = (
+        ('new_message', 'New Message'),
+        ('new_booking', 'New Booking'),
+        ('new_review', 'New Review'),
+        ('verification_status', 'Verification Status'),
+        ('new_contact', 'New Contact'),
+        ('info', 'Information'),
+    )
+    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='notifications')
+    type       = models.CharField(max_length=50, choices=TYPE_CHOICES)
+    title_key  = models.CharField(max_length=255)  # i18n key
+    body_key   = models.CharField(max_length=255)   # i18n key
+    body_params = models.JSONField(default=dict, blank=True) # Params for translation interpolation
+    link       = models.CharField(max_length=255, null=True, blank=True)
+    read       = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Notification for {self.user.username}: {self.type}"

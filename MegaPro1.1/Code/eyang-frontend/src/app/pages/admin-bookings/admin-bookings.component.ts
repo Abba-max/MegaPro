@@ -1,10 +1,10 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Calendar, Loader, Phone, Trash2, Search, CheckCircle, XCircle, Info, AlertCircle } from 'lucide-angular';
+import { LucideAngularModule, Calendar, Loader, Phone, Trash2, Search, CheckCircle, XCircle, Info, AlertCircle, Eye } from 'lucide-angular';
 import { EstateService, QuickOrder } from '../../services/estate.service';
 import { catchError, of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 export interface Toast { id: number; type: 'success'|'error'|'info'|'warning'; message: string; }
 
@@ -25,6 +25,7 @@ export class AdminBookingsComponent implements OnInit {
   readonly XCircleIcon     = XCircle;
   readonly InfoIcon        = Info;
   readonly AlertIcon       = AlertCircle;
+  readonly EyeIcon         = Eye;
 
   isLoading    = signal(true);
   allBookings: QuickOrder[] = [];
@@ -34,7 +35,14 @@ export class AdminBookingsComponent implements OnInit {
   toasts: Toast[]      = [];
   private toastCounter = 0;
 
-  constructor(private estateService: EstateService) {}
+  // View Modal state
+  showViewModal = false;
+  viewBooking: QuickOrder | null = null;
+
+  constructor(
+    private estateService: EstateService,
+    private translate:     TranslateService
+  ) {}
 
   ngOnInit(): void { this.load(); }
 
@@ -60,15 +68,57 @@ export class AdminBookingsComponent implements OnInit {
       : [...this.allBookings];
   }
 
+  // ── View modal ──────────────────────────────────────────────────────────
+  openView(booking: QuickOrder): void {
+    this.viewBooking = booking;
+    this.showViewModal = true;
+  }
+
+  closeViewModal(): void {
+    this.showViewModal = false;
+    this.viewBooking = null;
+  }
+
+  accept(booking: QuickOrder): void {
+    if (!booking.id) return;
+    this.estateService.acceptReservation(booking.id).subscribe({
+      next: (updated) => {
+        const idx = this.allBookings.findIndex(b => b.id === booking.id);
+        if (idx !== -1) {
+          this.allBookings[idx] = { ...this.allBookings[idx], status: 'accepted' };
+          this.applyFilter();
+        }
+        this.showToast(this.translate.instant('dashboard.status_accepted_toast'), 'success');
+      },
+      error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
+    });
+  }
+
+  reject(booking: QuickOrder): void {
+    if (!booking.id) return;
+    this.estateService.rejectReservation(booking.id).subscribe({
+      next: (updated) => {
+        const idx = this.allBookings.findIndex(b => b.id === booking.id);
+        if (idx !== -1) {
+          this.allBookings[idx] = { ...this.allBookings[idx], status: 'rejected' };
+          this.applyFilter();
+        }
+        this.showToast(this.translate.instant('dashboard.status_rejected_toast'), 'warning');
+      },
+      error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
+    });
+  }
+
   delete(booking: QuickOrder): void {
-    if (!confirm(`Supprimer la réservation de "${booking.name}" ?`)) return;
+    const msg = this.translate.instant('admin.delete_confirm_booking', { name: booking.name });
+    if (!confirm(msg || `Supprimer la réservation de "${booking.name}" ?`)) return;
     this.estateService.deleteAdminBooking(booking.id!).subscribe({
       next: () => {
         this.allBookings = this.allBookings.filter(b => b.id !== booking.id);
         this.applyFilter();
-        this.showToast('Réservation supprimée.', 'info');
+        this.showToast(this.translate.instant('admin.delete_success'), 'info');
       },
-      error: () => this.showToast('Erreur lors de la suppression.', 'error')
+      error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
     });
   }
 

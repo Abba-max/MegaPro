@@ -1,7 +1,8 @@
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.db.models import Avg
-from .models import Message, User, Review
+from .models import Message, User, Review, QuickOrder
+from .notifications_utils import notify_user
 
 
 # ── Lazy import to avoid circular imports ─────────────────────────────────────
@@ -27,11 +28,20 @@ def _recalculate_estate_rating(estate):
 
 @receiver(post_save, sender=Review)
 def review_post_save(sender, instance, created, **kwargs):
-    """Recalculate the estate rating every time a review is created or updated."""
+    """Recalculate the estate rating and notify the owner."""
     try:
         _recalculate_estate_rating(instance.estate)
+        if created:
+            notify_user(
+                user=instance.estate.owner,
+                n_type='new_review',
+                title_key='notification.new_review_title',
+                body_key='notification.new_review_body',
+                body_params={'estate': instance.estate.name, 'user': instance.name},
+                link=f'/dashboard'
+            )
     except Exception as e:
-        print(f"Error recalculating rating on review save: {e}")
+        print(f"Error in review_post_save signal: {e}")
 
 
 @receiver(post_delete, sender=Review)
@@ -55,25 +65,28 @@ def message_post_save(sender, instance, created, **kwargs):
             f"{instance.sender.first_name} {instance.sender.last_name}".strip()
             or instance.sender.username
         )
+        # Broadcast to the chat group for real-time chat UI
         ws.broadcast_chat_message(
             conv_id=instance.conversation_id,
             message=instance.text,
             sender_id=instance.sender_id,
             sender_name=sender_name,
         )
+        # Recipient of the notification
         recipient = (
             instance.conversation.owner
             if instance.sender_id == instance.conversation.client_id
             else instance.conversation.client
         )
-        ws.send_user_notification(recipient.id, {
-            'type':            'new_message',
-            'message':         instance.text,
-            'sender_name':     sender_name,
-            'sender_id':       instance.sender_id,
-            'conversation_id': instance.conversation_id,
-            'created_at':      instance.created_at.isoformat(),
-        })
+        # Persist and push general notification
+        notify_user(
+            user=recipient,
+            n_type='new_message',
+            title_key='notification.new_message_title',
+            body_key='notification.new_message_body',
+            body_params={'sender': sender_name, 'text': instance.text[:50]},
+            link=f'/messages'
+        )
     except Exception as e:
         print(f"Error in message_post_save signal: {e}")
 
@@ -82,13 +95,51 @@ def message_post_save(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def user_verification_post_save(sender, instance, **kwargs):
+    # Only notify on actual verification status change if needed, 
+    # but here we detect if is_verified was flipped to True.
+    # Note: tracking the 'previous' state would be better, but this is a common pattern.
     if instance.user_type == 'owner' and instance.is_verified:
         try:
-            ws = _get_ws_utils()
-            ws.send_user_notification(instance.id, {
-                'type':    'verification_status',
-                'status':  'verified',
-                'message': 'Votre compte a été vérifié avec succès !',
-            })
+            notify_user(
+                user=instance,
+                n_type='verification_status',
+                title_key='notification.verified_title',
+                body_key='notification.verified_body',
+                link='/dashboard'
+            )
         except Exception as e:
             print(f"Error in user_verification_post_save signal: {e}")
+
+
+# ── Reservation (QuickOrder) signals ──────────────────────────────────────────
+
+@receiver(post_save, sender=QuickOrder)
+def quick_order_post_save(sender, instance, created, **kwargs):
+    """Notify owner of new booking, or client of status change."""
+    try:
+        if created:
+            # Notify Owner
+            notify_user(
+                user=instance.estate.owner,
+                n_type='new_booking',
+                title_key='notification.new_booking_title',
+                body_key='notification.new_booking_body',
+                body_params={'estate': instance.estate.name, 'client': instance.name},
+                link='/dashboard'
+            )
+        else:
+            # Notify Client on status change
+            if instance.status in ['accepted', 'rejected']:
+                recipient = instance.user
+                if recipient:
+                    status_key = f'notification.booking_{instance.status}_body'
+                    notify_user(
+                        user=recipient,
+                        n_type='new_booking',
+                        title_key='notification.booking_update_title',
+                        body_key=status_key,
+                        body_params={'estate': instance.estate.name},
+                        link='/dashboard' if instance.status == 'accepted' else '/'
+                    )
+    except Exception as e:
+        print(f"Error in quick_order_post_save signal: {e}")

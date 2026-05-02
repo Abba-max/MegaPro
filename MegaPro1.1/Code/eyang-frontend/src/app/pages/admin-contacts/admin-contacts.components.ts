@@ -3,11 +3,11 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   LucideAngularModule, Mail, Phone, Trash2, Search,
-  Loader, CheckCircle, XCircle, Info, AlertCircle
+  Loader, CheckCircle, XCircle, Info, AlertCircle, Eye
 } from 'lucide-angular';
 import { EstateService, ContactRequest } from '../../services/estate.service';
 import { catchError, of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 export interface Toast { id: number; type: 'success'|'error'|'info'|'warning'; message: string; }
 
@@ -28,6 +28,7 @@ export class AdminContactsComponent implements OnInit {
   readonly XCircleIcon     = XCircle;
   readonly InfoIcon        = Info;
   readonly AlertIcon       = AlertCircle;
+  readonly EyeIcon         = Eye;
 
   isLoading    = signal(true);
   allContacts: ContactRequest[] = [];
@@ -37,9 +38,27 @@ export class AdminContactsComponent implements OnInit {
   toasts: Toast[] = [];
   private toastCounter = 0;
 
-  constructor(private estateService: EstateService) {}
+  // View Modal state
+  showViewModal = false;
+  viewContact: ContactRequest | null = null;
+
+  constructor(
+    private estateService: EstateService,
+    private translate:     TranslateService
+  ) {}
 
   ngOnInit(): void { this.load(); }
+
+  // ── View modal ──────────────────────────────────────────────────────────
+  openView(contact: ContactRequest): void {
+    this.viewContact = contact;
+    this.showViewModal = true;
+  }
+
+  closeViewModal(): void {
+    this.showViewModal = false;
+    this.viewContact = null;
+  }
 
   load(): void {
     this.isLoading.set(true);
@@ -64,14 +83,15 @@ export class AdminContactsComponent implements OnInit {
   }
 
   delete(contact: ContactRequest): void {
-    if (!confirm(`Supprimer la demande de "${contact.name}" ?`)) return;
+    const msg = this.translate.instant('admin.delete_confirm_contact', { name: contact.name });
+    if (!confirm(msg || `Supprimer la demande de "${contact.name}" ?`)) return;
     this.estateService.deleteAdminContact(contact.id!).subscribe({
       next: () => {
         this.allContacts = this.allContacts.filter(c => c.id !== contact.id);
         this.applyFilter();
-        this.showToast('Demande supprimée.', 'info');
+        this.showToast(this.translate.instant('admin.delete_success'), 'info');
       },
-      error: () => this.showToast('Erreur lors de la suppression.', 'error')
+      error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
     });
   }
 

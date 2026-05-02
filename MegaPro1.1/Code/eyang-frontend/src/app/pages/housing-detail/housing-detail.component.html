@@ -9,7 +9,7 @@
     <!-- Error -->
     <div *ngIf="!isLoading && errorMessage" class="error-state">
       <p>{{ errorMessage }}</p>
-      <button class="back-btn" (click)="goBack()">← Retour</button>
+      <button class="back-btn" (click)="goBack()">← {{ 'detail.back' | translate }}</button>
     </div>
 
     <ng-container *ngIf="!isLoading && housing">
@@ -49,7 +49,7 @@
             {{ activePhotoIndex + 1 }} / {{ photos.length }}
           </div>
           <div class="gallery-place-badge" *ngIf="housing!.free > 0">
-            {{ housing!.free }} place{{ housing!.free > 1 ? 's' : '' }} libre{{ housing!.free > 1 ? 's' : '' }}
+            {{ housing!.free }} {{ housing!.free > 1 ? ('detail.places_available' | translate) : ('detail.place_available' | translate) }}
           </div>
         </div>
         <div class="gallery-thumbs" *ngIf="photos.length > 1">
@@ -198,7 +198,7 @@
                     </div>
                     <div class="rcc-price-wrap">
                       <span class="rcc-price">{{ rc.price | number }}</span>
-                      <span class="rcc-price-unit">FCFA/mois</span>
+                      <span class="rcc-price-unit">{{ 'price.per_month' | translate }}</span>
                     </div>
                   </div>
 
@@ -236,22 +236,22 @@
                       (click)="openContact()"
                       [disabled]="housing!.room_categories.length > 0 && !selectedRoomCategory">
                 <lucide-icon [img]="CalendarIcon" class="icon-sm"></lucide-icon>
-                {{ selectedRoomCategory ? 'Réserver — ' + (selectedRoomCategory.price | number) + ' FCFA' : 'Réserver' }}
+                {{ selectedRoomCategory ? (('action.reserve' | translate) + ' — ' + (selectedRoomCategory.price | number) + ' ' + ('price.currency' | translate)) : ('action.reserve' | translate) }}
               </button>
               <button class="action-btn btn-message" (click)="openMessageModal()">
                 <lucide-icon [img]="MessageIcon" class="icon-sm"></lucide-icon>
-                Négocier / Message
+                {{ 'action.negotiate' | translate }}
               </button>
               <button class="action-btn btn-ghost" (click)="openContact()">
                 <lucide-icon [img]="PhoneIcon" class="icon-sm"></lucide-icon>
-                Contacter
+                {{ 'action.contact' | translate }}
               </button>
             </div>
 
             <p class="action-hint"
                *ngIf="housing!.room_categories.length > 0 && !selectedRoomCategory">
               <lucide-icon [img]="InfoIcon" class="hint-ico-sm"></lucide-icon>
-              Choisissez d'abord un type de chambre ci-dessus
+              {{ 'detail.select_first' | translate }}
             </p>
 
           </ng-container>
@@ -261,18 +261,18 @@
             <div class="auth-cta-inner">
               <lucide-icon [img]="InfoIcon" class="auth-cta-icon"></lucide-icon>
               <div>
-                <p class="auth-cta-title">Connectez-vous pour voir tous les détails</p>
-                <p class="auth-cta-sub">Types de chambres, prix détaillés et options de réservation</p>
+                <p class="auth-cta-title">{{ 'detail.login_to_view' | translate }}</p>
+                <p class="auth-cta-sub">{{ 'detail.login_to_view_desc' | translate }}</p>
               </div>
             </div>
-            <button class="btn-primary auth-cta-btn" (click)="openLogin()">Se connecter</button>
+            <button class="btn-primary auth-cta-btn" (click)="openLogin()">{{ 'nav.login' | translate }}</button>
           </div>
 
           <!-- ══ REVIEWS ══ -->
           <div class="reviews-block">
             <div class="reviews-header">
               <h2 class="reviews-title">
-                Avis clients
+                {{ 'reviews.client_title' | translate }}
                 <span class="reviews-count-badge">{{ housing!.average_rating.count }}</span>
               </h2>
 
@@ -289,7 +289,7 @@
                       *ngFor="let s of getEmptyStarArray(housing!.average_rating.value)"></lucide-icon>
                   </div>
                   <span class="rating-count-label">
-                    {{ housing!.average_rating.count }} avis
+                    {{ 'dashboard.reviews_count' | translate: { count: housing!.average_rating.count } }}
                   </span>
                 </div>
 
@@ -312,7 +312,7 @@
               <!-- No reviews yet -->
               <div class="rating-no-reviews" *ngIf="housing!.average_rating.count === 0">
                 <lucide-icon [img]="StarIcon" class="icon-sm gray-star"></lucide-icon>
-                <span>Aucune note pour le moment</span>
+                <span>{{ 'detail.no_reviews' | translate }}</span>
               </div>
             </div>
 
@@ -321,14 +321,14 @@
               <div class="add-review-toggle" *ngIf="!showReviewForm">
                 <button class="add-review-btn" (click)="toggleReviewForm()">
                   <lucide-icon [img]="StarIcon" class="icon-sm"></lucide-icon>
-                  Laisser un avis
+                  {{ 'reviews.add_review' | translate }}
                 </button>
               </div>
 
               <div class="review-form-card" *ngIf="showReviewForm">
-                <h4 class="review-form-title">Votre avis</h4>
+                <h4 class="review-form-title">{{ 'reviews.your_review' | translate }}</h4>
                 <div class="star-picker-row">
-                  <span class="star-pick-label">Note :</span>
+                  <span class="star-pick-label">{{ 'reviews.your_rating' | translate }} :</span>
                   <div class="star-picker">
                     <span *ngFor="let s of [1,2,3,4,5]" class="star-pick"
                       [class.active]="s <= (reviewHover || reviewForm.rating)"
@@ -342,17 +342,17 @@
                   [disabled]="isSubmittingReview"></textarea>
                 <div class="review-form-actions">
                   <button class="review-cancel-btn" (click)="toggleReviewForm()" [disabled]="isSubmittingReview">
-                    Annuler
+                    {{ 'common.cancel' | translate }}
                   </button>
                   <button class="review-submit-btn" (click)="submitReview()"
                     [disabled]="isSubmittingReview || !reviewForm.rating || !reviewForm.comment.trim()">
                     <ng-container *ngIf="!isSubmittingReview">
                       <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
-                      Publier
+                      {{ 'reviews.submit' | translate }}
                     </ng-container>
                     <ng-container *ngIf="isSubmittingReview">
                       <lucide-icon [img]="LoaderIcon" class="spinner-sm"></lucide-icon>
-                      Publication…
+                      {{ 'reviews.submitting' | translate }}
                     </ng-container>
                   </button>
                 </div>
@@ -363,15 +363,15 @@
             <div class="review-login-prompt" *ngIf="!currentUser">
               <lucide-icon [img]="InfoIcon" class="hint-icon"></lucide-icon>
               <span>
-                <button class="link-btn" (click)="openLogin()">Connectez-vous</button>
-                pour laisser un avis.
+                <button class="link-btn" (click)="openLogin()">{{ 'nav.login' | translate }}</button>
+                {{ 'reviews.login_to_leave_desc' | translate }}
               </span>
             </div>
 
             <!-- Review list -->
             <div *ngIf="reviews.length === 0" class="no-reviews">
               <lucide-icon [img]="StarIcon" class="no-reviews-icon"></lucide-icon>
-              <p>Aucun avis pour le moment. Soyez le premier !</p>
+              <p>{{ 'reviews.no_reviews_yet' | translate }}</p>
             </div>
 
             <div class="review-card" *ngFor="let r of visibleReviews">
@@ -391,17 +391,17 @@
               <p class="review-comment">{{ r.comment }}</p>
               <div class="review-footer">
                 <button class="like-btn" [class.liked]="r.liked_by_me" (click)="likeReview(r, $event)"
-                  [title]="r.liked_by_me ? 'Retirer mon like' : 'Liker cet avis'">
+                  [title]="r.liked_by_me ? ('reviews.unlike_hint' | translate) : ('reviews.like_hint' | translate)">
                   <lucide-icon [img]="HeartIcon" class="like-icon"></lucide-icon>
                   <span class="like-count">{{ r.likes_count || 0 }}</span>
-                  <span class="like-label">{{ r.liked_by_me ? 'Aimé' : 'J\'aime' }}</span>
+                  <span class="like-label">{{ r.liked_by_me ? ('reviews.liked' | translate) : ('reviews.like' | translate) }}</span>
                 </button>
               </div>
             </div>
 
             <!-- Show more button -->
             <button class="show-more-btn" *ngIf="hasMoreReviews()" (click)="loadMoreReviews()">
-              Voir plus d'avis
+              {{ 'reviews.view_more' | translate }}
             </button>
           </div>
           <!-- end reviews-block -->
@@ -415,13 +415,13 @@
             <div class="price-card-top">
               <ng-container *ngIf="selectedRoomCategory; else defaultPrice">
                 <div class="price-amount">{{ selectedRoomCategory.price | number }}</div>
-                <div class="price-currency">FCFA / mois</div>
+                <div class="price-currency">{{ 'price.currency' | translate }} / {{ 'listings.per_month' | translate }}</div>
                 <div class="price-selected-name">{{ selectedRoomCategory.name }}</div>
               </ng-container>
               <ng-template #defaultPrice>
-                <div class="price-from-label">À partir de</div>
+                <div class="price-from-label">{{ 'price.from' | translate }}</div>
                 <div class="price-amount">{{ housing!.price | number }}</div>
-                <div class="price-currency">FCFA / mois</div>
+                <div class="price-currency">{{ 'price.currency' | translate }} / {{ 'listings.per_month' | translate }}</div>
               </ng-template>
             </div>
             <div class="price-divider"></div>
@@ -430,16 +430,16 @@
             <div class="sidebar-rating" *ngIf="housing!.average_rating.count > 0">
               <lucide-icon [img]="StarIcon" class="icon-xs gold"></lucide-icon>
               <span class="sidebar-rating-val">{{ housing!.average_rating.display }}</span>
-              <span class="sidebar-rating-count">({{ housing!.average_rating.count }} avis)</span>
+              <span class="sidebar-rating-count">({{ 'dashboard.reviews_count' | translate: { count: housing!.average_rating.count } }})</span>
             </div>
             <div class="sidebar-rating sidebar-no-rating" *ngIf="housing!.average_rating.count === 0">
               <lucide-icon [img]="StarIcon" class="icon-xs gray-star"></lucide-icon>
-              <span>Pas encore d'avis</span>
+              <span>{{ 'detail.no_reviews' | translate }}</span>
             </div>
 
             <!-- Room categories summary in sidebar -->
             <div class="sidebar-room-cats" *ngIf="housing!.room_categories && housing!.room_categories.length > 0">
-              <div class="sidebar-rc-title">Choisir un type</div>
+              <div class="sidebar-rc-title">{{ 'detail.select_room_type_short' | translate }}</div>
               <div class="sidebar-rc-item"
                    *ngFor="let rc of housing!.room_categories"
                    [class.sidebar-rc-selected]="selectedRoomCategory?.id === rc.id"
@@ -452,26 +452,26 @@
                   <div class="sidebar-rc-info">
                     <span class="sidebar-rc-name">{{ rc.name }}</span>
                     <span class="sidebar-rc-avail" [class.full]="rc.quantity_available === 0">
-                      {{ rc.quantity_available > 0 ? rc.quantity_available + ' libre' + (rc.quantity_available > 1 ? 's' : '') : 'Complet' }}
+                      {{ rc.quantity_available > 0 ? rc.quantity_available + ' ' + (rc.quantity_available > 1 ? ('detail.places_available' | translate) : ('detail.place_available' | translate)) : ('detail.full' | translate) }}
                     </span>
                   </div>
                 </div>
-                <span class="sidebar-rc-price">{{ rc.price | number }} F</span>
+                <span class="sidebar-rc-price">{{ rc.price | number }} {{ 'price.currency' | translate }}</span>
               </div>
             </div>
 
             <!-- Fallback when no room categories -->
             <div class="price-details" *ngIf="!housing!.room_categories || housing!.room_categories.length === 0">
               <div class="price-detail-row">
-                <span>Caution</span>
-                <span>{{ housing!.price | number }} FCFA</span>
+                <span>{{ 'price.caution' | translate }}</span>
+                <span>{{ housing!.price | number }} {{ 'price.currency' | translate }}</span>
               </div>
               <div class="price-detail-row">
-                <span>Durée min.</span>
-                <span>{{ housing!.minMonths || 2 }} mois</span>
+                <span>{{ 'price.min_duration' | translate }}</span>
+                <span>{{ housing!.minMonths || 2 }} {{ 'price.months' | translate }}</span>
               </div>
               <div class="price-detail-row">
-                <span>Places libres</span>
+                <span>{{ 'price.free_places' | translate }}</span>
                 <span class="places-badge">{{ housing!.free }}</span>
               </div>
             </div>
@@ -481,20 +481,20 @@
                       (click)="openContact()"
                       [disabled]="housing!.room_categories.length > 0 && !selectedRoomCategory">
                 <lucide-icon [img]="CalendarIcon" class="icon-sm"></lucide-icon>
-                {{ selectedRoomCategory ? 'Réserver cette chambre' : 'Réserver' }}
+                {{ selectedRoomCategory ? ('action.book_room' | translate) : ('action.reserve' | translate) }}
               </button>
               <button class="action-btn btn-message w-full mt-2" (click)="openMessageModal()">
                 <lucide-icon [img]="MessageIcon" class="icon-sm"></lucide-icon>
-                Envoyer un message
+                {{ 'action.send_message' | translate }}
               </button>
               <p class="sidebar-select-hint"
                  *ngIf="housing!.room_categories.length > 0 && !selectedRoomCategory">
-                Sélectionnez un type ci-dessus
+                {{ 'detail.select_first' | translate }}
               </p>
             </div>
             <div class="price-card-actions" *ngIf="!currentUser">
               <button class="action-btn btn-primary w-full" (click)="openLogin()">
-                Se connecter pour réserver
+                {{ 'detail.login_to_book' | translate }}
               </button>
             </div>
           </div>
@@ -536,7 +536,7 @@
               <img [src]="photos[0]" [alt]="housing!.name">
             </div>
             <div>
-              <h2 class="modal-title">Réservation</h2>
+              <h2 class="modal-title">{{ 'detail.reserve' | translate }}</h2>
               <p class="modal-subtitle">{{ housing!.name }}</p>
             </div>
           </div>
@@ -549,18 +549,18 @@
               <div class="mrb-info">
                 <span class="mrb-name">{{ selectedRoomCategory.name }}</span>
                 <span class="mrb-detail">
-                  {{ selectedRoomCategory.occupancy === 'single' ? 'Individuelle' : selectedRoomCategory.occupancy === 'double' ? 'Double' : 'Partagée' }}
-                  · {{ selectedRoomCategory.price | number }} FCFA/mois
+                  {{ selectedRoomCategory.occupancy === 'single' ? ('detail.single' | translate) : selectedRoomCategory.occupancy === 'double' ? ('detail.double' | translate) : ('detail.shared' | translate) }}
+                  · {{ selectedRoomCategory.price | number }} {{ 'price.per_month' | translate }}
                 </span>
               </div>
-              <button class="mrb-change" (click)="clearRoomCategory()">Changer</button>
+              <button class="mrb-change" (click)="clearRoomCategory()">{{ 'detail.change_link' | translate }}</button>
             </div>
           </div>
 
           <div class="modal-room-picker" *ngIf="!selectedRoomCategory && housing!.room_categories.length > 0">
             <p class="modal-picker-label">
               <lucide-icon [img]="InfoIcon" class="hint-ico-sm"></lucide-icon>
-              Choisissez d'abord un type de chambre :
+              {{ 'detail.select_room_type' | translate }} :
             </p>
             <div class="modal-picker-list">
               <button class="modal-picker-item"
@@ -573,10 +573,10 @@
                 <div class="mpi-info">
                   <span class="mpi-name">{{ rc.name }}</span>
                   <span class="mpi-avail" [class.mpi-full]="rc.quantity_available === 0">
-                    {{ rc.quantity_available > 0 ? rc.quantity_available + ' libre' + (rc.quantity_available > 1 ? 's' : '') : 'Complet' }}
+                    {{ rc.quantity_available > 0 ? rc.quantity_available + ' ' + (rc.quantity_available > 1 ? ('detail.places_available' | translate) : ('detail.place_available' | translate)) : ('detail.full' | translate) }}
                   </span>
                 </div>
-                <span class="mpi-price">{{ rc.price | number }} F</span>
+                <span class="mpi-price">{{ rc.price | number }} {{ 'price.currency' | translate }}</span>
               </button>
             </div>
           </div>
@@ -585,21 +585,21 @@
             <div class="modal-info-item">
               <lucide-icon [img]="MapPinIcon" class="mdi-icon red"></lucide-icon>
               <div>
-                <div class="mdi-label">Distance</div>
+                <div class="mdi-label">{{ 'map.max_distance' | translate }}</div>
                 <div class="mdi-val">{{ housing!.distance }} m</div>
               </div>
             </div>
             <div class="modal-info-item">
               <lucide-icon [img]="ZapIconRef" class="mdi-icon orange"></lucide-icon>
               <div>
-                <div class="mdi-label">Prix</div>
-                <div class="mdi-val">{{ (selectedRoomCategory?.price ?? housing!.price) | number }} FCFA</div>
+                <div class="mdi-label">{{ 'admin.col_price' | translate }}</div>
+                <div class="mdi-val">{{ (selectedRoomCategory?.price ?? housing!.price) | number }} {{ 'price.currency' | translate }}</div>
               </div>
             </div>
             <div class="modal-info-item">
               <lucide-icon [img]="UsersIcon" class="mdi-icon blue"></lucide-icon>
               <div>
-                <div class="mdi-label">Places</div>
+                <div class="mdi-label">{{ 'detail.places' | translate }}</div>
                 <div class="mdi-val">{{ selectedRoomCategory ? selectedRoomCategory.quantity_available : housing!.free }}</div>
               </div>
             </div>
@@ -613,17 +613,17 @@
           </div>
           <div class="modal-divider"></div>
           <div class="form-group">
-            <label>Votre nom</label>
+            <label>{{ 'form.name' | translate }}</label>
             <input type="text" [(ngModel)]="contactForm.name" [placeholder]="'dashboard.form_name_ph' | translate"
               class="input" [disabled]="isSubmitting">
           </div>
           <div class="form-group mt-3">
-            <label>Téléphone</label>
+            <label>{{ 'form.phone' | translate }}</label>
             <input type="text" [(ngModel)]="contactForm.phone" [placeholder]="'auth.phone_placeholder' | translate"
               class="input" [disabled]="isSubmitting">
           </div>
           <div class="form-group mt-3">
-            <label>Message (optionnel)</label>
+            <label>{{ 'form.message_optional' | translate }}</label>
             <textarea [(ngModel)]="contactForm.message" class="input" rows="3"
               [placeholder]="'form.your_request' | translate" [disabled]="isSubmitting"></textarea>
           </div>
@@ -631,16 +631,16 @@
             [disabled]="isSubmitting || !contactForm.name.trim() || !contactForm.phone.trim()">
             <ng-container *ngIf="!isSubmitting">
               <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
-              Envoyer la demande
+              {{ 'form.send_request' | translate }}
             </ng-container>
             <ng-container *ngIf="isSubmitting">
               <lucide-icon [img]="LoaderIcon" class="icon-sm spinning"></lucide-icon>
-              Envoi en cours…
+              {{ 'form.sending' | translate }}
             </ng-container>
           </button>
           <div class="submit-success" *ngIf="submitSuccess">
             <lucide-icon [img]="CheckCircleIcon" class="success-icon"></lucide-icon>
-            <span>Demande envoyée ! Le propriétaire vous contactera bientôt.</span>
+            <span>{{ 'form.request_sent' | translate }}</span>
           </div>
         </div>
       </div>
@@ -666,17 +666,17 @@
 
           <div class="msg-loading" *ngIf="isLoadingConversation">
             <lucide-icon [img]="LoaderIcon" class="spinner-sm"></lucide-icon>
-            <span>Connexion en cours…</span>
+            <span>{{ 'messages.connecting' | translate }}</span>
           </div>
 
           <div class="msg-viewport" #msgScroll *ngIf="!isLoadingConversation && activeConversation">
             <div class="msg-system-banner">
               <lucide-icon [img]="InfoIcon" class="msg-sys-icon"></lucide-icon>
-              Discutez du prix, des conditions, ou posez vos questions.
+              {{ 'messages.discuss' | translate }}
             </div>
 
             <div *ngIf="activeConversation.messages.length === 0" class="msg-start-hint">
-              Démarrez la conversation 👇
+              {{ 'messages.start' | translate }}
             </div>
 
             <div *ngFor="let msg of activeConversation.messages"
@@ -702,7 +702,7 @@
               <div class="msg-bubble bubble-sent sending">
                 <p class="bubble-text">{{ messageText || '…' }}</p>
                 <div class="bubble-meta meta-sent">
-                  <span class="bubble-time">Envoi…</span>
+                  <span class="bubble-time">{{ 'messages.sending' | translate }}</span>
                   <lucide-icon [img]="LoaderIcon" class="tick-icon spinning"></lucide-icon>
                 </div>
               </div>

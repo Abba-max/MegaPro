@@ -14,7 +14,7 @@
       <span class="ms__brand">Eyang Estate</span>
       <span class="ms__sep">|</span>
       <span class="ms__count" *ngIf="!loading()">
-        {{ visibleEstates().length }} {{ 'map.housing_count' | translate }}
+        {{ 'map.housing_count' | translate:{count: visibleEstates().length} }}
       </span>
       <span class="ms__count ms__count--spin" *ngIf="loading()">
         <span class="ms__dot-spin"></span> {{ 'map.loading' | translate }}
@@ -172,7 +172,7 @@
           </svg>
           {{ 'map.view_map' | translate }}
           <span class="ms__map-section-count" *ngIf="!loading()">
-            {{ visibleEstates().length }} {{ 'map.results' | translate }}
+            {{ 'map.results' | translate:{count: visibleEstates().length} }}
           </span>
           <svg class="ms__map-section-chevron" width="12" height="12" viewBox="0 0 12 12" fill="none">
             <path d="M3 4.5l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -312,7 +312,7 @@
 
             <!-- Estate count overlay -->
             <div class="ms__map-grid-badge" *ngIf="!loading()">
-              {{ visibleEstates().length }} logement{{ visibleEstates().length !== 1 ? 's' : '' }}
+              {{ 'map.housing_count' | translate:{count: visibleEstates().length} }}
             </div>
           </div>
         </div>
@@ -367,7 +367,7 @@
               ★ {{ e.average_rating.value.toFixed(1) }}
             </div>
             <div class="ms__card-free" *ngIf="e.free > 0">
-              {{ e.free }} libre{{ e.free > 1 ? 's' : '' }}
+              {{ e.free }} {{ e.free > 1 ? ('detail.places_available' | translate) : ('detail.place_available' | translate) }}
             </div>
           </div>
 
@@ -389,7 +389,7 @@
             <div class="ms__card-foot">
               <span class="ms__card-price">{{ formatPrice(e.price) }}</span>
               <a class="ms__card-cta" [href]="'/housing/' + e.id" (click)="$event.stopPropagation()">
-                Voir →
+                {{ 'dashboard.view_arrow' | translate }}
               </a>
             </div>
           </div>

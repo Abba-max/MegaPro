@@ -10,7 +10,9 @@
 </div>
 
 <div class="page-header">
-    <h1 class="page-title">{{ 'admin.contact_requests' | translate }}</h1>
+    <div class="page-header-row">
+        <h1 class="page-title">{{ 'admin.contact_requests' | translate }}</h1>
+    </div>
 </div>
 
 <div *ngIf="isLoading()" class="loader-center">
@@ -18,8 +20,8 @@
     <span>{{ 'admin.loading' | translate }}</span>
 </div>
 
-<ng-container *ngIf="!isLoading()">
-    <div class="toolbar-bar">
+<div class="card fade-in" *ngIf="!isLoading()">
+    <div class="toolbar">
         <div class="search-input-group">
             <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
             <input type="text" [(ngModel)]="searchQuery" (input)="applyFilter()"
@@ -28,31 +30,93 @@
         <span class="total-counter">{{ 'admin.total_contacts' | translate:{count: filtered.length, plural: filtered.length !== 1 ? 's' : ''} }}</span>
     </div>
 
-    <p *ngIf="filtered.length === 0" class="empty-row">{{ 'admin.no_contacts_found' | translate }}</p>
-
-    <div class="contacts-grid">
-        <div class="contact-card fade-in" *ngFor="let c of filtered">
-            <div class="contact-card-header">
-                <div>
+    <div class="table-responsive">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{{ 'admin.col_client' | translate }}</th>
+                <th>{{ 'admin.col_email' | translate }} / {{ 'admin.col_phone' | translate }}</th>
+                <th>{{ 'admin.col_housing' | translate }}</th>
+                <th>{{ 'admin.col_date' | translate }}</th>
+                <th class="text-right">{{ 'admin.col_actions' | translate }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let c of filtered">
+                <td [attr.data-label]="'admin.col_client' | translate">
                     <div class="contact-name">{{ c.name }}</div>
-                    <div class="contact-estate" *ngIf="c.estate_name">🏠 {{ c.estate_name }}</div>
+                </td>
+                <td [attr.data-label]="'admin.col_email' | translate">
+                    <div class="meta-sub">{{ c.email }}</div>
+                    <div class="meta-sub" *ngIf="c.phone">{{ c.phone }}</div>
+                </td>
+                <td [attr.data-label]="'admin.col_housing' | translate">
+                    <div class="meta-sub" *ngIf="c.estate_name">🏠 {{ c.estate_name }}</div>
+                    <div class="meta-sub" *ngIf="!c.estate_name">–</div>
+                </td>
+                <td [attr.data-label]="'admin.col_date' | translate">
+                    <span class="text-sm">{{ formatDate(c.submitted_at) }}</span>
+                </td>
+                <td class="text-right" [attr.data-label]="'admin.col_actions' | translate">
+                    <div class="action-buttons">
+                        <button class="icon-btn" (click)="openView(c)" [title]="'common.view' | translate">
+                            <lucide-icon [img]="EyeIcon" class="icon-xs"></lucide-icon>
+                        </button>
+                        <button class="icon-btn danger" (click)="delete(c)" [title]="'dashboard.delete' | translate">
+                            <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            <tr *ngIf="filtered.length === 0">
+                <td colspan="5" class="empty-row">{{ 'admin.no_contacts_found' | translate }}</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+</div>
+
+<!-- View Contact Modal -->
+<div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+    <div class="modal-card view-modal" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="closeViewModal()">×</button>
+        
+        <div class="modal-header">
+            <h2>{{ 'admin.contact_requests' | translate }}</h2>
+            <p class="text-sm">{{ formatDate(viewContact?.submitted_at || '') }}</p>
+        </div>
+
+        <div class="view-content" *ngIf="viewContact">
+            <div class="view-section">
+                <label>{{ 'admin.col_client' | translate }}</label>
+                <div class="view-value-box">
+                    <div class="booking-title">{{ viewContact.name }}</div>
+                    <div class="meta-sub">{{ viewContact.email }}</div>
+                    <div class="meta-sub" *ngIf="viewContact.phone">{{ viewContact.phone }}</div>
                 </div>
-                <div class="contact-header-right">
-                    <span class="contact-date">{{ formatDate(c.submitted_at) }}</span>
-                    <button class="icon-btn danger" (click)="delete(c)" title="Supprimer">
-                        <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
-                    </button>
+            </div>
+
+            <div class="view-section mt-4" *ngIf="viewContact.estate_name">
+                <label>{{ 'admin.col_housing' | translate }}</label>
+                <div class="view-value-box">
+                    <div class="booking-title">{{ viewContact.estate_name }}</div>
                 </div>
             </div>
-            <div class="contact-meta">
-                <lucide-icon [img]="MailIcon" class="meta-icon-sm"></lucide-icon>
-                {{ c.email }}
+
+            <div class="view-section mt-4">
+                <label>{{ 'admin.col_note' | translate }}</label>
+                <div class="note-full">"{{ viewContact.message }}"</div>
             </div>
-            <div class="contact-meta" *ngIf="c.phone">
-                <lucide-icon [img]="PhoneIcon" class="meta-icon-sm"></lucide-icon>
-                {{ c.phone }}
+        </div>
+
+        <div class="modal-footer mt-8">
+            <div class="flex-gap">
+                <a [href]="'mailto:' + (viewContact.email || '')" class="btn-primary flex-1 text-center" *ngIf="viewContact">
+                    <lucide-icon [img]="MailIcon" class="icon-xs mr-2"></lucide-icon>
+                    {{ 'dashboard.reply' | translate }}
+                </a>
+                <button class="btn-secondary flex-1" (click)="closeViewModal()">{{ 'common.close' | translate }}</button>
             </div>
-            <p class="contact-msg">"{{ c.message }}"</p>
         </div>
     </div>
-</ng-container>
+</div>

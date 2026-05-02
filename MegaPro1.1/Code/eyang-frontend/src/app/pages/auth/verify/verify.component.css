@@ -1,0 +1,123 @@
+.verify-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #F8FAFC;
+    position: relative;
+    padding: 2rem;
+}
+
+.verify-bg {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 50%, rgba(37, 99, 235, 0.05), transparent 70%);
+}
+
+.verify-container {
+    width: 100%;
+    max-width: 420px;
+    z-index: 1;
+}
+
+.verify-card {
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 24px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+    padding: 3rem 2rem;
+    text-align: center;
+}
+
+.verify-logo {
+    height: 40px;
+    margin-bottom: 2.5rem;
+    cursor: pointer;
+}
+
+.state-content h2 {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0F172A;
+    margin-bottom: 1rem;
+}
+
+.state-content p {
+    color: #64748B;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+}
+
+.spinner-container {
+    margin-bottom: 1.5rem;
+}
+
+.spinner {
+    width: 48px;
+    height: 48px;
+    color: #2563EB;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.icon-circle {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+}
+
+.success .icon-circle { background: #F0FDF4; color: #10B981; }
+.error .icon-circle { background: #FEF2F2; color: #EF4444; }
+
+.status-icon {
+    width: 40px;
+    height: 40px;
+}
+
+.btn-primary-verify {
+    width: 100%;
+    padding: 1rem;
+    background: #0F172A;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    transition: all 0.2s;
+}
+
+.btn-primary-verify:hover {
+    background: #1E293B;
+    transform: translateY(-2px);
+}
+
+.btn-outline-verify {
+    width: 100%;
+    padding: 1rem;
+    background: white;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    color: #0F172A;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-outline-verify:hover {
+    background: #F8FAFC;
+    border-color: #CBD5E1;
+}
+
+.mt-8 { margin-top: 2rem; }
+
+.fade-in { animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

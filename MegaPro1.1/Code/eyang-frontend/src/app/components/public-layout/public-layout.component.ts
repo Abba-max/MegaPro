@@ -39,7 +39,7 @@ import {
               <ul class="f-contact">
                 <li>
                   <lucide-icon [img]="MapPinIcon" class="f-contact-icon"></lucide-icon>
-                  <span>Yaoundé, Cameroun</span>
+                  <span>{{ 'footer.location' | translate }}</span>
                 </li>
                 <li>
                   <lucide-icon [img]="PhoneIcon" class="f-contact-icon"></lucide-icon>
@@ -47,7 +47,7 @@ import {
                 </li>
                 <li>
                   <lucide-icon [img]="MailIcon" class="f-contact-icon"></lucide-icon>
-                  <span>contact@eyangestate.com</span>
+                  <span>eyangestate@gmail.com</span>
                 </li>
               </ul>
             </div>
@@ -58,7 +58,7 @@ import {
               <ul class="f-links">
                 <li><a routerLink="/" (click)="scrollTop()">{{ 'footer.hero' | translate }}</a></li>
                 <li><a (click)="scrollToSection('listings')">{{ 'footer.listings' | translate }}</a></li>
-                <li><a (click)="scrollToSection('why')">Pourquoi nous</a></li>
+                <li><a (click)="scrollToSection('why')">{{ 'nav.why' | translate }}</a></li>
                 <li><a routerLink="/contact">{{ 'footer.contact' | translate }}</a></li>
               </ul>
             </div>
@@ -70,7 +70,7 @@ import {
                 <li><a (click)="scrollToSection('listings')">{{ 'footer.find_housing' | translate }}</a></li>
                 <li><a routerLink="/dashboard">{{ 'footer.owner_space' | translate }}</a></li>
                 <li><a (click)="scrollToSection('faq')">{{ 'footer.faq' | translate }}</a></li>
-                <li><a href="mailto:contact@eyangestate.com">contact@eyangestate.com</a></li>
+                <li><a href="mailto:eyangestate@gmail.com">eyangestate@gmail.com</a></li>
               </ul>
             </div>
 
@@ -79,10 +79,10 @@ import {
               <h4 class="f-col-title">{{ 'footer.lang_title' | translate }}</h4>
               <div class="f-lang-row">
                 <button class="f-lang-btn" [class.active]="currentLang === 'fr'" (click)="setLang('fr')">
-                  🇫🇷 Français
+                  🇫🇷 {{ 'lang.switch_to_fr' | translate }}
                 </button>
                 <button class="f-lang-btn" [class.active]="currentLang === 'en'" (click)="setLang('en')">
-                  🇬🇧 English
+                  🇬🇧 {{ 'lang.switch_to_en' | translate }}
                 </button>
               </div>
 

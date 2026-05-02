@@ -39,6 +39,7 @@
     <span class="total-counter">{{ 'admin.total_users' | translate:{count: filtered().length, plural: filtered().length !== 1 ? 's' : ''} }}</span>
 </div>
 
+<div class="table-responsive">
 <table class="table">
     <thead>
         <tr>
@@ -52,17 +53,17 @@
         </thead>
         <tbody>
     <tr *ngFor="let u of pagedUsers()" class="fade-in">
-        <td data-label="UTILISATEUR">
+        <td [attr.data-label]="'admin.col_user' | translate">
             <div class="user-cell">
             <div class="user-avatar" [style.background]="u.color">{{ u.initials }}</div>
             <span class="booking-title">{{ u.name }}</span>
             </div>
             </td>
-        <td data-label="EMAIL"><span class="text-sm">{{ u.email }}</span></td>
-        <td data-label="RÔLE">
+        <td [attr.data-label]="'admin.col_email' | translate"><span class="text-sm">{{ u.email }}</span></td>
+        <td [attr.data-label]="'admin.col_role' | translate">
             <span class="role-badge" [style.background]="u.color + '20'" [style.color]="u.color">{{ u.type }}</span>
         </td>
-        <td data-label="INSCRIPTION"><span class="text-sm">{{ u.joined | date:'dd/MM/yyyy HH:mm' }}</span></td>
+        <td [attr.data-label]="'admin.col_joined' | translate"><span class="text-sm">{{ u.joined | date:'dd/MM/yyyy HH:mm' }}</span></td>
         <td [attr.data-label]="'admin.col_status' | translate">
             <span [class]="u.active ? 'active-badge' : 'inactive-badge'">
                 {{ u.active ? ('admin.status_active' | translate) : ('admin.status_inactive' | translate) }}
@@ -72,15 +73,19 @@
             <div class="action-buttons">
                 <!-- Toggle active -->
                 <button class="toggle-btn" [class.on]="u.active" (click)="toggle(u)"
-                    [title]="u.active ? 'Désactiver' : 'Activer'">
+                    [title]="u.active ? ('admin.deactivate' | translate) : ('admin.activate' | translate)">
                     <lucide-icon [img]="u.active ? ToggleOnIcon : ToggleOffIcon" class="toggle-icon"></lucide-icon>
                 </button>
+                <!-- View Details -->
+                <button class="icon-btn info" (click)="openView(u)" [title]="'admin.view_details' | translate">
+                    <lucide-icon [img]="EyeIcon" class="icon-xs"></lucide-icon>
+                </button>
                 <!-- Edit -->
-                <button class="icon-btn" (click)="openEdit(u)" title="Modifier">
+                <button class="icon-btn" (click)="openEdit(u)" [title]="'admin.update' | translate">
                     <lucide-icon [img]="PencilIcon" class="icon-xs"></lucide-icon>
                 </button>
                 <!-- Delete -->
-                <button class="icon-btn danger" (click)="confirmDelete(u)" title="Supprimer">
+                <button class="icon-btn danger" (click)="confirmDelete(u)" [title]="'dashboard.delete' | translate">
                     <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
                 </button>
             </div>
@@ -91,6 +96,7 @@
         </tr>
     </tbody>
 </table>
+</div>
 
 <!-- Pagination -->
 <div class="pagination-footer" *ngIf="totalPages() > 1">
@@ -108,6 +114,57 @@
     </div>
 </div>
 </div>
+
+<!-- ══ View User Modal ══════════════════════════════════════ -->
+<div class="modal-overlay fade-in" *ngIf="showViewModal" (click)="closeViewModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="closeViewModal()">
+            <lucide-icon [img]="CloseIcon" class="icon-xs"></lucide-icon>
+        </button>
+
+        <h2 class="modal-title">{{ 'admin.user_details' | translate }}</h2>
+
+        <div *ngIf="viewUser" style="display:flex; flex-direction:column; gap:1rem;">
+            <div style="display:flex; align-items:center; gap:1rem; padding-bottom:1rem; border-bottom:1px solid #F1F5F9;">
+                <div class="user-avatar" style="width:64px; height:64px; font-size:24px;" [style.background]="viewUser.color">{{ viewUser.initials }}</div>
+                <div>
+                    <div style="font-size:18px; font-weight:700; color:#0F172A;">{{ viewUser.name }}</div>
+                    <div style="font-size:14px; color:#64748B;">{{ viewUser.email }}</div>
+                </div>
+            </div>
+            
+            <div class="form-row-modal">
+                <div class="form-group">
+                    <label>{{ 'admin.col_role' | translate }}</label>
+                    <div style="font-size:14px; font-weight:600; color:#0F172A;">{{ viewUser.type }}</div>
+                </div>
+                <div class="form-group">
+                    <label>{{ 'admin.col_status' | translate }}</label>
+                    <div>
+                        <span [class]="viewUser.active ? 'active-badge' : 'inactive-badge'">
+                            {{ viewUser.active ? ('admin.status_active' | translate) : ('admin.status_inactive' | translate) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="form-row-modal">
+                <div class="form-group">
+                    <label>{{ 'admin.joined_date' | translate }}</label>
+                    <div style="font-size:14px; color:#0F172A;">{{ viewUser.joined | date:'dd/MM/yyyy HH:mm' }}</div>
+                </div>
+                <!-- Additional detailed fields can go here -->
+            </div>
+        </div>
+        
+        <div class="modal-actions">
+            <button class="btn-cancel" (click)="closeViewModal()">{{ 'common.close' | translate }}</button>
+            <button class="btn-save-modal" (click)="openEditFromView()">
+                <lucide-icon [img]="PencilIcon" class="icon-xs"></lucide-icon> {{ 'admin.update' | translate }}
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- ══ Create / Edit Modal ══════════════════════════════════════ -->
 <div class="modal-overlay fade-in" *ngIf="showModal" (click)="closeModal()">
     <div class="modal-card" (click)="$event.stopPropagation()">
@@ -122,17 +179,17 @@
         <div class="modal-form">
             <div class="form-row-modal">
                 <div class="form-group">
-                    <label>Prénom</label>
+                    <label>{{ 'auth.firstname' | translate }}</label>
                     <input type="text" [(ngModel)]="form.firstName" class="input" [placeholder]="'auth.firstname_placeholder' | translate">
                 </div>
                 <div class="form-group">
-                    <label>Nom</label>
+                    <label>{{ 'auth.lastname' | translate }}</label>
                     <input type="text" [(ngModel)]="form.lastName" class="input" [placeholder]="'auth.lastname_placeholder' | translate">
                 </div>
             </div>
 
             <div class="form-group" *ngIf="!isEditMode">
-                <label>Nom d'utilisateur</label>
+                <label>{{ 'auth.username' | translate }}</label>
                 <input type="text" [(ngModel)]="form.username" class="input" [placeholder]="'auth.username_placeholder' | translate">
             </div>
 
@@ -142,7 +199,7 @@
             </div>
 
             <div class="form-group">
-                <label>{{ isEditMode ? 'Nouveau mot de passe (optionnel)' : 'Mot de passe *' }}</label>
+                <label>{{ isEditMode ? ('auth.new_password_optional' | translate) : (('auth.password' | translate) + ' *') }}</label>
                 <div class="password-group">
                     <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="form.password" class="input"
                         [placeholder]="'auth.password_placeholder' | translate">
@@ -153,11 +210,11 @@
             </div>
 
             <div class="form-group">
-                <label>Rôle</label>
+                <label>{{ 'admin.col_role' | translate }}</label>
                 <select [(ngModel)]="form.role" class="select-input full-width">
-                    <option value="Student">Étudiant</option>
-                    <option value="Parent">Parent</option>
-                    <option value="Owner">Propriétaire</option>
+                    <option value="Student">{{ 'auth.student' | translate }}</option>
+                    <option value="Parent">{{ 'auth.parent' | translate }}</option>
+                    <option value="Owner">{{ 'auth.owner' | translate }}</option>
                     <option value="Admin">Admin</option>
                 </select>
             </div>

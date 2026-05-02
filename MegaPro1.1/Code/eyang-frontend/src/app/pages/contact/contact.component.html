@@ -1,5 +1,13 @@
 <div class="contact-container fade-in">
 
+    <!-- Back to Home Button -->
+    <div class="contact-back-btn-wrapper">
+        <button class="contact-back-btn" (click)="goHome()" title="{{ 'nav.back_menu' | translate }}">
+            <lucide-icon [img]="ArrowLeftIcon" class="back-icon"></lucide-icon>
+            <span>{{ 'nav.back_menu' | translate }}</span>
+        </button>
+    </div>
+
     <!-- Hero Header -->
     <section class="contact-hero">
         <div class="contact-hero-bg"></div>

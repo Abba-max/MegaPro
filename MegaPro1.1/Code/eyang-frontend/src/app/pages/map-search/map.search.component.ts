@@ -11,7 +11,7 @@ import {
   EstateService, Estate, EstateFilters,
 } from '../../services/estate.service';
 import { AuthService } from '../../services/auth.service';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime, switchMap, tap, catchError } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
@@ -53,6 +53,7 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private estateService = inject(EstateService);
   private auth          = inject(AuthService);
+  private translate     = inject(TranslateService);
   router                = inject(Router);
 
   // ── UI state ──────────────────────────────────────────────────────────
@@ -119,7 +120,7 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
       switchMap(filters =>
         this.estateService.getEstates(filters).pipe(
           catchError(err => {
-            this.error.set(err?.error?.detail ?? 'Erreur lors de la recherche');
+            this.error.set(err?.error?.detail ?? this.translate.instant('admin.error_load'));
             this.loading.set(false);
             return EMPTY;
           })
@@ -256,9 +257,9 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
                  + '☆'.repeat(5 - Math.round(e.average_rating?.value ?? 0));
     const badges = [
       e.wifi      === '1' ? '<span class="pop-badge">WiFi</span>'         : '',
-      e.generator === '1' ? '<span class="pop-badge">Groupe élec.</span>'  : '',
-      e.forage    === '1' ? '<span class="pop-badge">Forage</span>'        : '',
-      e.restaurant=== '1' ? '<span class="pop-badge">Restaurant</span>'    : '',
+      e.generator === '1' ? `<span class="pop-badge">${this.translate.instant('filters.generator')}</span>`  : '',
+      e.forage    === '1' ? `<span class="pop-badge">${this.translate.instant('filters.water')}</span>`        : '',
+      e.restaurant=== '1' ? `<span class="pop-badge">${this.translate.instant('filters.restaurant')}</span>`    : '',
     ].filter(Boolean).join('');
 
     return `
@@ -269,11 +270,11 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
           ${(e.average_rating?.value ?? 0) > 0
             ? `<p class="pop-rating">${stars} <span>(${e.reviews_count ?? 0} avis)</span></p>`
             : ''}
-          <p class="pop-location">📍 ${e.location} · ${e.distance}m de Saint Jean</p>
+          <p class="pop-location">📍 ${e.location} · ${e.distance}m ${this.translate.instant('detail.from_campus')}</p>
           ${badges ? `<div class="pop-badges">${badges}</div>` : ''}
           <div class="pop-footer">
-            <span class="pop-price">${e.price.toLocaleString('fr-CM')} XAF<em>/mois</em></span>
-            <a class="pop-link" href="/housing/${e.id}">Voir →</a>
+            <span class="pop-price">${e.price.toLocaleString('fr-CM')} XAF<em>${this.translate.instant('dashboard.per_month')}</em></span>
+            <a class="pop-link" href="/housing/${e.id}">${this.translate.instant('listings.show_more')} →</a>
           </div>
         </div>
       </div>`;

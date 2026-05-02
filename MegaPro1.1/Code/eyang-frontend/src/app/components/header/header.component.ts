@@ -59,12 +59,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   // User state
   currentUser: User | null = null;
   showMenu = false;
-  showLoginModal = false;
-  showSignupModal = false;
   showMobileMenu = false;
   showNotifPanel = false;
-  isLoggingIn = false;
-  isSigningUp = false;
   currentLang = 'fr';
 
   // Track whether we are on the home page so scroll-to links know to navigate first
@@ -73,24 +69,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   // Notifications
   notifications: AppNotification[] = [];
   unreadCount = 0;
-
-  // Login form
-  loginEmail = '';
-  loginPassword = '';
-  loginError = '';
-
-  // Signup form
-  signupStep = 1;
-  showPassword = false;
-  idCardPreview: string | null = null;
-
-  signupForm = {
-    firstName: '', lastName: '', email: '',
-    phone: '', password: '', username: '',
-    address: '', idCardFile: null as File | null,
-    accountType: 'Student' as 'Student' | 'Parent' | 'Owner'
-  };
-  signupError = '';
 
   private subs: Subscription[] = [];
 
@@ -117,11 +95,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
       }),
 
       this.authService.currentUser$.subscribe(u => { this.currentUser = u; }),
-
-      this.authService.showLoginModal$.subscribe(show => {
-        this.showLoginModal = show;
-        if (!show) { this.loginError = ''; this.loginEmail = ''; this.loginPassword = ''; }
-      }),
 
       this.notifService.notifications$.subscribe(n => {
         this.notifications = n;
@@ -222,192 +195,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   // ── Auth ───────────────────────────────────────────────────────
+  openLogin(): void { this.router.navigate(['/login']); }
+
   onLogout(): void {
     this.authService.logout();
     this.showMenu = false;
     this.router.navigate(['/']);
-  }
-
-  openLogin(): void { this.authService.openLogin(); }
-  closeLogin(): void { this.authService.closeLogin(); }
-  openSignup(): void { this.showSignupModal = true; this.authService.closeLogin(); }
-  closeSignup(): void {
-    this.showSignupModal = false;
-    this.signupError = '';
-    this.signupStep = 1;
-    this.showPassword = false;
-    this.idCardPreview = null;
-    this.resetSignupForm();
-  }
-  switchToSignup(): void { this.closeLogin(); this.openSignup(); }
-  switchToLogin(): void { this.closeSignup(); this.openLogin(); }
-
-  handleLogin(): void {
-    this.loginError = '';
-    if (!this.loginEmail || !this.loginPassword) {
-      this.loginError = this.currentLang === 'fr'
-        ? 'Veuillez remplir tous les champs.' : 'Please fill in all fields.';
-      return;
-    }
-    this.isLoggingIn = true;
-    this.authService.login(this.loginEmail, this.loginPassword).subscribe({
-      next: () => {
-        this.authService.closeLogin();
-        this.loginEmail = ''; this.loginPassword = '';
-        this.authService.currentUser$.pipe(filter(u => u !== null), take(1)).subscribe(user => {
-          this.isLoggingIn = false;
-          this.notifService.success(
-            this.currentLang === 'fr' ? 'Connexion réussie' : 'Login successful',
-            this.currentLang === 'fr' ? `Bienvenue, ${user!.name} !` : `Welcome, ${user!.name}!`
-          );
-          this.router.navigate([user!.role === 'Admin' ? '/admin/overview' : '/dashboard']);
-        });
-      },
-      error: (err: any) => {
-        this.isLoggingIn = false;
-        // Show the exact Django error if available, otherwise generic message
-        const detail = err?.error?.detail || err?.error?.non_field_errors?.[0];
-        this.loginError = detail
-          ?? (this.currentLang === 'fr'
-            ? 'Email ou mot de passe incorrect.'
-            : 'Invalid email or password.');
-      }
-    });
-  }
-
-  // ── Password strength ──────────────────────────────────────────
-  get passwordStrength(): { level: string; label: string; pct: number } {
-    const pw = this.signupForm.password;
-    if (!pw) return { level: 'empty', label: '', pct: 0 };
-    let score = 0;
-    if (pw.length >= 8)             score++;
-    if (/[A-Z]/.test(pw))           score++;
-    if (/[0-9]/.test(pw))           score++;
-    if (/[^A-Za-z0-9]/.test(pw))   score++;
-    const levels = [
-      { level: 'weak',   label: 'Faible',    pct: 25 },
-      { level: 'fair',   label: 'Moyen',     pct: 50 },
-      { level: 'good',   label: 'Bien',      pct: 75 },
-      { level: 'strong', label: 'Fort',      pct: 100 },
-    ];
-    return levels[Math.max(0, score - 1)];
-  }
-
-  // ── Step navigation ────────────────────────────────────────────
-  nextStep(): void {
-    this.signupError = '';
-    if (this.signupStep === 1) {
-      if (!this.signupForm.email || !this.signupForm.username || !this.signupForm.password) {
-        this.signupError = 'Veuillez remplir tous les champs obligatoires.';
-        return;
-      }
-      this.signupStep = 2;
-    } else if (this.signupStep === 2) {
-      if (!this.signupForm.firstName || !this.signupForm.lastName) {
-        this.signupError = 'Veuillez renseigner votre prénom et nom.';
-        return;
-      }
-      if (this.signupForm.accountType === 'Owner') {
-        this.signupStep = 3;
-      } else {
-        this.handleSignup();
-      }
-    }
-  }
-
-  prevStep(): void {
-    if (this.signupStep > 1) this.signupStep--;
-    this.signupError = '';
-  }
-
-  // ── ID card upload ─────────────────────────────────────────────
-  onIdCardChange(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    if (file) this.setIdCardFile(file);
-  }
-
-  onIdCardDrop(event: DragEvent): void {
-    event.preventDefault();
-    const file = event.dataTransfer?.files?.[0];
-    if (file) this.setIdCardFile(file);
-  }
-
-  private setIdCardFile(file: File): void {
-    if (file.size > 5 * 1024 * 1024) {
-      this.signupError = 'Le fichier dépasse la taille maximale de 5 Mo.';
-      return;
-    }
-    this.signupForm.idCardFile = file;
-    if (file.type.startsWith('image/')) {
-      const reader = new FileReader();
-      reader.onload = (e) => { this.idCardPreview = e.target?.result as string; };
-      reader.readAsDataURL(file);
-    } else {
-      this.idCardPreview = null;
-    }
-  }
-
-  removeIdCard(): void {
-    this.signupForm.idCardFile = null;
-    this.idCardPreview = null;
-  }
-
-  handleSignup(): void {
-    this.signupError = '';
-    const f = this.signupForm;
-
-    if (f.accountType === 'Owner' && !f.idCardFile) {
-      this.signupError = 'Veuillez télécharger votre pièce d\'identité.';
-      return;
-    }
-
-    this.isSigningUp = true;
-
-    // Build FormData so the id_card image can be sent as multipart
-    const formData = new FormData();
-    formData.append('email',      f.email);
-    formData.append('username',   f.username);
-    formData.append('password',   f.password);
-    formData.append('first_name', f.firstName);
-    formData.append('last_name',  f.lastName);
-    formData.append('phone',      f.phone);
-    formData.append('role',       f.accountType);
-    if (f.address)    formData.append('address', f.address);
-    if (f.idCardFile) formData.append('id_card', f.idCardFile, f.idCardFile.name);
-
-    this.authService.registerFormData(formData).subscribe({
-      next: () => {
-        this.closeSignup();
-        this.authService.currentUser$.pipe(filter(u => u !== null), take(1)).subscribe(user => {
-          this.isSigningUp = false;
-          this.notifService.success(
-            this.currentLang === 'fr' ? 'Compte créé !' : 'Account created!',
-            this.currentLang === 'fr' ? `Bienvenue, ${user!.name} !` : `Welcome, ${user!.name}!`
-          );
-          this.router.navigate([user!.role === 'Admin' ? '/admin/overview' : '/dashboard']);
-        });
-      },
-      error: (err: any) => {
-        this.isSigningUp = false;
-        const errors = err?.error;
-        if (errors && typeof errors === 'object') {
-          const messages = Object.entries(errors)
-            .map(([k, v]: [string, any]) => {
-              const label: Record<string, string> = {
-                email: 'Email', username: 'Nom d\'utilisateur',
-                password: 'Mot de passe', id_card: 'Pièce d\'identité'
-              };
-              return `${label[k] ?? k} : ${Array.isArray(v) ? v[0] : v}`;
-            }).join(' | ');
-          this.signupError = messages;
-        } else {
-          this.signupError = this.currentLang === 'fr'
-            ? 'Erreur lors de l\'inscription.'
-            : 'Registration error.';
-        }
-      }
-    });
   }
 
   getRoleLabel(role: string): string {
@@ -416,14 +209,5 @@ export class HeaderComponent implements OnInit, OnDestroy {
       en: { Student: 'Student', Parent: 'Parent', Owner: 'Owner', Admin: 'Admin' },
     };
     return labels[this.currentLang]?.[role] ?? role;
-  }
-
-  private resetSignupForm(): void {
-    this.signupForm = {
-      firstName: '', lastName: '', email: '',
-      phone: '', password: '', username: '',
-      address: '', idCardFile: null,
-      accountType: 'Student'
-    };
   }
 }

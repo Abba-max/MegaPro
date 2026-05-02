@@ -11,12 +11,12 @@
 </div>
 
 <div class="page-header">
-<h1 class="page-title">Gestion des avis</h1>
+<h1 class="page-title">{{ 'admin.manage_reviews' | translate }}</h1>
 </div>
 
 <div *ngIf="isLoading()" class="loader-row">
     <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
-    <span>Chargement…</span>
+    <span>{{ 'dashboard.loading' | translate }}</span>
 </div>
 <div class="card mt-8" *ngIf="!isLoading()">
     <div class="toolbar">
@@ -26,24 +26,24 @@
                 [placeholder]="'admin.search_reviews_ph' | translate" class="search-input">
         </div>
     <select class="select-input" [(ngModel)]="filterRating" (change)="applyFilter()">
-        <option value="">Toutes les notes</option>
-        <option value="5">⭐ 5 étoiles</option>
-        <option value="4">⭐ 4 étoiles</option>
-        <option value="3">⭐ 3 étoiles</option>
-        <option value="2">⭐ 2 étoiles</option>
-        <option value="1">⭐ 1 étoile</option>
+        <option value="">{{ 'admin.all_ratings' | translate }}</option>
+        <option value="5">⭐ 5 {{ 'admin.stars' | translate }}</option>
+        <option value="4">⭐ 4 {{ 'admin.stars' | translate }}</option>
+        <option value="3">⭐ 3 {{ 'admin.stars' | translate }}</option>
+        <option value="2">⭐ 2 {{ 'admin.stars' | translate }}</option>
+        <option value="1">⭐ 1 {{ 'admin.star' | translate }}</option>
     </select>
-    <span class="total-badge">{{ filtered.length }} avis</span>
+    <span class="total-badge">{{ filtered.length }} {{ 'sidebar.reviews' | translate }}</span>
     </div>
 <table class="table">
     <thead>
         <tr>
-            <th>AUTEUR</th>
-            <th>LOGEMENT</th>
-            <th>NOTE</th>
-            <th>COMMENTAIRE</th>
-            <th>DATE</th>
-            <th class="text-right">ACTIONS</th>
+            <th>{{ 'admin.col_author' | translate }}</th>
+            <th>{{ 'admin.col_housing' | translate }}</th>
+            <th>{{ 'admin.col_rating' | translate }}</th>
+            <th>{{ 'admin.col_comment' | translate }}</th>
+            <th>{{ 'admin.col_date' | translate }}</th>
+            <th class="text-right">{{ 'admin.col_actions' | translate }}</th>
         </tr>
     </thead>
     <tbody>
@@ -76,7 +76,7 @@
         </td>
         </tr>
         <tr *ngIf="filtered.length === 0">
-            <td colspan="6" class="empty-row">Aucun avis trouvé.</td>
+            <td colspan="6" class="empty-row">{{ 'admin.no_reviews_found' | translate }}</td>
         </tr>
         </tbody>
         </table>

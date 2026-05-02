@@ -1,0 +1,182 @@
+<div class="auth-page-wrapper">
+    <div class="auth-bg-overlay"></div>
+
+    <div class="auth-container fade-in">
+        <div class="auth-card signup-card">
+            <!-- Header with Step Indicator -->
+            <div class="auth-card-header">
+                <div class="brand-logo" routerLink="/">
+                    <img src="/assets/images/logo.png" alt="Eyang Estate">
+                </div>
+                
+                <div class="step-indicator" *ngIf="currentStep < 4">
+                    <div class="step-dots">
+                        <div class="step-dot" [class.active]="currentStep >= 1" [class.done]="currentStep > 1"></div>
+                        <div class="step-line" [class.done]="currentStep > 1"></div>
+                        <div class="step-dot" [class.active]="currentStep >= 2" [class.done]="currentStep > 2"></div>
+                        <div class="step-line" [class.done]="currentStep > 2"></div>
+                        <div class="step-dot" [class.active]="currentStep >= 3" [class.done]="currentStep > 3" *ngIf="signupForm.role === 'Owner'"></div>
+                    </div>
+                </div>
+
+                <h1 class="auth-title">
+                    <ng-container *ngIf="currentStep === 1">{{ 'auth.step_account' | translate }}</ng-container>
+                    <ng-container *ngIf="currentStep === 2">{{ 'auth.step_profile' | translate }}</ng-container>
+                    <ng-container *ngIf="currentStep === 3">{{ 'auth.step_owner' | translate }}</ng-container>
+                    <ng-container *ngIf="currentStep === 4">{{ 'auth.success_title' | translate }}</ng-container>
+                </h1>
+            </div>
+
+            <div class="auth-card-body">
+                <!-- ═══ STEP 1: Account Type & Credentials ═══ -->
+                <div class="step-content" *ngIf="currentStep === 1">
+                    <label class="input-label">{{ 'auth.i_am_a' | translate }}</label>
+                    <div class="role-selector">
+                        <button class="role-btn" [class.active]="signupForm.role === 'Student'" (click)="signupForm.role = 'Student'">
+                            <lucide-icon [img]="StudentIcon" class="role-icon"></lucide-icon>
+                            <span>{{ 'auth.student' | translate }}</span>
+                        </button>
+                        <button class="role-btn" [class.active]="signupForm.role === 'Parent'" (click)="signupForm.role = 'Parent'">
+                            <lucide-icon [img]="ParentIcon" class="role-icon"></lucide-icon>
+                            <span>{{ 'auth.parent' | translate }}</span>
+                        </button>
+                        <button class="role-btn" [class.active]="signupForm.role === 'Owner'" (click)="signupForm.role = 'Owner'">
+                            <lucide-icon [img]="OwnerIcon" class="role-icon"></lucide-icon>
+                            <span>{{ 'auth.owner' | translate }}</span>
+                        </button>
+                    </div>
+
+                    <div class="form-group-modern mt-6">
+                        <div class="input-wrapper">
+                            <lucide-icon [img]="MailIcon" class="input-icon"></lucide-icon>
+                            <input type="email" [(ngModel)]="signupForm.email" [placeholder]="'auth.email_placeholder' | translate" class="modern-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group-modern mt-4">
+                        <div class="input-wrapper">
+                            <lucide-icon [img]="UserIcon" class="input-icon"></lucide-icon>
+                            <input type="text" [(ngModel)]="signupForm.username" [placeholder]="'auth.username_placeholder' | translate" class="modern-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group-modern mt-4">
+                        <div class="input-wrapper">
+                            <lucide-icon [img]="LockIcon" class="input-icon"></lucide-icon>
+                            <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="signupForm.password" [placeholder]="'auth.password_placeholder' | translate" class="modern-input">
+                            <button type="button" class="pw-toggle" (click)="showPassword = !showPassword">
+                                <lucide-icon [img]="showPassword ? EyeOffIcon : EyeIcon" class="icon-xs"></lucide-icon>
+                            </button>
+                        </div>
+                        
+                        <!-- Password Strength -->
+                        <div class="pw-strength-container" *ngIf="signupForm.password">
+                            <div class="pw-strength-bar">
+                                <div class="pw-strength-fill" [style.width]="passwordStrength().pct + '%'" [class]="passwordStrength().level"></div>
+                            </div>
+                            <span class="pw-strength-text" [class]="passwordStrength().level">{{ passwordStrength().label }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ═══ STEP 2: Personal Details ═══ -->
+                <div class="step-content" *ngIf="currentStep === 2">
+                    <div class="form-row">
+                        <div class="form-group-modern">
+                            <input type="text" [(ngModel)]="signupForm.firstName" [placeholder]="'auth.firstname_placeholder' | translate" class="modern-input">
+                        </div>
+                        <div class="form-group-modern">
+                            <input type="text" [(ngModel)]="signupForm.lastName" [placeholder]="'auth.lastname_placeholder' | translate" class="modern-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group-modern mt-4">
+                        <div class="input-wrapper">
+                            <lucide-icon [img]="PhoneIcon" class="input-icon"></lucide-icon>
+                            <input type="tel" [(ngModel)]="signupForm.phone" [placeholder]="'auth.phone_placeholder' | translate" class="modern-input">
+                        </div>
+                    </div>
+
+                    <div class="form-group-modern mt-4" *ngIf="signupForm.role === 'Owner'">
+                        <input type="text" [(ngModel)]="signupForm.address" [placeholder]="'auth.address_placeholder' | translate" class="modern-input">
+                    </div>
+                </div>
+
+                <!-- ═══ STEP 3: Identification (Owner Only) ═══ -->
+                <div class="step-content" *ngIf="currentStep === 3">
+                    <div class="owner-info-box">
+                        <lucide-icon [img]="ShieldIcon" class="info-box-icon"></lucide-icon>
+                        <p>{{ 'auth.owner_id_notice' | translate }}</p>
+                    </div>
+
+                    <div class="upload-zone mt-6" (click)="fileInput.click()" [class.has-file]="idCardPreview">
+                        <input type="file" #fileInput (change)="onFileSelected($event)" accept="image/*" style="display: none">
+                        
+                        <ng-container *ngIf="!idCardPreview">
+                            <lucide-icon [img]="UploadIcon" class="upload-icon-lg"></lucide-icon>
+                            <p class="upload-text">{{ 'auth.click_to_upload_id' | translate }}</p>
+                            <span class="upload-hint">PNG, JPG {{ 'common.or' | translate }} PDF (max. 5MB)</span>
+                        </ng-container>
+
+                        <ng-container *ngIf="idCardPreview">
+                            <div class="preview-container">
+                                <img [src]="idCardPreview" class="id-preview">
+                                <button class="remove-file-btn" (click)="removeFile(); $event.stopPropagation()">
+                                    <lucide-icon [img]="XIcon" class="icon-xs"></lucide-icon>
+                                </button>
+                            </div>
+                            <div class="file-info-bar">
+                                <lucide-icon [img]="CheckIcon" class="icon-xs text-success"></lucide-icon>
+                                <span>{{ signupForm.idCardFile?.name }}</span>
+                            </div>
+                        </ng-container>
+                    </div>
+                </div>
+
+                <!-- ═══ STEP 4: Success State ═══ -->
+                <div class="step-content success-step" *ngIf="currentStep === 4">
+                    <div class="success-animation">
+                        <lucide-icon [img]="SuccessIcon" class="success-icon-lg"></lucide-icon>
+                    </div>
+                    <h2 class="success-msg-title">{{ 'auth.registration_success' | translate }}</h2>
+                    <p class="success-msg-text">{{ 'auth.check_email_verification' | translate }}</p>
+                    <div class="verification-hint">
+                        <p>{{ 'auth.didnt_receive_email' | translate }} <a href="#">{{ 'auth.resend_verification' | translate }}</a></p>
+                    </div>
+                    <button class="btn-auth-primary mt-8" routerLink="/login">
+                        {{ 'auth.back_to_login' | translate }}
+                    </button>
+                </div>
+
+                <!-- Error Message -->
+                <div class="error-area mt-4" *ngIf="error">
+                    <p class="error-msg">{{ error }}</p>
+                </div>
+
+                <!-- Footer Actions -->
+                <div class="auth-footer-actions mt-8" *ngIf="currentStep < 4">
+                    <button class="btn-auth-secondary" *ngIf="currentStep > 1" (click)="prevStep()" [disabled]="isLoading()">
+                        <lucide-icon [img]="ArrowLIcon" class="btn-icon"></lucide-icon>
+                        {{ 'auth.back' | translate }}
+                    </button>
+                    
+                    <button class="btn-auth-primary" (click)="nextStep()" [disabled]="isLoading()">
+                        <span *ngIf="!isLoading()">
+                            <ng-container *ngIf="currentStep < (signupForm.role === 'Owner' ? 3 : 2)">{{ 'auth.continue' | translate }}</ng-container>
+                            <ng-container *ngIf="currentStep === (signupForm.role === 'Owner' ? 3 : 2)">{{ 'auth.create_account' | translate }}</ng-container>
+                        </span>
+                        <div class="loader-white" *ngIf="isLoading()"></div>
+                        <lucide-icon *ngIf="!isLoading()" [img]="ArrowRIcon" class="btn-icon"></lucide-icon>
+                    </button>
+                </div>
+            </div>
+
+            <div class="auth-card-footer" *ngIf="currentStep < 4">
+                <p>
+                    {{ 'auth.already_account' | translate }} 
+                    <a routerLink="/login" class="auth-link">{{ 'auth.login_link' | translate }}</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

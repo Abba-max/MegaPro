@@ -194,11 +194,11 @@
             <h3 class="e-card__name">{{ e.name }}</h3>
             <p class="e-card__loc"><lucide-icon [img]="MapPinIcon"></lucide-icon>{{ e.location }}</p>
             <div class="e-card__foot">
-              <span class="e-card__price">{{ formatPrice(e.price) }}<small>/mois</small></span>
+              <span class="e-card__price">{{ formatPrice(e.price) }}<small>{{ 'dashboard.per_month' | translate }}</small></span>
               <div class="e-card__btns">
-                <button class="ico-btn" (click)="openEditModal(e)" title="Modifier"><lucide-icon [img]="PencilIcon"></lucide-icon></button>
-                <button class="ico-btn" (click)="openManageRooms(e)" title="Chambres"><lucide-icon [img]="BuildingIcon"></lucide-icon></button>
-                <button class="ico-btn ico-btn--red" (click)="deleteEstate(e)" title="Supprimer"><lucide-icon [img]="TrashIcon"></lucide-icon></button>
+                <button class="ico-btn" (click)="openEditModal(e)" [title]="'common.edit' | translate"><lucide-icon [img]="PencilIcon"></lucide-icon></button>
+                <button class="ico-btn" (click)="openManageRooms(e)" [title]="'dashboard.rooms_btn' | translate"><lucide-icon [img]="BuildingIcon"></lucide-icon></button>
+                <button class="ico-btn ico-btn--red" (click)="deleteEstate(e)" [title]="'dashboard.delete' | translate"><lucide-icon [img]="TrashIcon"></lucide-icon></button>
               </div>
             </div>
           </div>
@@ -217,7 +217,7 @@
           <div class="o-card__body">
             <div class="o-card__top">
               <div><span class="o-card__name">{{ o.name }}</span><span class="o-card__where">{{ o.estate_name }}</span></div>
-              <span class="chip chip--{{o.status||'pending'}}">{{ o.status==='accepted'?'✓ ' + ('dashboard.status_accepted'|translate):o.status==='rejected'?'✗ ' + ('dashboard.status_rejected'|translate):'⏳ ' + ('dashboard.status_pending'|translate) }}</span>
+              <span class="chip chip--{{o.status||'pending'}}">{{ o.status==='accepted' ? ('dashboard.status_accepted_long' | translate) : o.status==='rejected' ? ('dashboard.status_rejected_long' | translate) : ('dashboard.status_pending_long' | translate) }}</span>
             </div>
             <div class="o-card__meta">
               <span *ngIf="o.phone"><lucide-icon [img]="PhoneIcon"></lucide-icon>{{ o.phone }}</span>
@@ -249,7 +249,7 @@
           </div>
           <div class="rv-card__body">
             <div class="rv-card__top">
-              <div><span class="rv-card__estate">{{ r.estate_name }}</span><span class="rv-card__by">par {{ r.name }}</span></div>
+              <div><span class="rv-card__estate">{{ r.estate_name }}</span><span class="rv-card__by">{{ 'common.by' | translate }} {{ r.name }}</span></div>
               <div class="rv-card__stars"><span *ngFor="let s of getStars(r.rating)" class="s-on">★</span><span *ngFor="let s of getStars(5-r.rating)" class="s-off">★</span></div>
             </div>
             <p class="rv-card__txt">{{ r.comment }}</p>
@@ -417,11 +417,11 @@
           <div class="o-card__body">
             <div class="o-card__top">
               <div><span class="o-card__name">{{ r.estate_name }}</span><span class="o-card__where">{{ r.estate_location }}</span></div>
-              <span class="chip chip--{{r.status||'pending'}}">{{ r.status==='accepted'?'✓ ' + ('dashboard.status_accepted'|translate):r.status==='rejected'?'✗ ' + ('dashboard.status_rejected'|translate):'⏳ ' + ('dashboard.status_pending'|translate) }}</span>
+              <span class="chip chip--{{r.status||'pending'}}">{{ r.status==='accepted' ? ('dashboard.status_accepted_long' | translate) : r.status==='rejected' ? ('dashboard.status_rejected_long' | translate) : ('dashboard.status_pending_long' | translate) }}</span>
             </div>
             <div class="o-card__meta">
               <span *ngIf="r.room_category_name"><lucide-icon [img]="BuildingIcon"></lucide-icon>{{ r.room_category_name }}</span>
-              <span *ngIf="r.estate_price">{{ formatPrice(r.estate_price) }}/mois</span>
+              <span *ngIf="r.estate_price">{{ formatPrice(r.estate_price) }}{{ 'dashboard.per_month' | translate }}</span>
               <span><lucide-icon [img]="CalendarIcon"></lucide-icon>{{ formatDate(r.created_at) }}</span>
             </div>
             <div class="o-card__acts" *ngIf="!r.status||r.status==='pending'">
@@ -457,8 +457,8 @@
             <div class="rv-card__foot">
               <span class="rv-card__date">{{ r.date || formatDate(r.created_at) }}</span>
               <div class="rv-card__acts">
-                <button class="ico-btn" (click)="openEditReviewModal(r)" title="Modifier"><lucide-icon [img]="PencilIcon"></lucide-icon></button>
-                <button class="ico-btn ico-btn--red" (click)="deleteReview(r)" title="Supprimer"><lucide-icon [img]="TrashIcon"></lucide-icon></button>
+                <button class="ico-btn" (click)="openEditReviewModal(r)" [title]="'common.edit' | translate"><lucide-icon [img]="PencilIcon"></lucide-icon></button>
+                <button class="ico-btn ico-btn--red" (click)="deleteReview(r)" [title]="'dashboard.delete' | translate"><lucide-icon [img]="TrashIcon"></lucide-icon></button>
               </div>
             </div>
           </div>
@@ -534,21 +534,21 @@
   <div class="m-box m-box--lg" (click)="$event.stopPropagation()">
     <div class="m-head"><h2 class="m-title">{{ isEditMode?('dashboard.modal_edit_title'|translate):('dashboard.modal_add_title'|translate) }}</h2><button class="m-close" (click)="closeEstateModal()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
     <div class="m-body">
-      <div class="f-group"><label class="f-label">Nom *</label><input class="f-input" [(ngModel)]="estateForm.name" [placeholder]="'dashboard.form_name_ph' | translate"></div>
-      <div class="f-row"><div class="f-group"><label class="f-label">Localisation *</label><input class="f-input" [(ngModel)]="estateForm.location" [placeholder]="'dashboard.form_location_ph' | translate"></div><div class="f-group"><label class="f-label">Prix de base (FCFA)</label><input class="f-input" type="number" [(ngModel)]="estateForm.price" placeholder="35000"></div></div>
-      <div class="f-row"><div class="f-group"><label class="f-label">Distance campus (m)</label><input class="f-input" [(ngModel)]="distanceDisplay" placeholder="500"></div><div class="f-group"><label class="f-label">Statut</label><select class="f-input" [(ngModel)]="estateForm.status"><option value="published">Publié</option><option value="draft">Brouillon</option><option value="archived">Archivé</option></select></div></div>
+      <div class="f-group"><label class="f-label">{{ 'form.name' | translate }} *</label><input class="f-input" [(ngModel)]="estateForm.name" [placeholder]="'dashboard.form_name_ph' | translate"></div>
+      <div class="f-row"><div class="f-group"><label class="f-label">{{ 'form.location' | translate }} *</label><input class="f-input" [(ngModel)]="estateForm.location" [placeholder]="'dashboard.form_location_ph' | translate"></div><div class="f-group"><label class="f-label">{{ 'admin.col_price' | translate }} ({{ 'price.currency' | translate }})</label><input class="f-input" type="number" [(ngModel)]="estateForm.price" placeholder="35000"></div></div>
+      <div class="f-row"><div class="f-group"><label class="f-label">{{ 'admin.distance_label' | translate }}</label><input class="f-input" [(ngModel)]="distanceDisplay" placeholder="500"></div><div class="f-group"><label class="f-label">{{ 'admin.col_status' | translate }}</label><select class="f-input" [(ngModel)]="estateForm.status"><option value="published">{{ 'admin.status_published' | translate }}</option><option value="draft">{{ 'admin.status_draft' | translate }}</option><option value="archived">{{ 'admin.status_archived' | translate }}</option></select></div></div>
       <div class="f-group">
-        <label class="f-label"><lucide-icon [img]="MapPinIcon" style="color:#EF4444;width:14px;height:14px"></lucide-icon> Position GPS <span class="f-hint">— cliquez sur la carte</span></label>
-        <div class="f-row" style="margin-bottom:.5rem"><div class="f-group" style="margin:0"><input class="f-input" type="number" step="0.0000001" [(ngModel)]="estateForm.lat" placeholder="3.884041" (ngModelChange)="onLatLngInput()"><small class="f-hint">Latitude</small></div><div class="f-group" style="margin:0"><input class="f-input" type="number" step="0.0000001" [(ngModel)]="estateForm.lng" placeholder="11.390736" (ngModelChange)="onLatLngInput()"><small class="f-hint">Longitude</small></div></div>
+        <label class="f-label"><lucide-icon [img]="MapPinIcon" style="color:#EF4444;width:14px;height:14px"></lucide-icon> {{ 'admin.gps_position' | translate }} <span class="f-hint">— {{ 'admin.click_on_map' | translate }}</span></label>
+        <div class="f-row" style="margin-bottom:.5rem"><div class="f-group" style="margin:0"><input class="f-input" type="number" step="0.0000001" [(ngModel)]="estateForm.lat" placeholder="3.884041" (ngModelChange)="onLatLngInput()"><small class="f-hint">{{ 'admin.latitude' | translate }}</small></div><div class="f-group" style="margin:0"><input class="f-input" type="number" step="0.0000001" [(ngModel)]="estateForm.lng" placeholder="11.390736" (ngModelChange)="onLatLngInput()"><small class="f-hint">{{ 'admin.longitude' | translate }}</small></div></div>
         <div id="map-picker" style="height:200px;border-radius:10px;overflow:hidden;border:1.5px solid #E2E8F0;z-index:0;position:relative"></div>
       </div>
-      <div class="f-group"><label class="f-label">Équipements</label><div class="equip-chips"><label class="equip-chip" *ngFor="let eq of availableEquipments" [class.equip-chip--on]="estateForm[eq.key]==='1'"><input type="checkbox" [checked]="estateForm[eq.key]==='1'" (change)="toggleEquipment(eq.key)" style="display:none"><lucide-icon [img]="eq.icon" style="width:14px;height:14px"></lucide-icon>{{ eq.label }}</label></div></div>
-      <div class="f-group"><label class="f-label">Description</label><textarea class="f-input f-textarea" [(ngModel)]="estateForm.description" rows="3" [placeholder]="'dashboard.form_description_ph' | translate"></textarea></div>
+      <div class="f-group"><label class="f-label">{{ 'filters.equipment' | translate }}</label><div class="equip-chips"><label class="equip-chip" *ngFor="let eq of availableEquipments" [class.equip-chip--on]="estateForm[eq.key]==='1'"><input type="checkbox" [checked]="estateForm[eq.key]==='1'" (change)="toggleEquipment(eq.key)" style="display:none"><lucide-icon [img]="eq.icon" style="width:14px;height:14px"></lucide-icon>{{ eq.label }}</label></div></div>
+      <div class="f-group"><label class="f-label">{{ 'form.description' | translate }}</label><textarea class="f-input f-textarea" [(ngModel)]="estateForm.description" rows="3" [placeholder]="'dashboard.form_description_ph' | translate"></textarea></div>
       <div class="f-group">
-        <label class="f-label">Photos</label>
+        <label class="f-label">{{ 'admin.photos' | translate }}</label>
         <div class="photo-row" *ngIf="isEditMode&&estateForm.existingImages?.length>0"><div class="photo-item" *ngFor="let img of estateForm.existingImages"><img [src]="img.image"><button class="photo-del" (click)="removeExistingImage(img)">×</button></div></div>
         <div class="photo-row" *ngIf="newImagePreviews.length>0"><div class="photo-item" *ngFor="let p of newImagePreviews; let i=index"><img [src]="p"><button class="photo-del" (click)="removeNewImage(i)">×</button></div></div>
-        <label class="photo-drop" for="imgInput"><lucide-icon [img]="PlusIcon" style="width:16px;height:16px"></lucide-icon><span>Ajouter des photos</span><small>JPG, PNG — max 5 Mo</small></label>
+        <label class="photo-drop" for="imgInput"><lucide-icon [img]="PlusIcon" style="width:16px;height:16px"></lucide-icon><span>{{ 'admin.click_to_add_photos' | translate }}</span><small>{{ 'admin.upload_hint' | translate }}</small></label>
         <input id="imgInput" type="file" accept="image/*" multiple style="display:none" (change)="onImagesSelected($event)">
       </div>
     </div>
@@ -567,11 +567,11 @@
         <table class="data-tbl" *ngIf="!isLoadingRooms"><thead><tr><th>{{ 'dashboard.col_type' | translate }}</th><th>{{ 'dashboard.col_price' | translate }}</th><th>{{ 'dashboard.col_qty' | translate }}</th><th></th></tr></thead><tbody><tr *ngFor="let rm of roomCategories"><td><span class="dt-primary">{{ rm.name }}</span><span class="dt-secondary">{{ rm.occupancy }}</span></td><td class="dt-mono">{{ formatPrice(rm.price) }}</td><td>{{ rm.quantity_available }}</td><td class="dt-acts"><button class="ico-btn ico-btn--xs" (click)="openEditRoom(rm)"><lucide-icon [img]="PencilIcon"></lucide-icon></button><button class="ico-btn ico-btn--red ico-btn--xs" (click)="deleteRoom(rm)"><lucide-icon [img]="TrashIcon"></lucide-icon></button></td></tr><tr *ngIf="roomCategories.length===0"><td colspan="4" class="dt-empty">{{ 'dashboard.empty_rooms' | translate }}</td></tr></tbody></table>
       </ng-container>
       <ng-container *ngIf="isRoomEditMode">
-        <div class="f-row"><div class="f-group"><label class="f-label">Nom *</label><input class="f-input" [(ngModel)]="roomForm.name"></div><div class="f-group"><label class="f-label">Prix (FCFA) *</label><input class="f-input" type="number" [(ngModel)]="roomForm.price" min="0"></div></div>
-        <div class="f-row"><div class="f-group"><label class="f-label">Capacité</label><select class="f-input" [(ngModel)]="roomForm.occupancy"><option value="single">1 Personne</option><option value="double">2 Personnes</option><option value="shared">Partagée</option></select></div><div class="f-group"><label class="f-label">Quantité</label><input class="f-input" type="number" [(ngModel)]="roomForm.quantity_available" min="1"></div></div>
-        <div class="f-group"><label class="f-label">Équipements</label><div class="equip-chips"><label class="equip-chip" [class.equip-chip--on]="roomForm.wifi==='1'"><input type="checkbox" [checked]="roomForm.wifi==='1'" (change)="roomForm.wifi=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="WifiIcon" style="width:14px;height:14px"></lucide-icon>WiFi</label><label class="equip-chip" [class.equip-chip--on]="roomForm.tv==='1'"><input type="checkbox" [checked]="roomForm.tv==='1'" (change)="roomForm.tv=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="TvIcon" style="width:14px;height:14px"></lucide-icon>TV</label><label class="equip-chip" [class.equip-chip--on]="roomForm.fridge==='1'"><input type="checkbox" [checked]="roomForm.fridge==='1'" (change)="roomForm.fridge=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="FridgeIcon" style="width:14px;height:14px"></lucide-icon>Frigo</label></div></div>
-        <div class="f-group"><label class="f-label">Description</label><textarea class="f-input f-textarea" [(ngModel)]="roomForm.description" rows="2"></textarea></div>
-        <div class="f-group"><label class="f-label">Photos</label><div class="photo-row" *ngIf="roomPreviewImages.length>0"><div class="photo-item" *ngFor="let p of roomPreviewImages;let i=index"><img [src]="p"><button class="photo-del" (click)="removeRoomPreview(i)">×</button></div></div><label class="photo-drop photo-drop--sm" for="roomImg"><lucide-icon [img]="PlusIcon" style="width:14px;height:14px"></lucide-icon>Ajouter photos</label><input id="roomImg" type="file" accept="image/*" multiple style="display:none" (change)="onRoomFilesSelected($event)"></div>
+        <div class="f-row"><div class="f-group"><label class="f-label">{{ 'form.name' | translate }} *</label><input class="f-input" [(ngModel)]="roomForm.name"></div><div class="f-group"><label class="f-label">{{ 'admin.col_price' | translate }} ({{ 'price.currency' | translate }}) *</label><input class="f-input" type="number" [(ngModel)]="roomForm.price" min="0"></div></div>
+        <div class="f-row"><div class="f-group"><label class="f-label">{{ 'detail.capacity' | translate }}</label><select class="f-input" [(ngModel)]="roomForm.occupancy"><option value="single">{{ 'detail.1_person' | translate }}</option><option value="double">{{ 'detail.2_people' | translate }}</option><option value="shared">{{ 'detail.shared' | translate }}</option></select></div><div class="f-group"><label class="f-label">{{ 'admin.col_quantity' | translate }}</label><input class="f-input" type="number" [(ngModel)]="roomForm.quantity_available" min="1"></div></div>
+        <div class="f-group"><label class="f-label">{{ 'filters.equipment' | translate }}</label><div class="equip-chips"><label class="equip-chip" [class.equip-chip--on]="roomForm.wifi==='1'"><input type="checkbox" [checked]="roomForm.wifi==='1'" (change)="roomForm.wifi=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="WifiIcon" style="width:14px;height:14px"></lucide-icon>WiFi</label><label class="equip-chip" [class.equip-chip--on]="roomForm.tv==='1'"><input type="checkbox" [checked]="roomForm.tv==='1'" (change)="roomForm.tv=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="TvIcon" style="width:14px;height:14px"></lucide-icon>{{ 'filters.tv_label' | translate }}</label><label class="equip-chip" [class.equip-chip--on]="roomForm.fridge==='1'"><input type="checkbox" [checked]="roomForm.fridge==='1'" (change)="roomForm.fridge=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="FridgeIcon" style="width:14px;height:14px"></lucide-icon>{{ 'filters.fridge_label' | translate }}</label></div></div>
+        <div class="f-group"><label class="f-label">{{ 'form.description' | translate }}</label><textarea class="f-input f-textarea" [(ngModel)]="roomForm.description" rows="2"></textarea></div>
+        <div class="f-group"><label class="f-label">{{ 'admin.photos' | translate }}</label><div class="photo-row" *ngIf="roomPreviewImages.length>0"><div class="photo-item" *ngFor="let p of roomPreviewImages;let i=index"><img [src]="p"><button class="photo-del" (click)="removeRoomPreview(i)">×</button></div></div><label class="photo-drop photo-drop--sm" for="roomImg"><lucide-icon [img]="PlusIcon" style="width:14px;height:14px"></lucide-icon>{{ 'admin.click_to_add_photos' | translate }}</label><input id="roomImg" type="file" accept="image/*" multiple style="display:none" (change)="onRoomFilesSelected($event)"></div>
       </ng-container>
     </div>
     <div class="m-foot" *ngIf="isRoomEditMode"><button class="btn btn--ghost" (click)="isRoomEditMode=false">{{ 'dashboard.cancel' | translate }}</button><button class="btn btn--primary" (click)="saveRoom()" [disabled]="isSavingRoom">{{ isSavingRoom?('dashboard.saving'|translate):roomEditId?('dashboard.update'|translate):('dashboard.create'|translate) }}</button></div>
@@ -624,7 +624,7 @@
         <label class="f-label">{{ 'dashboard.your_rating' | translate }}</label>
         <div class="rv-stars">
           <span *ngFor="let s of [1,2,3,4,5]" class="rv-star" [class.rv-star--on]="(hoverRating||reviewForm.rating)>=s" (mouseenter)="setHover(s)" (mouseleave)="clearHover()" (click)="setRating(s)">★</span>
-          <span class="rv-star-lbl" *ngIf="reviewForm.rating>0">{{ ['','Mauvais','Passable','Bien','Très bien','Excellent'][reviewForm.rating] }}</span>
+          <span class="rv-star-lbl" *ngIf="reviewForm.rating>0">{{ 'dashboard.rating_' + reviewForm.rating | translate }}</span>
         </div>
       </div>
 
@@ -647,10 +647,10 @@
   <div class="m-box m-box--sm" (click)="$event.stopPropagation()">
     <div class="m-head"><h2 class="m-title">{{ 'dashboard.edit_review_title' | translate }}</h2><button class="m-close" (click)="closeEditReviewModal()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
     <div class="m-body">
-      <div class="f-group"><label class="f-label">Note</label>
+      <div class="f-group"><label class="f-label">{{ 'admin.col_rating' | translate }}</label>
         <div class="rv-stars"><span *ngFor="let s of [1,2,3,4,5]" class="rv-star" [class.rv-star--on]="(editHoverRating||editReviewForm.rating)>=s" (mouseenter)="setEditHover(s)" (mouseleave)="clearEditHover()" (click)="setEditRating(s)">★</span></div>
       </div>
-      <div class="f-group"><label class="f-label">Commentaire</label><textarea class="f-input f-textarea" [(ngModel)]="editReviewForm.comment" rows="4"></textarea></div>
+      <div class="f-group"><label class="f-label">{{ 'admin.col_comment' | translate }}</label><textarea class="f-input f-textarea" [(ngModel)]="editReviewForm.comment" rows="4"></textarea></div>
     </div>
     <div class="m-foot"><button class="btn btn--ghost" (click)="closeEditReviewModal()">{{ 'dashboard.cancel' | translate }}</button><button class="btn btn--primary" (click)="saveEditReview()" [disabled]="isSavingReview">{{ isSavingReview?('dashboard.saving'|translate):('dashboard.save_changes'|translate) }}</button></div>
   </div>

@@ -56,7 +56,7 @@
     <div class="filter-bar">
         <div class="filter-items">
     <button class="filter-item filter-adv-btn" [class.filter-adv-active]="showAdvanced || activeFilterCount > 0"
-        (click)="toggleAdvanced()" [attr.aria-expanded]="showAdvanced" title="Ouvrir les filtres avancés">
+        (click)="toggleAdvanced()" [attr.aria-expanded]="showAdvanced" [title]="'filters.open_advanced' | translate">
         <lucide-icon [img]="FilterIcon" class="filter-icon"></lucide-icon>
         <span>{{ 'filters.advanced' | translate }}</span>
         <span class="filter-badge" *ngIf="activeFilterCount > 0">{{ activeFilterCount }}</span>
@@ -64,7 +64,7 @@
     </button>
     <button class="filter-item" [class.filter-on]="filterWifi==='1'"
         (click)="filterWifi=filterWifi==='1'?'':'1'; applyFilters()">
-        <lucide-icon [img]="WifiIcon" class="filter-icon orange"></lucide-icon><span>WiFi</span>
+        <lucide-icon [img]="WifiIcon" class="filter-icon orange"></lucide-icon><span>{{ 'filters.wifi_label' | translate }}</span>
     </button>
     <button class="filter-item" [class.filter-on]="filterGenerator==='1'"
         (click)="filterGenerator=filterGenerator==='1'?'':'1'; applyFilters()">
@@ -82,14 +82,14 @@
         <span>{{ 'filters.restaurant' | translate }}</span>
     </button>
     <button class="filter-item" [class.filter-on]="filterTv==='1'" (click)="filterTv=filterTv==='1'?'':'1'; applyFilters()">
-        <lucide-icon [img]="TvIcon" class="filter-icon purple"></lucide-icon><span>TV</span>
+        <lucide-icon [img]="TvIcon" class="filter-icon purple"></lucide-icon><span>{{ 'filters.tv_label' | translate }}</span>
     </button>
     <button class="filter-item" [class.filter-on]="filterFridge==='1'"
         (click)="filterFridge=filterFridge==='1'?'':'1'; applyFilters()">
-        <lucide-icon [img]="FridgeIcon" class="filter-icon teal"></lucide-icon><span>Frigo</span>
+        <lucide-icon [img]="FridgeIcon" class="filter-icon teal"></lucide-icon><span>{{ 'filters.fridge_label' | translate }}</span>
     </button>
     <button class="filter-item filter-reset-btn" *ngIf="activeFilterCount>0" (click)="resetFilters()">
-        <lucide-icon [img]="XIcon" class="filter-icon red"></lucide-icon><span>Reset</span>
+        <lucide-icon [img]="XIcon" class="filter-icon red"></lucide-icon><span>{{ 'common.reset' | translate }}</span>
     </button>
         </div>
     </div>
@@ -142,14 +142,14 @@
       <ng-container *ngIf="h.images.length > 1">
         <button class="swiper-arrow swiper-arrow-left"
                 (click)="$event.stopPropagation(); $event.preventDefault(); prevSlide(h)"
-                aria-label="Photo précédente">
+                [attr.aria-label]="'common.prev' | translate">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="15 18 9 12 15 6"></polyline>
           </svg>
         </button>
         <button class="swiper-arrow swiper-arrow-right"
                 (click)="$event.stopPropagation(); $event.preventDefault(); nextSlide(h)"
-                aria-label="Photo suivante">
+                [attr.aria-label]="'common.next' | translate">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="9 18 15 12 9 6"></polyline>
           </svg>
@@ -306,7 +306,7 @@
           <path d="M0,190 Q80,145 160,108 Q230,76 340,28" stroke="#EDE7CC" stroke-width="1.5" fill="none" stroke-dasharray="14,10" stroke-linecap="round"/>
 
           <!-- Autoroute label -->
-          <text x="46" y="182" font-size="6.5" fill="#8A7F65" font-weight="600" transform="rotate(-27,46,182)">Autoroute Yaoundé-Douala</text>
+          <text x="46" y="182" font-size="6.5" fill="#8A7F65" font-weight="600" transform="rotate(-27,46,182)">{{ 'home.autoroute_label' | translate }}</text>
 
           <!-- ── Secondary roads ────────────────────────────────────── -->
           <!-- Road heading north from campus toward Eyang / Okola -->
@@ -328,8 +328,8 @@
           <rect x="114" y="133" width="20" height="14" fill="#6EA480" rx="2"/>
           <rect x="138" y="133" width="40" height="14" fill="#6EA480" rx="2"/>
           <!-- Campus label -->
-          <text x="146" y="126" text-anchor="middle" font-size="6.2" font-weight="800" fill="#1A3E28">Saint Jean</text>
-          <text x="146" y="135" text-anchor="middle" font-size="5.8" font-weight="700" fill="#1A3E28">Ingénieur</text>
+          <text x="146" y="126" text-anchor="middle" font-size="6.2" font-weight="800" fill="#1A3E28">{{ 'home.saint_jean' | translate }}</text>
+          <text x="146" y="135" text-anchor="middle" font-size="5.8" font-weight="700" fill="#1A3E28">{{ 'home.engineer' | translate }}</text>
           <!-- Animated campus pin -->
           <circle cx="146" cy="108" r="13" fill="#1D4ED8" opacity="0.10" class="ping-ring"/>
           <circle cx="146" cy="108" r="5.5" fill="#1D4ED8"/>
@@ -337,19 +337,19 @@
 
           <!-- ── EYANG village ──────────────────────────────────────── -->
           <rect x="116" y="44" width="58" height="20" fill="#B2CEBC" stroke="#7AAA8E" stroke-width="1" rx="3"/>
-          <text x="145" y="58" text-anchor="middle" font-size="7" font-weight="700" fill="#1A4A35">Eyang</text>
+          <text x="145" y="58" text-anchor="middle" font-size="7" font-weight="700" fill="#1A4A35">{{ 'home.eyang' | translate }}</text>
 
           <!-- ── OKOLA direction ────────────────────────────────────── -->
           <rect x="232" y="10" width="52" height="18" fill="#C5D9BC" stroke="#8AAE8C" stroke-width="0.7" rx="3"/>
-          <text x="258" y="22" text-anchor="middle" font-size="6.5" fill="#2D5A34">→ Okola</text>
+          <text x="258" y="22" text-anchor="middle" font-size="6.5" fill="#2D5A34">→ {{ 'home.okola' | translate }}</text>
 
           <!-- ── AYÈNE ──────────────────────────────────────────────── -->
           <rect x="206" y="168" width="44" height="17" fill="#C5D9BC" stroke="#8AAE8C" stroke-width="0.7" rx="3"/>
-          <text x="228" y="180" text-anchor="middle" font-size="6.5" fill="#2D5A34">Ayène</text>
+          <text x="228" y="180" text-anchor="middle" font-size="6.5" fill="#2D5A34">{{ 'home.ayene' | translate }}</text>
 
           <!-- ── NKOLBISSON (west, on autoroute) ────────────────────── -->
           <rect x="4" y="155" width="54" height="17" fill="#C5D9BC" stroke="#8AAE8C" stroke-width="0.7" rx="3"/>
-          <text x="31" y="167" text-anchor="middle" font-size="6" fill="#2D5A34">Nkolbisson</text>
+          <text x="31" y="167" text-anchor="middle" font-size="6" fill="#2D5A34">{{ 'home.nkolbisson' | translate }}</text>
 
           <!-- ── Price markers (student housing spots) ──────────────── -->
           <!-- Near campus, NE -->
@@ -537,7 +537,7 @@
 </div><!-- end .home-container -->
 
 <!-- ════ ADVANCED FILTER DRAWER ════ -->
-<div class="adv-drawer-backdrop" *ngIf="showAdvanced" (click)="closeAdvanced()" aria-label="Fermer les filtres"></div>
+<div class="adv-drawer-backdrop" *ngIf="showAdvanced" (click)="closeAdvanced()" [attr.aria-label]="'common.close' | translate"></div>
 <div class="adv-drawer" [class.adv-drawer-open]="showAdvanced">
     <div class="adv-drawer-header">
         <h3 class="adv-drawer-title">
@@ -555,15 +555,15 @@
                 <button class="adv-chip" [class.adv-chip-on]="filterRoomSize===''" (click)="filterRoomSize=''">{{ 'filters.all_types' | translate }}</button>
                 <button class="adv-chip" [class.adv-chip-on]="filterRoomSize==='3'"
                     (click)="filterRoomSize=filterRoomSize==='3'?'':'3'">
-                    <lucide-icon [img]="BedIcon" class="chip-icon"></lucide-icon> Chambre individuelle
+                    <lucide-icon [img]="BedIcon" class="chip-icon"></lucide-icon> {{ 'detail.single' | translate }}
                 </button>
                 <button class="adv-chip" [class.adv-chip-on]="filterRoomSize==='1'"
                     (click)="filterRoomSize=filterRoomSize==='1'?'':'1'">
-                    <lucide-icon [img]="BedDoubleIcon" class="chip-icon"></lucide-icon> Chambre double
+                    <lucide-icon [img]="BedDoubleIcon" class="chip-icon"></lucide-icon> {{ 'detail.double' | translate }}
                 </button>
                 <button class="adv-chip" [class.adv-chip-on]="filterRoomSize==='2'"
                     (click)="filterRoomSize=filterRoomSize==='2'?'':'2'">
-                    <lucide-icon [img]="BuildingIcon" class="chip-icon"></lucide-icon> Studio
+                    <lucide-icon [img]="BuildingIcon" class="chip-icon"></lucide-icon> {{ 'detail.studio' | translate }}
                 </button>
             </div>
         </div>
@@ -571,27 +571,27 @@
             <label class="adv-label">{{ 'filters.equipment' | translate }}</label>
             <div class="adv-equip-grid">
                 <button class="adv-equip-btn" [class.adv-equip-on]="filterWifi==='1'" (click)="filterWifi=filterWifi==='1'?'':'1'">
-                    <lucide-icon [img]="WifiIcon" class="equip-icon orange"></lucide-icon><span>WiFi</span>
+                    <lucide-icon [img]="WifiIcon" class="equip-icon orange"></lucide-icon><span>{{ 'filters.wifi_label' | translate }}</span>
                     <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterWifi==='1'"></lucide-icon>
                 </button>
                 <button class="adv-equip-btn" [class.adv-equip-on]="filterGenerator==='1'" (click)="filterGenerator=filterGenerator==='1'?'':'1'">
-                    <lucide-icon [img]="ZapIcon" class="equip-icon yellow"></lucide-icon><span>Groupe électrogène</span>
+                    <lucide-icon [img]="ZapIcon" class="equip-icon yellow"></lucide-icon><span>{{ 'filters.generator' | translate }}</span>
                     <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterGenerator==='1'"></lucide-icon>
                 </button>
                 <button class="adv-equip-btn" [class.adv-equip-on]="filterForage==='1'" (click)="filterForage=filterForage==='1'?'':'1'">
-                    <lucide-icon [img]="DropletsIcon" class="equip-icon blue"></lucide-icon><span>Forage / Eau</span>
+                    <lucide-icon [img]="DropletsIcon" class="equip-icon blue"></lucide-icon><span>{{ 'filters.water' | translate }}</span>
                     <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterForage==='1'"></lucide-icon>
                 </button>
                 <button class="adv-equip-btn" [class.adv-equip-on]="filterRestaurant==='1'" (click)="filterRestaurant=filterRestaurant==='1'?'':'1'">
-                    <lucide-icon [img]="CoffeeIcon" class="equip-icon brown"></lucide-icon><span>Restaurant</span>
+                    <lucide-icon [img]="CoffeeIcon" class="equip-icon brown"></lucide-icon><span>{{ 'filters.restaurant' | translate }}</span>
                     <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterRestaurant==='1'"></lucide-icon>
                 </button>
                 <button class="adv-equip-btn" [class.adv-equip-on]="filterTv==='1'" (click)="filterTv=filterTv==='1'?'':'1'">
-                    <lucide-icon [img]="TvIcon" class="equip-icon purple"></lucide-icon><span>Télévision</span>
+                    <lucide-icon [img]="TvIcon" class="equip-icon purple"></lucide-icon><span>{{ 'filters.tv_label' | translate }}</span>
                     <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterTv==='1'"></lucide-icon>
                 </button>
                 <button class="adv-equip-btn" [class.adv-equip-on]="filterFridge==='1'" (click)="filterFridge=filterFridge==='1'?'':'1'">
-                    <lucide-icon [img]="FridgeIcon" class="equip-icon teal"></lucide-icon><span>Réfrigérateur</span>
+                    <lucide-icon [img]="FridgeIcon" class="equip-icon teal"></lucide-icon><span>{{ 'filters.fridge_label' | translate }}</span>
                     <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterFridge==='1'"></lucide-icon>
                 </button>
             </div>

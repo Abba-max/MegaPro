@@ -394,7 +394,7 @@ export class HousingDetailComponent implements OnInit {
   closeLightbox(): void { this.showLightbox = false; }
   openContact(): void { this.showContactModal = true; }
   closeContact(): void { this.showContactModal = false; }
-  openLogin(): void { this.authService.openLogin(); }
+  openLogin(): void { this.router.navigate(['/login']); }
 
   // ── Reservation submit ────────────────────────────────────
 

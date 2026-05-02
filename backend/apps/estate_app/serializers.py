@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import User, Estate, EstateImage, Review, QuickOrder, ContactRequest, Conversation, Message
+from .models import User, Estate, EstateImage, Review, QuickOrder, ContactRequest, Conversation, Message, Notification
 
 
 def _resolve_role(user) -> str:
@@ -190,7 +190,14 @@ class EstateSerializer(serializers.ModelSerializer):
 
     def get_free(self, obj) -> int:
         from django.db.models import Sum
-        return obj.room_categories.aggregate(total=Sum('quantity_available'))['total'] or 0
+        # Accuracy fix: Sum of (quantity_available - occupied_count)
+        data = obj.room_categories.aggregate(
+            total=Sum('quantity_available'),
+            occupied=Sum('occupied_count')
+        )
+        total = data['total'] or 0
+        occ   = data['occupied'] or 0
+        return max(0, total - occ)
 
     def get_price(self, obj) -> int:
         from django.db.models import Min
@@ -255,7 +262,7 @@ class QuickOrderSerializer(serializers.ModelSerializer):
     estate_name        = serializers.CharField(source='estate.name', read_only=True)
     estate_image       = serializers.SerializerMethodField()
     estate_location    = serializers.CharField(source='estate.location', read_only=True)
-    estate_price       = serializers.IntegerField(source='estate.price', read_only=True)
+    estate_price       = serializers.SerializerMethodField()
     room_category_name = serializers.CharField(source='room_category.name', read_only=True, default=None)
 
     class Meta:
@@ -272,7 +279,17 @@ class QuickOrderSerializer(serializers.ModelSerializer):
             return request.build_absolute_uri(url) if request else f"http://localhost:8000{url}"
         return None
 
+    def get_estate_price(self, obj) -> int:
+        from django.db.models import Min
+        return obj.estate.room_categories.aggregate(min_p=Min('price'))['min_p'] or 0
+
     def create(self, validated_data):
+        room_category = validated_data.get('room_category')
+        if room_category:
+            # Check availability
+            if room_category.occupied_count >= room_category.quantity_available:
+                raise serializers.ValidationError({"room_category": "No more rooms available in this category."})
+        
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             validated_data['user'] = request.user
@@ -346,3 +363,10 @@ class ConversationSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return obj.messages.filter(read=False).exclude(sender=request.user).count()
         return 0
+
+
+class NotificationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notification
+        fields = '__all__'
+        read_only_fields = ['created_at']

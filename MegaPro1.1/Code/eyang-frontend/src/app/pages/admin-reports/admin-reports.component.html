@@ -1,39 +1,39 @@
 <div class="page-header">
-<h1 class="page-title">Rapports & Statistiques</h1>
+<h1 class="page-title">{{ 'admin.reports_title' | translate }}</h1>
 </div>
 
 <div *ngIf="isLoading()" class="loader-center">
     <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
-    <span>Chargement des statistiques…</span>
-</div><ng-container *ngIf="!isLoading() && data()">
+    <span>{{ 'admin.loading_stats' | translate }}</span>
+</div><ng-container *ngIf="!isLoading() && data()">
 
     <div class="reports-summary-grid mt-8">
         <div class="summary-card blue">
             <div class="summary-icon"><lucide-icon [img]="UsersIcon" class="summary-icon-inner"></lucide-icon></div>
             <div class="summary-body">
                 <div class="summary-value">{{ data()?.total_users }}</div>
-                <div class="summary-label">Utilisateurs</div>
+                <div class="summary-label">{{ 'sidebar.users' | translate }}</div>
     </div>
     </div>
     <div class="summary-card green">
         <div class="summary-icon"><lucide-icon [img]="HomeIcon" class="summary-icon-inner"></lucide-icon></div>
         <div class="summary-body">
             <div class="summary-value">{{ data()?.total_estates }}</div>
-            <div class="summary-label">Logements</div>
+            <div class="summary-label">{{ 'sidebar.housings' | translate }}</div>
         </div>
     </div>
     <div class="summary-card orange">
         <div class="summary-icon"><lucide-icon [img]="CalendarIcon" class="summary-icon-inner"></lucide-icon></div>
         <div class="summary-body">
             <div class="summary-value">{{ data()?.total_orders }}</div>
-            <div class="summary-label">Réservations</div>
+            <div class="summary-label">{{ 'sidebar.reservations' | translate }}</div>
         </div>
     </div>
     <div class="summary-card purple">
         <div class="summary-icon"><lucide-icon [img]="StarIcon" class="summary-icon-inner"></lucide-icon></div>
         <div class="summary-body">
             <div class="summary-value">{{ data()?.total_reviews }}</div>
-            <div class="summary-label">Avis</div>
+            <div class="summary-label">{{ 'sidebar.reviews' | translate }}</div>
         </div>
     </div>
     </div>
@@ -41,7 +41,7 @@
 <div class="reports-grid mt-8">
 
     <div class="report-card">
-        <h3 class="report-title">📊 Réservations par mois</h3>
+        <h3 class="report-title">📊 {{ 'admin.bookings_per_month' | translate }}</h3>
         <ng-container *ngIf="data() && data()!.monthly_orders.length > 0; else noChartData">
             <div class="bar-chart">
                 <div class="bar-item" *ngFor="let m of data()!.monthly_orders">
@@ -52,49 +52,49 @@
             </div>
     </ng-container>
     <ng-template #noChartData>
-        <p class="no-data">Aucune donnée pour les 6 derniers mois.</p>
+        <p class="no-data">{{ 'admin.no_data_6months' | translate }}</p>
     </ng-template>
     </div>
 
     <div class="report-card">
-        <h3 class="report-title">📈 Indicateurs clés</h3>
+        <h3 class="report-title">📈 {{ 'admin.key_indicators' | translate }}</h3>
         <div class="metrics-list">
             <div class="metric-row">
-                <span class="metric-label">Total logements</span>
+                <span class="metric-label">{{ 'admin.total_estates_lbl' | translate }}</span>
                 <span class="metric-value">{{ data()?.total_estates }}</span>
             </div>
             <div class="metric-row">
-                <span class="metric-label">Total utilisateurs</span>
+                <span class="metric-label">{{ 'admin.total_users_lbl' | translate }}</span>
                 <span class="metric-value">{{ data()?.total_users }}</span>
             </div>
             <div class="metric-row">
-                <span class="metric-label">Réservations reçues</span>
+                <span class="metric-label">{{ 'admin.received_bookings' | translate }}</span>
                 <span class="metric-value">{{ data()?.total_orders }}</span>
             </div>
             <div class="metric-row">
-                <span class="metric-label">Avis publiés</span>
+                <span class="metric-label">{{ 'admin.published_reviews' | translate }}</span>
                 <span class="metric-value">{{ data()?.total_reviews }}</span>
             </div>
             <div class="metric-row">
-                <span class="metric-label">Moy. résas / mois</span>
+                <span class="metric-label">{{ 'admin.avg_bookings_month' | translate }}</span>
                 <span class="metric-value">{{ getAvgOrders() }}</span>
             </div>
             <div class="metric-row">
-                <span class="metric-label">Pic des résas</span>
+                <span class="metric-label">{{ 'admin.peak_bookings' | translate }}</span>
                 <span class="metric-value">{{ getPeakMonth() }}</span>
             </div>
         </div>
     </div>
 <div class="report-card full-width">
-    <h3 class="report-title">🕐 Activité récente</h3>
+    <h3 class="report-title">🕐 {{ 'dashboard.recent_activity' | translate }}</h3>
     <ng-container *ngIf="data() && data()!.recent_activities.length > 0; else noActivity">
         <table class="activity-table">
             <thead>
                 <tr>
-                    <th>TYPE</th>
-                    <th>TITRE</th>
-                    <th>PAR</th>
-                    <th>DATE</th>
+                    <th>{{ 'admin.col_type' | translate }}</th>
+                    <th>{{ 'admin.col_title' | translate }}</th>
+                    <th>{{ 'admin.col_by' | translate }}</th>
+                    <th>{{ 'admin.col_date' | translate }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -102,7 +102,7 @@
                     <td>
                         <span class="act-badge" [class.act-order]="a.type==='order'"
                             [class.act-review]="a.type==='review'">
-                            {{ a.type === 'order' ? '📋 Réservation' : '⭐ Avis' }}
+                            {{ a.type === 'order' ? ('dashboard.booking_label' | translate) : ('sidebar.reviews' | translate) }}
                         </span>
                     </td>
                     <td class="act-title">{{ a.title }}</td>
@@ -113,7 +113,7 @@
         </table>
     </ng-container>
     <ng-template #noActivity>
-        <p class="no-data">Aucune activité récente.</p>
+        <p class="no-data">{{ 'dashboard.no_activity' | translate }}</p>
     </ng-template>
     </div>
 
@@ -121,5 +121,5 @@
 </ng-container>
 
 <div *ngIf="!isLoading() && !data()" class="error-state mt-8">
-    <p>Impossible de charger les statistiques.</p>
+    <p>{{ 'admin.error_load' | translate }}</p>
 </div>

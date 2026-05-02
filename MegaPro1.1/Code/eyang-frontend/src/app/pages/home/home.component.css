@@ -812,7 +812,6 @@
   }
   .hero-search-btn span { display: none; } /* Hide "Search" text on very small screens */
   .btn-search-icon { width: 18px; height: 18px; }
-}
 
   .filter-bar-container { margin-top: -20px; padding: 0 0.4rem; }
   .filter-bar { padding: 6px; border-radius: 12px; }

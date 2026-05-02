@@ -1,0 +1,47 @@
+<div class="verify-page">
+    <div class="verify-bg"></div>
+
+    <div class="verify-container fade-in">
+        <div class="verify-card">
+            <div class="verify-header">
+                <img src="/assets/images/logo.png" alt="Eyang Estate" class="verify-logo" routerLink="/">
+            </div>
+
+            <div class="verify-body">
+                <!-- ══ LOADING ══ -->
+                <div class="state-content" *ngIf="status() === 'loading'">
+                    <div class="spinner-container">
+                        <lucide-icon [img]="LoaderIcon" class="spinner"></lucide-icon>
+                    </div>
+                    <h2>{{ 'auth.verifying_account' | translate }}</h2>
+                    <p>{{ 'auth.verifying_account_desc' | translate }}</p>
+                </div>
+
+                <!-- ══ SUCCESS ══ -->
+                <div class="state-content success" *ngIf="status() === 'success'">
+                    <div class="icon-circle">
+                        <lucide-icon [img]="CheckIcon" class="status-icon"></lucide-icon>
+                    </div>
+                    <h2>{{ 'auth.verification_success' | translate }}</h2>
+                    <p>{{ 'auth.verification_success_desc' | translate }}</p>
+                    <button class="btn-primary-verify mt-8" routerLink="/login">
+                        {{ 'auth.login_now' | translate }}
+                        <lucide-icon [img]="ArrowIcon" class="btn-icon"></lucide-icon>
+                    </button>
+                </div>
+
+                <!-- ══ ERROR ══ -->
+                <div class="state-content error" *ngIf="status() === 'error'">
+                    <div class="icon-circle">
+                        <lucide-icon [img]="ErrorIcon" class="status-icon"></lucide-icon>
+                    </div>
+                    <h2>{{ 'auth.verification_failed' | translate }}</h2>
+                    <p>{{ errorMessage || ('auth.verification_failed_desc' | translate) }}</p>
+                    <button class="btn-outline-verify mt-8" routerLink="/">
+                        {{ 'auth.back_home' | translate }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

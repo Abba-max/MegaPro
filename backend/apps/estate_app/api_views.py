@@ -17,6 +17,10 @@ from .serializers import (
 from .permissions import IsVerifiedOwner
 from django.utils import timezone
 from django.db.models import Sum, Avg
+from .utils import send_verification_email, send_welcome_email
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode
+from django.utils.encoding import force_str
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
@@ -31,9 +35,40 @@ def register_view(request):
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     user = serializer.save()
+    
+    # Send verification email
+    try:
+        send_verification_email(user, request)
+    except Exception as e:
+        # Log error but don't fail registration
+        print(f"Failed to send verification email: {e}")
+
     refresh = MyTokenObtainPairSerializer.get_token(user)
     return Response({'access': str(refresh.access_token), 'refresh': str(refresh)},
                     status=status.HTTP_201_CREATED)
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def verify_email_view(request):
+    uid_b64 = request.data.get('uid')
+    token = request.data.get('token')
+    
+    if not uid_b64 or not token:
+        return Response({'error': 'UID and token are required.'}, status=400)
+    
+    try:
+        uid = force_str(urlsafe_base64_decode(uid_b64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return Response({'error': 'Invalid user.'}, status=400)
+        
+    if default_token_generator.check_token(user, token):
+        user.is_verified = True
+        user.save()
+        send_welcome_email(user)
+        return Response({'message': 'Email verified successfully.'})
+    else:
+        return Response({'error': 'Invalid or expired token.'}, status=400)
 
 
 @api_view(['GET'])
@@ -81,10 +116,22 @@ class EstateViewSet(viewsets.ModelViewSet):
         return ctx
 
     def perform_create(self, serializer):
-        if self.request.user.user_type == 'owner' and not self.request.user.is_verified:
+        user = self.request.user
+        if user.user_type == 'owner' and not user.is_verified:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Votre compte n'est pas encore verifie.")
-        owner = self.request.user if self.request.user.is_authenticated else None
+        
+        owner = user if user.is_authenticated else None
+        
+        # If admin specifies an owner_id, use it
+        if user.is_staff or user.is_superuser:
+            owner_id = self.request.data.get('owner_id')
+            if owner_id:
+                try:
+                    owner = User.objects.get(pk=owner_id)
+                except User.DoesNotExist:
+                    pass
+        
         serializer.save(owner=owner, is_verified=False)
 
     def perform_update(self, serializer):
@@ -139,6 +186,21 @@ class EstateViewSet(viewsets.ModelViewSet):
             estate.save(update_fields=['is_verified'])
             return Response(EstateSerializer(estate, context={'request': request}).data)
         return Response({'error': 'Action invalide. Utilisez "approve" ou "reject".'}, status=400)
+
+    @action(detail=True, methods=['post'], url_path='transfer-ownership',
+            permission_classes=[permissions.IsAdminUser])
+    def transfer_ownership(self, request, pk=None):
+        estate = self.get_object()
+        new_owner_id = request.data.get('new_owner_id')
+        if not new_owner_id:
+            return Response({'error': 'new_owner_id est requis.'}, status=400)
+        try:
+            new_owner = User.objects.get(pk=new_owner_id)
+            estate.owner = new_owner
+            estate.save(update_fields=['owner'])
+            return Response(EstateSerializer(estate, context={'request': request}).data)
+        except User.DoesNotExist:
+            return Response({'error': 'Nouveau proprietaire introuvable.'}, status=404)
 
 
 class RoomCategoryViewSet(viewsets.ModelViewSet):
@@ -226,9 +288,27 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
     def accept(self, request, pk=None):
         order = self.get_object()
         if order.estate.owner != request.user and not request.user.is_staff:
-            return Response({'error': 'Non autorise.'}, status=403)
-        order.status = 'accepted'
-        order.save(update_fields=['status'])
+            return Response({'error': 'error.not_authorized'}, status=403)
+        
+        if order.status != 'accepted' and order.room_category:
+            from django.db import transaction
+            try:
+                with transaction.atomic():
+                    from .models import RoomCategory
+                    rc = RoomCategory.objects.select_for_update().get(pk=order.room_category_id)
+                    if rc.occupied_count >= rc.quantity_available:
+                        return Response({'error': 'error.no_availability'}, status=400)
+                    
+                    rc.occupied_count += 1
+                    rc.save(update_fields=['occupied_count'])
+                    order.status = 'accepted'
+                    order.save(update_fields=['status'])
+            except Exception as e:
+                return Response({'error': 'error.internal_server_error'}, status=500)
+        else:
+            order.status = 'accepted'
+            order.save(update_fields=['status'])
+
         return Response(QuickOrderSerializer(order, context={'request': request}).data)
 
     @action(detail=True, methods=['patch'], url_path='reject',
@@ -236,7 +316,16 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
     def reject(self, request, pk=None):
         order = self.get_object()
         if order.estate.owner != request.user and not request.user.is_staff:
-            return Response({'error': 'Non autorise.'}, status=403)
+            return Response({'error': 'error.not_authorized'}, status=403)
+        
+        if order.status == 'accepted' and order.room_category:
+            from django.db import transaction
+            with transaction.atomic():
+                from .models import RoomCategory
+                rc = RoomCategory.objects.select_for_update().get(pk=order.room_category_id)
+                rc.occupied_count = max(0, rc.occupied_count - 1)
+                rc.save(update_fields=['occupied_count'])
+        
         order.status = 'rejected'
         order.save(update_fields=['status'])
         return Response(QuickOrderSerializer(order, context={'request': request}).data)
@@ -553,3 +642,26 @@ def admin_delete_user_view(request, user_id):
         return Response({'error': 'Vous ne pouvez pas supprimer votre propre compte.'}, status=400)
     user.delete()
     return Response({'deleted': True, 'id': user_id})
+
+
+from .models import Notification
+from .serializers import NotificationSerializer
+
+class NotificationViewSet(viewsets.ModelViewSet):
+    serializer_class = NotificationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return Notification.objects.filter(user=self.request.user).order_by('-created_at')
+
+    @action(detail=False, methods=['post'], url_path='mark-all-read')
+    def mark_all_read(self, request):
+        Notification.objects.filter(user=request.user, read=False).update(read=True)
+        return Response({'status': 'ok'})
+
+    @action(detail=True, methods=['post'], url_path='read')
+    def mark_read(self, request, pk=None):
+        notif = self.get_object()
+        notif.read = True
+        notif.save(update_fields=['read'])
+        return Response({'status': 'ok'})

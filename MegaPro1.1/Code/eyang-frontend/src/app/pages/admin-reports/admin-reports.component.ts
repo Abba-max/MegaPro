@@ -3,11 +3,12 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { LucideAngularModule, BarChart3, Users, Home, Star, Calendar, Loader } from 'lucide-angular';
 import { EstateService, AdminStats } from '../../services/estate.service';
 import { catchError, of } from 'rxjs';
+import { TranslateModule } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-admin-reports',
   standalone: true,
-  imports: [CommonModule, DatePipe, LucideAngularModule],
+  imports: [CommonModule, DatePipe, LucideAngularModule, TranslateModule],
   templateUrl: './admin-reports.component.html',
   styleUrl: './admin-reports.component.css'
 })

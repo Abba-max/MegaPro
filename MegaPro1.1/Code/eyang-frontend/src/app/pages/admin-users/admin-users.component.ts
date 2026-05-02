@@ -10,7 +10,7 @@ import { EstateService, AdminUser } from '../../services/estate.service';
 import { environment } from '../../../environments/environment';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, of } from 'rxjs';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 export interface Toast { id: number; type: 'success'|'error'|'info'|'warning'; message: string; }
 
@@ -85,6 +85,10 @@ export class AdminUsersComponent implements OnInit {
   showPassword = false;
   editUserId: number | null = null;
 
+  // View Modal state
+  showViewModal = false;
+  viewUser: AdminUser | null = null;
+
   // Delete confirm
   showDeleteConfirm = false;
   userToDelete: AdminUser | null = null;
@@ -96,7 +100,8 @@ export class AdminUsersComponent implements OnInit {
 
   constructor(
     private estateService: EstateService,
-    private http: HttpClient
+    private http: HttpClient,
+    private translate:     TranslateService
   ) {}
 
   ngOnInit(): void { this.load(); }
@@ -104,7 +109,10 @@ export class AdminUsersComponent implements OnInit {
   load(): void {
     this.isLoading.set(true);
     this.estateService.getAdminUsers()
-      .pipe(catchError(() => { this.showToast('Erreur de chargement.', 'error'); return of([]); }))
+      .pipe(catchError(() => { 
+        this.showToast(this.translate.instant('admin.error_load'), 'error'); 
+        return of([]); 
+      }))
       .subscribe(data => {
         this.allUsers.set(data as AdminUser[]);
         this.isLoading.set(false);
@@ -133,12 +141,13 @@ export class AdminUsersComponent implements OnInit {
     this.estateService.toggleUser(user.id).subscribe({
       next: res => {
         user.active = res.active;
+        const msgKey = res.active ? 'admin.user_activated' : 'admin.user_deactivated';
         this.showToast(
-          res.active ? `${user.name} activé.` : `${user.name} désactivé.`,
+          this.translate.instant(msgKey, { name: user.name }),
           res.active ? 'success' : 'info'
         );
       },
-      error: () => this.showToast('Erreur lors de la mise à jour.', 'error')
+      error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
     });
   }
 
@@ -170,13 +179,32 @@ export class AdminUsersComponent implements OnInit {
 
   closeModal(): void { this.showModal = false; }
 
+  // ── View modal ──────────────────────────────────────────────────────────
+  openView(user: AdminUser): void {
+    this.viewUser = user;
+    this.showViewModal = true;
+  }
+
+  closeViewModal(): void {
+    this.showViewModal = false;
+    this.viewUser = null;
+  }
+
+  openEditFromView(): void {
+    if (this.viewUser) {
+      const u = this.viewUser;
+      this.closeViewModal();
+      this.openEdit(u);
+    }
+  }
+
   // ── Save (create or update) ───────────────────────────────────────────
   saveUser(): void {
     if (!this.form.email) {
-      this.showToast('Email obligatoire.', 'warning'); return;
+      this.showToast(this.translate.instant('auth.error_missing_fields'), 'warning'); return;
     }
     if (!this.isEditMode && !this.form.password) {
-      this.showToast('Mot de passe obligatoire pour un nouvel utilisateur.', 'warning'); return;
+      this.showToast(this.translate.instant('auth.error_missing_fields'), 'warning'); return;
     }
 
     this.isSaving.set(true);
@@ -194,7 +222,7 @@ export class AdminUsersComponent implements OnInit {
 
       this.http.patch(`${this.API}/api/admin/users/${this.editUserId}/update/`, payload, { headers })
         .pipe(catchError(err => {
-          this.showToast(err?.error?.detail ?? 'Erreur de mise à jour.', 'error');
+          this.showToast(err?.error?.detail ?? this.translate.instant('admin.error_load'), 'error');
           this.isSaving.set(false);
           return of(null);
         }))
@@ -202,7 +230,7 @@ export class AdminUsersComponent implements OnInit {
           if (!res) return;
           this.isSaving.set(false);
           this.showModal = false;
-          this.showToast('Utilisateur mis à jour.', 'success');
+          this.showToast(this.translate.instant('admin.housing_update_success'), 'success');
           this.load();
         });
     } else {
@@ -217,7 +245,7 @@ export class AdminUsersComponent implements OnInit {
       };
       this.http.post(`${this.API}/api/auth/register/`, payload)
         .pipe(catchError(err => {
-          const msg = err?.error?.email?.[0] ?? err?.error?.username?.[0] ?? 'Erreur de création.';
+          const msg = err?.error?.email?.[0] ?? err?.error?.username?.[0] ?? this.translate.instant('admin.error_load');
           this.showToast(msg, 'error');
           this.isSaving.set(false);
           return of(null);
@@ -226,7 +254,7 @@ export class AdminUsersComponent implements OnInit {
           if (!res) return;
           this.isSaving.set(false);
           this.showModal = false;
-          this.showToast('Utilisateur créé avec succès.', 'success');
+          this.showToast(this.translate.instant('admin.housing_create_success'), 'success');
           this.load();
         });
     }
@@ -250,13 +278,13 @@ export class AdminUsersComponent implements OnInit {
 
     this.http.delete(`${this.API}/api/admin/users/${this.userToDelete.id}/delete/`, { headers })
       .pipe(catchError(err => {
-        this.showToast(err?.error?.detail ?? 'Erreur de suppression.', 'error');
+        this.showToast(err?.error?.detail ?? this.translate.instant('admin.error_load'), 'error');
         return of(null);
       }))
       .subscribe(res => {
         if (res === null && !this.toasts.find(t => t.type === 'error')) return;
         this.allUsers.update(list => list.filter(u => u.id !== this.userToDelete!.id));
-        this.showToast(`${this.userToDelete!.name} supprimé.`, 'success');
+        this.showToast(this.translate.instant('admin.delete_success'), 'success');
         this.cancelDelete();
       });
   }

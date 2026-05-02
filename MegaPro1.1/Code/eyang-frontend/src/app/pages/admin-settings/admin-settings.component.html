@@ -10,96 +10,122 @@
 </div>
 
 <div class="page-header">
-<h1 class="page-title">Paramètres</h1>
-</div>
-
-<!-- ── Site Info ─────────────────────────────────────────────── -->
-<div class="settings-section mt-8">
-    <h2 class="settings-title">Informations du site</h2>
-    <div class="form-row">
-        <div class="form-group">
-    <label>Nom du site</label>
-    <input type="text" [(ngModel)]="siteSettings.siteName" class="input" [placeholder]="'admin.settings_name_ph' | translate">
-    </div>
-    <div class="form-group">
-        <label>Email de contact</label>
-    <input type="email" [(ngModel)]="siteSettings.siteEmail" class="input" [placeholder]="'auth.email_placeholder' | translate">
-    </div>
-</div>
-<div class="form-row">
-    <div class="form-group">
-        <label>Téléphone</label>
-    <input type="text" [(ngModel)]="siteSettings.sitePhone" class="input" [placeholder]="'auth.phone_placeholder' | translate">
-    </div>
-    <div class="form-group">
-        <label>Adresse</label>
-        <input type="text" [(ngModel)]="siteSettings.siteAddress" class="input" [placeholder]="'auth.address_placeholder' | translate">
-    </div>
-    </div>
-    <div class="form-group">
-        <label>Description</label>
-        <textarea [(ngModel)]="siteSettings.description" class="textarea" rows="3"
-            [placeholder]="'admin.settings_desc_ph' | translate"></textarea>
-    </div>
-    </div>
-
-<!-- ── Language ──────────────────────────────────────────────── -->
-<div class="settings-section">
-    <h2 class="settings-title">Langue de l'interface</h2>
-    <div class="lang-selector">
-        <button class="lang-option" [class.active]="selectedLang === 'fr'" (click)="selectedLang = 'fr'">
-            <span class="lang-flag">🇫🇷</span>
-            <span class="lang-name">Français</span>
-            <span class="lang-check" *ngIf="selectedLang === 'fr'">✓</span>
-        </button>
-        <button class="lang-option" [class.active]="selectedLang === 'en'" (click)="selectedLang = 'en'">
-            <span class="lang-flag">🇬🇧</span>
-            <span class="lang-name">English</span>
-            <span class="lang-check" *ngIf="selectedLang === 'en'">✓</span>
+    <div class="page-header-row">
+        <h1 class="page-title">{{ 'sidebar.settings' | translate }}</h1>
+        <button class="btn-save" (click)="save()" [disabled]="isSaving()">
+            <lucide-icon *ngIf="isSaving()" [img]="LoaderIcon" class="spin-sm mr-2"></lucide-icon>
+            <lucide-icon *ngIf="!isSaving()" [img]="SaveIcon" class="icon-sm mr-2"></lucide-icon>
+            {{ isSaving() ? ('admin.saving' | translate) : ('admin.save' | translate) }}
         </button>
     </div>
-    <p class="lang-hint">La langue sera appliquée à l'ensemble du site après enregistrement.</p>
 </div>
 
-<!-- ── Email Notifications ───────────────────────────────────── -->
-<div class="settings-section">
-    <h2 class="settings-title">Notifications email</h2>
-    <div class="notif-list">
-        <div class="notif-item">
-            <div class="notif-text">
-                <span class="notif-label">Nouvelle réservation</span>
-                <span class="notif-sub">Recevoir un email à chaque nouvelle demande de réservation</span>
+<div class="settings-container fade-in">
+    <!-- ── Site Configuration ────────────────────────────────── -->
+    <div class="settings-card">
+        <div class="card-header">
+            <h2 class="card-title">{{ 'admin.site_config' | translate }}</h2>
+            <p class="card-subtitle">{{ 'admin.site_config_subtitle' | translate }}</p>
+        </div>
+        
+        <div class="card-body">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>{{ 'admin.platform_name' | translate }}</label>
+                    <input type="text" [(ngModel)]="siteSettings.siteName" class="input" [placeholder]="'admin.settings_name_ph' | translate">
+                </div>
+                <div class="form-group">
+                    <label>{{ 'admin.support_email' | translate }}</label>
+                    <input type="email" [(ngModel)]="siteSettings.siteEmail" class="input" [placeholder]="'auth.email_placeholder' | translate">
+                </div>
+                <div class="form-group">
+                    <label>{{ 'admin.direct_line' | translate }}</label>
+                    <input type="text" [(ngModel)]="siteSettings.sitePhone" class="input" [placeholder]="'auth.phone_placeholder' | translate">
+                </div>
+                <div class="form-group">
+                    <label>{{ 'admin.physical_location' | translate }}</label>
+                    <input type="text" [(ngModel)]="siteSettings.siteAddress" class="input" [placeholder]="'auth.address_placeholder' | translate">
+                </div>
             </div>
-            <div class="toggle-wrapper" [class.on]="notifSettings.emailOnOrder"
-                (click)="notifSettings.emailOnOrder = !notifSettings.emailOnOrder">
-                <div class="toggle-knob"></div>
+            
+            <div class="form-group mt-6">
+                <label>{{ 'admin.seo_description' | translate }}</label>
+                <textarea [(ngModel)]="siteSettings.description" class="textarea" rows="4"
+                    [placeholder]="'admin.settings_desc_ph' | translate"></textarea>
+                <p class="input-hint">{{ 'admin.seo_hint' | translate }}</p>
             </div>
         </div>
-        <div class="notif-item">
-            <div class="notif-text">
-                <span class="notif-label">Nouvel avis</span>
-                <span class="notif-sub">Recevoir un email à chaque nouvel avis publié</span>
-            </div>
-            <div class="toggle-wrapper" [class.on]="notifSettings.emailOnReview"
-                (click)="notifSettings.emailOnReview = !notifSettings.emailOnReview">
-                <div class="toggle-knob"></div>
+    </div>
+
+    <!-- ── Regional Settings ─────────────────────────────────── -->
+    <div class="settings-card mt-8">
+        <div class="card-header">
+            <h2 class="card-title">{{ 'admin.regional_preferences' | translate }}</h2>
+            <p class="card-subtitle">{{ 'admin.regional_subtitle' | translate }}</p>
+        </div>
+        
+        <div class="card-body">
+            <div class="lang-grid">
+                <div class="lang-option" [class.active]="selectedLang === 'fr'" (click)="selectedLang = 'fr'">
+                    <div class="lang-icon">🇫🇷</div>
+                    <div class="lang-info">
+                        <span class="lang-label">{{ 'admin.lang_fr' | translate }}</span>
+                        <span class="lang-desc">{{ 'admin.lang_fr_desc' | translate }}</span>
+                    </div>
+                    <div class="lang-check" *ngIf="selectedLang === 'fr'">✓</div>
+                </div>
+                
+                <div class="lang-option" [class.active]="selectedLang === 'en'" (click)="selectedLang = 'en'">
+                    <div class="lang-icon">🇬🇧</div>
+                    <div class="lang-info">
+                        <span class="lang-label">{{ 'admin.lang_en' | translate }}</span>
+                        <span class="lang-desc">{{ 'admin.lang_en_desc' | translate }}</span>
+                    </div>
+                    <div class="lang-check" *ngIf="selectedLang === 'en'">✓</div>
+                </div>
             </div>
         </div>
-        <div class="notif-item">
-            <div class="notif-text">
-                <span class="notif-label">Demande de contact</span>
-                <span class="notif-sub">Recevoir un email à chaque nouvelle demande de contact</span>
-            </div>
-            <div class="toggle-wrapper" [class.on]="notifSettings.emailOnContact"
-                (click)="notifSettings.emailOnContact = !notifSettings.emailOnContact">
-                <div class="toggle-knob"></div>
+    </div>
+
+    <!-- ── Notification Settings ─────────────────────────────── -->
+    <div class="settings-card mt-8">
+        <div class="card-header">
+            <h2 class="card-title">{{ 'admin.notification_center' | translate }}</h2>
+            <p class="card-subtitle">{{ 'admin.notif_center_subtitle' | translate }}</p>
+        </div>
+        
+        <div class="card-body">
+            <div class="toggle-list">
+                <div class="toggle-item">
+                    <div class="toggle-info">
+                        <span class="toggle-label">{{ 'admin.booking_alerts' | translate }}</span>
+                        <span class="toggle-desc">{{ 'admin.booking_alerts_desc' | translate }}</span>
+                    </div>
+                    <button class="toggle-btn" [class.active]="notifSettings.emailOnOrder" (click)="notifSettings.emailOnOrder = !notifSettings.emailOnOrder">
+                        <div class="toggle-thumb"></div>
+                    </button>
+                </div>
+
+                <div class="toggle-item">
+                    <div class="toggle-info">
+                        <span class="toggle-label">{{ 'admin.reviews_comments' | translate }}</span>
+                        <span class="toggle-desc">{{ 'admin.reviews_alerts_desc' | translate }}</span>
+                    </div>
+                    <button class="toggle-btn" [class.active]="notifSettings.emailOnReview" (click)="notifSettings.emailOnReview = !notifSettings.emailOnReview">
+                        <div class="toggle-thumb"></div>
+                    </button>
+                </div>
+
+                <div class="toggle-item">
+                    <div class="toggle-info">
+                        <span class="toggle-label">{{ 'admin.contact_requests' | translate }}</span>
+                        <span class="toggle-desc">{{ 'admin.contact_alerts_desc' | translate }}</span>
+                    </div>
+                    <button class="toggle-btn" [class.active]="notifSettings.emailOnContact" (click)="notifSettings.emailOnContact = !notifSettings.emailOnContact">
+                        <div class="toggle-thumb"></div>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<button class="btn-save" (click)="save()" [disabled]="isSaving()">
-    <lucide-icon *ngIf="isSaving()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
-    <lucide-icon *ngIf="!isSaving()" [img]="SaveIcon" class="icon-sm-btn"></lucide-icon>
-    {{ isSaving() ? 'Enregistrement…' : 'Enregistrer et appliquer' }}
-</button>

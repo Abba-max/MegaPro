@@ -55,8 +55,9 @@
   flex: 1;
   overflow-y: auto;        /* regular pages scroll here */
   padding: 2.5rem;
+  padding-top: calc(72px + 2.5rem); /* Clear the fixed header */
   width: 100%;
-  max-width: 1600px;
+  max-width: 1800px; /* Increased for very large screens */
   margin: 0 auto;
   box-sizing: border-box;
 }

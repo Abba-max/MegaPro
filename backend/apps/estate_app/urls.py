@@ -4,11 +4,12 @@ from rest_framework.routers import DefaultRouter
 
 from .api_views import (
     # Auth
-    register_view, me_view,
+    register_view, verify_email_view, me_view,
 
     # Viewsets
     EstateViewSet, RoomCategoryViewSet, ReviewViewSet,
     QuickOrderViewSet, ContactRequestViewSet, ConversationViewSet,
+    NotificationViewSet,
 
     # Stats
     stats_view, owner_stats_view, client_stats_view, online_users_view,
@@ -33,11 +34,13 @@ router.register(r'reviews',          ReviewViewSet,          basename='review')
 router.register(r'orders',           QuickOrderViewSet,      basename='order')
 router.register(r'contact-requests', ContactRequestViewSet,  basename='contact-request')
 router.register(r'conversations',    ConversationViewSet,    basename='conversation')
+router.register(r'notifications',    NotificationViewSet,    basename='notification')
 
 urlpatterns = [
     # ── Auth ──────────────────────────────────────────────────────────────
-    path('api/auth/register/',  register_view,  name='register'),
-    path('api/auth/me/',        me_view,        name='me'),
+    path('api/auth/register/',  register_view,      name='register'),
+    path('api/auth/verify/',    verify_email_view,  name='verify-email'),
+    path('api/auth/me/',        me_view,            name='me'),
 
     # ── ViewSet routes (CRUD + @action extras like verify, accept, reject) ─
     path('api/', include(router.urls)),

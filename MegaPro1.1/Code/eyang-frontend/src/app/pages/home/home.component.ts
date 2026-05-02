@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import {
@@ -210,7 +210,8 @@ mapGridLabel(price: number): string {
   constructor(
     private estateService: EstateService,
     private authService: AuthService,
-    private translate: TranslateService
+    private translate: TranslateService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -268,9 +269,9 @@ mapGridLabel(price: number): string {
       next: data => { this.housings = data; this.isLoading = false; this.resetHomePage(); },
       error: err => {
         console.error('Failed to load estates:', err);
-        this.errorMessage = 'Impossible de charger les logements.';
+        this.errorMessage = this.translate.instant('admin.error_load');
         this.isLoading    = false;
-        this.showToast('Impossible de charger les logements', 'error');
+        this.showToast(this.translate.instant('admin.error_load'), 'error');
       }
     });
   }
@@ -419,11 +420,11 @@ mapGridLabel(price: number): string {
   }
 
   /** Open auth modals from the footer */
-  openLoginFromFooter(): void  { this.authService.openLogin(); }
+  openLoginFromFooter(): void  { this.router.navigate(['/login']); }
   openSignupFromFooter(): void {
     // Re-use the header's signup flow via the auth service.
     // The header listens to authService.openSignup$ if you have one;
     // if not, open login and let the user switch — or directly dispatch:
-    this.authService.openLogin();
+    this.router.navigate(['/login']);
   }
 }

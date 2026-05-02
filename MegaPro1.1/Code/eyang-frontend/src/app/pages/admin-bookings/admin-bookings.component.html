@@ -28,6 +28,7 @@
         <span class="total-counter">{{ 'admin.total_bookings' | translate:{count: filtered.length, plural: filtered.length !== 1 ? 's' : ''} }}</span>
     </div>
 
+    <div class="table-responsive">
     <table class="table">
         <thead>
             <tr>
@@ -41,25 +42,41 @@
         </thead>
         <tbody>
             <tr *ngFor="let b of filtered" class="fade-in">
-                <td data-label="LOGEMENT">
-                    <span class="booking-title">{{ b.estate_name || 'Logement #' + b.estate }}</span>
+                <td [attr.data-label]="'admin.col_housing' | translate">
+                    <span class="booking-title">{{ b.estate_name || (('admin.col_housing' | translate) + ' #' + b.estate) }}</span>
                 </td>
-                <td data-label="CLIENT">
+                <td [attr.data-label]="'admin.col_client' | translate">
                     <div>
                         <div class="booking-title">{{ b.name }}</div>
                         <div class="meta-sub" *ngIf="b.user_email">{{ b.user_email }}</div>
                     </div>
                 </td>
-                <td data-label="TÉLÉPHONE"><span class="text-sm">{{ b.phone }}</span></td>
-                <td data-label="DATE"><span class="text-sm">{{ formatDate(b.created_at || '') }}</span></td>
-                <td data-label="NOTE">
+                <td [attr.data-label]="'admin.col_phone' | translate"><span class="text-sm">{{ b.phone }}</span></td>
+                <td [attr.data-label]="'admin.col_date' | translate"><span class="text-sm">{{ formatDate(b.created_at || '') }}</span></td>
+                <td [attr.data-label]="'admin.col_note' | translate">
                     <span class="note-text" *ngIf="b.note">"{{ b.note }}"</span>
                     <span class="text-sm" *ngIf="!b.note">–</span>
                 </td>
                 <td class="text-right" [attr.data-label]="'admin.col_actions' | translate">
                     <div class="action-buttons">
-                        <span class="status-badge pending">{{ 'admin.status_pending' | translate }}</span>
-                        <button class="icon-btn danger" (click)="delete(b)" title="Supprimer">
+                        <span class="status-badge" [class]="b.status || 'pending'">
+                            {{ 'admin.status_' + (b.status || 'pending') | translate }}
+                        </span>
+                        
+                        <button class="icon-btn" (click)="openView(b)" [title]="'admin.view_user' | translate">
+                            <lucide-icon [img]="EyeIcon" class="icon-xs"></lucide-icon>
+                        </button>
+                        
+                        <ng-container *ngIf="(b.status || 'pending') === 'pending'">
+                            <button class="icon-btn success" (click)="accept(b)" [title]="'admin.approve' | translate">
+                                <lucide-icon [img]="CheckCircleIcon" class="icon-xs"></lucide-icon>
+                            </button>
+                            <button class="icon-btn warning" (click)="reject(b)" [title]="'admin.reject' | translate">
+                                <lucide-icon [img]="XCircleIcon" class="icon-xs"></lucide-icon>
+                            </button>
+                        </ng-container>
+
+                        <button class="icon-btn danger" (click)="delete(b)" [title]="'dashboard.delete' | translate">
                             <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
                         </button>
                     </div>
@@ -70,4 +87,55 @@
             </tr>
     </tbody>
     </table>
+    </div>
+</div>
+
+<!-- View Booking Modal -->
+<div class="modal-overlay" *ngIf="showViewModal" (click)="closeViewModal()">
+    <div class="modal-card view-modal" (click)="$event.stopPropagation()">
+        <button class="close-btn" (click)="closeViewModal()">×</button>
+        
+        <div class="modal-header">
+            <h2>{{ 'dashboard.booking_label' | translate }}</h2>
+            <p class="text-sm">{{ formatDate(viewBooking?.created_at || '') }}</p>
+        </div>
+
+        <div class="view-content" *ngIf="viewBooking">
+            <div class="view-section">
+                <label>{{ 'admin.col_client' | translate }}</label>
+                <div class="view-value-box">
+                    <div class="booking-title">{{ viewBooking.name }}</div>
+                    <div class="meta-sub">{{ viewBooking.user_email }}</div>
+                    <div class="meta-sub">{{ viewBooking.phone }}</div>
+                </div>
+            </div>
+
+            <div class="view-section mt-4">
+                <label>{{ 'admin.col_housing' | translate }}</label>
+                <div class="view-value-box">
+                    <div class="booking-title">{{ viewBooking.estate_name }}</div>
+                    <div class="meta-sub" *ngIf="viewBooking.room_category_name">{{ viewBooking.room_category_name }}</div>
+                    <div class="meta-sub" *ngIf="viewBooking.estate_location">{{ viewBooking.estate_location }}</div>
+                </div>
+            </div>
+
+            <div class="view-section mt-4" *ngIf="viewBooking.note">
+                <label>{{ 'admin.col_note' | translate }}</label>
+                <div class="note-full">"{{ viewBooking.note }}"</div>
+            </div>
+
+            <div class="view-section mt-4">
+                <label>{{ 'admin.col_status' | translate }}</label>
+                <div class="mt-2">
+                    <span class="status-badge" [class]="viewBooking.status || 'pending'">
+                        {{ 'admin.status_' + (viewBooking.status || 'pending') | translate }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-footer mt-8">
+            <button class="btn-primary w-full" (click)="closeViewModal()">{{ 'common.close' | translate }}</button>
+        </div>
+    </div>
 </div>

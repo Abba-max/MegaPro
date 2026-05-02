@@ -119,15 +119,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static_cdn', 'static_root')
 # Serve files from the frontend_build directory directly at the root URL (/, /styles.css, etc.)
 WHITENOISE_ROOT = os.path.join(BASE_DIR, 'frontend_build')
 
-
-# ── FIX: use the standard BASE_DIR/media/ directory for uploaded files.
-#    The old value ('static_cdn/media_root') didn't match where Django
-#    actually writes uploaded files, causing every image to 404.
-#
-#    If you had files in static_cdn/media_root/, move them:
-#      Windows: xcopy /E /I backend\static_cdn\media_root backend\media
-#      macOS/Linux: cp -r backend/static_cdn/media_root/. backend/media/
-# ────────────────────────────────────────────────────────────────────────────
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # ── Cloudinary ─────────────────────────────────────────────────────────────
@@ -141,7 +132,15 @@ if config('CLOUDINARY_CLOUD_NAME', default=''):
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-EMAIL_BACKEND      = 'django.core.mail.backends.console.EmailBackend'
+
+# ── Email (Production) ─────────────────────────────────────────────────────
+EMAIL_BACKEND       = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST          = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT          = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS       = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER     = config('EMAIL_HOST_USER', default='eyangestate@gmail.com')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL', default='Eyang Estate <eyangestate@gmail.com>')
 
 # ── DRF ────────────────────────────────────────────────────────────────────
 REST_FRAMEWORK = {
@@ -167,5 +166,9 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
     "http://127.0.0.1:4200",
+    "https://eyangestate.com",
+    "http://eyangestate.com",
+    "https://eyang-estate.onrender.com",
 ]
 CORS_ALLOW_CREDENTIALS = True
+FRONTEND_URL           = config('FRONTEND_URL', default='https://eyangestate.com')

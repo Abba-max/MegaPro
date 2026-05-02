@@ -48,6 +48,7 @@ export interface EstateRaw {
   lng: number;
   /** true = admin approved, badge shown on card */
   is_verified?: boolean;
+  owner_id?: number;
 }
 
 export interface Estate extends EstateRaw {
@@ -111,8 +112,15 @@ export interface AdminStats {
 export interface AdminActivity { type: string; title: string; subtitle: string; created_at: string; }
 
 export interface AdminUser {
-  id: number; name: string; email: string; type: string;
-  active: boolean; initials: string; color: string; joined: string;
+  id: number;
+  name: string;
+  email: string;
+  username?: string;
+  type: string;
+  active: boolean;
+  initials: string;
+  color: string;
+  joined: string;
 }
 
 export interface EstateFilters {
@@ -365,6 +373,11 @@ export class EstateService {
    */
   verifyEstate(id: number, action: 'approve' | 'reject'): Observable<{ id: number; is_verified: boolean }> {
     return this.http.post<{ id: number; is_verified: boolean }>(`${this.BASE}/estates/${id}/verify/`, { action });
+  }
+
+  transferOwnership(id: number, newOwnerId: number): Observable<Estate> {
+    return this.http.post<EstateRaw>(`${this.BASE}/estates/${id}/transfer-ownership/`, { new_owner_id: newOwnerId })
+      .pipe(map(enrichEstate));
   }
 
   // ── Quick Orders ──────────────────────────────────────────

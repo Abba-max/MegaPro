@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bienvenue chez Eyang Estate</title>
+    <style>
+        body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; color: #1e293b; }
+        .wrapper { width: 100%; padding: 40px 0; }
+        .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
+        .header { background: #0f172a; padding: 32px; text-align: center; }
+        .header img { height: 40px; }
+        .content { padding: 40px; }
+        .content h1 { font-size: 24px; font-weight: 800; color: #0f172a; margin-bottom: 24px; text-align: center; }
+        .content p { font-size: 16px; line-height: 1.6; color: #64748b; margin-bottom: 24px; }
+        .feature-grid { background: #f8fafc; border-radius: 12px; padding: 24px; margin-bottom: 32px; }
+        .feature-item { margin-bottom: 16px; display: flex; align-items: center; }
+        .feature-icon { margin-right: 12px; font-size: 20px; }
+        .btn { display: block; background-color: #2563eb; color: #ffffff !important; padding: 16px 32px; border-radius: 12px; font-weight: 700; text-decoration: none; text-align: center; transition: background 0.2s; }
+        .footer { padding: 32px; background: #f1f5f9; text-align: center; font-size: 14px; color: #94a3b8; }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <div class="container">
+            <div class="header">
+                <img src="https://eyang-estate.com/assets/images/logo-white.png" alt="Eyang Estate">
+            </div>
+            <div class="content">
+                <h1>Bienvenue parmi nous !</h1>
+                <p>Bonjour {{ name }},<br>Votre compte est maintenant vérifié. Vous faites désormais partie de la première plateforme de logement étudiant moderne à Eyang.</p>
+                
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <span class="feature-icon">🔍</span>
+                        <span>Recherchez parmi des centaines de logements vérifiés.</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">📅</span>
+                        <span>Réservez en ligne en quelques clics.</span>
+                    </div>
+                    <div class="feature-item">
+                        <span class="feature-icon">🛡️</span>
+                        <span>Profitez d'un service sécurisé et transparent.</span>
+                    </div>
+                </div>
+
+                <a href="{{ site_url }}/listings" class="btn">Trouver mon futur logement</a>
+            </div>
+            <div class="footer">
+                <p>© 2026 Eyang Estate. Tous droits réservés.<br>Eyang, Yaoundé, Cameroun</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

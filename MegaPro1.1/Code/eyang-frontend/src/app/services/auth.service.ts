@@ -32,9 +32,6 @@ export class AuthService {
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   currentUser$ = this.currentUserSubject.asObservable();
 
-  private showLoginModalSubject = new Subject<boolean>();
-  showLoginModal$ = this.showLoginModalSubject.asObservable();
-
   constructor(private http: HttpClient, private router: Router) {
     // Restore session on page reload: if a token is stored, rebuild the user object.
     if (this.getAccessToken()) {
@@ -140,6 +137,10 @@ export class AuthService {
     );
   }
 
+  verifyEmail(uid: string, token: string): Observable<any> {
+    return this.http.post<any>(`${this.BASE}/auth/verify/`, { uid, token });
+  }
+
   refreshToken(): Observable<{ access: string; refresh?: string }> {
     return this.http
       .post<{ access: string; refresh?: string }>(
@@ -239,11 +240,6 @@ export class AuthService {
   canActivateAdmin():  boolean { return this.isAdminUser; }
   canActivateOwner():  boolean { return this.isAdminUser || this.isOwnerUser; }
   canActivateClient(): boolean { return this.isClientUser || this.isAdminUser; }
-
-  // ── Modal control ──────────────────────────────────────────────────────
-
-  openLogin():  void { this.showLoginModalSubject.next(true);  }
-  closeLogin(): void { this.showLoginModalSubject.next(false); }
 
   setUser(user: User): void { this.currentUserSubject.next(user); }
 }

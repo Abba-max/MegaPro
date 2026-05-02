@@ -7,7 +7,7 @@
 
   <div class="conv-sidebar-header">
     <div class="conv-title-row">
-      <h2 class="conv-title">Messages</h2>
+      <h2 class="conv-title">{{ 'messages.title' | translate }}</h2>
       <span class="unread-badge" *ngIf="getTotalUnread() > 0">{{ getTotalUnread() }}</span>
     </div>
     <div class="conv-search-bar">
@@ -28,11 +28,11 @@
     <div *ngIf="!isLoading && filteredConversations.length === 0" class="conv-empty">
       <lucide-icon [img]="MessageSquareIcon" class="conv-empty-icon"></lucide-icon>
       <p *ngIf="conversations.length === 0">
-        Aucune conversation.<br>
-        <span class="conv-empty-hint">Contactez un propriétaire depuis une fiche logement.</span>
+        {{ 'dashboard.no_conversations' | translate }}<br>
+        <span class="conv-empty-hint">{{ 'dashboard.no_conversations_client' | translate }}</span>
       </p>
       <p *ngIf="conversations.length > 0">
-        Aucun résultat pour <strong>"{{ searchQuery }}"</strong>
+        {{ 'admin.no_results_for' | translate }} <strong>"{{ searchQuery }}"</strong>
       </p>
     </div>
 
@@ -78,8 +78,8 @@
     <div class="chat-empty-illustration">
       <div class="chat-empty-circle">💬</div>
     </div>
-    <h3>Vos messages</h3>
-    <p>Sélectionnez une conversation à gauche pour commencer à échanger.</p>
+    <h3>{{ 'dashboard.your_messages' | translate }}</h3>
+    <p>{{ 'dashboard.select_conversation' | translate }}</p>
   </div>
 
   <!-- Active conversation -->
@@ -108,7 +108,7 @@
           <!-- Pulsing green dot = WebSocket live; grey = reconnecting -->
           <span class="ws-live-dot"
                 [class.ws-live-dot--on]="wsService.isChatOpen"
-                title="{{ wsService.isChatOpen ? 'Temps réel actif' : 'Connexion…' }}">
+                [title]="wsService.isChatOpen ? ('messages.realtime_active' | translate) : ('messages.connecting' | translate)">
           </span>
         </div>
       </div>
@@ -124,11 +124,11 @@
 
       <div class="system-banner">
         <lucide-icon [img]="HomeIcon" class="sys-icon"></lucide-icon>
-        Conversation à propos de <strong>« {{ activeConversation.estate_name }} »</strong>
+        {{ 'messages.about_estate' | translate }} <strong>« {{ activeConversation.estate_name }} »</strong>
       </div>
 
       <div class="conv-start-hint" *ngIf="activeConversation.messages.length === 0">
-        Démarrez la conversation ci-dessous 👇
+        {{ 'messages.start' | translate }} 👇
       </div>
 
       <!-- Grouped messages with date separators -->
@@ -161,7 +161,7 @@
             <p class="msg-text">{{ item.msg.text }}</p>
             <div class="msg-meta sent-meta">
               <span class="msg-time">
-                {{ (item.msg.id | json) < '0' ? 'Envoi…' : formatTime(item.msg.created_at) }}
+                {{ (item.msg.id | json) < '0' ? ('messages.sending' | translate) : formatTime(item.msg.created_at) }}
               </span>
               <span class="ticks" [class.read]="item.msg.read"
                     *ngIf="(item.msg.id | json) >= '0'">

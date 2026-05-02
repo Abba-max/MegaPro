@@ -5,9 +5,11 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import {
   LucideAngularModule, Plus, Search, Home, Trash2, CheckCircle, XCircle,
   Info, AlertCircle, Upload, X, Check, Globe, EyeOff, Archive, Pencil,
-  Save, ChevronLeft, ChevronRight, Building2, Loader, Star, ShieldCheck, ShieldX
+  Save, ChevronLeft, ChevronRight, Building2, Loader, Star, ShieldCheck, ShieldX, MapPin, Users,
+  LocateFixed, AlertTriangle
 } from 'lucide-angular';
-import { EstateService, Estate, EstateRaw, EstateImage, RoomCategory, RoomImage } from '../../services/estate.service';
+import { EstateService, Estate, EstateRaw, EstateImage, RoomCategory, RoomImage, AdminUser } from '../../services/estate.service';
+import * as L from 'leaflet';
 import { environment } from '../../../environments/environment';
 import { catchError, of, forkJoin, Observable } from 'rxjs';
 import { TranslateModule } from '@ngx-translate/core';
@@ -18,6 +20,7 @@ interface EstateForm {
   name: string; location: string; distance: number;
   status: 'draft' | 'published' | 'archived'; description: string;
   generator: '0'|'1'; forage: '0'|'1'; restaurant: '0'|'1';
+  lat: number; lng: number; owner_id: number | null;
 }
 
 @Component({
@@ -53,14 +56,32 @@ export class AdminLogementsComponent implements OnInit {
   readonly ShieldCheckIcon  = ShieldCheck;
   readonly ShieldXIcon      = ShieldX;
   readonly CheckIcon        = Check;
+  readonly MapPinIcon       = MapPin;
+  readonly UsersIcon        = Users;
+  readonly LocateIcon       = LocateFixed;
+  readonly WarningIcon      = AlertTriangle;
 
   private readonly API = environment.apiUrl;
+
+  userSearchQuery = signal('');
+  filteredOwners  = computed(() => {
+    const q = this.userSearchQuery().toLowerCase().trim();
+    const all = this.owners();
+    if (!q) return all;
+    return all.filter(u => 
+      u.name.toLowerCase().includes(q) || 
+      u.email.toLowerCase().includes(q) || 
+      (u.username && u.username.toLowerCase().includes(q))
+    );
+  });
 
   isLoading    = signal(true);
   allHousings  = signal<Estate[]>([]);
   searchQuery  = signal('');
   filterStatus = signal('');
   filterVerified = signal('');   // '' | 'verified' | 'pending'
+  allUsers       = signal<AdminUser[]>([]);
+  owners         = computed(() => this.allUsers().filter(u => u.type === 'Proprietaire' || u.type === 'Admin'));
 
   currentPage = signal(1);
   pageSize    = signal(10);
@@ -108,6 +129,15 @@ export class AdminLogementsComponent implements OnInit {
   toasts: Toast[]      = [];
   private toastCounter = 0;
 
+  // Map picker
+  private map: L.Map | null = null;
+  private marker: L.Marker | null = null;
+
+  // Ownership transfer
+  showTransferModal = false;
+  estateToTransfer: Estate | null = null;
+  newOwnerId: number | null = null;
+
   // Room management
   showRoomModal           = false;
   selectedEstateForRooms: Estate | null = null;
@@ -133,12 +163,20 @@ export class AdminLogementsComponent implements OnInit {
 
   load(): void {
     this.isLoading.set(true);
-    this.estateService.getEstates()
-      .pipe(catchError(() => { this.showToast('Erreur de chargement.', 'error'); return of([]); }))
-      .subscribe(data => {
-        this.allHousings.set(data as Estate[]);
+    forkJoin({
+      estates: this.estateService.getEstates(),
+      users: this.estateService.getAdminUsers()
+    }).subscribe({
+      next: (res) => {
+        this.allHousings.set(res.estates);
+        this.allUsers.set(res.users);
         this.isLoading.set(false);
-      });
+      },
+      error: () => {
+        this.showToast('Erreur de chargement.', 'error');
+        this.isLoading.set(false);
+      }
+    });
   }
 
   onSearch(val: string): void { this.searchQuery.set(val); this.currentPage.set(1); }
@@ -186,6 +224,7 @@ export class AdminLogementsComponent implements OnInit {
     this.selectedFiles = []; this.previewImages = [];
     this.existingImages = []; this.removedImageIds = [];
     this.showModal = true;
+    setTimeout(() => this.initMap(), 100);
   }
 
   // ── Open edit ─────────────────────────────────────────────────────────────
@@ -197,10 +236,13 @@ export class AdminLogementsComponent implements OnInit {
       generator: estate.generator as '0'|'1',
       forage: estate.forage as '0'|'1',
       restaurant: estate.restaurant as '0'|'1',
+      lat: Number(estate.lat), lng: Number(estate.lng),
+      owner_id: estate.owner?.id || null
     };
     this.existingImages = [...(estate.images ?? [])];
     this.selectedFiles = []; this.previewImages = []; this.removedImageIds = [];
     this.showModal = true;
+    setTimeout(() => this.initMap(), 100);
   }
 
   switchToRoomManagerFromEdit(): void {
@@ -209,7 +251,10 @@ export class AdminLogementsComponent implements OnInit {
     if (est) { this.closeModal(); this.openManageRooms(est); }
   }
 
-  closeModal(): void { this.showModal = false; }
+  closeModal(): void {
+    this.showModal = false;
+    if (this.map) { this.map.remove(); this.map = null; this.marker = null; }
+  }
 
   // ── Image handling ────────────────────────────────────────────────────────
   onFilesSelected(event: Event): void {
@@ -239,6 +284,8 @@ export class AdminLogementsComponent implements OnInit {
       name: this.form.name, location: this.form.location, distance: this.form.distance,
       status: this.form.status, description: this.form.description,
       generator: this.form.generator, forage: this.form.forage, restaurant: this.form.restaurant,
+      lat: this.form.lat, lng: this.form.lng,
+      owner_id: this.form.owner_id as any
     };
 
     if (this.isEditMode && this.editId) {
@@ -316,7 +363,92 @@ export class AdminLogementsComponent implements OnInit {
 
   private emptyForm(): EstateForm {
     return { name: '', location: '', distance: 500, status: 'draft', description: '',
-             generator: '0', forage: '0', restaurant: '0' };
+             generator: '0', forage: '0', restaurant: '0',
+             lat: 3.884041, lng: 11.390736, owner_id: null };
+  }
+
+  // ── Map logic ─────────────────────────────────────────────────────────────
+  private initMap(): void {
+    const el = document.getElementById('map-picker');
+    if (!el) return;
+    
+    this.map = L.map(el).setView([this.form.lat, this.form.lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(this.map);
+
+    const icon = L.divIcon({
+      className: 'custom-div-icon',
+      html: `
+        <div class="custom-map-marker">
+          <div class="marker-inner-dot"></div>
+        </div>
+      `,
+      iconSize: [32, 32],
+      iconAnchor: [16, 32]
+    });
+
+    this.marker = L.marker([this.form.lat, this.form.lng], { icon, draggable: true }).addTo(this.map);
+    
+    this.marker.on('dragend', () => {
+      const pos = this.marker!.getLatLng();
+      this.form.lat = pos.lat;
+      this.form.lng = pos.lng;
+    });
+
+    this.map.on('click', (e: L.LeafletMouseEvent) => {
+      this.marker!.setLatLng(e.latlng);
+      this.form.lat = e.latlng.lat;
+      this.form.lng = e.latlng.lng;
+    });
+  }
+
+  onLatLngInput(): void {
+    if (this.map && this.marker) {
+      const pos = L.latLng(this.form.lat, this.form.lng);
+      this.marker.setLatLng(pos);
+      this.map.setView(pos);
+    }
+  }
+
+  centerOnEyang(): void {
+    const eyangPos: L.LatLngExpression = [3.884041, 11.390736];
+    if (this.map && this.marker) {
+      this.marker.setLatLng(eyangPos);
+      this.map.setView(eyangPos, 15);
+      this.form.lat = 3.884041;
+      this.form.lng = 11.390736;
+    }
+  }
+
+  // ── Ownership transfer ─────────────────────────────────────────────────────
+  openTransfer(estate: Estate): void {
+    this.estateToTransfer = estate;
+    this.newOwnerId = estate.owner?.id || null;
+    this.showTransferModal = true;
+  }
+
+  closeTransfer(): void {
+    this.showTransferModal = false;
+    this.estateToTransfer = null;
+    this.newOwnerId = null;
+  }
+
+  confirmTransfer(): void {
+    if (!this.estateToTransfer || !this.newOwnerId) return;
+    this.isSaving.set(true);
+    this.estateService.transferOwnership(this.estateToTransfer.id, this.newOwnerId).subscribe({
+      next: () => {
+        this.showToast(`Propriété de "${this.estateToTransfer!.name}" transférée.`, 'success');
+        this.isSaving.set(false);
+        this.closeTransfer();
+        this.load();
+      },
+      error: () => {
+        this.showToast('Erreur lors du transfert.', 'error');
+        this.isSaving.set(false);
+      }
+    });
   }
 
   // ── Room management ───────────────────────────────────────────────────────

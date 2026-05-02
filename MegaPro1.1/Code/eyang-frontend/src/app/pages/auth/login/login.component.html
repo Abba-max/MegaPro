@@ -1,0 +1,72 @@
+<div class="auth-page-wrapper">
+    <!-- Optional: Add a background image or pattern here -->
+    <div class="auth-bg-overlay"></div>
+
+    <div class="auth-container fade-in">
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <div class="brand-logo" routerLink="/">
+                    <img src="/assets/images/logo.png" alt="Eyang Estate">
+                </div>
+                <h1 class="auth-title">{{ 'auth.login_title' | translate }}</h1>
+                <p class="auth-subtitle">{{ 'auth.login_subtitle_premium' | translate }}</p>
+            </div>
+
+            <div class="auth-card-body">
+                <form (ngSubmit)="handleLogin()" class="auth-form">
+                    <div class="form-group-modern">
+                        <div class="input-wrapper">
+                            <lucide-icon [img]="MailIcon" class="input-icon"></lucide-icon>
+                            <input type="text" [(ngModel)]="email" name="email"
+                                [placeholder]="'auth.login_identifier_placeholder' | translate" 
+                                class="modern-input" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group-modern mt-4">
+                        <div class="input-wrapper">
+                            <lucide-icon [img]="LockIcon" class="input-icon"></lucide-icon>
+                            <input [type]="showPassword ? 'text' : 'password'" [(ngModel)]="password" name="password"
+                                [placeholder]="'auth.password_placeholder' | translate" 
+                                class="modern-input" required>
+                            <button type="button" class="pw-toggle" (click)="showPassword = !showPassword">
+                                <lucide-icon [img]="showPassword ? EyeOffIcon : EyeIcon" class="icon-xs"></lucide-icon>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="auth-actions mt-4">
+                        <label class="remember-me">
+                            <input type="checkbox">
+                            <span>{{ 'auth.remember_me' | translate }}</span>
+                        </label>
+                        <a routerLink="/forgot-password" class="forgot-link">{{ 'auth.forgot_password' | translate }}</a>
+                    </div>
+
+                    <div class="error-area" *ngIf="error">
+                        <p class="error-msg">{{ error }}</p>
+                    </div>
+
+                    <button type="submit" class="btn-auth-primary mt-6" [disabled]="isLoading()">
+                        <span *ngIf="!isLoading()">{{ 'auth.login_btn' | translate }}</span>
+                        <div class="loader-white" *ngIf="isLoading()"></div>
+                        <lucide-icon *ngIf="!isLoading()" [img]="ArrowIcon" class="btn-icon"></lucide-icon>
+                    </button>
+                </form>
+            </div>
+
+            <div class="auth-card-footer">
+                <p>
+                    {{ 'auth.no_account' | translate }} 
+                    <a routerLink="/signup" class="auth-link">{{ 'auth.register_link' | translate }}</a>
+                </p>
+            </div>
+        </div>
+
+        <div class="auth-legal-links">
+            <a href="#">{{ 'auth.privacy_policy' | translate }}</a>
+            <span class="dot"></span>
+            <a href="#">{{ 'auth.terms_of_service' | translate }}</a>
+        </div>
+    </div>
+</div>

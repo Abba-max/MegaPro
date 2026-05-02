@@ -24,6 +24,18 @@ export const routes: Routes = [
       {
         path: 'contact',
         loadComponent: () => import('./pages/contact/contact.component').then(c => c.ContactComponent)
+      },
+      {
+        path: 'login',
+        loadComponent: () => import('./pages/auth/login/login.component').then(c => c.LoginComponent)
+      },
+      {
+        path: 'signup',
+        loadComponent: () => import('./pages/auth/signup/signup.component').then(c => c.SignupComponent)
+      },
+      {
+        path: 'verify',
+        loadComponent: () => import('./pages/auth/verify/verify.component').then(c => c.VerifyComponent)
       }
     ]
   },
