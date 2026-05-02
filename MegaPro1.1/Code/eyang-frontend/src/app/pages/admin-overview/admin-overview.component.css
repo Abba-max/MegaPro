@@ -231,7 +231,7 @@
 .chart-bar {
     width: 100%;
     max-width: 40px;
-    background: linear-gradient(180deg, #3B82F6 0%, #1D4ED8 100%);
+    background: linear-gradient(180deg, var(--primary) 0%, var(--primary-hover) 100%);
     border-radius: 6px 6px 0 0;
     min-height: 4px;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -239,8 +239,8 @@
 }
 
 .chart-bar-item:hover .chart-bar {
-    background: linear-gradient(180deg, #60A5FA 0%, #2563EB 100%);
-    box-shadow: 0 4px 15px rgba(59, 130, 246, 0.4);
+    background: linear-gradient(180deg, var(--accent) 0%, var(--accent-hover) 100%);
+    box-shadow: 0 4px 15px rgba(240, 124, 16, 0.4);
 }
 
 .chart-label {
@@ -264,7 +264,7 @@
     width: 32px;
     height: 32px;
     animation: spin 1s linear infinite;
-    color: #3B82F6;
+    color: var(--primary);
 }
 
 .no-data {

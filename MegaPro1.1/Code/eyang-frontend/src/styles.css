@@ -1,8 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --primary: #2563EB;
-  --primary-hover: #1D4ED8;
+  --primary: #062E56;
+  --primary-hover: #041f3a;
+  --accent: #F07C10;
+  --accent-hover: #d36a08;
   --primary-light: #EFF6FF;
   --dark: #0F172A;
   --sidebar-bg: #0F172A;
@@ -100,14 +102,59 @@ button {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, var(--primary) 0%, #0052CC 100%);
+  background: var(--primary);
   color: white;
-  box-shadow: 0 4px 14px 0 rgba(0, 102, 255, 0.39);
+  box-shadow: 0 4px 14px 0 rgba(6, 46, 86, 0.3);
 }
 
 .btn-primary:hover {
+  background: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 102, 255, 0.23);
+  box-shadow: 0 6px 20px rgba(6, 46, 86, 0.4);
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: white;
+  box-shadow: 0 4px 14px 0 rgba(240, 124, 16, 0.3);
+}
+
+.btn-accent:hover {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(240, 124, 16, 0.4);
+}
+
+.btn-action {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+}
+
+.btn-action:hover {
+  background: var(--bg-main);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #DC2626;
+  transform: translateY(-2px);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-main);
+}
+
+.btn-ghost:hover {
+  background: var(--bg-main);
+  color: var(--primary);
 }
 
 .table {

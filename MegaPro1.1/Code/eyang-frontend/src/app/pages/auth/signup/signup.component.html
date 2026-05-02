@@ -31,16 +31,16 @@
                 <!-- ═══ STEP 1: Account Type & Credentials ═══ -->
                 <div class="step-content" *ngIf="currentStep === 1">
                     <label class="input-label">{{ 'auth.i_am_a' | translate }}</label>
-                    <div class="role-selector">
-                        <button class="role-btn" [class.active]="signupForm.role === 'Student'" (click)="signupForm.role = 'Student'">
+                    <div class="role-selector" role="radiogroup" aria-label="Account Type">
+                        <button class="role-btn" role="radio" [attr.aria-checked]="signupForm.role === 'Student'" [class.active]="signupForm.role === 'Student'" (click)="signupForm.role = 'Student'">
                             <lucide-icon [img]="StudentIcon" class="role-icon"></lucide-icon>
                             <span>{{ 'auth.student' | translate }}</span>
                         </button>
-                        <button class="role-btn" [class.active]="signupForm.role === 'Parent'" (click)="signupForm.role = 'Parent'">
+                        <button class="role-btn" role="radio" [attr.aria-checked]="signupForm.role === 'Parent'" [class.active]="signupForm.role === 'Parent'" (click)="signupForm.role = 'Parent'">
                             <lucide-icon [img]="ParentIcon" class="role-icon"></lucide-icon>
                             <span>{{ 'auth.parent' | translate }}</span>
                         </button>
-                        <button class="role-btn" [class.active]="signupForm.role === 'Owner'" (click)="signupForm.role = 'Owner'">
+                        <button class="role-btn" role="radio" [attr.aria-checked]="signupForm.role === 'Owner'" [class.active]="signupForm.role === 'Owner'" (click)="signupForm.role = 'Owner'">
                             <lucide-icon [img]="OwnerIcon" class="role-icon"></lucide-icon>
                             <span>{{ 'auth.owner' | translate }}</span>
                         </button>

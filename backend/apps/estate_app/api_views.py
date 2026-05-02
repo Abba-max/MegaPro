@@ -18,6 +18,7 @@ from .permissions import IsVerifiedOwner
 from django.utils import timezone
 from django.db.models import Sum, Avg
 from .utils import send_verification_email, send_welcome_email
+from .tasks import send_verification_email_task, send_welcome_email_task
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
@@ -36,12 +37,12 @@ def register_view(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     user = serializer.save()
     
-    # Send verification email
+    # Send verification email asynchronously
     try:
-        send_verification_email(user, request)
+        send_verification_email_task.delay(user.id)
     except Exception as e:
         # Log error but don't fail registration
-        print(f"Failed to send verification email: {e}")
+        print(f"Failed to queue verification email: {e}")
 
     refresh = MyTokenObtainPairSerializer.get_token(user)
     return Response({'access': str(refresh.access_token), 'refresh': str(refresh)},
@@ -65,7 +66,10 @@ def verify_email_view(request):
     if default_token_generator.check_token(user, token):
         user.is_verified = True
         user.save()
-        send_welcome_email(user)
+        try:
+            send_welcome_email_task.delay(user.id)
+        except Exception as e:
+            print(f"Failed to queue welcome email: {e}")
         return Response({'message': 'Email verified successfully.'})
     else:
         return Response({'error': 'Invalid or expired token.'}, status=400)
