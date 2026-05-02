@@ -812,7 +812,7 @@
   }
   .hero-search-btn span { display: none; } /* Hide "Search" text on very small screens */
   .btn-search-icon { width: 18px; height: 18px; }
-
+  
   .filter-bar-container { margin-top: -20px; padding: 0 0.4rem; }
   .filter-bar { padding: 6px; border-radius: 12px; }
   .filter-items { gap: 4px; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; padding: 0 2px 2px 2px; }
