@@ -31,7 +31,7 @@ def send_verification_email(user, request=None):
     
     # In a real app, this would be your frontend URL
     # For dev, we might use a setting or request.build_absolute_uri
-    frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:4200')
+    frontend_url = getattr(settings, 'FRONTEND_URL', 'https://www.eyangestate.com:4200')
     verification_url = f"{frontend_url}/verify?uid={uid}&token={token}"
     
     context = {
@@ -51,7 +51,7 @@ def send_welcome_email(user):
     """
     Sends a welcome email after successful verification.
     """
-    frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:4200')
+    frontend_url = getattr(settings, 'FRONTEND_URL', 'https://www.eyangestate.com')
     context = {
         'name': f"{user.first_name} {user.last_name}".strip() or user.username,
         'site_url': frontend_url

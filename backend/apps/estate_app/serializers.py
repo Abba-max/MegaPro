@@ -88,7 +88,7 @@ class UserSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if obj.id_card:
             url = obj.id_card.url
-            return request.build_absolute_uri(url) if request else f"http://localhost:8000{url}"
+            return request.build_absolute_uri(url) if request else f"https://www.eyangestate.com{url}"
         return None
 
 
@@ -103,7 +103,7 @@ class EstateImageSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if obj.image:
             url = obj.image.url
-            return request.build_absolute_uri(url) if request else f"http://localhost:8000{url}"
+            return request.build_absolute_uri(url) if request else f"https://www.eyangestate.com{url}"
         return None
 
 
@@ -123,7 +123,7 @@ class RoomImageSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if obj.image:
             url = obj.image.url
-            return request.build_absolute_uri(url) if request else f"http://localhost:8000{url}"
+            return request.build_absolute_uri(url) if request else f"https://www.eyangestate.com{url}"
         return None
 
 
@@ -237,7 +237,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         first_image = obj.estate.images.first()
         if first_image:
             url = first_image.image.url
-            return request.build_absolute_uri(url) if request else f"http://localhost:8000{url}"
+            return request.build_absolute_uri(url) if request else f"https://www.eyangestate.com{url}"
         return None
 
     def get_likes_count(self, obj):
@@ -276,7 +276,7 @@ class QuickOrderSerializer(serializers.ModelSerializer):
         first_image = obj.estate.images.first()
         if first_image:
             url = first_image.image.url
-            return request.build_absolute_uri(url) if request else f"http://localhost:8000{url}"
+            return request.build_absolute_uri(url) if request else f"https://www.eyangestate.com{url}"
         return None
 
     def get_estate_price(self, obj) -> int:
@@ -349,7 +349,7 @@ class ConversationSerializer(serializers.ModelSerializer):
         first_image = obj.estate.images.first()
         if first_image:
             url = first_image.image.url
-            return request.build_absolute_uri(url) if request else f"http://localhost:8000{url}"
+            return request.build_absolute_uri(url) if request else f"https://www.eyangestate.com{url}"
         return None
 
     def get_last_message(self, obj):

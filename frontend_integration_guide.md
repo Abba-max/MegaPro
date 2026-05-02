@@ -3,7 +3,7 @@
 This guide provides the technical specifications for the Angular frontend team to integrate with the Django REST Framework (DRF) backend.
 
 ## 1. Environment Configuration
-- **Base URL**: `http://localhost:8000/`
+- **Base URL**: `https://www.eyangestate.com`
 - **API Version Path**: `api/`
 - **Content Type**: `application/json`
 
@@ -99,7 +99,7 @@ export class EstateService {
   constructor(private http: HttpClient) {}
 
   getEstates(): Observable<Estate[]> {
-    return this.http.get<Estate[]>('http://localhost:8000/api/estates/');
+    return this.http.get<Estate[]>('http://www.eyangestate.com/api/estates/');
   }
 }
 ```
