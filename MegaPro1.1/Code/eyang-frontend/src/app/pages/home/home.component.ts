@@ -10,7 +10,7 @@ import {
   CheckCircle, XCircle, AlertCircle, Info, Tv, Thermometer,
   Maximize2, Navigation, BedDouble, Bed, X, Users, ChevronDown
 } from 'lucide-angular';
-import { EstateService, Estate, PlatformStats } from '../../services/estate.service';
+import { EstateService, Estate, PlatformStats, getAbsoluteUrl } from '../../services/estate.service';
 import { AuthService } from '../../services/auth.service';
 
 export interface Toast {
@@ -368,8 +368,10 @@ mapGridLabel(price: number): string {
 
   // ── Helpers ───────────────────────────────────────────────
   getFirstImage(estate: Estate): string {
-    if (estate.images?.length > 0 && estate.images[0].image) return estate.images[0].image;
-    return 'assets/images/placeholder.jpg';
+    if (estate.images?.length > 0 && estate.images[0].image) {
+      return getAbsoluteUrl(estate.images[0].image, 400);
+    }
+    return '';
   }
 
   getStarArray(rating: string | number): number[] {

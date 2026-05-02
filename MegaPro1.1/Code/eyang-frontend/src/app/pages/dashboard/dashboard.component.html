@@ -411,7 +411,7 @@
       <div class="o-list" *ngIf="myReservations.length>0">
         <div class="o-card" *ngFor="let r of myReservations">
           <div class="o-card__av o-card__av--img">
-            <img *ngIf="r.estate_image" [src]="r.estate_image" [alt]="r.estate_name">
+            <img *ngIf="r.estate_image" [src]="r.estate_image" [alt]="r.estate_name" loading="lazy">
             <lucide-icon *ngIf="!r.estate_image" [img]="HomeIcon"></lucide-icon>
           </div>
           <div class="o-card__body">

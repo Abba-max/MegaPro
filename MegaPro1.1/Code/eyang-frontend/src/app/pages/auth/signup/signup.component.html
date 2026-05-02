@@ -120,7 +120,7 @@
 
                         <ng-container *ngIf="idCardPreview">
                             <div class="preview-container">
-                                <img [src]="idCardPreview" class="id-preview">
+                                <img [src]="idCardPreview" class="id-preview" loading="lazy">
                                 <button class="remove-file-btn" (click)="removeFile(); $event.stopPropagation()">
                                     <lucide-icon [img]="XIcon" class="icon-xs"></lucide-icon>
                                 </button>

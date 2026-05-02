@@ -305,30 +305,31 @@ export class AdminLogementsComponent implements OnInit {
           if (!created) return;
           this.showToast(`"${created.name}" créé. Veuillez configurer les chambres.`, 'success');
           const finalize = () => { this.isSaving.set(false); this.showModal = false; this.load(); this.openManageRooms(created); };
-          if (this.selectedFiles.length) { this.uploadImages(created.id).subscribe(() => finalize()); }
-          else finalize();
+          if (this.selectedFiles.length) {
+            this.estateService.uploadEstateImages(created.id, this.selectedFiles).subscribe({
+              next: () => finalize(),
+              error: () => { this.showToast('Erreur lors de l\'upload des images.', 'error'); finalize(); }
+            });
+          } else finalize();
         });
     }
   }
 
   private uploadImages(estateId: number): Observable<any> {
     if (!this.selectedFiles.length) return of([]);
-    const token   = localStorage.getItem('access_token') ?? '';
-    const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
-    const uploads = this.selectedFiles.map(file => {
-      const fd = new FormData();
-      fd.append('estate', String(estateId));
-      fd.append('image', file);
-      return this.http.post(`${this.API}/api/estate-images/`, fd, { headers })
-        .pipe(catchError(() => of(null)));
-    });
-    return forkJoin(uploads);
+    return this.estateService.uploadEstateImages(estateId, this.selectedFiles).pipe(
+      catchError(err => {
+        console.error('Upload failed:', err);
+        return of(null);
+      })
+    );
   }
 
   getImageUrl(url: string | null): string {
     if (!url) return '';
     if (url.startsWith('http')) return url;
-    return `${this.API.replace('/api', '')}${url.startsWith('/') ? '' : '/'}${url}`;
+    const base = this.API.endsWith('/api') ? this.API.replace('/api', '') : '';
+    return `${base}${url.startsWith('/') ? '' : '/'}${url}`;
   }
 
   togglePublish(estate: Estate): void {

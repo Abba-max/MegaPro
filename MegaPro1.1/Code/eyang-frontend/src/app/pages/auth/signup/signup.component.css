@@ -3,11 +3,11 @@
     --auth-primary: #0F172A;
     --auth-accent: #2563EB;
     --auth-bg: #F8FAFC;
-    --auth-card-bg: rgba(255, 255, 255, 0.98);
+    --auth-card-bg: #FFFFFF;
     --auth-border: #E2E8F0;
     --auth-text: #1E293B;
-    --auth-text-muted: #64748B;
-    --auth-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+    --auth-text-muted: #475569;
+    --auth-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.06);
 }
 
 .auth-page-wrapper {
@@ -197,6 +197,11 @@
     border-color: var(--auth-accent);
     outline: none;
     box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.modern-input::placeholder {
+    color: #94A3B8;
+    font-weight: 400;
 }
 
 .pw-toggle {

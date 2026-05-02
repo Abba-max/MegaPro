@@ -4,9 +4,9 @@
     --primary-hover: #1D4ED8;
     --bg-main: #F8FAFC;
     --card-bg: #FFFFFF;
-    --border-color: rgba(226, 232, 240, 0.8);
-    --text-main: #0F172A;
-    --text-muted: #64748B;
+    --border-color: #E2E8F0;
+    --text-main: #1E293B;
+    --text-muted: #475569;
     --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     --radius-lg: 16px;
@@ -358,7 +358,7 @@
     .form-row-modal { grid-template-columns: 1fr; gap: 1rem; margin-bottom: 1rem; }
 }
 .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-.form-group label { font-size: 13px; font-weight: 700; color: #475569; }
+.form-group label { font-size: 13px; font-weight: 700; color: var(--text-muted); }
 .required { color: #EF4444; }
 
 .input, .textarea-field, .select-input.full-width {

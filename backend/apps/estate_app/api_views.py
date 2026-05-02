@@ -98,7 +98,12 @@ class EstateViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
-        qs = Estate.objects.all().prefetch_related('images')
+        qs = Estate.objects.all().select_related('owner').prefetch_related(
+            'images',
+            'room_categories',
+            'room_categories__images',
+            'reviews'
+        )
         p = self.request.query_params
         if loc := p.get('location'): qs = qs.filter(location__icontains=loc)
         if st := p.get('status'): qs = qs.filter(status=st)
@@ -241,7 +246,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return ctx
 
     def get_queryset(self):
-        qs = Review.objects.all().select_related('estate').prefetch_related('likes')
+        qs = Review.objects.all().select_related('estate', 'user').prefetch_related('likes')
         p = self.request.query_params
         if eid := p.get('estate'): qs = qs.filter(estate_id=eid)
         if p.get('mine') == '1' and self.request.user.is_authenticated:
@@ -275,7 +280,7 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
         return ctx
 
     def get_queryset(self):
-        qs = QuickOrder.objects.all().select_related('estate').order_by('-created_at')
+        qs = QuickOrder.objects.all().select_related('estate', 'room_category', 'user').order_by('-created_at')
         p = self.request.query_params
         if p.get('mine') == '1' and self.request.user.is_authenticated:
             qs = qs.filter(estate__owner=self.request.user)
@@ -367,7 +372,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Conversation.objects.filter(Q(client=user) | Q(owner=user)).order_by('-updated_at')
+        return Conversation.objects.filter(Q(client=user) | Q(owner=user)).select_related('client', 'owner', 'estate').prefetch_related('messages', 'estate__images').order_by('-updated_at')
 
     def create(self, request, *args, **kwargs):
         estate_id = request.data.get('estate_id')

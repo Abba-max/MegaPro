@@ -10,7 +10,7 @@ import {
   MessageSquare, Send, X, Images, Loader, CheckCircle, XCircle, AlertCircle,
   Heart, Tv, Thermometer, Phone, Info
 } from 'lucide-angular';
-import { EstateService, Estate, Review, Conversation, RoomCategory, AverageRating } from '../../services/estate.service';
+import { EstateService, Estate, Review, Conversation, RoomCategory, AverageRating, getAbsoluteUrl } from '../../services/estate.service';
 import { AuthService, User } from '../../services/auth.service';
 
 export interface Toast {
@@ -136,8 +136,7 @@ export class HousingDetailComponent implements OnInit {
       next: (data) => {
         this.hosingEquipmentsWithIcons = this.buildEquipments(data);
         this.housing    = data;
-        this.photos     = data.images.map((img: any) => img.image).filter(Boolean);
-        if (this.photos.length === 0) this.photos = ['assets/images/placeholder.jpg'];
+        this.photos     = data.images.map((img: any) => getAbsoluteUrl(img.image, 1200)).filter(Boolean);
         this.isLoading  = false;
         const available = (data.room_categories || []).filter(rc => rc.quantity_available > 0);
         if (available.length === 1) {

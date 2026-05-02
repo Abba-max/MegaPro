@@ -36,15 +36,22 @@
 
       <!-- ══ PHOTO GALLERY ══ -->
       <div class="gallery-hero">
-        <div class="gallery-main" (click)="openLightbox(activePhotoIndex)">
-          <img [src]="photos[activePhotoIndex]" [alt]="housing!.name" class="gallery-main-img">
-          <div class="gallery-nav gallery-nav-left" (click)="$event.stopPropagation(); prevPhoto()">
+        <div class="gallery-main" (click)="photos.length > 0 && openLightbox(activePhotoIndex)">
+          <img *ngIf="photos.length > 0" [src]="photos[activePhotoIndex]" [alt]="housing!.name" class="gallery-main-img" loading="lazy">
+          
+          <!-- No-image fallback -->
+          <div *ngIf="photos.length === 0" class="gallery-no-image">
+            <lucide-icon [img]="ImagesIcon" class="no-img-icon"></lucide-icon>
+            <span>{{ 'listings.no_images' | translate }}</span>
+          </div>
+
+          <div class="gallery-nav gallery-nav-left" *ngIf="photos.length > 1" (click)="$event.stopPropagation(); prevPhoto()">
             <lucide-icon [img]="ChevronLeftIcon" class="gallery-nav-icon"></lucide-icon>
           </div>
-          <div class="gallery-nav gallery-nav-right" (click)="$event.stopPropagation(); nextPhoto()">
+          <div class="gallery-nav gallery-nav-right" *ngIf="photos.length > 1" (click)="$event.stopPropagation(); nextPhoto()">
             <lucide-icon [img]="ChevronRightIcon" class="gallery-nav-icon"></lucide-icon>
           </div>
-          <div class="gallery-counter">
+          <div class="gallery-counter" *ngIf="photos.length > 0">
             <lucide-icon [img]="ImagesIcon" class="counter-icon"></lucide-icon>
             {{ activePhotoIndex + 1 }} / {{ photos.length }}
           </div>
@@ -55,7 +62,7 @@
         <div class="gallery-thumbs" *ngIf="photos.length > 1">
           <div class="gallery-thumb" *ngFor="let photo of photos; let i = index"
             [class.active]="i === activePhotoIndex" (click)="setActivePhoto(i)">
-            <img [src]="photo" [alt]="housing!.name + ' ' + (i+1)">
+            <img [src]="photo" [alt]="housing!.name + ' ' + (i+1)" loading="lazy">
           </div>
         </div>
       </div>
@@ -142,7 +149,7 @@
                     <div class="rcc-swiper-track"
                          [style.transform]="'translateX(-' + getRccActiveIndex(rc) * 100 + '%)'">
                       <div class="rcc-swiper-slide" *ngFor="let img of rc.images">
-                        <img [src]="img.image" [alt]="rc.name">
+                        <img [src]="img.image" [alt]="rc.name" loading="lazy">
                       </div>
                     </div>
 

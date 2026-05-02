@@ -88,7 +88,9 @@ class UserSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if obj.id_card:
             url = obj.id_card.url
-            return request.build_absolute_uri(url) if request else f"https://www.eyangestate.com{url}"
+            if url.startswith('http'):
+                return url
+            return request.build_absolute_uri(url) if request else url
         return None
 
 
@@ -103,7 +105,9 @@ class EstateImageSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if obj.image:
             url = obj.image.url
-            return request.build_absolute_uri(url) if request else f"https://www.eyangestate.com{url}"
+            if url.startswith('http'):
+                return url
+            return request.build_absolute_uri(url) if request else url
         return None
 
 
@@ -123,7 +127,9 @@ class RoomImageSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if obj.image:
             url = obj.image.url
-            return request.build_absolute_uri(url) if request else f"https://www.eyangestate.com{url}"
+            if url.startswith('http'):
+                return url
+            return request.build_absolute_uri(url) if request else url
         return None
 
 
@@ -170,52 +176,60 @@ class EstateSerializer(serializers.ModelSerializer):
         ]
 
     def get_average_rating(self, obj) -> dict:
-        from django.db.models import Avg, Count
-        top = obj.reviews.filter(parent__isnull=True)
-        agg = top.aggregate(avg=Avg('rating'), count=Count('id'))
-        avg   = agg['avg']
-        count = agg['count'] or 0
+        # Uses prefetched reviews in memory
+        top_reviews = [r for r in obj.reviews.all() if r.parent_id is None]
+        count = len(top_reviews)
+        if count == 0:
+            return {'value': 0.0, 'display': "0.0", 'count': 0, 'breakdown': {i: 0 for i in range(1, 6)}}
+
+        total_rating = sum(r.rating for r in top_reviews)
+        avg = total_rating / count
+        
         breakdown = {i: 0 for i in range(1, 6)}
-        for row in top.values('rating').annotate(n=Count('id')):
-            if 1 <= row['rating'] <= 5:
-                breakdown[row['rating']] = row['n']
-        value = round(avg, 1) if avg is not None else 0.0
+        for r in top_reviews:
+            if 1 <= r.rating <= 5:
+                breakdown[r.rating] += 1
+                
+        value = round(avg, 1)
         return {'value': value, 'display': f"{value:.1f}", 'count': count, 'breakdown': breakdown}
 
     def get_capacity(self, obj) -> int:
+        # Uses prefetched room_categories in memory
         total = 0
         for rc in obj.room_categories.all():
-            total += rc.quantity_available * {'single':1,'double':2,'shared':4}.get(rc.occupancy, 1)
+            total += rc.quantity_available * {'single': 1, 'double': 2, 'shared': 4}.get(rc.occupancy, 1)
         return total
 
     def get_free(self, obj) -> int:
-        from django.db.models import Sum
-        # Accuracy fix: Sum of (quantity_available - occupied_count)
-        data = obj.room_categories.aggregate(
-            total=Sum('quantity_available'),
-            occupied=Sum('occupied_count')
-        )
-        total = data['total'] or 0
-        occ   = data['occupied'] or 0
-        return max(0, total - occ)
+        # Uses prefetched room_categories in memory
+        total = 0
+        occupied = 0
+        for rc in obj.room_categories.all():
+            total += rc.quantity_available
+            occupied += rc.occupied_count
+        return max(0, total - occupied)
 
     def get_price(self, obj) -> int:
-        from django.db.models import Min
-        return obj.room_categories.aggregate(min_p=Min('price'))['min_p'] or 0
+        # Uses prefetched room_categories in memory
+        prices = [rc.price for rc in obj.room_categories.all()]
+        return min(prices) if prices else 0
 
     def get_wifi(self, obj) -> str:
-        return '1' if obj.room_categories.filter(wifi='1').exists() else '0'
+        return '1' if any(rc.wifi == '1' for rc in obj.room_categories.all()) else '0'
 
     def get_tv(self, obj) -> str:
-        return '1' if obj.room_categories.filter(tv='1').exists() else '0'
+        return '1' if any(rc.tv == '1' for rc in obj.room_categories.all()) else '0'
 
     def get_fridge(self, obj) -> str:
-        return '1' if obj.room_categories.filter(fridge='1').exists() else '0'
+        return '1' if any(rc.fridge == '1' for rc in obj.room_categories.all()) else '0'
 
     def get_reviews_count(self, obj) -> int:
-        return obj.reviews.filter(parent__isnull=True).count()
+        # Uses prefetched reviews in memory
+        return len([r for r in obj.reviews.all() if r.parent_id is None])
 
     def get_orders_count(self, obj) -> int:
+        # Note: quick_orders is not prefetched by default in get_queryset, 
+        # but this is mostly used in detail views or admin views.
         return obj.quick_orders.count()
 
 
@@ -237,7 +251,9 @@ class ReviewSerializer(serializers.ModelSerializer):
         first_image = obj.estate.images.first()
         if first_image:
             url = first_image.image.url
-            return request.build_absolute_uri(url) if request else f"https://www.eyangestate.com{url}"
+            if url.startswith('http'):
+                return url
+            return request.build_absolute_uri(url) if request else url
         return None
 
     def get_likes_count(self, obj):
@@ -276,7 +292,9 @@ class QuickOrderSerializer(serializers.ModelSerializer):
         first_image = obj.estate.images.first()
         if first_image:
             url = first_image.image.url
-            return request.build_absolute_uri(url) if request else f"https://www.eyangestate.com{url}"
+            if url.startswith('http'):
+                return url
+            return request.build_absolute_uri(url) if request else url
         return None
 
     def get_estate_price(self, obj) -> int:
@@ -349,7 +367,9 @@ class ConversationSerializer(serializers.ModelSerializer):
         first_image = obj.estate.images.first()
         if first_image:
             url = first_image.image.url
-            return request.build_absolute_uri(url) if request else f"https://www.eyangestate.com{url}"
+            if url.startswith('http'):
+                return url
+            return request.build_absolute_uri(url) if request else url
         return None
 
     def get_last_message(self, obj):

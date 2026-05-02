@@ -73,7 +73,7 @@
                 <td data-label="LOGEMENT">
                     <div class="housing-cell">
                         <div class="housing-thumb" *ngIf="l.images && l.images.length">
-                            <img [src]="getImageUrl(l.images[0].image)" alt="">
+                            <img [src]="getImageUrl(l.images[0].image)" alt="" loading="lazy">
                         </div>
                         <div class="housing-thumb placeholder-thumb" *ngIf="!l.images || !l.images.length">
                             <lucide-icon [img]="HomeIcon" class="thumb-icon"></lucide-icon>
@@ -320,7 +320,7 @@
                     <p class="existing-label">{{ 'admin.existing_photos' | translate }} :</p>
                     <div class="preview-grid">
                         <div class="preview-item" *ngFor="let img of existingImages; let i = index">
-                            <img [src]="getImageUrl(img.image)" alt="existing">
+                            <img [src]="getImageUrl(img.image)" alt="existing" loading="lazy">
                             <button class="preview-remove" (click)="removeExisting(i)">×</button>
                         </div>
                     </div>
@@ -389,7 +389,7 @@
                         <td data-label="TYPE">
                             <div class="housing-cell">
                                 <div class="housing-thumb" *ngIf="rm.images && rm.images.length">
-                                    <img [src]="getImageUrl(rm.images[0].image)" alt="">
+                                    <img [src]="getImageUrl(rm.images[0].image)" alt="" loading="lazy">
                                 </div>
                                 <div class="housing-thumb placeholder-thumb" *ngIf="!rm.images || !rm.images.length">
                                     <lucide-icon [img]="BuildingIcon" class="thumb-icon"></lucide-icon>
