@@ -1,12 +1,12 @@
 /* ── Variables & Setup ───────────────────────────────────────── */
 :host {
-    --auth-primary: #f97316; /* Orange */
-    --auth-accent: #ea580c; /* Deep Orange */
+    --auth-primary: #F07C10; /* Orange */
+    --auth-accent: #E06C00; /* Deep Orange */
     --auth-bg: #F1F5F9;
-    --auth-card-bg: #1e3a8a; /* Logo Blue */
+    --auth-card-bg: #062E56; /* Logo Blue */
     --auth-border: rgba(255, 255, 255, 0.1);
-    --auth-text: #ffffff;
-    --auth-text-muted: rgba(255, 255, 255, 0.7);
+    --auth-text: #F07C10;
+    --auth-text-muted: rgba(240, 124, 16, 0.8);
     --auth-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
 }
 
@@ -59,7 +59,7 @@
 .auth-title {
     font-size: 1.5rem;
     font-weight: 800;
-    color: #f97316; /* Orange title */
+    color: #F07C10; /* Brand Orange title */
     letter-spacing: -0.02em;
 }
 
