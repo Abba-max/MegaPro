@@ -1,13 +1,13 @@
 /* ── Variables & Setup ───────────────────────────────────────── */
 :host {
-    --auth-primary: #0F172A;
-    --auth-accent: #2563EB;
-    --auth-bg: #F8FAFC;
-    --auth-card-bg: #FFFFFF;
-    --auth-border: #E2E8F0;
-    --auth-text: #1E293B;
-    --auth-text-muted: #475569;
-    --auth-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.04), 0 10px 10px -5px rgba(0, 0, 0, 0.01);
+    --auth-primary: #f97316; /* Orange */
+    --auth-accent: #ea580c; /* Deep Orange */
+    --auth-bg: #F1F5F9;
+    --auth-card-bg: #1e3a8a; /* Logo Blue */
+    --auth-border: rgba(255, 255, 255, 0.1);
+    --auth-text: #ffffff;
+    --auth-text-muted: rgba(255, 255, 255, 0.7);
+    --auth-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
 }
 
 .auth-page-wrapper {
@@ -70,7 +70,7 @@
 .auth-title {
     font-size: 1.75rem;
     font-weight: 800;
-    color: var(--auth-primary);
+    color: #f97316; /* Orange title */
     letter-spacing: -0.02em;
     margin-bottom: 0.5rem;
 }
@@ -105,10 +105,10 @@
 .modern-input {
     width: 100%;
     padding: 0.875rem 1rem 0.875rem 3rem;
-    border: 1.5px solid var(--auth-border);
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     font-size: 0.9375rem;
-    color: var(--auth-text);
+    color: #1e293b;
     background: white;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -211,9 +211,9 @@
 }
 
 .btn-auth-primary:hover:not(:disabled) {
-    background: #1E293B;
+    background: #c2410c;
     transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
 }
 
 .btn-auth-primary:disabled {

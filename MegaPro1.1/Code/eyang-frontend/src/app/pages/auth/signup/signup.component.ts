@@ -65,7 +65,7 @@ export class SignupComponent {
   ) {}
 
   // ── Password Strength ───────────────────────────────────────
-  passwordStrength = computed(() => {
+  get passwordStrength() {
     const pw = this.signupForm.password;
     if (!pw) return { level: 'none', pct: 0, label: '' };
     
@@ -79,7 +79,7 @@ export class SignupComponent {
     if (score <= 50) return { level: 'fair', pct: 50, label: this.translate.instant('auth.pw_fair') };
     if (score <= 75) return { level: 'good', pct: 75, label: this.translate.instant('auth.pw_good') };
     return { level: 'strong', pct: 100, label: this.translate.instant('auth.pw_strong') };
-  });
+  }
 
   // ── Step Navigation ─────────────────────────────────────────
   nextStep(): void {

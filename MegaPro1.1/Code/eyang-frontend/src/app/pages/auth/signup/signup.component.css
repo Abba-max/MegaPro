@@ -1,13 +1,13 @@
 /* ── Variables & Setup ───────────────────────────────────────── */
 :host {
-    --auth-primary: #0F172A;
-    --auth-accent: #2563EB;
-    --auth-bg: #F8FAFC;
-    --auth-card-bg: #FFFFFF;
-    --auth-border: #E2E8F0;
-    --auth-text: #1E293B;
-    --auth-text-muted: #475569;
-    --auth-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.06);
+    --auth-primary: #f97316; /* Orange */
+    --auth-accent: #ea580c; /* Deep Orange */
+    --auth-bg: #F1F5F9;
+    --auth-card-bg: #1e3a8a; /* Logo Blue */
+    --auth-border: rgba(255, 255, 255, 0.1);
+    --auth-text: #ffffff;
+    --auth-text-muted: rgba(255, 255, 255, 0.7);
+    --auth-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
 }
 
 .auth-page-wrapper {
@@ -59,7 +59,7 @@
 .auth-title {
     font-size: 1.5rem;
     font-weight: 800;
-    color: var(--auth-primary);
+    color: #f97316; /* Orange title */
     letter-spacing: -0.02em;
 }
 
@@ -116,44 +116,47 @@
 }
 
 .role-selector {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    justify-content: center;
     gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
 }
 
 .role-btn {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
-    padding: 1.25rem 0.5rem;
+    gap: 0.5rem;
+    padding: 0.75rem 0.5rem;
     background: white;
     border: 2px solid #F1F5F9;
-    border-radius: 16px;
+    border-radius: 12px;
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .role-btn:hover {
     border-color: #E2E8F0;
-    background: #F8FAFC;
+    background: rgba(255, 255, 255, 0.05);
 }
 
 .role-btn.active {
     border-color: var(--auth-accent);
-    background: #EFF6FF;
-    color: var(--auth-accent);
+    background: #FFF7ED; /* Light Orange */
 }
 
 .role-icon {
     width: 24px;
     height: 24px;
+    color: var(--auth-accent);
+    transition: all 0.2s;
 }
 
 .role-btn span {
-    font-size: 0.8125rem;
+    font-size: 0.75rem;
     font-weight: 700;
+    color: var(--auth-text-muted);
 }
 
 /* ── Form Layout ───────────────────────────────────────────── */
@@ -185,10 +188,10 @@
 .modern-input {
     width: 100%;
     padding: 0.875rem 1rem 0.875rem 3rem;
-    border: 1.5px solid var(--auth-border);
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
     border-radius: 14px;
     font-size: 0.9375rem;
-    color: var(--auth-text);
+    color: #1e293b;
     background: white;
     transition: all 0.2s;
 }
@@ -215,39 +218,8 @@
     align-items: center;
 }
 
-/* ── Password Strength ─────────────────────────────────────── */
-.pw-strength-container {
-    margin-top: 0.75rem;
-}
 
-.pw-strength-bar {
-    height: 4px;
-    background: #F1F5F9;
-    border-radius: 2px;
-    overflow: hidden;
-}
-
-.pw-strength-fill {
-    height: 100%;
-    transition: all 0.4s ease;
-}
-
-.pw-strength-fill.weak { background: #EF4444; }
-.pw-strength-fill.fair { background: #F59E0B; }
-.pw-strength-fill.good { background: #3B82F6; }
-.pw-strength-fill.strong { background: #10B981; }
-
-.pw-strength-text {
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-top: 4px;
-    display: inline-block;
-}
-
-.pw-strength-text.weak { color: #EF4444; }
-.pw-strength-text.fair { color: #F59E0B; }
-.pw-strength-text.good { color: #3B82F6; }
-.pw-strength-text.strong { color: #10B981; }
+/* ── Auth shared styles relocated to styles.css ── */
 
 /* ── Owner Info & Upload ───────────────────────────────────── */
 .owner-info-box {
@@ -281,13 +253,13 @@
     text-align: center;
     cursor: pointer;
     transition: all 0.2s;
-    background: #F8FAFC;
+    background: rgba(255, 255, 255, 0.05);
     position: relative;
 }
 
 .upload-zone:hover {
     border-color: var(--auth-accent);
-    background: #EFF6FF;
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .upload-zone.has-file {
@@ -380,7 +352,7 @@
 }
 
 .verification-hint {
-    background: #F8FAFC;
+    background: rgba(255, 255, 255, 0.05);
     padding: 1rem;
     border-radius: 12px;
     font-size: 0.875rem;
@@ -416,7 +388,7 @@
 }
 
 .btn-auth-primary:hover:not(:disabled) {
-    background: #1E293B;
+    background: #c2410c;
     transform: translateY(-2px);
 }
 
@@ -468,5 +440,5 @@
 @media (max-width: 480px) {
     .auth-card { padding: 1.5rem; border-radius: 24px; }
     .form-row { grid-template-columns: 1fr; }
-    .role-selector { grid-template-columns: 1fr; }
+    .role-selector { flex-direction: row; }
 }

@@ -37,10 +37,14 @@ export class VerifyComponent implements OnInit {
     }
 
     // Call backend to verify
-    // For now, I'll simulate a success after 2 seconds
-    // or call a real endpoint if it exists.
-    setTimeout(() => {
+    this.authService.verifyEmail(uid, token).subscribe({
+      next: () => {
         this.status.set('success');
-    }, 2000);
+      },
+      error: (err) => {
+        this.status.set('error');
+        this.errorMessage = err?.error?.error || 'Lien de vérification invalide ou expiré.';
+      }
+    });
   }
 }

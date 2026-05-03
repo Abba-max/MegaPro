@@ -156,7 +156,7 @@ button {
   to {
     opacity: 1;
     transform: translateY(0);
-  }
+}
 }
 
 .fade-in {
@@ -215,21 +215,21 @@ html {
   .btn {
     padding: 0.625rem 1.25rem;
     font-size: 14px;
-  }
+}
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
   /* Tablet */
   body {
     font-size: 15px;
-  }
+}
 }
 
 @media (min-width: 1025px) {
   /* Desktop */
   body {
     font-size: 16px;
-  }
+}
 }
 
 /* Touch targets for mobile */
@@ -242,7 +242,7 @@ html {
   /* Prevent text size adjustment on iOS */
   input, textarea, select {
     font-size: 16px !important;
-  }
+}
 }
 
 /* Safe area for notched devices */
@@ -252,7 +252,7 @@ html {
   .modal-card {
     padding-left: max(1rem, env(safe-area-inset-left));
     padding-right: max(1rem, env(safe-area-inset-right));
-  }
+}
 }
 
 /* Improve scrolling on mobile */
@@ -269,7 +269,7 @@ html {
   .modal-card {
     -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
-  }
+}
 }
 
 /* Landscape mobile optimizations */
@@ -281,7 +281,7 @@ html {
   
   .modal-card {
     max-height: 90vh;
-  }
+}
 }
 lucide-icon {
   display: inline-flex !important;
@@ -599,7 +599,7 @@ lucide-icon svg {
     transform:    scale(1.14);
     z-index:      9999 !important;
     border-color: rgba(255,255,255,.9);
-  }
+}
 }
 .estate-popup-inner {
   font-family: 'Nunito', system-ui, sans-serif;
@@ -673,3 +673,36 @@ lucide-icon svg {
     &:hover { text-decoration: underline; }
   }
 }
+/* ── Password Strength (Auth Shared) ─────────────────────────────────────── */
+.pw-strength-container {
+    margin-top: 0.75rem;
+}
+
+.pw-strength-bar {
+    height: 4px;
+    background: #F1F5F9;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.pw-strength-fill {
+    height: 100%;
+    transition: all 0.4s ease;
+}
+
+.pw-strength-fill.weak { background: #EF4444; }
+.pw-strength-fill.fair { background: #F59E0B; }
+.pw-strength-fill.good { background: #3B82F6; }
+.pw-strength-fill.strong { background: #10B981; }
+
+.pw-strength-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.pw-strength-text.weak { color: #EF4444; }
+.pw-strength-text.fair { color: #F59E0B; }
+.pw-strength-text.good { color: #3B82F6; }
+.pw-strength-text.strong { color: #10B981; }

@@ -33,6 +33,14 @@
                                 <lucide-icon [img]="showPassword ? EyeOffIcon : EyeIcon" class="icon-xs"></lucide-icon>
                             </button>
                         </div>
+                        
+                        <!-- Password Strength -->
+                        <div class="pw-strength-container" *ngIf="password">
+                            <div class="pw-strength-bar">
+                                <div class="pw-strength-fill" [style.width]="passwordStrength.pct + '%'" [class]="passwordStrength.level"></div>
+                            </div>
+                            <span class="pw-strength-text" [class]="passwordStrength.level">{{ passwordStrength.label }}</span>
+                        </div>
                     </div>
 
                     <div class="auth-actions mt-4">
