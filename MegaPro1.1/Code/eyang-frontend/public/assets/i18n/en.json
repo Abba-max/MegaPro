@@ -183,7 +183,8 @@
     "edit": "Edit",
     "delete": "Delete",
     "by": "by",
-    "this_month": "this month"
+    "this_month": "this month",
+    "or": "or"
   },
   "auth": {
     "login_title": "Login",
@@ -261,6 +262,7 @@
     "id_card_browse": "browse",
     "id_card_hint": "JPG, PNG, PDF · max 5 MB",
     "create_owner_account": "Create my landlord account",
+    "create_account": "Create my account",
     "sending": "Sending…",
     "pw_weak": "Weak",
     "pw_fair": "Fair",

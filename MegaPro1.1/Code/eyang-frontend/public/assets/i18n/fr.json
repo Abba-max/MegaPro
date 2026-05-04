@@ -183,7 +183,8 @@
     "edit": "Modifier",
     "delete": "Supprimer",
     "by": "par",
-    "this_month": "ce mois-ci"
+    "this_month": "ce mois-ci",
+    "or": "ou"
   },
   "auth": {
     "login_title": "Connexion",
@@ -261,6 +262,7 @@
     "id_card_browse": "parcourir",
     "id_card_hint": "JPG, PNG, PDF · max 5 Mo",
     "create_owner_account": "Créer mon compte bailleur",
+    "create_account": "Créer mon compte",
     "sending": "Envoi en cours…",
     "pw_weak": "Faible",
     "pw_fair": "Moyen",

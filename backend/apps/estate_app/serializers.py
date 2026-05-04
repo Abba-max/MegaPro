@@ -60,21 +60,28 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Ce nom d'utilisateur est déjà pris.")
         return value
 
-    def create(self, validated_data):
-        phone   = validated_data.pop('phone', '')
-        address = validated_data.pop('address', '')
-        role    = validated_data.pop('role', 'Student')
-        user_type        = 'owner' if role == 'Owner' else 'visitor'
-        visitor_category = '1' if role == 'Student' else ('2' if role == 'Parent' else None)
-        return User.objects.create_user(
-            **validated_data,
-            user_type=user_type,
-            contact=phone,
-            address=address,
-            visitor_category=visitor_category,
-            is_verified=False,
-            is_active=True
-        )
+def create(self, validated_data):
+    phone   = validated_data.pop('phone', '')
+    address = validated_data.pop('address', '')
+    role    = validated_data.pop('role', 'Student')
+    id_card = validated_data.pop('id_card', None)   # ← must pop this explicitly
+    
+    user_type        = 'owner' if role == 'Owner' else 'visitor'
+    visitor_category = '1' if role == 'Student' else ('2' if role == 'Parent' else None)
+    
+    user = User.objects.create_user(
+        **validated_data,
+        user_type=user_type,
+        contact=phone,
+        address=address,
+        visitor_category=visitor_category,
+        is_verified=False,
+        is_active=True,
+    )
+    if id_card:
+        user.id_card = id_card
+        user.save(update_fields=['id_card'])
+    return user
 
 
 class UserSerializer(serializers.ModelSerializer):

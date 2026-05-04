@@ -163,7 +163,9 @@
                     <button class="btn-auth-primary" (click)="nextStep()" [disabled]="isLoading()">
                         <span *ngIf="!isLoading()">
                             <ng-container *ngIf="currentStep < (signupForm.role === 'Owner' ? 3 : 2)">{{ 'auth.continue' | translate }}</ng-container>
-                            <ng-container *ngIf="currentStep === (signupForm.role === 'Owner' ? 3 : 2)">{{ 'auth.create_account' | translate }}</ng-container>
+                            <ng-container *ngIf="currentStep === (signupForm.role === 'Owner' ? 3 : 2)">
+                                {{ (signupForm.role === 'Owner' ? 'auth.create_owner_account' : 'auth.create_account') | translate }}
+                            </ng-container>
                         </span>
                         <div class="loader-white" *ngIf="isLoading()"></div>
                         <lucide-icon *ngIf="!isLoading()" [img]="ArrowRIcon" class="btn-icon"></lucide-icon>

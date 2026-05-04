@@ -3,23 +3,30 @@ from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
 from django.db.models import Avg
 from .models import Message, User, Review, QuickOrder
-from .notifications_utils import notify_user
 
 
-# ── Lazy import to avoid circular imports ─────────────────────────────────────
 def _get_ws_utils():
     from . import ws_utils
     return ws_utils
 
 
-# ── Rating auto-calculation ───────────────────────────────────────────────────
+def _notify_safe(user, n_type, title_key, body_key, body_params=None, link=None):
+    """Wrapper around notify_user that never raises — safe to call from signals."""
+    try:
+        from .notifications_utils import notify_user
+        notify_user(
+            user=user,
+            n_type=n_type,
+            title_key=title_key,
+            body_key=body_key,
+            body_params=body_params or {},
+            link=link,
+        )
+    except Exception as e:
+        print(f"[signals] notify_safe failed: {e}")
+
 
 def _recalculate_estate_rating(estate):
-    """
-    Recompute the average rating for an estate from its reviews and
-    persist it back to estate.rating. Only top-level reviews (no parent)
-    are counted, matching the intent of the review system.
-    """
     result = estate.reviews.filter(parent__isnull=True).aggregate(avg=Avg('rating'))
     avg = result['avg']
     estate.rating = f"{round(avg, 1):.1f}" if avg is not None else "0.0"
@@ -28,17 +35,16 @@ def _recalculate_estate_rating(estate):
 
 @receiver(post_save, sender=Review)
 def review_post_save(sender, instance, created, **kwargs):
-    """Recalculate the estate rating and notify the owner."""
     try:
         _recalculate_estate_rating(instance.estate)
         if created:
-            notify_user(
+            _notify_safe(
                 user=instance.estate.owner,
                 n_type='new_review',
                 title_key='notification.new_review_title',
                 body_key='notification.new_review_body',
                 body_params={'estate': instance.estate.name, 'user': instance.name},
-                link=f'/dashboard'
+                link='/dashboard',
             )
     except Exception as e:
         print(f"[signals] review_post_save error: {e}")
@@ -46,14 +52,11 @@ def review_post_save(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=Review)
 def review_post_delete(sender, instance, **kwargs):
-    """Recalculate the estate rating when a review is deleted."""
     try:
         _recalculate_estate_rating(instance.estate)
     except Exception as e:
         print(f"[signals] review_post_delete error: {e}")
 
-
-# ── Messaging signals ─────────────────────────────────────────────────────────
 
 @receiver(post_save, sender=Message)
 def message_post_save(sender, instance, created, **kwargs):
@@ -76,73 +79,68 @@ def message_post_save(sender, instance, created, **kwargs):
             if instance.sender_id == instance.conversation.client_id
             else instance.conversation.client
         )
-        notify_user(
+        _notify_safe(
             user=recipient,
             n_type='new_message',
             title_key='notification.new_message_title',
             body_key='notification.new_message_body',
             body_params={'sender': sender_name, 'text': instance.text[:50]},
-            link=f'/messages'
+            link='/messages',
         )
     except Exception as e:
         print(f"[signals] message_post_save error: {e}")
 
 
-# ── User verification signal ──────────────────────────────────────────────────
-
 @receiver(post_save, sender=User)
 def user_verification_post_save(sender, instance, created, update_fields, **kwargs):
     """
-    Only notify the owner when is_verified is explicitly flipped to True
-    via update_fields=['is_verified']. This prevents the signal from firing
-    on every user save (including create_user during registration).
+    Only fires when is_verified is explicitly saved via update_fields=['is_verified'].
+    This prevents any notification during registration (create_user) or any other
+    unrelated user.save() call.
     """
-    # Guard: only act when is_verified was explicitly updated
-    if update_fields is None or 'is_verified' not in update_fields:
+    # Skip: new user creation
+    if created:
         return
+    # Skip: save didn't explicitly target is_verified
+    if not update_fields or 'is_verified' not in (update_fields or []):
+        return
+    # Skip: was set to False (reject action)
     if not instance.is_verified:
         return
+    # Skip: not an owner
     if instance.user_type != 'owner':
         return
-    try:
-        notify_user(
-            user=instance,
-            n_type='verification_status',
-            title_key='notification.verified_title',
-            body_key='notification.verified_body',
-            link='/dashboard'
-        )
-    except Exception as e:
-        print(f"[signals] user_verification_post_save error: {e}")
 
+    _notify_safe(
+        user=instance,
+        n_type='verification_status',
+        title_key='notification.verified_title',
+        body_key='notification.verified_body',
+        link='/dashboard',
+    )
 
-# ── Reservation (QuickOrder) signals ──────────────────────────────────────────
 
 @receiver(post_save, sender=QuickOrder)
 def quick_order_post_save(sender, instance, created, **kwargs):
-    """Notify owner of new booking, or client of status change."""
     try:
         if created:
-            notify_user(
+            _notify_safe(
                 user=instance.estate.owner,
                 n_type='new_booking',
                 title_key='notification.new_booking_title',
                 body_key='notification.new_booking_body',
                 body_params={'estate': instance.estate.name, 'client': instance.name},
-                link='/dashboard'
+                link='/dashboard',
             )
         else:
-            if instance.status in ['accepted', 'rejected']:
-                recipient = instance.user
-                if recipient:
-                    status_key = f'notification.booking_{instance.status}_body'
-                    notify_user(
-                        user=recipient,
-                        n_type='new_booking',
-                        title_key='notification.booking_update_title',
-                        body_key=status_key,
-                        body_params={'estate': instance.estate.name},
-                        link='/dashboard' if instance.status == 'accepted' else '/'
-                    )
+            if instance.status in ['accepted', 'rejected'] and instance.user:
+                _notify_safe(
+                    user=instance.user,
+                    n_type='new_booking',
+                    title_key='notification.booking_update_title',
+                    body_key=f'notification.booking_{instance.status}_body',
+                    body_params={'estate': instance.estate.name},
+                    link='/dashboard' if instance.status == 'accepted' else '/',
+                )
     except Exception as e:
         print(f"[signals] quick_order_post_save error: {e}")
