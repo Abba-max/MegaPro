@@ -610,16 +610,15 @@ def admin_verify_owner_view(request, user_id):
     act = request.data.get('action')
     if act == 'approve':
         user.is_verified = True
-        user.save()
+        user.save(update_fields=['is_verified'])          # ← triggers the signal correctly
         return Response({'id': user.id, 'is_verified': True})
     elif act == 'reject':
         user.is_verified = False
         if user.id_card:
             user.id_card.delete(save=False)
-        user.save()
+        user.save(update_fields=['is_verified', 'id_card'])  # ← no spurious notification
         return Response({'id': user.id, 'is_verified': False, 'rejected': True})
     return Response({'error': 'Action invalide.'}, status=400)
-
 
 @api_view(['PATCH'])
 @permission_classes([permissions.IsAdminUser])
