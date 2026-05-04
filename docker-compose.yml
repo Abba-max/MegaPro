@@ -19,6 +19,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
+      target: web
     command: >
       sh -c "python manage.py migrate &&
              python manage.py seed_admin &&
@@ -44,7 +45,7 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    command: celery -A project worker --loglevel=info
+      target: celery
     environment:
       - ALLOWED_HOSTS=*
       - REQUIRE_DB_SSL=False
