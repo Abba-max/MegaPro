@@ -18,10 +18,15 @@ from .permissions import IsVerifiedOwner
 from django.utils import timezone
 from django.db.models import Sum, Avg
 from .utils import send_verification_email, send_welcome_email
-from .tasks import send_verification_email_task, send_welcome_email_task
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
+
+try:
+    from .tasks import send_verification_email_task, send_welcome_email_task
+    CELERY_AVAILABLE = True
+except Exception:
+    CELERY_AVAILABLE = False
 
 
 class MyTokenObtainPairView(TokenObtainPairView):
@@ -36,40 +41,45 @@ def register_view(request):
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     user = serializer.save()
-    
-    # Send verification email asynchronously
+
     try:
-        send_verification_email_task.delay(user.id)
+        if CELERY_AVAILABLE:
+            send_verification_email_task.delay(user.id)
+        else:
+            send_verification_email(user)
     except Exception as e:
-        # Log error but don't fail registration
-        print(f"Failed to queue verification email: {e}")
+        print(f"Failed to send verification email: {e}")
 
     refresh = MyTokenObtainPairSerializer.get_token(user)
     return Response({'access': str(refresh.access_token), 'refresh': str(refresh)},
                     status=status.HTTP_201_CREATED)
+
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def verify_email_view(request):
     uid_b64 = request.data.get('uid')
     token = request.data.get('token')
-    
+
     if not uid_b64 or not token:
         return Response({'error': 'UID and token are required.'}, status=400)
-    
+
     try:
         uid = force_str(urlsafe_base64_decode(uid_b64))
         user = User.objects.get(pk=uid)
     except (TypeError, ValueError, OverflowError, User.DoesNotExist):
         return Response({'error': 'Invalid user.'}, status=400)
-        
+
     if default_token_generator.check_token(user, token):
         user.is_verified = True
         user.save()
         try:
-            send_welcome_email_task.delay(user.id)
+            if CELERY_AVAILABLE:
+                send_welcome_email_task.delay(user.id)
+            else:
+                send_welcome_email(user)
         except Exception as e:
-            print(f"Failed to queue welcome email: {e}")
+            print(f"Failed to send welcome email: {e}")
         return Response({'message': 'Email verified successfully.'})
     else:
         return Response({'error': 'Invalid or expired token.'}, status=400)
@@ -129,10 +139,9 @@ class EstateViewSet(viewsets.ModelViewSet):
         if user.user_type == 'owner' and not user.is_verified:
             from rest_framework.exceptions import PermissionDenied
             raise PermissionDenied("Votre compte n'est pas encore verifie.")
-        
+
         owner = user if user.is_authenticated else None
-        
-        # If admin specifies an owner_id, use it
+
         if user.is_staff or user.is_superuser:
             owner_id = self.request.data.get('owner_id')
             if owner_id:
@@ -140,7 +149,7 @@ class EstateViewSet(viewsets.ModelViewSet):
                     owner = User.objects.get(pk=owner_id)
                 except User.DoesNotExist:
                     pass
-        
+
         serializer.save(owner=owner, is_verified=False)
 
     def perform_update(self, serializer):
@@ -148,7 +157,6 @@ class EstateViewSet(viewsets.ModelViewSet):
         if user.is_staff or user.is_superuser:
             serializer.save()
         else:
-            # Owner edit resets verification - admin must re-approve
             serializer.save(is_verified=False)
 
     @action(detail=True, methods=['post'], url_path='images',
@@ -298,21 +306,19 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
         order = self.get_object()
         if order.estate.owner != request.user and not request.user.is_staff:
             return Response({'error': 'error.not_authorized'}, status=403)
-        
+
         if order.status != 'accepted' and order.room_category:
             from django.db import transaction
             try:
                 with transaction.atomic():
-                    from .models import RoomCategory
                     rc = RoomCategory.objects.select_for_update().get(pk=order.room_category_id)
                     if rc.occupied_count >= rc.quantity_available:
                         return Response({'error': 'error.no_availability'}, status=400)
-                    
                     rc.occupied_count += 1
                     rc.save(update_fields=['occupied_count'])
                     order.status = 'accepted'
                     order.save(update_fields=['status'])
-            except Exception as e:
+            except Exception:
                 return Response({'error': 'error.internal_server_error'}, status=500)
         else:
             order.status = 'accepted'
@@ -326,15 +332,14 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
         order = self.get_object()
         if order.estate.owner != request.user and not request.user.is_staff:
             return Response({'error': 'error.not_authorized'}, status=403)
-        
+
         if order.status == 'accepted' and order.room_category:
             from django.db import transaction
             with transaction.atomic():
-                from .models import RoomCategory
                 rc = RoomCategory.objects.select_for_update().get(pk=order.room_category_id)
                 rc.occupied_count = max(0, rc.occupied_count - 1)
                 rc.save(update_fields=['occupied_count'])
-        
+
         order.status = 'rejected'
         order.save(update_fields=['status'])
         return Response(QuickOrderSerializer(order, context={'request': request}).data)
@@ -376,7 +381,11 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return Conversation.objects.filter(Q(client=user) | Q(owner=user)).select_related('client', 'owner', 'estate').prefetch_related('messages', 'estate__images').order_by('-updated_at')
+        return Conversation.objects.filter(
+            Q(client=user) | Q(owner=user)
+        ).select_related('client', 'owner', 'estate').prefetch_related(
+            'messages', 'estate__images'
+        ).order_by('-updated_at')
 
     def create(self, request, *args, **kwargs):
         estate_id = request.data.get('estate_id')
@@ -656,6 +665,7 @@ def admin_delete_user_view(request, user_id):
 
 from .models import Notification
 from .serializers import NotificationSerializer
+
 
 class NotificationViewSet(viewsets.ModelViewSet):
     serializer_class = NotificationSerializer

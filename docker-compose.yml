@@ -6,23 +6,13 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-eyang}
       POSTGRES_USER: ${POSTGRES_USER:-prisma}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-***}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U prisma -d eyang"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
 
   redis:
     image: redis:7-alpine
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
     restart: unless-stopped
 
   backend:
@@ -30,9 +20,7 @@ services:
       context: .
       dockerfile: backend/Dockerfile
     command: >
-      sh -c "python manage.py collectstatic --noinput &&
-             python manage.py makemigrations &&
-             python manage.py migrate &&
+      sh -c "python manage.py migrate &&
              python manage.py seed_admin &&
              daphne -b 0.0.0.0 -p 8000 project.asgi:application"
     ports:
@@ -40,7 +28,6 @@ services:
     environment:
       - ALLOWED_HOSTS=*
       - REQUIRE_DB_SSL=False
-      - CELERY_BROKER_URL=redis://redis:6379/0
       - REDIS_URL=redis://redis:6379/0
     env_file:
       - path: ./backend/project/.env
@@ -49,10 +36,8 @@ services:
       - media_data:/app/media
       - static_data:/app/static_cdn
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - db
+      - redis
     restart: unless-stopped
 
   celery:
@@ -61,16 +46,17 @@ services:
       dockerfile: backend/Dockerfile
     command: celery -A project worker --loglevel=info
     environment:
-      - CELERY_BROKER_URL=redis://redis:6379/0
+      - ALLOWED_HOSTS=*
+      - REQUIRE_DB_SSL=False
       - REDIS_URL=redis://redis:6379/0
     env_file:
       - path: ./backend/project/.env
         required: false
+    volumes:
+      - media_data:/app/media
     depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
+      - db
+      - redis
     restart: unless-stopped
 
 volumes:
