@@ -9,6 +9,20 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-***}
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U prisma -d eyang"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   backend:
@@ -26,6 +40,8 @@ services:
     environment:
       - ALLOWED_HOSTS=*
       - REQUIRE_DB_SSL=False
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - REDIS_URL=redis://redis:6379/0
     env_file:
       - path: ./backend/project/.env
         required: false
@@ -33,9 +49,29 @@ services:
       - media_data:/app/media
       - static_data:/app/static_cdn
     depends_on:
-      - db
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
+  celery:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    command: celery -A project worker --loglevel=info
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - REDIS_URL=redis://redis:6379/0
+    env_file:
+      - path: ./backend/project/.env
+        required: false
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   postgres_data:

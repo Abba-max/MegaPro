@@ -185,4 +185,5 @@ CORS_ALLOW_CREDENTIALS = True
 FRONTEND_URL           = config('FRONTEND_URL', default='https://eyangestate.com')
 
 # ── Celery ─────────────────────────────────────────────────────────────────
-CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
+CELERY_BROKER_URL = config('REDIS_URL', default=config('CELERY_BROKER_URL', default='redis://localhost:6379/0'))
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
