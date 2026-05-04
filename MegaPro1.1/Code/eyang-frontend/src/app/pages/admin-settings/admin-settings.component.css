@@ -1,9 +1,5 @@
-/* ── Layout & Core Variables ────────────────────────────────── */
-:root {
-    --primary-color: #2563EB;
-    --primary-hover: #1D4ED8;
-    --bg-main: #F8FAFC;
-    --card-bg: #FFFFFF;
+/* ── Layout & Core Variables (Using Global Vars) ────────────── */
+:host {
     --border-color: rgba(226, 232, 240, 0.8);
     --text-main: #0F172A;
     --text-muted: #64748B;
@@ -15,7 +11,7 @@
 
 /* ── Page Header ───────────────────────────────────────────── */
 .page-header { margin-bottom: 2rem; }
-.page-title { font-size: 2rem; font-weight: 800; color: var(--text-main); letter-spacing: -0.02em; }
+.page-title { font-size: 2rem; font-weight: 800; color: var(--primary); letter-spacing: -0.02em; }
 .page-header-row { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
 
 /* ── Settings Container ────────────────────────────────────── */
@@ -39,7 +35,7 @@
     padding: 0.75rem 1rem; border: 1px solid #CBD5E1; border-radius: 10px;
     font-size: 14px; background: white; color: var(--text-main); transition: all 0.2s;
 }
-.input:focus, .textarea:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); outline: none; }
+.input:focus, .textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); outline: none; }
 .input-hint { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem; }
 
 /* ── Language Grid ─────────────────────────────────────────── */
@@ -49,12 +45,12 @@
     border-radius: 16px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); background: white; position: relative;
 }
 .lang-option:hover { border-color: #E2E8F0; background: #F8FAFC; }
-.lang-option.active { border-color: var(--primary-color); background: #EFF6FF; }
+.lang-option.active { border-color: var(--primary); background: #EFF6FF; }
 .lang-icon { font-size: 1.5rem; }
 .lang-info { display: flex; flex-direction: column; }
 .lang-label { font-weight: 700; color: var(--text-main); font-size: 14px; }
 .lang-desc { font-size: 12px; color: var(--text-muted); }
-.lang-check { position: absolute; top: 0.75rem; right: 0.75rem; color: var(--primary-color); font-weight: 800; }
+.lang-check { position: absolute; top: 0.75rem; right: 0.75rem; color: var(--primary); font-weight: 800; }
 
 /* ── Toggle List ───────────────────────────────────────────── */
 .toggle-list { display: flex; flex-direction: column; gap: 0.5rem; }
@@ -82,7 +78,7 @@
 
 /* ── Buttons ───────────────────────────────────────────────── */
 .btn-save {
-    background: var(--primary-color); color: white; border: none; padding: 10px 20px;
+    background: var(--primary); color: #FFFFFF !important; border: none; padding: 10px 20px;
     border-radius: 12px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; transition: all 0.2s;
 }
 .btn-save:hover:not(:disabled) { background: var(--primary-hover); transform: translateY(-1px); box-shadow: var(--shadow-md); }

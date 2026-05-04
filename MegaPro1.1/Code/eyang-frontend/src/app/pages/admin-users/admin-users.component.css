@@ -1,9 +1,7 @@
-/* ── Layout & Core Variables ────────────────────────────────── */
-:root {
-    --primary-color: #2563EB;
-    --primary-hover: #1D4ED8;
-    --bg-main: #F8FAFC;
-    --card-bg: #FFFFFF;
+/* ── Layout & Core Variables (Using Global Vars) ────────────── */
+:host {
+    --primary: #062E56;
+    --primary-hover: #041f3a;
     --border-color: rgba(226, 232, 240, 0.8);
     --text-main: #0F172A;
     --text-muted: #64748B;
@@ -21,8 +19,8 @@
 /* ── Buttons ───────────────────────────────────────────────── */
 .btn-add {
     display: inline-flex; align-items: center; gap: 8px;
-    padding: 10px 20px; background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-    color: white; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer;
+    padding: 10px 20px; background: var(--primary);
+    color: #FFFFFF !important; border: none; border-radius: var(--radius-md); font-size: 14px; font-weight: 600; cursor: pointer;
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .btn-add:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3); }
@@ -148,7 +146,8 @@
 .modal-actions { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #F1F5F9; }
 .btn-cancel { padding: 10px 20px; background: #F1F5F9; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; color: #475569; cursor: pointer; transition: background 0.2s; }
 .btn-cancel:hover { background: #E2E8F0; color: var(--text-main); }
-.btn-save-modal { display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+.btn-save-modal { display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; background: var(--primary);
+    color: #FFFFFF !important; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
 .btn-save-modal:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3); }
 .btn-save-modal:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
 .btn-delete { padding: 10px 24px; background: #EF4444; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }

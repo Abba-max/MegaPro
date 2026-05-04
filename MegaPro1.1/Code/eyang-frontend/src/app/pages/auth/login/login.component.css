@@ -61,11 +61,11 @@
     cursor: pointer;
     margin-bottom: 2rem;
     display: inline-block;
-    width: 120px; /* Increased from 80px */
+    width: 180px; /* Increased from 120px */
 }
 
 .brand-logo img {
-    height: 100px; /* Increased from 70px */
+    height: 140px; /* Increased from 100px */
     width: 100%;
     object-fit: contain;
 }
@@ -214,9 +214,9 @@
 }
 
 .btn-auth-primary:hover:not(:disabled) {
-    background: #c2410c;
+    background: var(--auth-accent);
     transform: translateY(-2px);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3);
 }
 
 .btn-auth-primary:disabled {

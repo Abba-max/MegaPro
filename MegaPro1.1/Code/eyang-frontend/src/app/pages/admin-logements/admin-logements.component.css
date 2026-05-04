@@ -1,9 +1,7 @@
-/* ── Layout & Core Variables ────────────────────────────────── */
-:root {
-    --primary-color: #062E56;
+/* ── Layout & Core Variables (Using Global Vars) ────────────── */
+:host {
+    --primary: #062E56;
     --primary-hover: #041f3a;
-    --bg-main: #F8FAFC;
-    --card-bg: #FFFFFF;
     --border-color: #E2E8F0;
     --text-main: #1E293B;
     --text-muted: #475569;
@@ -77,8 +75,8 @@
     align-items: center;
     gap: 8px;
     padding: 10px 20px;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
-    color: white;
+    background: var(--primary);
+    color: #FFFFFF !important;
     border: none;
     border-radius: var(--radius-md);
     font-size: 14px;
@@ -445,7 +443,8 @@
 .btn-secondary:hover { background: #F8FAFC; border-color: #94A3B8; }
 .btn-save-modal {
     display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px;
-    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); color: white;
+    background: var(--primary);
+    color: #FFFFFF !important;
     border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
     box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }

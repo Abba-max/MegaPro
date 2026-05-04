@@ -83,27 +83,44 @@ export class SignupComponent {
 
   // ── Step Navigation ─────────────────────────────────────────
   nextStep(): void {
+    this.error = '';
+
+    // Validation for Step 1
     if (this.currentStep === 1) {
       if (!this.signupForm.email || !this.signupForm.username || !this.signupForm.password) {
         this.error = this.translate.instant('auth.error_missing_fields');
         return;
       }
+      this.currentStep = 2;
+      return;
     }
 
+    // Validation for Step 2
     if (this.currentStep === 2) {
       if (!this.signupForm.firstName || !this.signupForm.lastName) {
         this.error = this.translate.instant('auth.error_missing_fields');
         return;
       }
       
-    // Handle Final Step Submission
-    if (this.currentStep === (this.signupForm.role === 'Owner' ? 3 : 2)) {
-      this.handleSignup();
+      // If Student/Parent, Step 2 is final
+      if (this.signupForm.role !== 'Owner') {
+        this.handleSignup();
+        return;
+      }
+      
+      this.currentStep = 3;
       return;
     }
 
-    this.error = '';
-    this.currentStep++;
+    // Validation for Step 3 (Owner only)
+    if (this.currentStep === 3) {
+      if (!this.signupForm.idCardFile) {
+        this.error = this.translate.instant('auth.error_id_required');
+        return;
+      }
+      this.handleSignup();
+      return;
+    }
   }
 
   prevStep(): void {
