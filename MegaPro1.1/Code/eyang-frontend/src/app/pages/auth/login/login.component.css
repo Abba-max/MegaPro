@@ -3,7 +3,7 @@
     --auth-primary: #F07C10; /* Orange */
     --auth-accent: #E06C00; /* Deep Orange */
     --auth-bg: #F1F5F9;
-    --auth-card-bg: #062E56; /* Logo Blue */
+    --auth-card-bg: #2563EB; /* Lighter Blue (Header Signup Button) */
     --auth-border: rgba(255, 255, 255, 0.1);
     --auth-text: #F07C10;
     --auth-text-muted: rgba(240, 124, 16, 0.8);
@@ -59,12 +59,13 @@
 
 .brand-logo {
     cursor: pointer;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     display: inline-block;
+    width: 80px;
 }
 
 .brand-logo img {
-    height: 40px;
+    height: 70px;
     object-fit: contain;
 }
 
