@@ -40,7 +40,12 @@ def register_view(request):
     serializer = RegisterSerializer(data=request.data, context={'request': request})
     if not serializer.is_valid():
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    user = serializer.save()
+    try:
+        user = serializer.save()
+        print(f"Registration successful: Created user {user.username} (ID: {user.id})")
+    except Exception as e:
+        print(f"Registration FAILED during save: {e}")
+        return Response({'detail': f"Registration persistence error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     try:
         if CELERY_AVAILABLE:

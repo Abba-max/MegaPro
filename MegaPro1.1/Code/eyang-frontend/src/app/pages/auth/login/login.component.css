@@ -1,13 +1,13 @@
 /* ── Variables & Setup ───────────────────────────────────────── */
 :host {
-    --auth-primary: #F07C10; /* Orange */
-    --auth-accent: #E06C00; /* Deep Orange */
-    --auth-bg: #F1F5F9;
-    --auth-card-bg: #2563EB; /* Lighter Blue (Header Signup Button) */
-    --auth-border: rgba(255, 255, 255, 0.1);
-    --auth-text: #F07C10;
-    --auth-text-muted: rgba(240, 124, 16, 0.8);
-    --auth-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.2);
+    --auth-primary: #2563EB; /* Blue from home page */
+    --auth-accent: #1D4ED8;  /* Deeper Blue */
+    --auth-bg: #F8FAFC;      /* Light background from home page */
+    --auth-card-bg: #FFFFFF; /* Clean white card */
+    --auth-border: #E2E8F0;
+    --auth-text: #1E293B;
+    --auth-text-muted: #64748B;
+    --auth-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     overflow: hidden;
 }
 
@@ -61,18 +61,19 @@
     cursor: pointer;
     margin-bottom: 2rem;
     display: inline-block;
-    width: 80px;
+    width: 120px; /* Increased from 80px */
 }
 
 .brand-logo img {
-    height: 70px;
+    height: 100px; /* Increased from 70px */
+    width: 100%;
     object-fit: contain;
 }
 
 .auth-title {
     font-size: 1.75rem;
     font-weight: 800;
-    color: #F07C10; /* Brand Orange title */
+    color: var(--auth-text);
     letter-spacing: -0.02em;
     margin-bottom: 0.5rem;
 }
@@ -107,11 +108,11 @@
 .modern-input {
     width: 100%;
     padding: 0.875rem 1rem 0.875rem 3rem;
-    border: 1.5px solid rgba(255, 255, 255, 0.2);
+    border: 1.5px solid #E2E8F0;
     border-radius: 12px;
     font-size: 0.9375rem;
     color: #1e293b;
-    background: white;
+    background: #F8FAFC;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

@@ -72,7 +72,8 @@ class RegisterSerializer(serializers.ModelSerializer):
             contact=phone,
             address=address,
             visitor_category=visitor_category,
-            is_verified=False
+            is_verified=False,
+            is_active=True
         )
 
 
