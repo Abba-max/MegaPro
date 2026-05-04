@@ -49,9 +49,13 @@ WSGI_APPLICATION    = 'project.wsgi.application'
 ASGI_APPLICATION    = 'project.asgi.application'
 
 # ── Channels ───────────────────────────────────────────────────────────────
+_REDIS_URL = config('REDIS_URL', default='redis://redis:6379/0')
 CHANNEL_LAYERS = {
     'default': {
-        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [_REDIS_URL],
+        },
     },
 }
 
@@ -72,7 +76,7 @@ DATABASES = {
         'ENGINE':   'django.db.backends.postgresql',
         'NAME':     config('DB_NAME', default='eyang'),
         'USER':     config('DB_USER', default='prisma'),
-        'PASSWORD': config('DB_PASSWORD', default='***'),
+        'PASSWORD': config('DB_PASSWORD', default='prisma'),
         'HOST':     config('DB_HOST', default='db'),
         'PORT':     config('DB_PORT', default='5432'),
     }
@@ -180,6 +184,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://eyangestate.com",
     "http://eyangestate.com",
     "https://eyang-estate.onrender.com",
+    "http://147.93.47.169:3006",
+    "http://147.93.47.169",
 ]
 CORS_ALLOW_CREDENTIALS = True
 FRONTEND_URL           = config('FRONTEND_URL', default='https://eyangestate.com')

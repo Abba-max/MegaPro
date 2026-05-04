@@ -6,10 +6,15 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-eyang}
       POSTGRES_USER: ${POSTGRES_USER:-prisma}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-secret}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-prisma}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-prisma} -d ${POSTGRES_DB:-eyang}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7-alpine
@@ -37,8 +42,10 @@ services:
       - media_data:/app/media
       - static_data:/app/static_cdn
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     restart: unless-stopped
 
   celery:
@@ -56,8 +63,10 @@ services:
     volumes:
       - media_data:/app/media
     depends_on:
-      - db
-      - redis
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
     restart: unless-stopped
 
 volumes:
