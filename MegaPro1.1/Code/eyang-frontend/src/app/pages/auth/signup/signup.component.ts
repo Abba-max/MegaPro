@@ -96,11 +96,10 @@ export class SignupComponent {
         return;
       }
       
-      // If not owner, skip step 3 and submit
-      if (this.signupForm.role !== 'Owner') {
-        this.handleSignup();
-        return;
-      }
+    // Handle Final Step Submission
+    if (this.currentStep === (this.signupForm.role === 'Owner' ? 3 : 2)) {
+      this.handleSignup();
+      return;
     }
 
     this.error = '';
