@@ -119,6 +119,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   // ── Review pagination (owner) ──────────────────────────────
   readonly REVIEW_PAGE_SIZE = 5;
   visibleReviewCount = this.REVIEW_PAGE_SIZE;
+
+  // ── Estate pagination ──────────────────────────────────────
+  readonly PAGE_SIZE = 6;
+  visibleEstateCount = this.PAGE_SIZE;
+
   /** All estates sorted by rating */
   sortedEstates: Estate[] = [];
 
