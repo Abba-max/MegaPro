@@ -59,15 +59,12 @@ function guardWithRole(
   return race(userLoaded$, timeout$);
 }
 
-// ── authGuard: waits for user to actually load (not just token) ──────────
-// BUG FIXED: the old guard returned true immediately when a token existed,
-// but DashboardComponent.ngOnInit subscribes to currentUser$ which still
-// emits null (fetchMe in-flight) and redirected the user back to "/".
 export const authGuard: CanActivateFn = () => {
   const auth   = inject(AuthService);
   const router = inject(Router);
-  // 'any authenticated user' — predicate checks the loaded user object exists
-  return guardWithRole(auth, router, a => !!a.currentUser, '/');
+  if (auth.isAuthenticated()) return true;
+  router.navigate(['/']);
+  return false;
 };
 
 // ── adminGuard: must be Admin ─────────────────────────────────────────────

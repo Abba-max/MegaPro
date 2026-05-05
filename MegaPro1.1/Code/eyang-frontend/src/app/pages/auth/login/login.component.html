@@ -45,7 +45,11 @@
                         <a routerLink="/forgot-password" class="forgot-link">{{ 'auth.forgot_password' | translate }}</a>
                     </div>
 
-                    <div class="error-area" *ngIf="error">
+                    <div class="success-area mt-4" *ngIf="successMessage">
+                        <p class="success-msg">{{ successMessage }}</p>
+                    </div>
+
+                    <div class="error-area mt-4" *ngIf="error">
                         <p class="error-msg">{{ error }}</p>
                     </div>
 

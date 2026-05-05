@@ -118,17 +118,17 @@
                         <!-- Approve (green shield) — only shown for unverified published estates -->
                         <button *ngIf="!isVerified(l) && l.status === 'published'"
                                 class="icon-btn success" (click)="approveEstate(l)"
-                                title="Approuver et vérifier ce logement">
+                                [title]="'admin.approve_title' | translate">
                             <lucide-icon [img]="ShieldCheckIcon" class="icon-xs"></lucide-icon>
                         </button>
                         <!-- Reject verification (red shield) — only for verified estates -->
                         <button *ngIf="isVerified(l)"
                                 class="icon-btn warning" (click)="rejectVerification(l)"
-                                title="Retirer la vérification">
+                                [title]="'admin.reject_verify_title' | translate">
                             <lucide-icon [img]="ShieldXIcon" class="icon-xs"></lucide-icon>
                         </button>
                         <!-- Edit -->
-                        <button class="icon-btn" (click)="openEdit(l)" title="Modifier">
+                        <button class="icon-btn" (click)="openEdit(l)" [title]="'admin.edit_title' | translate">
                             <lucide-icon [img]="PencilIcon" class="icon-xs"></lucide-icon>
                         </button>
                         <!-- Publish toggle -->
@@ -136,19 +136,19 @@
                                 [class.success]="l.status !== 'published'"
                                 [class.warning]="l.status === 'published'"
                                 (click)="togglePublish(l)"
-                                [title]="l.status === 'published' ? 'Dépublier' : 'Publier'">
+                                [title]="(l.status === 'published' ? 'admin.unpublish' : 'admin.publish') | translate">
                             <lucide-icon [img]="l.status === 'published' ? UnpublishIcon : PublishIcon" class="icon-xs"></lucide-icon>
                         </button>
                         <!-- Manage rooms -->
-                        <button class="icon-btn info" (click)="openManageRooms(l)" title="Gérer les chambres">
+                        <button class="icon-btn info" (click)="openManageRooms(l)" [title]="'admin.manage_rooms_title' | translate">
                             <lucide-icon [img]="BuildingIcon" class="icon-xs"></lucide-icon>
                         </button>
                         <!-- Transfer ownership -->
-                        <button class="icon-btn" (click)="openTransfer(l)" title="Transférer la propriété">
+                        <button class="icon-btn" (click)="openTransfer(l)" [title]="'admin.transfer_ownership' | translate">
                             <lucide-icon [img]="UsersIcon" class="icon-xs"></lucide-icon>
                         </button>
                         <!-- Delete -->
-                        <button class="icon-btn danger" (click)="confirmDelete(l)" title="Supprimer">
+                        <button class="icon-btn danger" (click)="confirmDelete(l)" [title]="'dashboard.delete' | translate">
                             <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
                         </button>
                     </div>
@@ -242,11 +242,11 @@
                 </h3>
                 <div class="gps-inputs">
                     <div class="form-group">
-                        <label class="sub-label">Latitude</label>
+                        <label class="sub-label">{{ 'admin.latitude' | translate }}</label>
                         <input type="number" [(ngModel)]="form.lat" (change)="onLatLngInput()" class="input" step="0.000001">
                     </div>
                     <div class="form-group">
-                        <label class="sub-label">Longitude</label>
+                        <label class="sub-label">{{ 'admin.longitude' | translate }}</label>
                         <input type="number" [(ngModel)]="form.lng" (change)="onLatLngInput()" class="input" step="0.000001">
                     </div>
                 </div>
@@ -404,10 +404,10 @@
                         <td data-label="QUANTITÉ">{{ rm.quantity_available }}</td>
                         <td class="text-right" data-label="ACTIONS">
                             <div class="action-buttons">
-                                <button class="icon-btn" (click)="openEditRoom(rm)" title="Modifier">
+                                <button class="icon-btn" (click)="openEditRoom(rm)" [title]="'admin.update' | translate">
                                     <lucide-icon [img]="PencilIcon" class="icon-xs"></lucide-icon>
                                 </button>
-                                <button class="icon-btn danger" (click)="deleteRoom(rm)" title="Supprimer">
+                                <button class="icon-btn danger" (click)="deleteRoom(rm)" [title]="'dashboard.delete' | translate">
                                     <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
                                 </button>
                             </div>
@@ -531,17 +531,19 @@
         <div class="transfer-alert warning mb-6">
             <lucide-icon [img]="WarningIcon" class="icon-sm"></lucide-icon>
             <div class="alert-content">
-                <strong>Attention</strong>
+                <strong>{{ 'common.warning' | translate }}</strong>
                 <p>{{ 'admin.transfer_desc' | translate:{name: estateToTransfer?.name} }}</p>
             </div>
         </div>
 
         <div class="transfer-info-box mb-6">
             <div class="info-row">
-                <span class="info-label">Propriétaire actuel :</span>
+                <span class="info-label">{{ 'admin.current_owner' | translate }}</span>
                 <span class="info-value">
-                    {{ estateToTransfer?.owner?.first_name }} {{ estateToTransfer?.owner?.last_name }}
-                    <span *ngIf="!estateToTransfer?.owner">Inconnu</span>
+                    <ng-container *ngIf="estateToTransfer?.owner">
+                        {{ estateToTransfer?.owner?.first_name }} {{ estateToTransfer?.owner?.last_name }}
+                    </ng-container>
+                    <span *ngIf="!estateToTransfer?.owner">{{ 'common.unknown' | translate }}</span>
                 </span>
             </div>
         </div>

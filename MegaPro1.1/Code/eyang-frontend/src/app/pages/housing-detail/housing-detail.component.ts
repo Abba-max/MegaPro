@@ -144,9 +144,9 @@ export class HousingDetailComponent implements OnInit {
         }
       },
       error: () => {
-        this.errorMessage = 'Logement introuvable.';
+        this.errorMessage = this.translate.instant('admin.error_load');
         this.isLoading    = false;
-        this.showToast('Logement introuvable', 'error');
+        this.showToast(this.translate.instant('admin.error_load'), 'error');
       }
     });
   }
@@ -166,7 +166,12 @@ export class HousingDetailComponent implements OnInit {
     if (h.restaurant === '1') eq.push({ name: 'Restaurant',    icon: this.UtensilsIcon, color: 'brown',  colorKey: 'restaurant' });
     if (h.tv === '1')         eq.push({ name: 'Télévision',    icon: this.TvIcon,       color: 'purple', colorKey: 'tv'         });
     if (h.fridge === '1')     eq.push({ name: 'Réfrigérateur', icon: this.FridgeIcon,   color: 'teal',   colorKey: 'fridge'     });
-    return eq;
+    
+    // Translate names
+    return eq.map(item => ({
+      ...item,
+      name: this.translate.instant('housing.' + item.colorKey)
+    }));
   }
 
   // ── Room category selection ───────────────────────────────
@@ -243,7 +248,11 @@ export class HousingDetailComponent implements OnInit {
 
   reviewRatingLabel(): string {
     const labels: Record<number, string> = {
-      1: 'Très mauvais', 2: 'Mauvais', 3: 'Correct', 4: 'Bien', 5: 'Excellent'
+      1: this.translate.instant('review.rating_1'),
+      2: this.translate.instant('review.rating_2'),
+      3: this.translate.instant('review.rating_3'),
+      4: this.translate.instant('review.rating_4'),
+      5: this.translate.instant('review.rating_5')
     };
     return labels[this.reviewForm.rating] || '';
   }
@@ -266,7 +275,7 @@ export class HousingDetailComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.isSubmittingReview = false;
-        this.showToast('Avis publié avec succès !', 'success');
+        this.showToast(this.translate.instant('review.submit_success'), 'success');
         this.showReviewForm = false;
         this.reviewForm     = { rating: 0, comment: '' };
         // Reload both reviews list AND estate (to update average_rating in the UI)
@@ -275,7 +284,7 @@ export class HousingDetailComponent implements OnInit {
       },
       error: () => {
         this.isSubmittingReview = false;
-        this.showToast('Erreur lors de la publication. Réessayez.', 'error');
+        this.showToast(this.translate.instant('review.submit_error'), 'error');
       }
     });
   }

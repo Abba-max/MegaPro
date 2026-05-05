@@ -231,6 +231,8 @@
     "didnt_receive_email": "Vous n'avez pas reçu l'email ?",
     "resend_verification": "Renvoyer",
     "back_to_login": "Retour à la connexion",
+    "go_to_dashboard": "Accéder au tableau de bord",
+    "welcome_onboard": "Bienvenue à bord ! Votre compte est prêt.",
     "verifying_account": "Vérification de votre compte...",
     "verifying_account_desc": "Veuillez patienter pendant que nous sécurisons votre accès.",
     "verification_success": "Compte vérifié !",
@@ -261,8 +263,8 @@
     "id_card_or_browse": "ou",
     "id_card_browse": "parcourir",
     "id_card_hint": "JPG, PNG, PDF · max 5 Mo",
-    "create_owner_account": "Confirmer l'inscription bailleur",
-    "create_account": "Confirmer l'inscription",
+    "create_owner_account": "Créer mon compte bailleur",
+    "create_account": "Créer mon compte",
     "sending": "Envoi en cours…",
     "pw_weak": "Faible",
     "pw_fair": "Moyen",
@@ -272,7 +274,30 @@
     "no_notifications": "Aucune notification",
     "no_notifications_hint": "Les événements importants apparaîtront ici.",
     "privacy_policy": "Politique de confidentialité",
-    "terms_of_service": "Conditions d'utilisation"
+    "terms_of_service": "Conditions d'utilisation",
+    "registration_success_login": "Compte créé avec succès ! Vous pouvez maintenant vous connecter."
+  },
+  "housing": {
+    "wifi": "WiFi",
+    "generator": "Générateur",
+    "forage": "Forage / Eau",
+    "restaurant": "Restaurant",
+    "tv": "Télévision",
+    "fridge": "Réfrigérateur",
+    "currency": "FCFA"
+  },
+  "common": {
+    "anonymous": "Anonyme",
+    "by": "par"
+  },
+  "review": {
+    "rating_1": "Très mauvais",
+    "rating_2": "Mauvais",
+    "rating_3": "Correct",
+    "rating_4": "Bien",
+    "rating_5": "Excellent",
+    "submit_success": "Avis publié avec succès !",
+    "submit_error": "Erreur lors de la publication. Réessayez."
   },
   "dashboard": {
     "welcome": "Bienvenue",
@@ -858,6 +883,11 @@
     "gps_location": "Localisation GPS",
     "details_amenities": "Détails & Équipements",
     "center_eyang": "Centrer sur Eyang",
-    "search_owner_ph": "Rechercher un propriétaire..."
+    "search_owner_ph": "Rechercher un propriétaire...",
+    "approve_title": "Approuver et vérifier ce logement",
+    "reject_verify_title": "Retirer la vérification",
+    "edit_title": "Modifier",
+    "manage_rooms_title": "Gérer les chambres",
+    "transfer_ownership": "Transférer la propriété"
   }
 }

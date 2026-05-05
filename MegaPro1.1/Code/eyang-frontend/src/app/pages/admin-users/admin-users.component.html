@@ -33,9 +33,12 @@
                 class="search-input">
         </div>
         <select class="select-input" [ngModel]="filterType()" (ngModelChange)="onFilter($event)">
-        <option value="">{{ 'admin.all_roles' | translate }}</option>
-        <option *ngFor="let t of userTypes" [value]="t">{{ t }}</option>
-    </select>
+            <option value="">{{ 'admin.all_roles' | translate }}</option>
+            <option value="Student">{{ 'auth.student' | translate }}</option>
+            <option value="Parent">{{ 'auth.parent' | translate }}</option>
+            <option value="Owner">{{ 'auth.owner' | translate }}</option>
+            <option value="Admin">{{ 'auth.role_badge_admin' | translate }}</option>
+        </select>
     <span class="total-counter">{{ 'admin.total_users' | translate:{count: filtered().length, plural: filtered().length !== 1 ? 's' : ''} }}</span>
 </div>
 
@@ -61,7 +64,9 @@
             </td>
         <td [attr.data-label]="'admin.col_email' | translate"><span class="text-sm">{{ u.email }}</span></td>
         <td [attr.data-label]="'admin.col_role' | translate">
-            <span class="role-badge" [style.background]="u.color + '20'" [style.color]="u.color">{{ u.type }}</span>
+            <span class="role-badge" [style.background]="u.color + '20'" [style.color]="u.color">
+                {{ (u.type === 'Student' ? 'auth.student' : u.type === 'Parent' ? 'auth.parent' : u.type === 'Owner' ? 'auth.owner' : 'auth.role_badge_admin') | translate }}
+            </span>
         </td>
         <td [attr.data-label]="'admin.col_joined' | translate"><span class="text-sm">{{ u.joined | date:'dd/MM/yyyy HH:mm' }}</span></td>
         <td [attr.data-label]="'admin.col_status' | translate">
@@ -136,7 +141,9 @@
             <div class="form-row-modal">
                 <div class="form-group">
                     <label>{{ 'admin.col_role' | translate }}</label>
-                    <div style="font-size:14px; font-weight:600; color:#0F172A;">{{ viewUser.type }}</div>
+                    <div style="font-size:14px; font-weight:600; color:#0F172A;">
+                        {{ (viewUser.type === 'Student' ? 'auth.student' : viewUser.type === 'Parent' ? 'auth.parent' : viewUser.type === 'Owner' ? 'auth.owner' : 'auth.role_badge_admin') | translate }}
+                    </div>
                 </div>
                 <div class="form-group">
                     <label>{{ 'admin.col_status' | translate }}</label>

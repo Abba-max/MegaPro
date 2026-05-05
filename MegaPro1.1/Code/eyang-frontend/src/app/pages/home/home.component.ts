@@ -66,18 +66,10 @@ export class HomeComponent implements OnInit {
   visibleCount = this.HOME_PAGE_SIZE;
 
   /** All housings sorted by average_rating descending */
-  get sortedHousings(): Estate[] {
-    return [...this.housings].sort((a, b) => {
-      const ra = a.average_rating?.value ?? parseFloat(a.rating ?? '0');
-      const rb = b.average_rating?.value ?? parseFloat(b.rating ?? '0');
-      return rb - ra;
-    });
-  }
+  sortedHousings: Estate[] = [];
 
   /** The slice shown in the grid */
-  get pagedHousings(): Estate[] {
-    return this.sortedHousings.slice(0, this.visibleCount);
-  }
+  pagedHousings: Estate[] = [];
 
   get hasMoreHousings(): boolean {
     return this.visibleCount < this.housings.length;
@@ -88,10 +80,25 @@ export class HomeComponent implements OnInit {
       this.visibleCount + this.HOME_PAGE_SIZE,
       this.housings.length
     );
+    this.updatePagedHousings();
   }
 
   private resetHomePage(): void {
     this.visibleCount = this.HOME_PAGE_SIZE;
+    this.updateSortedHousings();
+    this.updatePagedHousings();
+  }
+
+  private updateSortedHousings(): void {
+    this.sortedHousings = [...this.housings].sort((a, b) => {
+      const ra = a.average_rating?.value ?? parseFloat(a.rating ?? '0');
+      const rb = b.average_rating?.value ?? parseFloat(b.rating ?? '0');
+      return rb - ra;
+    });
+  }
+
+  private updatePagedHousings(): void {
+    this.pagedHousings = this.sortedHousings.slice(0, this.visibleCount);
   }
 // ─────────────────────────────────────────────────────────────────────────────
 // MAP PREVIEW SECTION helpers

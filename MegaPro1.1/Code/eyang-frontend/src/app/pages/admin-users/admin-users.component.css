@@ -43,14 +43,14 @@
     width: 100%; padding: 10px 14px 10px 40px; border: 1px solid #CBD5E1; border-radius: 10px;
     font-size: 14px; background: white; color: var(--text-main); transition: all 0.2s;
 }
-.search-input:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); outline: none; }
+.search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); outline: none; }
 .select-input {
     padding: 10px 16px; border: 1px solid #CBD5E1; border-radius: 10px; font-size: 14px;
     font-weight: 500; background: white; color: var(--text-main); cursor: pointer; outline: none; transition: border-color 0.2s;
 }
-.select-input:focus { border-color: var(--primary-color); }
+.select-input:focus { border-color: var(--primary); }
 .total-counter {
-    font-size: 13px; font-weight: 700; color: var(--primary-color); background: #EFF6FF;
+    font-size: 13px; font-weight: 700; color: var(--primary); background: #EFF6FF;
     padding: 6px 14px; border-radius: 20px; border: 1px solid #BFDBFE;
 }
 
@@ -136,7 +136,7 @@
     width: 100%; padding: 12px 14px; border: 1px solid #CBD5E1; border-radius: 10px; font-size: 14px; color: var(--text-main);
     transition: all 0.2s; box-sizing: border-box; background: #F8FAFC;
 }
-.input:focus, .select-input.full-width:focus { background: white; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); outline: none; }
+.input:focus, .select-input.full-width:focus { background: white; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); outline: none; }
 .password-group { position: relative; }
 .password-group .input { padding-right: 3rem; }
 .eye-btn { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94A3B8; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
@@ -162,7 +162,7 @@
 .toast-info { border-left: 4px solid #3B82F6; color: #1E40AF; }
 .toast-warning { border-left: 4px solid #F59E0B; color: #92400E; }
 .loader-center { display: flex; align-items: center; justify-content: center; padding: 4rem; gap: 1rem; color: var(--text-muted); font-weight: 600; }
-.spin-icon { width: 28px; height: 28px; animation: spin 1s linear infinite; color: var(--primary-color); }
+.spin-icon { width: 28px; height: 28px; animation: spin 1s linear infinite; color: var(--primary); }
 
 /* ── Animations ────────────────────────────────────────────── */
 @keyframes spin { to { transform: rotate(360deg); } }

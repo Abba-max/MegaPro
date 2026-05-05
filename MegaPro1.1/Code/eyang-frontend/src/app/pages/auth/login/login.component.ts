@@ -5,6 +5,7 @@ import { Router, RouterLink } from '@angular/router';
 import { LucideAngularModule, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-angular';
 import { AuthService } from '../../../services/auth.service';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -24,13 +25,23 @@ export class LoginComponent {
   password = '';
   showPassword = false;
   error = '';
+  successMessage = '';
   isLoading = signal(false);
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      if (params['registered'] === 'true') {
+        this.successMessage = this.translate.instant('auth.registration_success_login');
+      }
+    });
+  }
 
 
 
   constructor(
     private authService: AuthService,
     private router: Router,
+    private route: ActivatedRoute,
     private translate: TranslateService
   ) {}
 

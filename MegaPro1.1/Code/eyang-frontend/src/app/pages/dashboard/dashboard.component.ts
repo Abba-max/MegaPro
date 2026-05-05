@@ -119,27 +119,55 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   // ── Review pagination (owner) ──────────────────────────────
   readonly REVIEW_PAGE_SIZE = 5;
   visibleReviewCount = this.REVIEW_PAGE_SIZE;
-  get pagedReviews(): Review[]    { return this.myReviews.slice(0, this.visibleReviewCount); }
-  get hasMoreReviews(): boolean   { return this.visibleReviewCount < this.myReviews.length; }
-  showMoreReviews(): void { this.visibleReviewCount = Math.min(this.visibleReviewCount + this.REVIEW_PAGE_SIZE, this.myReviews.length); }
-  resetReviewPage(): void { this.visibleReviewCount = this.REVIEW_PAGE_SIZE; }
+  /** All estates sorted by rating */
+  sortedEstates: Estate[] = [];
 
-  // ── Estate pagination ──────────────────────────────────────
-  readonly PAGE_SIZE = 6;
-  visibleEstateCount = this.PAGE_SIZE;
+  /** The slice shown in the grid */
+  pagedEstates: Estate[] = [];
 
-  get sortedEstates(): Estate[] {
-    return [...this.myEstates].sort((a, b) => {
+  get hasMoreEstates(): boolean  { return this.visibleEstateCount < this.myEstates.length; }
+
+  showMoreEstates(): void {
+    this.visibleEstateCount = Math.min(this.visibleEstateCount + this.PAGE_SIZE, this.myEstates.length);
+    this.updatePagedEstates();
+  }
+
+  resetEstatePage(): void {
+    this.visibleEstateCount = this.PAGE_SIZE;
+    this.updateSortedEstates();
+    this.updatePagedEstates();
+  }
+
+  private updateSortedEstates(): void {
+    this.sortedEstates = [...this.myEstates].sort((a, b) => {
       const ra = a.average_rating?.value ?? parseFloat(a.rating ?? '0');
       const rb = b.average_rating?.value ?? parseFloat(b.rating ?? '0');
       return rb - ra;
     });
   }
 
-  get pagedEstates(): Estate[]   { return this.sortedEstates.slice(0, this.visibleEstateCount); }
-  get hasMoreEstates(): boolean  { return this.visibleEstateCount < this.myEstates.length; }
-  showMoreEstates(): void { this.visibleEstateCount = Math.min(this.visibleEstateCount + this.PAGE_SIZE, this.myEstates.length); }
-  resetEstatePage(): void { this.visibleEstateCount = this.PAGE_SIZE; }
+  private updatePagedEstates(): void {
+    this.pagedEstates = this.sortedEstates.slice(0, this.visibleEstateCount);
+  }
+
+  /** The slice of reviews shown */
+  pagedReviews: Review[] = [];
+
+  get hasMoreReviews(): boolean { return this.visibleReviewCount < this.myReviews.length; }
+
+  showMoreReviews(): void {
+    this.visibleReviewCount = Math.min(this.visibleReviewCount + this.REVIEW_PAGE_SIZE, this.myReviews.length);
+    this.updatePagedReviews();
+  }
+
+  resetReviewPage(): void {
+    this.visibleReviewCount = this.REVIEW_PAGE_SIZE;
+    this.updatePagedReviews();
+  }
+
+  private updatePagedReviews(): void {
+    this.pagedReviews = this.myReviews.slice(0, this.visibleReviewCount);
+  }
 
   // ── Estate modal ───────────────────────────────────────────
   showEstateModal = false;
@@ -451,8 +479,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
                                white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
                      ${estate.name}
                    </div>
-                   <div style="font-size:9px;color:#64748B;margin-top:1px">
-                     ${priceK} XAF${ratingStr}
+                   <div class="conv-row__estate">
+                     ${priceK} ${this.translate.instant('housing.currency')}${ratingStr}
                    </div>
                  </div>
                </div>`,
@@ -460,8 +488,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
         iconAnchor: [48, 82],
       });
 
-      const statusLabel = estate.status === 'published' ? 'Publié'
-        : estate.status === 'draft' ? 'Brouillon' : 'Archivé';
+      const statusLabel = estate.status === 'published' ? this.translate.instant('dashboard.status_published')
+        : estate.status === 'draft' ? this.translate.instant('dashboard.status_draft') : this.translate.instant('dashboard.status_archived');
 
       const marker = L.marker([lat, lng], { icon });
       marker.bindPopup(
@@ -944,7 +972,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       this.showToast(this.translate.instant('auth.error_missing_fields'), 'error');
       return;
     }
-    const name = this.currentUser?.name || 'Anonyme';
+    const name = this.currentUser?.name || this.translate.instant('common.anonymous');
     this.estateService.createReview({
       estate:  this.reviewForm.estate,
       name,
@@ -1282,7 +1310,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   formatPrice(p: number): string {
-    return p.toLocaleString('fr-FR') + ' FCFA';
+    return p.toLocaleString(this.translate.currentLang === 'fr' ? 'fr-FR' : 'en-US') + ' ' + this.translate.instant('housing.currency');
   }
 
   getStars(n: number): number[] {

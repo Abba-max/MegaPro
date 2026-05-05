@@ -9,21 +9,10 @@
                     <img src="/assets/images/logo.png" alt="Eyang Estate">
                 </div>
                 
-                <div class="step-indicator" *ngIf="currentStep < 4">
-                    <div class="step-dots">
-                        <div class="step-dot" [class.active]="currentStep >= 1" [class.done]="currentStep > 1"></div>
-                        <div class="step-line" [class.done]="currentStep > 1"></div>
-                        <div class="step-dot" [class.active]="currentStep >= 2" [class.done]="currentStep > 2"></div>
-                        <div class="step-line" [class.done]="currentStep > 2"></div>
-                        <div class="step-dot" [class.active]="currentStep >= 3" [class.done]="currentStep > 3" *ngIf="signupForm.role === 'Owner'"></div>
-                    </div>
-                </div>
-
                 <h1 class="auth-title">
                     <ng-container *ngIf="currentStep === 1">{{ 'auth.step_account' | translate }}</ng-container>
                     <ng-container *ngIf="currentStep === 2">{{ 'auth.step_profile' | translate }}</ng-container>
                     <ng-container *ngIf="currentStep === 3">{{ 'auth.step_owner' | translate }}</ng-container>
-                    <ng-container *ngIf="currentStep === 4">{{ 'auth.success_title' | translate }}</ng-container>
                 </h1>
             </div>
 
@@ -125,28 +114,13 @@
                     </div>
                 </div>
 
-                <!-- ═══ STEP 4: Success State ═══ -->
-                <div class="step-content success-step" *ngIf="currentStep === 4">
-                    <div class="success-animation">
-                        <lucide-icon [img]="SuccessIcon" class="success-icon-lg"></lucide-icon>
-                    </div>
-                    <h2 class="success-msg-title">{{ 'auth.registration_success' | translate }}</h2>
-                    <p class="success-msg-text">{{ 'auth.check_email_verification' | translate }}</p>
-                    <div class="verification-hint">
-                        <p>{{ 'auth.didnt_receive_email' | translate }} <a href="#">{{ 'auth.resend_verification' | translate }}</a></p>
-                    </div>
-                    <button class="btn-auth-primary mt-8" routerLink="/login">
-                        {{ 'auth.back_to_login' | translate }}
-                    </button>
-                </div>
 
                 <!-- Error Message -->
                 <div class="error-area mt-4" *ngIf="error">
                     <p class="error-msg">{{ error }}</p>
                 </div>
 
-                <!-- Footer Actions -->
-                <div class="auth-footer-actions mt-8" *ngIf="currentStep < 4">
+                <div class="auth-footer-actions mt-8">
                     <button class="btn-auth-secondary" *ngIf="currentStep > 1" (click)="prevStep()" [disabled]="isLoading()">
                         <lucide-icon [img]="ArrowLIcon" class="btn-icon"></lucide-icon>
                         {{ 'auth.back' | translate }}
@@ -165,7 +139,7 @@
                 </div>
             </div>
 
-            <div class="auth-card-footer" *ngIf="currentStep < 4">
+            <div class="auth-card-footer">
                 <p>
                     {{ 'auth.already_account' | translate }} 
                     <a routerLink="/login" class="auth-link">{{ 'auth.login_link' | translate }}</a>

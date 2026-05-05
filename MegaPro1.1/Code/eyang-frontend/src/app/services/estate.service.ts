@@ -140,7 +140,8 @@ export function getAbsoluteUrl(url: string | null | undefined, width?: number): 
   // Cloudinary optimization: automatically add auto quality and format
   if (finalUrl.includes('res.cloudinary.com') && finalUrl.includes('/upload/')) {
     const params = width ? `q_auto,f_auto,w_${width},c_limit` : 'q_auto,f_auto';
-    return finalUrl.replace('/upload/', `/upload/${params}/`);
+    // Matches /upload/ followed by an optional transformation segment (anything not containing a slash) and a slash
+    return finalUrl.replace(/\/upload\/(?:[^\/]+\/)?/, `/upload/${params}/`);
   }
   return finalUrl;
 }
@@ -159,10 +160,10 @@ export function enrichEstate(raw: EstateRaw): Estate {
   if (raw.forage === '1') features.push('droplets');
   if (raw.restaurant === '1') features.push('restaurant');
 
-  const images = (raw.images || []).map(img => ({ ...img, image: getAbsoluteUrl(img.image, 800) }));
+  const images = (raw.images || []).map(img => ({ ...img, image: getAbsoluteUrl(img.image, 400) }));
   const room_categories = (raw.room_categories || []).map(rc => ({
     ...rc,
-    images: (rc.images || []).map(img => ({ ...img, image: getAbsoluteUrl(img.image, 600) }))
+    images: (rc.images || []).map(img => ({ ...img, image: getAbsoluteUrl(img.image, 400) }))
   }));
 
   const average_rating: AverageRating = raw.average_rating ?? defaultAverageRating(raw.rating ?? '0.0');

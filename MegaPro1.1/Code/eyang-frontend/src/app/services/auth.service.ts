@@ -1,7 +1,7 @@
 
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subject, tap, throwError, catchError } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, tap, throwError, catchError, switchMap, map, of } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 
@@ -79,6 +79,7 @@ export class AuthService {
       .pipe(
         tap(tokens => {
           this.storeTokens(tokens.access, tokens.refresh);
+          // Fetch user profile in background
           this.fetchMe().subscribe();
         })
       );
@@ -100,21 +101,7 @@ export class AuthService {
     phone?: string;
     role: 'Student' | 'Parent' | 'Owner';
   }): Observable<any> {
-    return this.http.post<any>(`${this.BASE}/auth/register/`, userData).pipe(
-      tap(res => {
-        // The backend may return tokens directly or nest them
-        const access  = res.access  ?? res.tokens?.access;
-        const refresh = res.refresh ?? res.tokens?.refresh;
-        if (access && refresh) {
-          this.storeTokens(access, refresh);
-          this.fetchMe().subscribe();
-        } else if (access) {
-          // refresh-less response (should not happen but guard anyway)
-          localStorage.setItem(ACCESS_KEY, access);
-          this.fetchMe().subscribe();
-        }
-      })
-    );
+    return this.http.post<any>(`${this.BASE}/auth/register/`, userData);
   }
 
   /**
@@ -122,19 +109,7 @@ export class AuthService {
    * Used for Owner registrations; falls back gracefully for other roles too.
    */
   registerFormData(formData: FormData): Observable<any> {
-    return this.http.post<any>(`${this.BASE}/auth/register/`, formData).pipe(
-      tap(res => {
-        const access  = res.access  ?? res.tokens?.access;
-        const refresh = res.refresh ?? res.tokens?.refresh;
-        if (access && refresh) {
-          this.storeTokens(access, refresh);
-          this.fetchMe().subscribe();
-        } else if (access) {
-          localStorage.setItem(ACCESS_KEY, access);
-          this.fetchMe().subscribe();
-        }
-      })
-    );
+    return this.http.post<any>(`${this.BASE}/auth/register/`, formData);
   }
 
   verifyEmail(uid: string, token: string): Observable<any> {

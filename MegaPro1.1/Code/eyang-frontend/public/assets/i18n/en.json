@@ -231,6 +231,8 @@
     "didnt_receive_email": "Didn't receive the email?",
     "resend_verification": "Resend",
     "back_to_login": "Back to login",
+    "go_to_dashboard": "Go to Dashboard",
+    "welcome_onboard": "Welcome onboard! Your account is ready.",
     "verifying_account": "Verifying your account...",
     "verifying_account_desc": "Please wait while we secure your access.",
     "verification_success": "Account verified!",
@@ -261,8 +263,8 @@
     "id_card_or_browse": "or",
     "id_card_browse": "browse",
     "id_card_hint": "JPG, PNG, PDF · max 5 MB",
-    "create_owner_account": "Confirm Landlord Registration",
-    "create_account": "Confirm Registration",
+    "create_owner_account": "Create landlord account",
+    "create_account": "Create my account",
     "sending": "Sending…",
     "pw_weak": "Weak",
     "pw_fair": "Fair",
@@ -272,7 +274,30 @@
     "no_notifications": "No notifications",
     "no_notifications_hint": "Important events will appear here.",
     "privacy_policy": "Privacy Policy",
-    "terms_of_service": "Terms of Service"
+    "terms_of_service": "Terms of Service",
+    "registration_success_login": "Account created successfully! You can now log in."
+  },
+  "housing": {
+    "wifi": "WiFi",
+    "generator": "Generator",
+    "forage": "Water / Borehole",
+    "restaurant": "Restaurant",
+    "tv": "Television",
+    "fridge": "Fridge",
+    "currency": "FCFA"
+  },
+  "common": {
+    "anonymous": "Anonymous",
+    "by": "by"
+  },
+  "review": {
+    "rating_1": "Very Poor",
+    "rating_2": "Poor",
+    "rating_3": "Fair",
+    "rating_4": "Good",
+    "rating_5": "Excellent",
+    "submit_success": "Review published successfully!",
+    "submit_error": "Error publishing review. Please try again."
   },
   "dashboard": {
     "welcome": "Welcome",
@@ -858,6 +883,11 @@
     "gps_location": "GPS Location",
     "details_amenities": "Details & Amenities",
     "center_eyang": "Center on Eyang",
-    "search_owner_ph": "Search owner..."
+    "search_owner_ph": "Search owner...",
+    "approve_title": "Approve and verify this housing",
+    "reject_verify_title": "Remove verification",
+    "edit_title": "Edit",
+    "manage_rooms_title": "Manage rooms",
+    "transfer_ownership": "Transfer ownership"
   }
 }
