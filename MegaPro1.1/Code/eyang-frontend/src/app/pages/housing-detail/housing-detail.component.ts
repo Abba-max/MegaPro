@@ -12,6 +12,7 @@ import {
 } from 'lucide-angular';
 import { EstateService, Estate, Review, Conversation, RoomCategory, AverageRating, getAbsoluteUrl } from '../../services/estate.service';
 import { AuthService, User } from '../../services/auth.service';
+import { RoomGalleryComponent } from '../../components/room-gallery/room-gallery.component';
 
 export interface Toast {
   id: number;
@@ -22,7 +23,7 @@ export interface Toast {
 @Component({
   selector: 'app-housing-detail',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, RouterModule, FormsModule, TranslateModule],
+  imports: [CommonModule, LucideAngularModule, RouterModule, FormsModule, TranslateModule, RoomGalleryComponent],
   templateUrl: './housing-detail.component.html',
   styleUrl: './housing-detail.component.css'
 })
@@ -84,6 +85,11 @@ export class HousingDetailComponent implements OnInit {
   isSendingMessage      = false;
   isLoadingConversation = false;
   activeConversation: Conversation | null = null;
+
+  // ── Room Gallery state ──────────────────────────────────
+  showRoomGallery = false;
+  roomGalleryImages: any[] = [];
+  roomGalleryIndex = 0;
 
   // ── Review form ──────────────────────────────────────────
   showReviewForm     = false;

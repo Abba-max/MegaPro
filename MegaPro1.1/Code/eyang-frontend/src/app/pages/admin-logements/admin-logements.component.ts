@@ -12,6 +12,7 @@ import { EstateService, Estate, EstateRaw, EstateImage, RoomCategory, RoomImage,
 import * as L from 'leaflet';
 import { environment } from '../../../environments/environment';
 import { catchError, of, forkJoin, Observable } from 'rxjs';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
 export interface Toast { id: number; type: 'success' | 'error' | 'info' | 'warning'; message: string; }
@@ -26,7 +27,7 @@ interface EstateForm {
 @Component({
   selector: 'app-admin-logements',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, TranslateModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule, TranslateModule],
   templateUrl: './admin-logements.component.html',
   styleUrl: './admin-logements.component.css'
 })
@@ -124,8 +125,6 @@ export class AdminLogementsComponent implements OnInit {
   existingImages:  EstateImage[] = [];
   removedImageIds: number[]      = [];
 
-  form: EstateForm = this.emptyForm();
-
   toasts: Toast[]      = [];
   private toastCounter = 0;
 
@@ -146,18 +145,53 @@ export class AdminLogementsComponent implements OnInit {
   isRoomEditMode          = false;
   isSavingRoom            = signal(false);
   roomEditId: number | null = null;
-  roomForm: Partial<RoomCategory>  = this.emptyRoomForm();
-  roomSelectedFiles:    File[]      = [];
-  roomPreviewImages:    string[]    = [];
-  roomExistingImages:   RoomImage[] = [];
-  roomRemovedImageIds:  number[]    = [];
+  // Stepper state
+  currentStep = 1;
+  readonly TOTAL_STEPS = 4;
+
+  estateForm!: FormGroup;
+  roomFormGroup!: FormGroup;
 
   emptyRoomForm(): Partial<RoomCategory> {
     return { name: '', price: 300000, occupancy: 'single', quantity_available: 1,
              wifi: '0', tv: '0', fridge: '0', room_size: '2', description: '' };
   }
 
-  constructor(private estateService: EstateService, private http: HttpClient) {}
+  constructor(
+    private estateService: EstateService,
+    private http: HttpClient,
+    private fb: FormBuilder
+  ) {
+    this.initForms();
+  }
+
+  private initForms(): void {
+    this.estateForm = this.fb.group({
+      name: ['', [Validators.required]],
+      location: ['', [Validators.required]],
+      distance: [500],
+      status: ['draft'],
+      description: [''],
+      generator: ['0'],
+      forage: ['0'],
+      restaurant: ['0'],
+      lat: [3.884041],
+      lng: [11.390736],
+      owner_id: [null]
+    });
+
+    this.roomFormGroup = this.fb.group({
+      name: ['', [Validators.required]],
+      price: [300000, [Validators.required, Validators.min(0)]],
+      occupancy: ['single'],
+      quantity_available: [1, [Validators.required, Validators.min(1)]],
+      wifi: ['0'],
+      tv: ['0'],
+      fridge: ['0'],
+      room_size: ['2'],
+      description: ['']
+    });
+  }
 
   ngOnInit(): void { this.load(); }
 
@@ -220,7 +254,12 @@ export class AdminLogementsComponent implements OnInit {
   // ── Open create ───────────────────────────────────────────────────────────
   openCreate(): void {
     this.isEditMode = false; this.editId = null;
-    this.form = this.emptyForm();
+    this.currentStep = 1;
+    this.estateForm.reset({
+      name: '', location: '', distance: 500, status: 'draft', description: '',
+      generator: '0', forage: '0', restaurant: '0',
+      lat: 3.884041, lng: 11.390736, owner_id: null
+    });
     this.selectedFiles = []; this.previewImages = [];
     this.existingImages = []; this.removedImageIds = [];
     this.showModal = true;
@@ -230,15 +269,14 @@ export class AdminLogementsComponent implements OnInit {
   // ── Open edit ─────────────────────────────────────────────────────────────
   openEdit(estate: Estate): void {
     this.isEditMode = true; this.editId = estate.id;
-    this.form = {
+    this.currentStep = 1;
+    this.estateForm.patchValue({
       name: estate.name, location: estate.location, distance: estate.distance,
       status: estate.status, description: estate.description,
-      generator: estate.generator as '0'|'1',
-      forage: estate.forage as '0'|'1',
-      restaurant: estate.restaurant as '0'|'1',
+      generator: estate.generator, forage: estate.forage, restaurant: estate.restaurant,
       lat: Number(estate.lat), lng: Number(estate.lng),
       owner_id: estate.owner?.id || null
-    };
+    });
     this.existingImages = [...(estate.images ?? [])];
     this.selectedFiles = []; this.previewImages = []; this.removedImageIds = [];
     this.showModal = true;
@@ -277,16 +315,14 @@ export class AdminLogementsComponent implements OnInit {
 
   // ── Save (create or update) ───────────────────────────────────────────────
   save(): void {
-    if (!this.form.name.trim())     { this.showToast('Le nom est obligatoire.', 'warning'); return; }
-    if (!this.form.location.trim()) { this.showToast('La localisation est obligatoire.', 'warning'); return; }
+    if (this.estateForm.invalid) {
+      this.estateForm.markAllAsTouched();
+      this.showToast('Veuillez remplir tous les champs obligatoires.', 'warning');
+      return;
+    }
+
     this.isSaving.set(true);
-    const payload: Partial<EstateRaw> = {
-      name: this.form.name, location: this.form.location, distance: this.form.distance,
-      status: this.form.status, description: this.form.description,
-      generator: this.form.generator, forage: this.form.forage, restaurant: this.form.restaurant,
-      lat: this.form.lat, lng: this.form.lng,
-      owner_id: this.form.owner_id as any
-    };
+    const payload = this.estateForm.value;
 
     if (this.isEditMode && this.editId) {
       this.estateService.updateEstate(this.editId, payload)
@@ -313,6 +349,25 @@ export class AdminLogementsComponent implements OnInit {
           } else finalize();
         });
     }
+  }
+
+  nextStep(): void {
+    if (this.currentStep < this.TOTAL_STEPS) {
+      this.currentStep++;
+      if (this.currentStep === 3) {
+        setTimeout(() => {
+          if (this.map) {
+            this.map.invalidateSize();
+          } else {
+            this.initMap();
+          }
+        }, 100);
+      }
+    }
+  }
+
+  prevStep(): void {
+    if (this.currentStep > 1) this.currentStep--;
   }
 
   private uploadImages(estateId: number): Observable<any> {
@@ -362,18 +417,55 @@ export class AdminLogementsComponent implements OnInit {
       });
   }
 
-  private emptyForm(): EstateForm {
-    return { name: '', location: '', distance: 500, status: 'draft', description: '',
-             generator: '0', forage: '0', restaurant: '0',
-             lat: 3.884041, lng: 11.390736, owner_id: null };
-  }
+  cancelDelete(): void { this.estateToDelete = null; this.showDeleteConfirm = false; }
+
+  deleteConfirmed(): void {
 
   // ── Map logic ─────────────────────────────────────────────────────────────
+  searchAddressQuery = '';
+  isGeocoding = false;
+  addressResults: any[] = [];
+
+  searchAddress(): void {
+    const q = this.searchAddressQuery.trim();
+    if (!q) return;
+    this.isGeocoding = true;
+    this.http.get<any[]>(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`)
+      .subscribe({
+        next: results => {
+          this.addressResults = results;
+          this.isGeocoding = false;
+          if (results.length > 0) {
+            this.selectAddress(results[0]);
+          }
+        },
+        error: () => {
+          this.showToast('Erreur lors de la recherche d\'adresse.', 'error');
+          this.isGeocoding = false;
+        }
+      });
+  }
+
+  selectAddress(result: any): void {
+    const lat = parseFloat(result.lat);
+    const lon = parseFloat(result.lon);
+    this.estateForm.patchValue({ lat, lng: lon });
+    if (this.map && this.marker) {
+      this.marker.setLatLng([lat, lon]);
+      this.map.setView([lat, lon], 15);
+    }
+    this.addressResults = [];
+    this.searchAddressQuery = result.display_name;
+  }
+
   private initMap(): void {
     const el = document.getElementById('map-picker');
     if (!el) return;
     
-    this.map = L.map(el).setView([this.form.lat, this.form.lng], 15);
+    const lat = this.estateForm.get('lat')?.value || 3.884041;
+    const lng = this.estateForm.get('lng')?.value || 11.390736;
+
+    this.map = L.map(el).setView([lat, lng], 15);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
@@ -389,24 +481,24 @@ export class AdminLogementsComponent implements OnInit {
       iconAnchor: [16, 32]
     });
 
-    this.marker = L.marker([this.form.lat, this.form.lng], { icon, draggable: true }).addTo(this.map);
+    this.marker = L.marker([lat, lng], { icon, draggable: true }).addTo(this.map);
     
     this.marker.on('dragend', () => {
       const pos = this.marker!.getLatLng();
-      this.form.lat = pos.lat;
-      this.form.lng = pos.lng;
+      this.estateForm.patchValue({ lat: pos.lat, lng: pos.lng });
     });
 
     this.map.on('click', (e: L.LeafletMouseEvent) => {
       this.marker!.setLatLng(e.latlng);
-      this.form.lat = e.latlng.lat;
-      this.form.lng = e.latlng.lng;
+      this.estateForm.patchValue({ lat: e.latlng.lat, lng: e.latlng.lng });
     });
   }
 
   onLatLngInput(): void {
     if (this.map && this.marker) {
-      const pos = L.latLng(this.form.lat, this.form.lng);
+      const lat = this.estateForm.get('lat')?.value;
+      const lng = this.estateForm.get('lng')?.value;
+      const pos = L.latLng(lat, lng);
       this.marker.setLatLng(pos);
       this.map.setView(pos);
     }
@@ -417,8 +509,7 @@ export class AdminLogementsComponent implements OnInit {
     if (this.map && this.marker) {
       this.marker.setLatLng(eyangPos);
       this.map.setView(eyangPos, 15);
-      this.form.lat = 3.884041;
-      this.form.lng = 11.390736;
+      this.estateForm.patchValue({ lat: 3.884041, lng: 11.390736 });
     }
   }
 
@@ -470,14 +561,17 @@ export class AdminLogementsComponent implements OnInit {
 
   openCreateRoom(): void {
     this.isRoomEditMode = true; this.roomEditId = null;
-    this.roomForm = this.emptyRoomForm();
+    this.roomFormGroup.reset({
+      name: '', price: 300000, occupancy: 'single', quantity_available: 1,
+      wifi: '0', tv: '0', fridge: '0', room_size: '2', description: ''
+    });
     this.roomSelectedFiles = []; this.roomPreviewImages = [];
     this.roomExistingImages = []; this.roomRemovedImageIds = [];
   }
 
   openEditRoom(room: RoomCategory): void {
     this.isRoomEditMode = true; this.roomEditId = room.id;
-    this.roomForm = { ...room };
+    this.roomFormGroup.patchValue({ ...room });
     this.roomExistingImages = [...(room.images || [])];
     this.roomSelectedFiles = []; this.roomPreviewImages = []; this.roomRemovedImageIds = [];
   }
@@ -493,9 +587,13 @@ export class AdminLogementsComponent implements OnInit {
 
   saveRoom(): void {
     if (!this.selectedEstateForRooms) return;
-    if (!this.roomForm.name) { this.showToast('Le nom est obligatoire.', 'warning'); return; }
+    if (this.roomFormGroup.invalid) {
+      this.roomFormGroup.markAllAsTouched();
+      this.showToast('Veuillez remplir tous les champs obligatoires.', 'warning');
+      return;
+    }
     this.isSavingRoom.set(true);
-    const payload = { ...this.roomForm, estate: this.selectedEstateForRooms.id };
+    const payload = { ...this.roomFormGroup.value, estate: this.selectedEstateForRooms.id };
     const req = this.roomEditId
       ? this.estateService.updateRoomCategory(this.roomEditId, payload)
       : this.estateService.createRoomCategory(payload);

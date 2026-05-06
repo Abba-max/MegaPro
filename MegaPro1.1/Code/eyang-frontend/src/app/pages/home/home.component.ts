@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import {
   LucideAngularModule,
   MapPin, Search, Wifi, Zap, Droplets, Star, Filter,
@@ -26,7 +28,7 @@ export interface Toast {
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
   readonly MapPinIcon        = MapPin;
   readonly SearchIcon        = Search;
   readonly WifiIcon          = Wifi;
@@ -57,7 +59,13 @@ export class HomeComponent implements OnInit {
   readonly ChevronDownIcon   = ChevronDown;
 
   searchQuery  = '';
-  housings: Estate[] = [];
+  private searchSubject = new Subject<string>();
+
+  // Master/Display Array Pattern
+  allHousingsMaster: Estate[] = [];
+  filteredHousings: Estate[] = [];
+  pagedHousings: Estate[] = [];
+  
   isLoading    = true;
   errorMessage = '';
 
@@ -65,87 +73,35 @@ export class HomeComponent implements OnInit {
   readonly HOME_PAGE_SIZE = 6;
   visibleCount = this.HOME_PAGE_SIZE;
 
-  /** All housings sorted by average_rating descending */
-  sortedHousings: Estate[] = [];
-
-  /** The slice shown in the grid */
-  pagedHousings: Estate[] = [];
-
-  get hasMoreHousings(): boolean {
-    return this.visibleCount < this.housings.length;
-  }
-
-  showMoreHousings(): void {
-    this.visibleCount = Math.min(
-      this.visibleCount + this.HOME_PAGE_SIZE,
-      this.housings.length
-    );
-    this.updatePagedHousings();
-  }
-
-  private resetHomePage(): void {
-    this.visibleCount = this.HOME_PAGE_SIZE;
-    this.updateSortedHousings();
-    this.updatePagedHousings();
-  }
-
-  private updateSortedHousings(): void {
-    this.sortedHousings = [...this.housings].sort((a, b) => {
+  get sortedHousings(): Estate[] {
+    return [...this.filteredHousings].sort((a, b) => {
       const ra = a.average_rating?.value ?? parseFloat(a.rating ?? '0');
       const rb = b.average_rating?.value ?? parseFloat(b.rating ?? '0');
       return rb - ra;
     });
   }
 
+  get hasMoreHousings(): boolean {
+    return this.visibleCount < this.filteredHousings.length;
+  }
+
+  showMoreHousings(): void {
+    this.visibleCount = Math.min(
+      this.visibleCount + this.HOME_PAGE_SIZE,
+      this.filteredHousings.length
+    );
+    this.updatePagedHousings();
+  }
+
+  private resetHomePage(): void {
+    this.visibleCount = this.HOME_PAGE_SIZE;
+    this.updatePagedHousings();
+  }
+
   private updatePagedHousings(): void {
     this.pagedHousings = this.sortedHousings.slice(0, this.visibleCount);
   }
-// ─────────────────────────────────────────────────────────────────────────────
-// MAP PREVIEW SECTION helpers
-// Add these methods to HomeComponent (home.component.ts)
-// ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Maps a known location name to an approximate X coordinate inside the
- * 620×380 SVG viewBox used by the home-page map preview section.
- */
-mapGridX(h: Estate): number {
-  const key = h.location?.toLowerCase().trim() ?? '';
-  const base: Record<string, number> = {
-    eyang:    195,
-    lobo:     360,
-    vogt:     120,
-    nlongkak: 420,
-  };
-  // Small deterministic horizontal jitter so stacked markers spread out
-  return (base[key] ?? 280) + (h.id % 12) * 5;
-}
-
-/**
- * Maps a known location name to an approximate Y coordinate.
- */
-mapGridY(h: Estate): number {
-  const key = h.location?.toLowerCase().trim() ?? '';
-  const base: Record<string, number> = {
-    eyang:    140,
-    lobo:     165,
-    vogt:     240,
-    nlongkak: 258,
-  };
-  return (base[key] ?? 180) + (h.id % 8) * 6;
-}
-
-/**
- * Formats a price value into a compact label for SVG markers:
- *   1 500 000  →  "1.5M"
- *   350 000    →  "350k"
- *   75 000     →  "75k"
- */
-mapGridLabel(price: number): string {
-  if (price >= 1_000_000) return `${(price / 1_000_000).toFixed(1)}M`;
-  if (price >= 1_000)     return `${Math.round(price / 1_000)}k`;
-  return String(price);
-}
   // ── Quick filter bar ─────────────────────────────────────
   filterWifi       = '';
   filterGenerator  = '';
@@ -219,7 +175,12 @@ mapGridLabel(price: number): string {
     private authService: AuthService,
     private translate: TranslateService,
     private router: Router
-  ) {}
+  ) {
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(() => this.applyFilters());
+  }
 
   ngOnInit(): void {
     const lang = this.translate.currentLang || this.translate.defaultLang || 'fr';
@@ -236,8 +197,11 @@ mapGridLabel(price: number): string {
 
     this.translate.onLangChange.subscribe(() => {
       this.buildFaqs();
-      this.housings = [...this.housings];
     });
+  }
+
+  ngOnDestroy(): void {
+    this.searchSubject.complete();
   }
 
   private buildFaqs(): void {
@@ -273,7 +237,11 @@ mapGridLabel(price: number): string {
     this.isLoading    = true;
     this.errorMessage = '';
     this.estateService.getEstates({ status: 'published' }).subscribe({
-      next: data => { this.housings = data; this.isLoading = false; this.resetHomePage(); },
+      next: data => { 
+        this.allHousingsMaster = data; 
+        this.applyFilters();
+        this.isLoading = false; 
+      },
       error: err => {
         console.error('Failed to load estates:', err);
         this.errorMessage = this.translate.instant('admin.error_load');
@@ -284,31 +252,35 @@ mapGridLabel(price: number): string {
   }
 
   applyFilters(): void {
-    const filters: any = { status: 'published' };
-    if (this.filterWifi)        filters.wifi        = this.filterWifi;
-    if (this.filterGenerator)   filters.generator   = this.filterGenerator;
-    if (this.filterForage)      filters.forage      = this.filterForage;
-    if (this.filterRestaurant)  filters.restaurant  = this.filterRestaurant;
-    if (this.filterTv)          filters.tv          = this.filterTv;
-    if (this.filterFridge)      filters.fridge      = this.filterFridge;
-    if (this.filterRoomSize)    filters.room_size   = this.filterRoomSize;
-    if (this.filterMaxDist)     filters.max_dist    = this.filterMaxDist;
-    if (this.filterMinPrice)    filters.min_price   = this.filterMinPrice;
-    if (this.filterMaxPrice)    filters.max_price   = this.filterMaxPrice;
+    const query = this.searchQuery.toLowerCase().trim();
+    
+    this.filteredHousings = this.allHousingsMaster.filter(h => {
+      const matchSearch = !query || 
+        h.name.toLowerCase().includes(query) || 
+        h.location.toLowerCase().includes(query);
+      
+      const matchWifi       = !this.filterWifi       || h.wifi === this.filterWifi;
+      const matchGenerator  = !this.filterGenerator  || h.generator === this.filterGenerator;
+      const matchForage     = !this.filterForage     || h.forage === this.filterForage;
+      const matchRestaurant = !this.filterRestaurant || h.restaurant === this.filterRestaurant;
+      const matchTv         = !this.filterTv         || h.tv === this.filterTv;
+      const matchFridge     = !this.filterFridge     || h.fridge === this.filterFridge;
+      
+      const matchRoomSize = !this.filterRoomSize || h.room_categories.some(rc => rc.room_size === this.filterRoomSize);
+      const matchDist = !this.filterMaxDist || h.distance <= this.filterMaxDist;
+      
+      const minPrice = this.filterMinPrice || 0;
+      const maxPrice = this.filterMaxPrice || Infinity;
+      const matchPrice = h.price >= minPrice && h.price <= maxPrice;
+      
+      const matchFree = h.free >= this.filterMinFree;
 
-    this.isLoading = true;
-    this.estateService.getEstates(filters).subscribe({
-      next: data => {
-        let result = data;
-        if (this.filterMinFree > 0) {
-          result = data.filter(h => h.free >= this.filterMinFree);
-        }
-        this.housings  = result;
-        this.isLoading = false;
-        this.resetHomePage();
-      },
-      error: () => { this.isLoading = false; }
+      return matchSearch && matchWifi && matchGenerator && matchForage && 
+             matchRestaurant && matchTv && matchFridge && matchRoomSize && 
+             matchDist && matchPrice && matchFree;
     });
+
+    this.resetHomePage();
   }
 
   applyFiltersAndClose(): void {
@@ -322,9 +294,10 @@ mapGridLabel(price: number): string {
     this.filterTv = this.filterFridge = this.filterRoomSize = '';
     this.filterMaxDist = this.filterMinPrice = this.filterMaxPrice = null;
     this.filterMinFree = 0;
+    this.searchQuery = '';
     this.showAdvanced = false;
     document.body.style.overflow = '';
-    this.loadEstates();
+    this.applyFilters();
   }
 
   toggleAdvanced(): void {
@@ -339,6 +312,7 @@ mapGridLabel(price: number): string {
 
   setMaxPrice(val: number): void {
     this.filterMaxPrice = this.filterMaxPrice === val ? null : val;
+    this.applyFilters();
   }
 
   get activeFilterCount(): number {
@@ -358,20 +332,12 @@ mapGridLabel(price: number): string {
   }
 
   // ── Search ────────────────────────────────────────────────
-  onSearchInput(): void {
-    const q = this.searchQuery.trim().toLowerCase();
-    if (!q) { this.loadEstates(); return; }
-    this.estateService.getEstates({ status: 'published' }).subscribe({
-      next: data => {
-        this.housings = data.filter(h =>
-          h.name.toLowerCase().includes(q) || h.location.toLowerCase().includes(q)
-        );
-        this.resetHomePage();
-      }
-    });
+  onSearchInput(val: string): void {
+    this.searchQuery = val;
+    this.searchSubject.next(val);
   }
 
-  onSearch(): void { this.onSearchInput(); }
+  onSearch(): void { this.applyFilters(); }
 
   // ── Helpers ───────────────────────────────────────────────
   getFirstImage(estate: Estate): string {
@@ -419,21 +385,13 @@ mapGridLabel(price: number): string {
     document.querySelector('.listings-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  /**
-   * Footer scroll helper — works for section class names like
-   * 'listings', 'why', 'stats', 'testimonials', 'faq'
-   */
   scrollToSection(name: string): void {
     const selector = `.${name}-section`;
     document.querySelector(selector)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  /** Open auth modals from the footer */
   openLoginFromFooter(): void  { this.router.navigate(['/login']); }
   openSignupFromFooter(): void {
-    // Re-use the header's signup flow via the auth service.
-    // The header listens to authService.openSignup$ if you have one;
-    // if not, open login and let the user switch — or directly dispatch:
     this.router.navigate(['/login']);
   }
 }
