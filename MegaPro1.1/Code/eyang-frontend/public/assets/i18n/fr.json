@@ -528,7 +528,6 @@
     "search_housings_ph": "Rechercher par nom, ville…",
     "all_roles": "Tous les rôles",
     "all_status": "Tous les statuts",
->>>>>>> 6cf4105 (feat: modernize admin dashboard with stepper, reactive forms, and geocoding; enhance search logic and add room gallery)
     "all_verifications": "Toute vérification",
     "verified_check": "Vérifié ✓",
     "pending_wait": "En attente ⏳",
