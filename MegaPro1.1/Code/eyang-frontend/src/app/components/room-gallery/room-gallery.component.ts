@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule, X, ChevronLeft, ChevronRight } from 'lucide-angular';
 import { RoomImage } from '../../services/estate.service';
@@ -37,7 +37,7 @@ import { RoomImage } from '../../services/estate.service';
             [class.active]="i === currentIndex"
             (click)="currentIndex = i"
           >
-            <img [src]="img.image" alt="Thumbnail">
+            <img [src]="img.image" alt="Thumbnail" loading="lazy">
           </div>
         </div>
 
@@ -125,6 +125,13 @@ export class RoomGalleryComponent {
   readonly XIcon = X;
   readonly PrevIcon = ChevronLeft;
   readonly NextIcon = ChevronRight;
+
+  @HostListener('document:keydown', ['$event'])
+  handleKeyboardEvent(event: KeyboardEvent) {
+    if (event.key === 'ArrowRight') this.next();
+    if (event.key === 'ArrowLeft') this.prev();
+    if (event.key === 'Escape') this.close.emit();
+  }
 
   next(): void {
     this.currentIndex = (this.currentIndex + 1) % this.images.length;

@@ -431,6 +431,19 @@
 }
 .textarea-field { resize: vertical; min-height: 100px; line-height: 1.6; }
 
+.field-error {
+    color: #EF4444;
+    font-size: 11px;
+    font-weight: 600;
+    margin-top: 4px;
+    animation: fadeIn 0.2s ease;
+}
+
+.input.invalid, .select-input.invalid {
+    border-color: #EF4444 !important;
+    background: #FFF5F5;
+}
+
 /* ── Form: Equipments & Image Upload ───────────────────────── */
 .equipments-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
 .equip-item {

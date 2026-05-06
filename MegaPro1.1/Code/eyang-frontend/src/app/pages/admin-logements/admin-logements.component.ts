@@ -352,6 +352,21 @@ export class AdminLogementsComponent implements OnInit {
   }
 
   nextStep(): void {
+    if (this.currentStep === 1) {
+      const step1Fields = ['name', 'location', 'owner_id'];
+      if (this.isEditMode) step1Fields.pop();
+      
+      if (!this.validateFields(step1Fields)) {
+        this.showToast(this.translate.instant('admin.step1_invalid'), 'warning');
+        return;
+      }
+    } else if (this.currentStep === 3) {
+      if (!this.estateForm.get('lat')?.value || !this.estateForm.get('lng')?.value) {
+        this.showToast(this.translate.instant('admin.location_required'), 'warning');
+        return;
+      }
+    }
+
     if (this.currentStep < this.TOTAL_STEPS) {
       this.currentStep++;
       if (this.currentStep === 3) {
@@ -364,6 +379,18 @@ export class AdminLogementsComponent implements OnInit {
         }, 100);
       }
     }
+  }
+
+  private validateFields(fields: string[]): boolean {
+    let isValid = true;
+    fields.forEach(f => {
+      const ctrl = this.estateForm.get(f);
+      if (ctrl?.invalid) {
+        ctrl.markAsTouched();
+        isValid = false;
+      }
+    });
+    return isValid;
   }
 
   prevStep(): void {
@@ -403,7 +430,6 @@ export class AdminLogementsComponent implements OnInit {
   }
 
   confirmDelete(estate: Estate): void { this.estateToDelete = estate; this.showDeleteConfirm = true; }
-  cancelDelete(): void { this.estateToDelete = null; this.showDeleteConfirm = false; }
 
   deleteConfirmed(): void {
     if (!this.estateToDelete) return;
@@ -419,8 +445,6 @@ export class AdminLogementsComponent implements OnInit {
 
   cancelDelete(): void { this.estateToDelete = null; this.showDeleteConfirm = false; }
 
-  deleteConfirmed(): void {
-
   // ── Map logic ─────────────────────────────────────────────────────────────
   searchAddressQuery = '';
   isGeocoding = false;
@@ -433,15 +457,18 @@ export class AdminLogementsComponent implements OnInit {
     this.http.get<any[]>(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`)
       .subscribe({
         next: results => {
-          this.addressResults = results;
+          this.addressResults = results.slice(0, 5);
           this.isGeocoding = false;
-          if (results.length > 0) {
-            this.selectAddress(results[0]);
+          if (this.addressResults.length === 0) {
+            this.showToast(this.translate.instant('admin.no_results_found'), 'info');
+          } else {
+            this.selectAddress(this.addressResults[0]);
           }
         },
-        error: () => {
-          this.showToast('Erreur lors de la recherche d\'adresse.', 'error');
+        error: (err) => {
+          console.error('Geocoding error:', err);
           this.isGeocoding = false;
+          this.showToast(this.translate.instant('admin.geocoding_error'), 'error');
         }
       });
   }
@@ -495,12 +522,16 @@ export class AdminLogementsComponent implements OnInit {
   }
 
   onLatLngInput(): void {
+    const lat = Number(this.estateForm.get('lat')?.value);
+    const lng = Number(this.estateForm.get('lng')?.value);
+
+    if (isNaN(lat) || isNaN(lng) || lat < -90 || lat > 90 || lng < -180 || lng > 180) {
+      return;
+    }
+
     if (this.map && this.marker) {
-      const lat = this.estateForm.get('lat')?.value;
-      const lng = this.estateForm.get('lng')?.value;
-      const pos = L.latLng(lat, lng);
-      this.marker.setLatLng(pos);
-      this.map.setView(pos);
+      this.marker.setLatLng([lat, lng]);
+      this.map.setView([lat, lng], 16);
     }
   }
 
