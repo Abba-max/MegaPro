@@ -13,7 +13,7 @@ import * as L from 'leaflet';
 import { environment } from '../../../environments/environment';
 import { catchError, of, forkJoin, Observable } from 'rxjs';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
 export interface Toast { id: number; type: 'success' | 'error' | 'info' | 'warning'; message: string; }
 
@@ -145,6 +145,10 @@ export class AdminLogementsComponent implements OnInit {
   isRoomEditMode          = false;
   isSavingRoom            = signal(false);
   roomEditId: number | null = null;
+  roomSelectedFiles: File[] = [];
+  roomPreviewImages: string[] = [];
+  roomExistingImages: RoomImage[] = [];
+  roomRemovedImageIds: number[] = [];
   // Stepper state
   currentStep = 1;
   readonly TOTAL_STEPS = 4;
@@ -160,7 +164,8 @@ export class AdminLogementsComponent implements OnInit {
   constructor(
     private estateService: EstateService,
     private http: HttpClient,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+    private translate: TranslateService
   ) {
     this.initForms();
   }

@@ -91,6 +91,20 @@ export class HousingDetailComponent implements OnInit {
   roomGalleryImages: any[] = [];
   roomGalleryIndex = 0;
 
+  openRoomGallery(rc: RoomCategory, index: number = 0): void {
+    if (!rc.images || rc.images.length === 0) return;
+    this.roomGalleryImages = rc.images.map(img => ({
+      url: img.image,
+      caption: img.caption || rc.name
+    }));
+    this.roomGalleryIndex = index;
+    this.showRoomGallery = true;
+  }
+
+  closeRoomGallery(): void {
+    this.showRoomGallery = false;
+  }
+
   // ── Review form ──────────────────────────────────────────
   showReviewForm     = false;
   isSubmittingReview = false;

@@ -117,7 +117,8 @@
     "delete": "Supprimer",
     "this_month": "ce mois-ci",
     "warning": "Avertissement",
-    "unknown": "Inconnu"
+    "unknown": "Inconnu",
+    "common.cancel":"Cancel"
   },
   "form": {
     "name": "Nom",
@@ -138,8 +139,6 @@
     "status_archived": "Archivé",
     "status_verified": "Vérifié",
     "status_pending": "En attente",
-<<<<<<< HEAD
-=======
     "status_accepted": "Acceptée",
     "status_rejected": "Rejetée",
     "accept": "Accepter",

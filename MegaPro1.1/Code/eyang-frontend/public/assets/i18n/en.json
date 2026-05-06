@@ -117,7 +117,8 @@
     "delete": "Delete",
     "this_month": "this month",
     "warning": "Warning",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "common.cancel":"Cancel"
   },
   "form": {
     "name": "Name",

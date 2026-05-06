@@ -18,26 +18,31 @@
        [class.with-sidebar]="isAdmin"
        [class.fullscreen]="isDashboard">
 
-    <!-- Hamburger — admin only, tablet/mobile -->
-    <button class="mobile-menu-toggle"
-            *ngIf="isAdmin && !isDashboard"
-            (click)="toggleSidebar()"
-            [class.toggle-open]="sidebarOpen"
-            aria-label="Toggle menu">
-      <span class="ham-bar bar-top"    [class.open]="sidebarOpen"></span>
-      <span class="ham-bar bar-mid"    [class.open]="sidebarOpen"></span>
-      <span class="ham-bar bar-bottom" [class.open]="sidebarOpen"></span>
-    </button>
+    <!-- Admin Mobile Header — only mobile/tablet -->
+    <div class="admin-mobile-header" *ngIf="isAdminArea">
+      <button class="mobile-menu-toggle"
+              (click)="toggleSidebar()"
+              [class.toggle-open]="sidebarOpen"
+              aria-label="Toggle menu">
+        <span class="ham-bar bar-top"    [class.open]="sidebarOpen"></span>
+        <span class="ham-bar bar-mid"    [class.open]="sidebarOpen"></span>
+        <span class="ham-bar bar-bottom" [class.open]="sidebarOpen"></span>
+      </button>
+      <div class="admin-mobile-title">{{ 'nav.admin' | translate }}</div>
+      <div class="admin-mobile-spacer"></div>
+    </div>
 
     <!-- Header — hidden on dashboard (it has its own nav) -->
     <app-header
-      *ngIf="!isDashboard"
+      *ngIf="!isDashboard && !isAdminArea"
       [isAdmin]="isAdmin"
       [isPublic]="isPublic">
     </app-header>
 
     <!-- Content -->
-    <main class="content-area" [class.full-bleed]="isDashboard">
+    <main class="content-area" 
+          [class.full-bleed]="isDashboard"
+          [class.admin-area]="isAdminArea">
       <router-outlet></router-outlet>
     </main>
 

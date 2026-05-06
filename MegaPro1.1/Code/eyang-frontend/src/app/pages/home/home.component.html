@@ -103,7 +103,7 @@
             <h2 class="section-title">{{ 'listings.title' | translate }}</h2>
             <p class="section-desc">{{ 'listings.desc' | translate }}</p>
         </div>
-        <span class="listing-count-badge">{{ housings.length }} {{ 'listings.title' | translate }}</span>
+        <span class="listing-count-badge">{{ filteredHousings.length }} {{ 'listings.title' | translate }}</span>
     </div>
 
 <div *ngIf="isLoading" style="display:flex;justify-content:center;padding:3rem;">
@@ -243,10 +243,10 @@
   <button class="home-btn-show-more" (click)="showMoreHousings()">
     <lucide-icon [img]="ChevronDownIcon" class="home-chevron-icon"></lucide-icon>
     {{ 'listings.show_more' | translate }}
-    <span class="home-show-more-count">({{ housings.length - visibleCount }} {{ 'listings.remaining' | translate }})</span>
+    <span class="home-show-more-count">({{ filteredHousings.length - visibleCount }} {{ 'listings.remaining' | translate }})</span>
   </button>
 </div>
-<div class="home-all-loaded" *ngIf="!isLoading && !errorMessage && !hasMoreHousings && housings.length > HOME_PAGE_SIZE">
+<div class="home-all-loaded" *ngIf="!isLoading && !errorMessage && !hasMoreHousings && filteredHousings.length > HOME_PAGE_SIZE">
   <span>✓ {{ 'listings.all_shown' | translate }}</span>
 </div>
 
@@ -466,7 +466,7 @@
         <div class="testimonial-author">
             <div class="author-avatar">MK</div>
             <div>
-                <div class="author-name">Marie Kamga</div>
+                <div class="author-name">Tando Celeste</div>
                 <div class="author-role">{{ 'testimonials.t1_role' | translate }}</div>
             </div>
         </div>
@@ -477,7 +477,7 @@
         <div class="testimonial-author">
             <div class="author-avatar green-av">PN</div>
             <div>
-                <div class="author-name">Paul Nkemdirim</div>
+                <div class="author-name">Nkemeni Daniel</div>
                 <div class="author-role">{{ 'testimonials.t2_role' | translate }}</div>
             </div>
         </div>
@@ -488,7 +488,7 @@
         <div class="testimonial-author">
             <div class="author-avatar orange-av">BE</div>
             <div>
-                <div class="author-name">Boris Ebenezer</div>
+                <div class="author-name">Boris Njoum</div>
                 <div class="author-role">{{ 'testimonials.t3_role' | translate }}</div>
             </div>
         </div>
