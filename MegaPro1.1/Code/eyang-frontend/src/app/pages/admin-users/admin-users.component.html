@@ -65,7 +65,7 @@
         <td [attr.data-label]="'admin.col_email' | translate"><span class="text-sm">{{ u.email }}</span></td>
         <td [attr.data-label]="'admin.col_role' | translate">
             <span class="role-badge" [style.background]="u.color + '20'" [style.color]="u.color">
-                {{ (u.type === 'Student' ? 'auth.student' : u.type === 'Parent' ? 'auth.parent' : u.type === 'Owner' ? 'auth.owner' : 'auth.role_badge_admin') | translate }}
+                {{ getRoleLabel(u.type) | translate }}
             </span>
         </td>
         <td [attr.data-label]="'admin.col_joined' | translate"><span class="text-sm">{{ u.joined | date:'dd/MM/yyyy HH:mm' }}</span></td>
@@ -142,7 +142,7 @@
                 <div class="form-group">
                     <label>{{ 'admin.col_role' | translate }}</label>
                     <div style="font-size:14px; font-weight:600; color:#0F172A;">
-                        {{ (viewUser.type === 'Student' ? 'auth.student' : viewUser.type === 'Parent' ? 'auth.parent' : viewUser.type === 'Owner' ? 'auth.owner' : 'auth.role_badge_admin') | translate }}
+                        {{ getRoleLabel(viewUser.type) | translate }}
                     </div>
                 </div>
                 <div class="form-group">

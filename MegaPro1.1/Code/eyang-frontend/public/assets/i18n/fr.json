@@ -433,7 +433,11 @@
     "sending": "Envoi en cours...",
     "request_sent": "Demande envoyée ! Le propriétaire vous contactera bientôt.",
     "error_required": "Ce champ est obligatoire.",
-    "error_select_owner": "Veuillez sélectionner un propriétaire."
+    "error_select_owner": "Veuillez sélectionner un propriétaire.",
+    "student": "Étudiant",
+    "parent": "Parent",
+    "owner": "Bailleur",
+    "role_badge_admin": "Administrateur"
   },
   "messages": {
     "title": "Messages",
@@ -533,6 +537,12 @@
     "pending_wait": "En attente ⏳",
     "total_housings": "{{ count }} logement{{ plural }}",
     "pending_verification": "{{ count }} en attente de vérification",
+    "total_users": "{{ count }} utilisateur{{ plural }}",
+    "no_users_found": "Aucun utilisateur trouvé",
+    "col_user": "UTILISATEUR",
+    "col_email": "EMAIL",
+    "col_role": "RÔLE",
+    "col_joined": "INSCRIPTION",
     "col_housing": "LOGEMENT",
     "col_owner": "PROPRIÉTAIRE",
     "col_rating": "NOTE",
@@ -591,6 +601,15 @@
     "room_name_eg": "Ex: Chambre VIP",
     "room_equipments": "Équipements de la chambre",
     "room_size": "Taille de la chambre",
+    "user_activated": "{{ name }} a été activé",
+    "user_deactivated": "{{ name }} a été désactivé",
+    "user_details": "Détails de l'utilisateur",
+    "joined_date": "Date d'inscription",
+    "edit_user": "Modifier l'utilisateur",
+    "delete_confirm_user": "Voulez-vous vraiment supprimer {{ name }} ?",
+    "view_details": "Voir les détails",
+    "activate": "Activer",
+    "deactivate": "Désactiver",
     "common.reset":"Reinstaliser",
     "common.this_month":"Ce mois ci",
     "detail.1_person":"1 Personne",
@@ -609,6 +628,21 @@
     "per_month": "FCFA/mois"
   },
   "auth": {
-    "go_to_dashboard": "Accéder au tableau de bord"
+    "go_to_dashboard": "Accéder au tableau de bord",
+    "student": "Étudiant",
+    "parent": "Parent",
+    "owner": "Bailleur",
+    "role_badge_admin": "Administrateur",
+    "firstname": "Prénom",
+    "lastname": "Nom",
+    "username": "Nom d'utilisateur",
+    "password": "Mot de passe",
+    "firstname_placeholder": "Entrez le prénom",
+    "lastname_placeholder": "Entrez le nom",
+    "username_placeholder": "Entrez le nom d'utilisateur",
+    "email_placeholder": "Entrez l'email",
+    "password_placeholder": "Entrez le mot de passe",
+    "new_password_optional": "Nouveau mot de passe (optionnel)",
+    "error_missing_fields": "Veuillez remplir tous les champs obligatoires"
   }
 }

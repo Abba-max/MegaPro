@@ -66,7 +66,7 @@ export class AdminUsersComponent implements OnInit {
     const t = this.filterType();
     return this.allUsers().filter(u => {
       const matchQ = !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
-      const matchT = !t || u.type === t;
+      const matchT = !t || u.type.toLowerCase() === t.toLowerCase();
       return matchQ && matchT;
     });
   });
@@ -114,7 +114,12 @@ export class AdminUsersComponent implements OnInit {
         return of([]); 
       }))
       .subscribe(data => {
-        this.allUsers.set(data as AdminUser[]);
+        const enriched = (data as AdminUser[]).map(u => ({
+          ...u,
+          initials: u.initials || u.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2),
+          color: u.color || this.getRandomColor(u.id)
+        }));
+        this.allUsers.set(enriched);
         this.isLoading.set(false);
       });
   }
@@ -291,6 +296,20 @@ export class AdminUsersComponent implements OnInit {
 
   get userTypes(): string[] {
     return [...new Set(this.allUsers().map(u => u.type))];
+  }
+
+  getRoleLabel(type: string): string {
+    const t = type.toLowerCase();
+    if (t === 'student') return 'auth.student';
+    if (t === 'parent')  return 'auth.parent';
+    if (t === 'owner')   return 'auth.owner';
+    if (t === 'admin')   return 'auth.role_badge_admin';
+    return 'auth.role_badge_admin';
+  }
+
+  private getRandomColor(id: number): string {
+    const colors = ['#6366F1', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#3B82F6'];
+    return colors[id % colors.length];
   }
 
   private emptyForm(): UserForm {

@@ -434,7 +434,11 @@
     "sending": "Sending...",
     "request_sent": "Request sent! The owner will contact you soon.",
     "error_required": "This field is required.",
-    "error_select_owner": "Please select an owner."
+    "error_select_owner": "Please select an owner.",
+    "student": "Student",
+    "parent": "Parent",
+    "owner": "Landlord",
+    "role_badge_admin": "Administrator"
   },
   "messages": {
     "title": "Messages",
@@ -534,6 +538,12 @@
     "pending_wait": "Pending ⏳",
     "total_housings": "{{ count }} housing{{ plural }}",
     "pending_verification": "{{ count }} pending verification",
+    "total_users": "{{ count }} user{{ plural }}",
+    "no_users_found": "No users found",
+    "col_user": "USER",
+    "col_email": "EMAIL",
+    "col_role": "ROLE",
+    "col_joined": "JOINED",
     "col_housing": "HOUSING",
     "col_owner": "OWNER",
     "col_rating": "RATING",
@@ -591,7 +601,16 @@
     "add_room": "Add a room",
     "room_name_eg": "E.g. VIP Room",
     "room_equipments": "Room amenities",
-    "room_size": "Room size"
+    "room_size": "Room size",
+    "user_activated": "{{ name }} has been activated",
+    "user_deactivated": "{{ name }} has been deactivated",
+    "user_details": "User Details",
+    "joined_date": "Joined Date",
+    "edit_user": "Edit User",
+    "delete_confirm_user": "Are you sure you want to delete {{ name }}?",
+    "view_details": "View Details",
+    "activate": "Activate",
+    "deactivate": "Deactivate"
   },
   "dashboard": {
     "form_name_ph": "E.g. Les Palmiers Residence",
@@ -605,6 +624,21 @@
     "per_month": "FCFA/month"
   },
   "auth": {
-    "go_to_dashboard": "Go to Dashboard"
+    "go_to_dashboard": "Go to Dashboard",
+    "student": "Student",
+    "parent": "Parent",
+    "owner": "Landlord",
+    "role_badge_admin": "Administrator",
+    "firstname": "First Name",
+    "lastname": "Last Name",
+    "username": "Username",
+    "password": "Password",
+    "firstname_placeholder": "Enter first name",
+    "lastname_placeholder": "Enter last name",
+    "username_placeholder": "Enter username",
+    "email_placeholder": "Enter email",
+    "password_placeholder": "Enter password",
+    "new_password_optional": "New password (optional)",
+    "error_missing_fields": "Please fill in all required fields"
   }
 }
