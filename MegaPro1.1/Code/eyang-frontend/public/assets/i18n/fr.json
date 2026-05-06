@@ -590,7 +590,12 @@
     "add_room": "Ajouter une chambre",
     "room_name_eg": "Ex: Chambre VIP",
     "room_equipments": "Équipements de la chambre",
-    "room_size": "Taille de la chambre"
+    "room_size": "Taille de la chambre",
+    "common.reset":"Reinstaliser",
+    "common.this_month":"Ce mois ci",
+    "detail.1_person":"1 Personne",
+    "detail.2_person":"2 personnes",
+    "sidebar.housings":"Logements"
   },
   "dashboard": {
     "form_name_ph": "Ex: Résidence Les Palmiers",
