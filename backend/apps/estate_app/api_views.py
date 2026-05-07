@@ -5,6 +5,13 @@ from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from django.db.models import Q
 from django.contrib.auth.hashers import make_password
 from rest_framework_simplejwt.views import TokenObtainPairView
+import uuid as _uuid
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from .models import Payment
+from .cinetpay import initiate_payment, verify_payment
+
+
 
 from .models import Estate, EstateImage, Review, QuickOrder, ContactRequest, Conversation, Message, User, RoomCategory, RoomImage
 from .serializers import (
@@ -689,3 +696,152 @@ class NotificationViewSet(viewsets.ModelViewSet):
         notif.read = True
         notif.save(update_fields=['read'])
         return Response({'status': 'ok'})
+    
+    # Payment APIs
+    
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def initiate_payment_view(request, order_id):
+    """
+    Called by the frontend when student submits a booking.
+    Creates the QuickOrder then initiates CinetPay payment.
+    Returns a payment_url for the frontend to redirect to.
+    """
+    try:
+        order = QuickOrder.objects.get(pk=order_id, user=request.user)
+    except QuickOrder.DoesNotExist:
+        return Response({'error': 'Réservation introuvable.'}, status=404)
+
+    if order.status != 'pending_payment':
+        return Response({'error': 'Cette réservation a déjà été payée ou annulée.'}, status=400)
+
+    # Check room availability before charging
+    if order.room_category:
+        rc = order.room_category
+        if rc.occupied_count >= rc.quantity_available:
+            order.status = 'payment_failed'
+            order.save(update_fields=['status'])
+            return Response({'error': 'Plus de chambres disponibles dans cette catégorie.'}, status=400)
+
+    try:
+        result = initiate_payment(order, request)
+    except Exception as e:
+        print(f"[payment] CinetPay initiation error: {e}")
+        return Response({'error': 'Erreur lors de l\'initiation du paiement. Réessayez.'}, status=502)
+
+    # Create a Payment record
+    Payment.objects.create(
+        order=order,
+        user=request.user,
+        transaction_id=result['transaction_id'],
+        amount=200,
+        currency='XAF',
+        status='initiated',
+    )
+
+    return Response({
+        'payment_url':    result['payment_url'],
+        'transaction_id': result['transaction_id'],
+    }, status=200)
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def cinetpay_notify_view(request):
+    """
+    CinetPay webhook — called by CinetPay server after payment.
+    Must be publicly accessible (no auth). CinetPay sends a POST
+    with cpm_trans_id (transaction_id) in the body.
+    """
+    # CinetPay sends form data or JSON depending on configuration
+    transaction_id = (
+        request.data.get('cpm_trans_id')
+        or request.data.get('transaction_id')
+        or request.POST.get('cpm_trans_id')
+    )
+
+    if not transaction_id:
+        return Response({'error': 'transaction_id manquant.'}, status=400)
+
+    try:
+        payment = Payment.objects.get(transaction_id=transaction_id)
+    except Payment.DoesNotExist:
+        return Response({'error': 'Paiement introuvable.'}, status=404)
+
+    # Already processed — idempotent
+    if payment.status == 'success':
+        return Response({'status': 'already_processed'}, status=200)
+
+    # Verify with CinetPay API
+    try:
+        verify_data = verify_payment(transaction_id)
+    except Exception as e:
+        print(f"[payment] CinetPay verify error: {e}")
+        return Response({'error': 'Erreur de vérification.'}, status=502)
+
+    # Store raw notification for audit
+    payment.raw_notify = verify_data
+    cinetpay_status = verify_data.get('data', {}).get('status', '')
+    payment.cinetpay_id    = verify_data.get('data', {}).get('operator_id', '')
+    payment.payment_method = verify_data.get('data', {}).get('payment_method', '')
+
+    if cinetpay_status == 'ACCEPTED':
+        payment.status = 'success'
+        payment.save()
+
+        # Update the order: move from pending_payment → pending (awaiting owner)
+        order = payment.order
+        if order and order.status == 'pending_payment':
+            order.status = 'pending'
+            order.save(update_fields=['status'])
+
+            # Notify the estate owner
+            from .notifications_utils import notify_user
+            try:
+                notify_user(
+                    user=order.estate.owner,
+                    n_type='new_booking',
+                    title_key='notification.new_booking_title',
+                    body_key='notification.new_booking_body',
+                    body_params={'estate': order.estate.name, 'client': order.name},
+                    link='/dashboard',
+                )
+            except Exception as e:
+                print(f"[payment] Notification error: {e}")
+
+    else:
+        payment.status = 'failed'
+        payment.save()
+
+        # Mark order as payment_failed
+        order = payment.order
+        if order and order.status == 'pending_payment':
+            order.status = 'payment_failed'
+            order.save(update_fields=['status'])
+
+    return Response({'status': 'ok'}, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated])
+def payment_status_view(request, transaction_id):
+    """
+    Frontend polls this after returning from CinetPay to get current status.
+    """
+    try:
+        payment = Payment.objects.get(
+            transaction_id=transaction_id,
+            user=request.user
+        )
+    except Payment.DoesNotExist:
+        return Response({'error': 'Paiement introuvable.'}, status=404)
+
+    return Response({
+        'transaction_id': payment.transaction_id,
+        'status':         payment.status,
+        'amount':         payment.amount,
+        'order_id':       payment.order_id,
+        'order_status':   payment.order.status if payment.order else None,
+        'payment_method': payment.payment_method,
+        'created_at':     payment.created_at.isoformat(),
+    })
