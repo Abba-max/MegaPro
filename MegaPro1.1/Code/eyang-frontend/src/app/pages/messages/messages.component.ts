@@ -458,3 +458,7 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
     } catch { /* ignore */ }
   }
 }
+
+
+
+

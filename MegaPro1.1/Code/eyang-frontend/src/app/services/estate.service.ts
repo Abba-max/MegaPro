@@ -7,19 +7,58 @@ export interface EstateImage { id: number; image: string; }
 
 export interface RoomImage { id: number; image: string; caption: string; room_category: number; }
 
+// ── Equipment & Supplement interfaces ─────────────────────────────────────────
+
+export interface Equipment {
+  id: number;
+  part_name: string;
+  removable: boolean;
+}
+
+export interface RoomEquipment {
+  id: number;
+  room_category: number;
+  equipment: number;
+  equipment_name?: string;
+  part?: string;
+  quantity: number;
+  surface_area_m2?: number | null;
+  condition: 'NEW' | 'GOOD' | 'BAD';
+  note?: string;
+}
+
+export interface Supplement {
+  id: number;
+  estate: number;
+  name: string;
+  price: number;
+  description?: string;
+  is_available: boolean;
+  is_paid_service: boolean;
+}
+
+// ── Room Category (expanded) ───────────────────────────────────────────────────
+
 export interface RoomCategory {
   id: number;
   estate: number;
   name: string;
   occupancy: 'single' | 'double' | 'shared';
   price: number;
+  price_per_month?: number;
+  /** Canonical availability fields */
+  total_rooms: number;
+  available_rooms: number;
+  /** Legacy compatibility aliases (kept in sync server-side) */
   quantity_available: number;
+  surface_area?: number | null;
   wifi: '0' | '1';
   tv: '0' | '1';
   fridge: '0' | '1';
   room_size: '1' | '2' | '3';
   description: string;
   images: RoomImage[];
+  equipment?: RoomEquipment[];
 }
 
 export interface AverageRating {
@@ -71,6 +110,61 @@ export interface QuickOrder {
   name: string; phone: string; note?: string; created_at?: string;
   user_email?: string;
   status?: 'pending' | 'accepted' | 'rejected';
+}
+
+export interface Invoice {
+  id: number;
+  reservation: number;
+  invoice_id: string;
+  total_amount: number;
+  pdf_download_url?: string;
+  status: 'UNPAID' | 'PAID';
+  created_at: string;
+}
+
+/** Snapshot of estate + room-category state at reservation time. */
+export interface ReservationSnapshot {
+  estate: {
+    id: number; name: string; address: string;
+    owner_email?: string; owner_phone?: string;
+    characteristics: { [key: string]: any };
+  };
+  room_category: {
+    id: number; name: string;
+    surface_area?: number;
+    price_per_month: number;
+    description?: string;
+    equipment: { name: string; quantity: number; surface_area?: number; condition: string }[];
+  };
+  supplements: { id: number; name: string; price: number; description?: string }[];
+}
+
+export interface Reservation {
+  id: number;
+  user: number;
+  room_category: number;
+  room?: number;
+  /** ISO date strings */
+  check_in: string;
+  check_out: string;
+  start_date?: string;
+  end_date?: string;
+  num_rooms: number;
+  total_price?: number;
+  status: 'PENDING' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
+  created_at: string;
+  updated_at: string;
+  /** Immutable snapshot of estate + room-category at booking time */
+  reservation_details_json?: ReservationSnapshot;
+  selected_supplements?: number[];
+  invoice?: Invoice;
+  /** PDF bill download URL (populated after acceptance + generation) */
+  bill_url?: string | null;
+  estate_name?: string;
+  room_category_name?: string;
+  client_name?: string;
+  client_phone?: string;
+  estate_image?: string;
 }
 
 export interface ContactRequest {
@@ -390,25 +484,79 @@ export class EstateService {
       .pipe(map(enrichEstate));
   }
 
-  // ── Quick Orders ──────────────────────────────────────────
-  createQuickOrder(data: Partial<QuickOrder>): Observable<QuickOrder> {
-    return this.http.post<QuickOrder>(`${this.BASE}/orders/`, data);
+  // ── Reservations & Invoices ───────────────────────────────
+  getReservations(): Observable<Reservation[]> {
+    return this.http.get<Reservation[]>(`${this.BASE}/reservations/`);
   }
 
-  deleteQuickOrder(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.BASE}/orders/${id}/`);
+  getReservation(id: number): Observable<Reservation> {
+    return this.http.get<Reservation>(`${this.BASE}/reservations/${id}/`);
   }
 
-  updateOrderStatus(id: number, status: 'accepted' | 'rejected'): Observable<QuickOrder> {
-    return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/`, { status });
+  /**
+   * Create a new reservation (PENDING). The backend will:
+   * - Build and store a snapshot of the current estate/room state.
+   * - Compute total_price from price_per_month × months × num_rooms.
+   * - NOT decrement available_rooms yet (only done on accept).
+   */
+  createReservation(data: {
+    room_category: number;
+    check_in: string;
+    check_out: string;
+    num_rooms?: number;
+    selected_supplements?: number[];
+  }): Observable<Reservation> {
+    return this.http.post<Reservation>(`${this.BASE}/reservations/`, data);
   }
 
-  acceptReservation(id: number): Observable<QuickOrder> {
-    return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/accept/`, {});
+  /**
+   * Accept a reservation (owner/admin). Triggers concurrency-safe room
+   * decrement + async PDF generation. Returns immediately with ACCEPTED status.
+   */
+  acceptReservation(id: number): Observable<Reservation> {
+    return this.http.post<Reservation>(`${this.BASE}/reservations/${id}/accept/`, {});
   }
 
-  rejectReservation(id: number): Observable<QuickOrder> {
-    return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/reject/`, {});
+  /** Reject a reservation (owner/admin). Restores available_rooms if was ACCEPTED. */
+  rejectReservation(id: number): Observable<Reservation> {
+    return this.http.post<Reservation>(`${this.BASE}/reservations/${id}/reject/`, {});
+  }
+
+  /** Cancel a reservation (client — own reservations only). */
+  cancelReservation(id: number): Observable<Reservation> {
+    return this.http.post<Reservation>(`${this.BASE}/reservations/${id}/cancel/`, {});
+  }
+
+  /**
+   * Poll for the bill URL. Returns HTTP 202 + { bill_url: null } while the
+   * background PDF thread is still running; 200 + { bill_url: string } when ready.
+   */
+  getReservationBill(id: number): Observable<{ bill_url: string | null; invoice_id?: string; message?: string }> {
+    return this.http.get<{ bill_url: string | null; invoice_id?: string; message?: string }>(
+      `${this.BASE}/reservations/${id}/bill/`
+    );
+  }
+
+  /** Open the PDF bill in a new browser tab (polls once if URL not yet cached). */
+  openBill(reservation: Reservation): void {
+    const url = reservation.bill_url ?? reservation.invoice?.pdf_download_url;
+    if (url) {
+      window.open(url, '_blank');
+    } else {
+      this.getReservationBill(reservation.id).subscribe(res => {
+        if (res.bill_url) window.open(res.bill_url, '_blank');
+      });
+    }
+  }
+
+  getInvoices(): Observable<Invoice[]> {
+    return this.http.get<Invoice[]>(`${this.BASE}/invoices/`);
+  }
+
+  downloadInvoice(invoiceId: number): void {
+    this.http.get<Invoice>(`${this.BASE}/invoices/${invoiceId}/`).subscribe(inv => {
+      if (inv.pdf_download_url) window.open(inv.pdf_download_url, '_blank');
+    });
   }
 
   // ── Reviews ───────────────────────────────────────────────
@@ -471,4 +619,105 @@ export class EstateService {
   deleteContactRequest(id: number): Observable<void> {
     return this.http.delete<void>(`${this.BASE}/contact-requests/${id}/`);
   }
+
+  // ── Quick Orders (legacy booking flow) ──────────────────────────────
+  createQuickOrder(data: Partial<QuickOrder>): Observable<QuickOrder> {
+    return this.http.post<QuickOrder>(`${this.BASE}/orders/`, data);
+  }
+
+  deleteQuickOrder(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/orders/${id}/`);
+  }
+
+  updateOrderStatus(id: number, orderStatus: 'accepted' | 'rejected'): Observable<QuickOrder> {
+    return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/`, { status: orderStatus });
+  }
+
+  acceptQuickOrder(id: number): Observable<QuickOrder> {
+    return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/accept/`, {});
+  }
+
+  rejectQuickOrder(id: number): Observable<QuickOrder> {
+    return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/reject/`, {});
+  }
+
+  // ── Equipment ────────────────────────────────────────────────────────
+  getEquipmentList(): Observable<Equipment[]> {
+    return this.http.get<Equipment[]>(`${this.BASE}/equipment/`);
+  }
+
+  createEquipment(data: { part_name: string; removable?: boolean }): Observable<Equipment> {
+    return this.http.post<Equipment>(`${this.BASE}/equipment/`, data);
+  }
+
+  getRoomEquipment(roomCategoryId: number): Observable<RoomEquipment[]> {
+    return this.http.get<RoomEquipment[]>(`${this.BASE}/room-equipment/`, {
+      params: new HttpParams().set('room_category', roomCategoryId.toString())
+    });
+  }
+
+  addRoomEquipment(data: {
+    room_category: number;
+    equipment?: number;
+    custom_name?: string;
+    quantity?: number;
+    condition?: 'NEW' | 'GOOD' | 'BAD';
+    note?: string;
+  }): Observable<RoomEquipment> {
+    return this.http.post<RoomEquipment>(`${this.BASE}/room-equipment/`, data);
+  }
+
+  updateRoomEquipment(id: number, data: Partial<RoomEquipment>): Observable<RoomEquipment> {
+    return this.http.patch<RoomEquipment>(`${this.BASE}/room-equipment/${id}/`, data);
+  }
+
+  deleteRoomEquipment(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/room-equipment/${id}/`);
+  }
+
+  // ── Supplements ──────────────────────────────────────────────────────
+  getSupplements(estateId?: number): Observable<Supplement[]> {
+    let params = new HttpParams();
+    if (estateId) params = params.set('estate', estateId.toString());
+    return this.http.get<Supplement[]>(`${this.BASE}/supplements/`, { params });
+  }
+
+  getEstateSupplements(estateId: number): Observable<Supplement[]> {
+    return this.http.get<Supplement[]>(`${this.BASE}/estates/${estateId}/supplements/`);
+  }
+
+  addEstateSupplement(estateId: number, data: Partial<Supplement>): Observable<Supplement> {
+    return this.http.post<Supplement>(`${this.BASE}/estates/${estateId}/supplements/`, data);
+  }
+
+  createSupplement(data: Omit<Supplement, 'id'>): Observable<Supplement> {
+    return this.http.post<Supplement>(`${this.BASE}/supplements/`, data);
+  }
+
+  updateSupplement(id: number, data: Partial<Supplement>): Observable<Supplement> {
+    return this.http.patch<Supplement>(`${this.BASE}/supplements/${id}/`, data);
+  }
+
+  deleteSupplement(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/supplements/${id}/`);
+  }
+
+  // ── Static helpers ───────────────────────────────────────────────────
+  /** Months between two ISO date strings (min 1). */
+  static monthsBetween(checkIn: string, checkOut: string): number {
+    const a = new Date(checkIn);
+    const b = new Date(checkOut);
+    return Math.max(1, (b.getFullYear() - a.getFullYear()) * 12 + (b.getMonth() - a.getMonth()));
+  }
+
+  /** Human-readable room availability label. */
+  static availabilityLabel(available: number, total: number): string {
+    if (available <= 0)           return 'Complet';
+    if (available <= total * 0.2) return 'Presque complet';
+    return `${available} chambre(s) disponible(s)`;
+  }
 }
+
+
+
+

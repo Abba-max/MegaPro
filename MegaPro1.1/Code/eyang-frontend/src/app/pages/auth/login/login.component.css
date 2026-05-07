@@ -61,11 +61,11 @@
     cursor: pointer;
     margin-bottom: 2rem;
     display: inline-block;
-    width: 180px; /* Increased from 120px */
+    width: 220px;
 }
 
 .brand-logo img {
-    height: 140px; /* Increased from 100px */
+    height: 160px;
     width: 100%;
     object-fit: contain;
 }

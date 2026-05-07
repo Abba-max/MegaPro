@@ -53,3 +53,4 @@ cloudinary==1.41.0
 django-cloudinary-storage==0.3.0
 celery==5.4.0
 redis==5.2.1
+xhtml2pdf==0.2.16

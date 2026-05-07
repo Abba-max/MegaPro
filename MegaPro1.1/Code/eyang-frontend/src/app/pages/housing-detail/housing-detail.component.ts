@@ -458,3 +458,7 @@ export class HousingDetailComponent implements OnInit {
     });
   }
 }
+
+
+
+

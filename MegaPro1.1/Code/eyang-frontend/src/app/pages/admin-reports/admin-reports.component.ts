@@ -54,3 +54,7 @@ export class AdminReportsComponent implements OnInit {
     return `${peak.month} (${peak.value})`;
   }
 }
+
+
+
+

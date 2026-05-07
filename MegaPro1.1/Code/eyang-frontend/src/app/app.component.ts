@@ -24,3 +24,7 @@ export class AppComponent implements OnInit {
     this.translate.use(savedLang);
   }
 }
+
+
+
+

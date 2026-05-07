@@ -75,3 +75,5 @@ def send_welcome_email(user):
         context,
         user.email
     )
+
+

@@ -261,12 +261,12 @@
                         <label class="equip-item" [class.active]="estateForm.get('generator')?.value === '1'">
                             <input type="checkbox" [checked]="estateForm.get('generator')?.value === '1'"
                                 (change)="estateForm.get('generator')?.setValue($any($event.target).checked ? '1' : '0')">
-                            <span class="equip-emoji">⚡</span><span>{{ 'filters.generator' | translate }}</span>
+                            <span class="equip-emoji">⚡</span><span>{{ 'admin.form_generator' | translate }}</span>
                         </label>
                         <label class="equip-item" [class.active]="estateForm.get('forage')?.value === '1'">
                             <input type="checkbox" [checked]="estateForm.get('forage')?.value === '1'"
                                 (change)="estateForm.get('forage')?.setValue($any($event.target).checked ? '1' : '0')">
-                            <span class="equip-emoji">💧</span><span>{{ 'filters.water' | translate }}</span>
+                            <span class="equip-emoji">💧</span><span>{{ 'admin.form_borehole_forage' | translate }}</span>
                         </label>
                         <label class="equip-item" [class.active]="estateForm.get('restaurant')?.value === '1'">
                             <input type="checkbox" [checked]="estateForm.get('restaurant')?.value === '1'"
@@ -463,6 +463,16 @@
             </div>
             <div class="form-row-modal">
                 <div class="form-group">
+                    <label>Price Per Month ({{ 'price.currency' | translate }})</label>
+                    <input type="number" formControlName="price_per_month" class="input" min="0">
+                </div>
+                <div class="form-group">
+                    <label>Dimensions</label>
+                    <input type="text" formControlName="dimensions" class="input" placeholder="e.g. 15m2">
+                </div>
+            </div>
+            <div class="form-row-modal">
+                <div class="form-group">
                     <label>{{ 'detail.capacity' | translate }}</label>
                     <select formControlName="occupancy" class="select-input full-width">
                         <option value="single">{{ 'detail.single' | translate }}</option>
@@ -471,8 +481,8 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>{{ 'admin.col_quantity' | translate }}</label>
-                    <input type="number" formControlName="quantity_available" class="input" min="1">
+                    <label>{{ 'admin.col_quantity' | translate }} (Total)</label>
+                    <input type="number" formControlName="total_quantity" class="input" min="1">
                 </div>
             </div>
             <div class="form-row-modal">
@@ -598,3 +608,4 @@
         </div>
     </div>
 </div>
+

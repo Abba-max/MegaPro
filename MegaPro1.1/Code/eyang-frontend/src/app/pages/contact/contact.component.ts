@@ -111,3 +111,7 @@ export class ContactComponent {
         this.router.navigate(['/']);
     }
 }
+
+
+
+

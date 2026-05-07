@@ -36,6 +36,10 @@ export const routes: Routes = [
       {
         path: 'verify',
         loadComponent: () => import('./pages/auth/verify/verify.component').then(c => c.VerifyComponent)
+      },
+      {
+        path: 'forgot-password',
+        loadComponent: () => import('./pages/auth/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent)
       }
     ]
   },
@@ -106,3 +110,7 @@ export const routes: Routes = [
   // ── Fallback ───────────────────────────────────────────────────────
   { path: '**', redirectTo: '' }
 ];
+
+
+
+

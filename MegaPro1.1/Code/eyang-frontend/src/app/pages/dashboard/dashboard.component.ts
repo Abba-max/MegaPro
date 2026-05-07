@@ -15,7 +15,7 @@ import {
 import { AuthService, User as AuthUser } from '../../services/auth.service';
 import { WebSocketService } from '../../services/websocket.service';
 import {
-  EstateService, Estate, EstateRaw, EstateImage, RoomCategory, RoomImage, QuickOrder, Review, ContactRequest,
+  EstateService, Estate, EstateRaw, EstateImage, RoomCategory, RoomImage, QuickOrder, Reservation, Invoice, Review, ContactRequest,
   Conversation, ChatMessage, OwnerDashboardStats, ClientDashboardStats,
   enrichReview
 } from '../../services/estate.service';
@@ -113,7 +113,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     total_estates: 0, occupancy_pct: 0, pending_orders: 0, avg_rating: 0
   };
   myEstates: Estate[] = [];
-  myOrders:  QuickOrder[] = [];
+  myOrders:  Reservation[] = [];
+  myInvoices: Invoice[] = [];
   myReviews: Review[] = [];
 
   // ── Review pagination (owner) ──────────────────────────────
@@ -228,7 +229,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   clientStats: ClientDashboardStats = {
     total_reservations: 0, total_reviews: 0, total_messages: 0, total_contacts: 0
   };
-  myReservations:      QuickOrder[] = [];
+  myReservations:      Reservation[] = [];
   mySubmittedReviews:  Review[]     = [];
   myContacts:          ContactRequest[] = [];
   conversations:       Conversation[]  = [];
@@ -371,8 +372,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       },
       error: () => { this.isLoading = false; this.cdr.detectChanges(); }
     });
-    this.estateService.getMyOrders().subscribe({
+    this.estateService.getReservations().subscribe({
       next: o => this.myOrders = o, error: () => {}
+    });
+    this.estateService.getInvoices().subscribe({
+      next: i => this.myInvoices = i, error: () => {}
     });
     this.estateService.getMyReviews().subscribe({
       next: r => { this.myReviews = r; this.resetReviewPage(); }, error: () => {}
@@ -900,10 +904,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   loadClientData(): void {
     this.estateService.getClientStats().subscribe({ next: s => this.clientStats = s, error: () => {} });
-    this.estateService.getMyReservations().subscribe({
+    this.estateService.getReservations().subscribe({
       next: r => { this.myReservations = r; this.isLoading = false; },
       error: () => { this.isLoading = false; }
     });
+    this.estateService.getInvoices().subscribe({ next: i => this.myInvoices = i, error: () => {} });
     this.estateService.getMySubmittedReviews().subscribe({ next: r => this.mySubmittedReviews = r, error: () => {} });
     this.estateService.getMyContactRequests().subscribe({ next: c => this.myContacts = c, error: () => {} });
     this.estateService.getConversations().subscribe({ next: c => this.conversations = c, error: () => {} });
@@ -912,22 +917,23 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   // ── Owner: Reservation actions ────────────────────────────
 
-  acceptReservation(order: QuickOrder): void {
+  acceptReservation(order: Reservation): void {
     if (!order.id) return;
     this.estateService.acceptReservation(order.id).subscribe({
       next: updated => {
         const idx = this.myOrders.findIndex(o => o.id === order.id);
         if (idx !== -1) this.myOrders[idx] = updated;
         this.showToast(this.translate.instant('dashboard.status_accepted'), 'success');
+        this.loadOwnerData(); // Refresh to fetch newly generated invoice
       },
       error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
     });
   }
 
-  rejectReservation(order: QuickOrder): void {
+  rejectReservation(order: Reservation): void {
     if (!order.id) return;
-    this.openConfirm(this.translate.instant('admin.reject_booking_confirm', { name: order.name }), () => {
-      this.estateService.rejectReservation(order.id!).subscribe({
+    this.openConfirm(this.translate.instant('admin.reject_booking_confirm', { name: order.estate_name }), () => {
+      this.estateService.rejectReservation(order.id).subscribe({
         next: updated => {
           const idx = this.myOrders.findIndex(o => o.id === order.id);
           if (idx !== -1) this.myOrders[idx] = updated;
@@ -940,17 +946,42 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   // ── Client: Reservations ──────────────────────────────────
 
-  deleteReservation(order: QuickOrder): void {
+  deleteReservation(order: Reservation): void {
+    if (!order.id) return;
     this.openConfirm(this.translate.instant('dashboard.cancel_reservation_confirm', { name: order.estate_name }), () => {
-      this.estateService.deleteQuickOrder(order.id!).subscribe({
-        next: () => {
-          this.myReservations = this.myReservations.filter(r => r.id !== order.id);
-          this.clientStats.total_reservations = Math.max(0, this.clientStats.total_reservations - 1);
+      this.estateService.cancelReservation(order.id).subscribe({
+        next: updated => {
+          const idx = this.myReservations.findIndex(r => r.id === order.id);
+          if (idx !== -1) this.myReservations[idx] = updated;
           this.showToast(this.translate.instant('dashboard.cancel_reservation'), 'success');
         },
         error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
       });
     });
+  }
+
+  // ── Common: Reservation Details & Bill ────────────────────
+
+  showReservationModal = false;
+  selectedReservation: Reservation | null = null;
+  
+  openReservationDetails(res: Reservation): void {
+    this.selectedReservation = res;
+    this.showReservationModal = true;
+  }
+  
+  closeReservationDetails(): void {
+    this.showReservationModal = false;
+    this.selectedReservation = null;
+  }
+  
+  openBill(res: Reservation): void {
+    this.estateService.openBill(res);
+  }
+
+
+  downloadInvoice(invoice: Invoice): void {
+    this.estateService.downloadInvoice(invoice.id);
   }
 
   // ── Client: Reviews ───────────────────────────────────────
@@ -1366,3 +1397,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
   }
 }
+
+
+
+

@@ -5,11 +5,14 @@ from rest_framework.routers import DefaultRouter
 from .api_views import (
     # Auth
     register_view, verify_email_view, me_view,
+    password_reset_request_view,
 
     # Viewsets
     EstateViewSet, RoomCategoryViewSet, ReviewViewSet,
     QuickOrderViewSet, ContactRequestViewSet, ConversationViewSet,
     NotificationViewSet,
+    ReservationViewSet, InvoiceViewSet,
+    EquipmentViewSet, SupplementViewSet, RoomEquipmentViewSet,
 
     # Stats
     stats_view, owner_stats_view, client_stats_view, online_users_view,
@@ -35,12 +38,19 @@ router.register(r'orders',           QuickOrderViewSet,      basename='order')
 router.register(r'contact-requests', ContactRequestViewSet,  basename='contact-request')
 router.register(r'conversations',    ConversationViewSet,    basename='conversation')
 router.register(r'notifications',    NotificationViewSet,    basename='notification')
+router.register(r'reservations',     ReservationViewSet,     basename='reservation')
+router.register(r'invoices',         InvoiceViewSet,         basename='invoice')
+# ── New model endpoints ────────────────────────────────────────────────────────
+router.register(r'equipment',        EquipmentViewSet,       basename='equipment')
+router.register(r'supplements',      SupplementViewSet,      basename='supplement')
+router.register(r'room-equipment',   RoomEquipmentViewSet,   basename='room-equipment')
 
 urlpatterns = [
     # ── Auth ──────────────────────────────────────────────────────────────
     path('api/auth/register/',  register_view,      name='register'),
     path('api/auth/verify/',    verify_email_view,  name='verify-email'),
     path('api/auth/me/',        me_view,            name='me'),
+    path('api/auth/password-reset/', password_reset_request_view, name='password-reset-request'),
 
     # ── ViewSet routes (CRUD + @action extras like verify, accept, reject) ─
     path('api/', include(router.urls)),

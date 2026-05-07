@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<style>
+  /* ── Page layout ─────────────────────────────────── */
+  @page {
+    size: A4;
+    margin: 18mm 15mm 20mm 15mm;
+    @bottom-center {
+      content: "Page " counter(page) " / " counter(pages);
+      font-size: 8pt;
+      color: #94a3b8;
+    }
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Helvetica, Arial, sans-serif; font-size: 10pt; color: #1e293b; line-height: 1.5; }
+
+  /* ── Header ──────────────────────────────────────── */
+  .header { background: #0f172a; color: #fff; padding: 16px 20px; border-radius: 4px; margin-bottom: 20px; }
+  .header-top { display: flex; justify-content: space-between; align-items: center; }
+  .brand { font-size: 20pt; font-weight: 800; letter-spacing: -0.5px; color: #f8fafc; }
+  .brand span { color: #f59e0b; }
+  .invoice-ref { text-align: right; }
+  .invoice-ref .inv-id { font-size: 14pt; font-weight: 700; color: #f59e0b; }
+  .invoice-ref .inv-date { font-size: 9pt; color: #94a3b8; margin-top: 2px; }
+  .header-sub { margin-top: 10px; font-size: 9pt; color: #94a3b8; border-top: 1px solid #1e3a5f; padding-top: 8px; }
+
+  /* ── Status badge ─────────────────────────────────── */
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  .badge-accepted  { background: #d1fae5; color: #065f46; }
+  .badge-pending   { background: #fef3c7; color: #92400e; }
+  .badge-rejected  { background: #fee2e2; color: #991b1b; }
+
+  /* ── Section titles ──────────────────────────────── */
+  .section { margin-bottom: 16px; }
+  .section-title { font-size: 9pt; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #475569; border-bottom: 2px solid #e2e8f0; padding-bottom: 4px; margin-bottom: 10px; }
+
+  /* ── Two-column info grid ────────────────────────── */
+  .info-grid { display: table; width: 100%; border-collapse: collapse; }
+  .info-grid .col { display: table-cell; vertical-align: top; width: 50%; padding-right: 12px; }
+  .info-grid .col:last-child { padding-right: 0; padding-left: 12px; }
+  .info-row { margin-bottom: 5px; }
+  .info-label { font-size: 8pt; color: #64748b; font-weight: 600; }
+  .info-value { font-size: 9.5pt; color: #0f172a; font-weight: 500; }
+
+  /* ── Characteristics grid ────────────────────────── */
+  .char-grid { display: table; width: 100%; border-collapse: collapse; }
+  .char-item { display: table-cell; width: 25%; padding: 4px 6px; vertical-align: top; }
+  .char-check { display: inline-block; width: 12px; height: 12px; border-radius: 2px; text-align: center; line-height: 12px; font-size: 8pt; font-weight: 700; margin-right: 4px; }
+  .char-yes { background: #d1fae5; color: #065f46; }
+  .char-no  { background: #f1f5f9; color: #94a3b8; }
+  .char-name { font-size: 8.5pt; color: #374151; }
+
+  /* ── Equipment table ─────────────────────────────── */
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 9pt; margin-top: 6px; }
+  table.data-table th { background: #f8fafc; color: #475569; font-size: 8pt; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; padding: 6px 8px; border-bottom: 2px solid #e2e8f0; text-align: left; }
+  table.data-table td { padding: 6px 8px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
+  table.data-table tr:last-child td { border-bottom: none; }
+  table.data-table .num { text-align: right; }
+
+  /* ── Cost breakdown ──────────────────────────────── */
+  .cost-table { width: 100%; border-collapse: collapse; }
+  .cost-table td { padding: 5px 8px; font-size: 9.5pt; }
+  .cost-table .cost-label { color: #475569; }
+  .cost-table .cost-value { text-align: right; font-weight: 600; color: #0f172a; }
+  .cost-table .separator td { border-top: 1px solid #e2e8f0; }
+  .cost-table .total-row td { border-top: 2px solid #0f172a; font-size: 11pt; font-weight: 800; color: #0f172a; padding-top: 8px; }
+
+  /* ── Download / print ────────────────────────────── */
+  .bill-url { font-size: 8pt; color: #3b82f6; word-break: break-all; }
+
+  /* ── Footer ──────────────────────────────────────── */
+  .footer { margin-top: 28px; padding-top: 10px; border-top: 1px solid #e2e8f0; font-size: 8pt; color: #94a3b8; text-align: center; }
+  .footer strong { color: #475569; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════ HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="brand">Eyang<span>Estate</span></div>
+    <div class="invoice-ref">
+      <div class="inv-id">{{ invoice.invoice_id }}</div>
+      <div class="inv-date">Émis le : {{ invoice.created_at|date:"d/m/Y" }}</div>
+      <div style="margin-top:4px">
+        {% if reservation.status == 'ACCEPTED' %}
+          <span class="badge badge-accepted">Acceptée</span>
+        {% elif reservation.status == 'PENDING' %}
+          <span class="badge badge-pending">En attente</span>
+        {% else %}
+          <span class="badge badge-rejected">{{ reservation.status }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="header-sub">
+    Reçu de réservation · Plateforme Eyang Estate · Yaoundé, Cameroun
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ PARTIES -->
+<div class="info-grid section">
+  <div class="col">
+    <div class="section-title">Locataire</div>
+    <div class="info-row"><div class="info-label">Nom complet</div><div class="info-value">{{ user.get_full_name|default:user.username }}</div></div>
+    <div class="info-row"><div class="info-label">Email</div><div class="info-value">{{ user.email }}</div></div>
+    {% if user.contact %}<div class="info-row"><div class="info-label">Téléphone</div><div class="info-value">{{ user.contact }}</div></div>{% endif %}
+  </div>
+  <div class="col">
+    <div class="section-title">Bailleur / Résidence</div>
+    <div class="info-row"><div class="info-label">Résidence</div><div class="info-value">{{ estate_snap.name }}</div></div>
+    <div class="info-row"><div class="info-label">Adresse</div><div class="info-value">{{ estate_snap.address }}</div></div>
+    {% if estate_snap.owner_email %}<div class="info-row"><div class="info-label">Contact bailleur</div><div class="info-value">{{ estate_snap.owner_email }}</div></div>{% endif %}
+    {% if estate_snap.owner_phone %}<div class="info-row"><div class="info-label">Tél. bailleur</div><div class="info-value">{{ estate_snap.owner_phone }}</div></div>{% endif %}
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ RÉSERVATION -->
+<div class="section">
+  <div class="section-title">Détails de la réservation</div>
+  <div class="info-grid">
+    <div class="col">
+      <div class="info-row"><div class="info-label">Catégorie de chambre</div><div class="info-value">{{ room_snap.name }}</div></div>
+      <div class="info-row"><div class="info-label">Entrée</div><div class="info-value">{{ reservation.check_in|date:"d/m/Y" }}</div></div>
+      <div class="info-row"><div class="info-label">Sortie</div><div class="info-value">{{ reservation.check_out|date:"d/m/Y" }}</div></div>
+      <div class="info-row"><div class="info-label">Durée</div><div class="info-value">{{ months }} mois</div></div>
+    </div>
+    <div class="col">
+      {% if room_snap.surface_area and room_snap.surface_area > 0 %}
+      <div class="info-row"><div class="info-label">Surface</div><div class="info-value">{{ room_snap.surface_area }} m²</div></div>
+      {% endif %}
+      <div class="info-row"><div class="info-label">Prix / mois</div><div class="info-value">{{ price_per_month|floatformat:"0" }} FCFA</div></div>
+      <div class="info-row"><div class="info-label">Description</div><div class="info-value" style="font-size:8.5pt;color:#475569">{{ room_snap.description|default:"—" }}</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ CARACTÉRISTIQUES -->
+{% if chars %}
+<div class="section">
+  <div class="section-title">Caractéristiques de la résidence</div>
+  <div class="char-grid">
+    {% for key, label in char_labels.items %}
+    <div class="char-item">
+      {% if chars|dictsort:key %}
+        <span class="char-check char-yes">✓</span>
+      {% else %}
+        <span class="char-check char-no">✗</span>
+      {% endif %}
+      <span class="char-name">{{ label }}</span>
+    </div>
+    {% empty %}
+    <div class="char-item"><span class="char-check {% if chars.fence %}char-yes{% else %}char-no{% endif %}">{% if chars.fence %}✓{% else %}✗{% endif %}</span><span class="char-name">Clôture</span></div>
+    <div class="char-item"><span class="char-check {% if chars.caretaker %}char-yes{% else %}char-no{% endif %}">{% if chars.caretaker %}✓{% else %}✗{% endif %}</span><span class="char-name">Gardien</span></div>
+    <div class="char-item"><span class="char-check {% if chars.security_guard %}char-yes{% else %}char-no{% endif %}">{% if chars.security_guard %}✓{% else %}✗{% endif %}</span><span class="char-name">Agent sécu.</span></div>
+    <div class="char-item"><span class="char-check {% if chars.restaurant %}char-yes{% else %}char-no{% endif %}">{% if chars.restaurant %}✓{% else %}✗{% endif %}</span><span class="char-name">Restaurant</span></div>
+    <div class="char-item"><span class="char-check {% if chars.wifi %}char-yes{% else %}char-no{% endif %}">{% if chars.wifi %}✓{% else %}✗{% endif %}</span><span class="char-name">Wi-Fi</span></div>
+    <div class="char-item"><span class="char-check {% if chars.generator %}char-yes{% else %}char-no{% endif %}">{% if chars.generator %}✓{% else %}✗{% endif %}</span><span class="char-name">Groupe élec.</span></div>
+    <div class="char-item"><span class="char-check {% if chars.forage %}char-yes{% else %}char-no{% endif %}">{% if chars.forage %}✓{% else %}✗{% endif %}</span><span class="char-name">Forage</span></div>
+    <div class="char-item"><span class="char-check {% if chars.parking %}char-yes{% else %}char-no{% endif %}">{% if chars.parking %}✓{% else %}✗{% endif %}</span><span class="char-name">Parking</span></div>
+    <div class="char-item"><span class="char-check {% if chars.laundry_service %}char-yes{% else %}char-no{% endif %}">{% if chars.laundry_service %}✓{% else %}✗{% endif %}</span><span class="char-name">Blanchisserie</span></div>
+    <div class="char-item"><span class="char-check {% if chars.cctv %}char-yes{% else %}char-no{% endif %}">{% if chars.cctv %}✓{% else %}✗{% endif %}</span><span class="char-name">Vidéo-surv.</span></div>
+    <div class="char-item"><span class="char-check">—</span><span class="char-name">Eau : {% if chars.water_bills == 'free' %}Incluse{% else %}Payante{% endif %}</span></div>
+    <div class="char-item"><span class="char-check">—</span><span class="char-name">Élec. : {% if chars.electricity_bills == 'free' %}Incluse{% else %}Payante{% endif %}</span></div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════ ÉQUIPEMENTS -->
+{% if room_snap.equipment %}
+<div class="section">
+  <div class="section-title">Équipements de la chambre</div>
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>Équipement</th>
+        <th class="num">Qté</th>
+        <th class="num">Surface (m²)</th>
+        <th>État</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for eq in room_snap.equipment %}
+      <tr>
+        <td>{{ eq.name }}</td>
+        <td class="num">{{ eq.quantity }}</td>
+        <td class="num">{% if eq.surface_area %}{{ eq.surface_area }}{% else %}—{% endif %}</td>
+        <td>{{ eq.condition|default:"—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════ SUPPLÉMENTS -->
+{% if supplements %}
+<div class="section">
+  <div class="section-title">Services / Suppléments</div>
+  <table class="data-table">
+    <thead>
+      <tr><th>Service</th><th>Description</th><th class="num">Prix (FCFA)</th></tr>
+    </thead>
+    <tbody>
+      {% for sup in supplements %}
+      <tr>
+        <td>{{ sup.name }}</td>
+        <td style="font-size:8.5pt;color:#475569">{{ sup.description|default:"" }}</td>
+        <td class="num">{% if sup.price > 0 %}{{ sup.price|floatformat:"0" }}{% else %}Inclus{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════ COÛTS -->
+<div class="section">
+  <div class="section-title">Récapitulatif financier</div>
+  <table class="cost-table">
+    <tr>
+      <td class="cost-label">Prix mensuel ({{ price_per_month|floatformat:"0" }} FCFA × {{ months }} mois)</td>
+      <td class="cost-value">{{ subtotal|floatformat:"0" }} FCFA</td>
+    </tr>
+    {% if supplements %}
+    {% for sup in supplements %}
+    {% if sup.price > 0 %}
+    <tr>
+      <td class="cost-label">{{ sup.name }}</td>
+      <td class="cost-value">{{ sup.price|floatformat:"0" }} FCFA</td>
+    </tr>
+    {% endif %}
+    {% endfor %}
+    {% endif %}
+    <tr class="separator"><td colspan="2"></td></tr>
+    <tr class="total-row">
+      <td class="cost-label">TOTAL DÛ</td>
+      <td class="cost-value">{{ total_amount|floatformat:"0" }} FCFA</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ FOOTER -->
+<div class="footer">
+  <strong>Eyang Estate</strong> · Yaoundé, Cameroun · eyangestate@gmail.com<br>
+  Ce document est généré automatiquement et constitue un reçu de réservation.<br>
+  Pour toute question, contactez le bailleur ou l'administration Eyang Estate.
+</div>
+
+</body>
+</html>

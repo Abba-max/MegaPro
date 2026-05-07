@@ -141,11 +141,11 @@
         <h2 class="section-h">{{ 'dashboard.recent_orders' | translate }}</h2>
         <div class="timeline">
           <div class="tl-item" *ngFor="let o of myOrders.slice(0,4)">
-            <div class="tl-dot tl-dot--{{o.status||'pending'}}"></div>
+            <div class="tl-dot tl-dot--{{(o.status||'PENDING').toLowerCase()}}"></div>
             <div class="tl-body">
               <div class="tl-row">
-                <span class="tl-who">{{ o.name }}</span>
-                <span class="chip chip--{{o.status||'pending'}}">{{ o.status==='accepted'?('dashboard.status_accepted'|translate):o.status==='rejected'?('dashboard.status_rejected'|translate):('dashboard.status_pending'|translate) }}</span>
+                <span class="tl-who">{{ o.client_name || 'Guest' }}</span>
+                <span class="chip chip--{{(o.status||'PENDING').toLowerCase()}}">{{ o.status==='ACCEPTED'?('dashboard.status_accepted'|translate):o.status==='REJECTED'?('dashboard.status_rejected'|translate):('dashboard.status_pending'|translate) }}</span>
               </div>
               <span class="tl-where">{{ o.estate_name }}</span>
               <span class="tl-when">{{ formatDate(o.created_at) }}</span>
@@ -213,21 +213,28 @@
       <div class="empty-state" *ngIf="myOrders.length===0"><div class="empty-state__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div><h3>{{ 'dashboard.empty_orders' | translate }}</h3><p>{{ 'dashboard.orders_will_appear' | translate }}</p></div>
       <div class="o-list" *ngIf="myOrders.length>0">
         <div class="o-card" *ngFor="let o of myOrders">
-          <div class="o-card__av">{{ o.name.charAt(0).toUpperCase() }}</div>
+          <div class="o-card__av">{{ (o.client_name || 'G').charAt(0).toUpperCase() }}</div>
           <div class="o-card__body">
             <div class="o-card__top">
-              <div><span class="o-card__name">{{ o.name }}</span><span class="o-card__where">{{ o.estate_name }}</span></div>
-              <span class="chip chip--{{o.status||'pending'}}">{{ o.status==='accepted' ? ('dashboard.status_accepted_long' | translate) : o.status==='rejected' ? ('dashboard.status_rejected_long' | translate) : ('dashboard.status_pending_long' | translate) }}</span>
+              <div><span class="o-card__name">{{ o.client_name || 'Guest' }}</span><span class="o-card__where">{{ o.estate_name }}</span></div>
+              <span class="chip chip--{{(o.status||'PENDING').toLowerCase()}}">{{ o.status==='ACCEPTED' ? ('dashboard.status_accepted_long' | translate) : o.status==='REJECTED' ? ('dashboard.status_rejected_long' | translate) : ('dashboard.status_pending_long' | translate) }}</span>
             </div>
             <div class="o-card__meta">
-              <span *ngIf="o.phone"><lucide-icon [img]="PhoneIcon"></lucide-icon>{{ o.phone }}</span>
+              <span *ngIf="o.client_phone"><lucide-icon [img]="PhoneIcon"></lucide-icon>{{ o.client_phone }}</span>
               <span *ngIf="o.room_category_name"><lucide-icon [img]="BuildingIcon"></lucide-icon>{{ o.room_category_name }}</span>
               <span><lucide-icon [img]="CalendarIcon"></lucide-icon>{{ formatDate(o.created_at) }}</span>
             </div>
-            <p class="o-card__note" *ngIf="o.note">{{ o.note }}</p>
-            <div class="o-card__acts" *ngIf="!o.status||o.status==='pending'">
+            <div class="o-card__acts" *ngIf="!o.status||o.status==='PENDING'">
               <button class="btn btn--accept" (click)="acceptReservation(o)"><lucide-icon [img]="CheckIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.accept' | translate }}</button>
               <button class="btn btn--reject" (click)="rejectReservation(o)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.refuse' | translate }}</button>
+            </div>
+            <!-- Actions -->
+            <div class="o-card__acts" *ngIf="o.status==='ACCEPTED'">
+              <button class="btn btn--ghost btn--xs" (click)="openReservationDetails(o)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> Détails</button>
+              <button class="btn btn--primary btn--xs" (click)="openBill(o)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'admin.download_invoice' | translate }}</button>
+            </div>
+            <div class="o-card__acts" *ngIf="o.status==='PENDING'">
+              <button class="btn btn--ghost btn--xs" (click)="openReservationDetails(o)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> Détails</button>
             </div>
           </div>
         </div>
@@ -418,16 +425,22 @@
           </div>
           <div class="o-card__body">
             <div class="o-card__top">
-              <div><span class="o-card__name">{{ r.estate_name }}</span><span class="o-card__where">{{ r.estate_location }}</span></div>
-              <span class="chip chip--{{r.status||'pending'}}">{{ r.status==='accepted' ? ('dashboard.status_accepted_long' | translate) : r.status==='rejected' ? ('dashboard.status_rejected_long' | translate) : ('dashboard.status_pending_long' | translate) }}</span>
+              <div><span class="o-card__name">{{ r.estate_name }}</span></div>
+              <span class="chip chip--{{(r.status||'PENDING').toLowerCase()}}">{{ r.status==='ACCEPTED' ? ('dashboard.status_accepted_long' | translate) : r.status==='REJECTED' ? ('dashboard.status_rejected_long' | translate) : ('dashboard.status_pending_long' | translate) }}</span>
             </div>
             <div class="o-card__meta">
               <span *ngIf="r.room_category_name"><lucide-icon [img]="BuildingIcon"></lucide-icon>{{ r.room_category_name }}</span>
-              <span *ngIf="r.estate_price">{{ formatPrice(r.estate_price) }}{{ 'dashboard.per_month' | translate }}</span>
+              <span *ngIf="r.total_price">{{ formatPrice(r.total_price) }}{{ 'dashboard.per_month' | translate }}</span>
               <span><lucide-icon [img]="CalendarIcon"></lucide-icon>{{ formatDate(r.created_at) }}</span>
             </div>
-            <div class="o-card__acts" *ngIf="!r.status||r.status==='pending'">
+            <!-- Actions -->
+            <div class="o-card__acts" *ngIf="r.status==='ACCEPTED'">
+              <button class="btn btn--ghost btn--xs" (click)="openReservationDetails(r)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> Détails</button>
+              <button class="btn btn--primary btn--xs" (click)="openBill(r)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'admin.download_invoice' | translate }}</button>
+            </div>
+            <div class="o-card__acts" *ngIf="r.status==='PENDING'">
               <button class="btn btn--ghost-red btn--xs" (click)="deleteReservation(r)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.cancel_reservation' | translate }}</button>
+              <button class="btn btn--ghost btn--xs" (click)="openReservationDetails(r)" style="margin-left: 0.5rem;"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> Détails</button>
             </div>
           </div>
         </div>
@@ -658,6 +671,77 @@
   </div>
 </div>
 
+<!-- Reservation Details Modal -->
+<div class="m-back" *ngIf="showReservationModal" (click)="closeReservationDetails()">
+  <div class="m-box m-box--lg" style="max-height: 90vh; overflow-y: auto;" (click)="$event.stopPropagation()">
+    <div class="m-head"><h2 class="m-title">Détails de la réservation</h2><button class="m-close" (click)="closeReservationDetails()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
+    <div class="m-body" *ngIf="selectedReservation">
+      
+      <div style="display:flex; justify-content:space-between; margin-bottom: 1rem;">
+        <div>
+          <h3 style="font-size: 1.25rem;">{{ selectedReservation.estate_name }}</h3>
+          <p style="color:#64748B; font-size: 0.875rem;">{{ selectedReservation.reservation_details_json?.estate?.address }}</p>
+        </div>
+        <div style="text-align:right;">
+          <span class="chip chip--{{selectedReservation.status.toLowerCase()}}">{{ selectedReservation.status==='ACCEPTED'?('dashboard.status_accepted_long'|translate):selectedReservation.status==='REJECTED'?('dashboard.status_rejected_long'|translate):('dashboard.status_pending_long'|translate) }}</span>
+        </div>
+      </div>
+
+      <div class="f-row">
+        <div class="f-group">
+          <label class="f-label">Date d'arrivée</label>
+          <div style="padding: 0.75rem; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px;">{{ formatDate(selectedReservation.start_date || selectedReservation.check_in) }}</div>
+        </div>
+        <div class="f-group">
+          <label class="f-label">Date de départ</label>
+          <div style="padding: 0.75rem; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px;">{{ formatDate(selectedReservation.end_date || selectedReservation.check_out) }}</div>
+        </div>
+      </div>
+
+      <div class="f-group" style="margin-top: 1rem;">
+        <label class="f-label">Logement ({{ selectedReservation.num_rooms }} unité(s) réservée(s))</label>
+        <div style="padding: 1rem; border: 1px solid #E2E8F0; border-radius: 8px;">
+          <strong>{{ selectedReservation.room_category_name || selectedReservation.reservation_details_json?.room_category?.name }}</strong>
+          <p style="margin-top: 0.5rem; font-size: 0.875rem; color: #475569;">{{ selectedReservation.reservation_details_json?.room_category?.description }}</p>
+          
+          <div *ngIf="selectedReservation.reservation_details_json?.room_category?.equipment?.length">
+            <h4 style="margin-top: 1rem; font-size: 0.8rem; text-transform: uppercase; color: #64748B;">Équipements inclus:</h4>
+            <ul style="margin-top: 0.5rem; padding-left: 1.25rem; color: #475569; font-size: 0.875rem;">
+              <li *ngFor="let eq of selectedReservation.reservation_details_json?.room_category?.equipment">
+                {{ eq.name }} (x{{ eq.quantity }})
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="f-group" style="margin-top: 1rem;" *ngIf="selectedReservation.reservation_details_json?.supplements?.length">
+        <label class="f-label">Services supplémentaires sélectionnés</label>
+        <div style="padding: 1rem; border: 1px solid #E2E8F0; border-radius: 8px;">
+          <div *ngFor="let sup of selectedReservation.reservation_details_json?.supplements" style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size: 0.875rem; color: #1E293B;">
+            <span>{{ sup.name }}</span>
+            <strong style="color: #64748B;">{{ sup.price > 0 ? formatPrice(sup.price) + ' FCFA' : 'Inclus' }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="f-group" style="margin-top: 1.5rem;">
+        <div style="display:flex; justify-content:space-between; align-items: center; padding-top: 1rem; border-top: 2px dashed #CBD5E1;">
+          <strong style="font-size: 1.1rem; color: #1E293B;">Total estimé</strong>
+          <strong style="color: #3B82F6; font-size: 1.25rem;">{{ selectedReservation.total_price ? formatPrice(selectedReservation.total_price) : formatPrice(selectedReservation.invoice?.total_amount || 0) }} FCFA</strong>
+        </div>
+      </div>
+
+    </div>
+    <div class="m-foot">
+      <button class="btn btn--ghost" (click)="closeReservationDetails()">Fermer</button>
+      <button *ngIf="selectedReservation?.status==='ACCEPTED'" class="btn btn--primary" (click)="openBill(selectedReservation!)">
+        <lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> Facture
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Confirm -->
 <div class="m-back" *ngIf="showConfirm" (click)="confirmNo()">
   <div class="m-box m-box--xs" (click)="$event.stopPropagation()">
@@ -667,3 +751,4 @@
     <div class="m-foot m-foot--center"><button class="btn btn--ghost" (click)="confirmNo()">{{ 'dashboard.cancel' | translate }}</button><button class="btn btn--danger" (click)="confirmYes()">{{ 'dashboard.confirm_yes' | translate }}</button></div>
   </div>
 </div>
+

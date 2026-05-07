@@ -21,7 +21,9 @@ interface EstateForm {
   name: string; location: string; distance: number;
   status: 'draft' | 'published' | 'archived'; description: string;
   generator: '0'|'1'; forage: '0'|'1'; restaurant: '0'|'1';
-  lat: number; lng: number; owner_id: number | null;
+  lat:  number; lng: number; 
+  is_verified?: boolean;
+  owner_id?: number;
 }
 
 @Component({
@@ -188,6 +190,9 @@ export class AdminLogementsComponent implements OnInit {
     this.roomFormGroup = this.fb.group({
       name: ['', [Validators.required]],
       price: [300000, [Validators.required, Validators.min(0)]],
+      price_per_month: [0, [Validators.required, Validators.min(0)]],
+      total_quantity: [1, [Validators.required, Validators.min(1)]],
+      dimensions: [''],
       occupancy: ['single'],
       quantity_available: [1, [Validators.required, Validators.min(1)]],
       wifi: ['0'],
@@ -598,7 +603,8 @@ export class AdminLogementsComponent implements OnInit {
   openCreateRoom(): void {
     this.isRoomEditMode = true; this.roomEditId = null;
     this.roomFormGroup.reset({
-      name: '', price: 300000, occupancy: 'single', quantity_available: 1,
+      name: '', price: 300000, price_per_month: 0, total_quantity: 1, dimensions: '',
+      occupancy: 'single', quantity_available: 1,
       wifi: '0', tv: '0', fridge: '0', room_size: '2', description: ''
     });
     this.roomSelectedFiles = []; this.roomPreviewImages = [];
@@ -675,3 +681,7 @@ export class AdminLogementsComponent implements OnInit {
     setTimeout(() => this.toasts = this.toasts.filter(t => t.id !== id), 4000);
   }
 }
+
+
+
+

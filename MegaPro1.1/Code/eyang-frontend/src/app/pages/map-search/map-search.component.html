@@ -91,9 +91,9 @@
             (click)="filterRestaurant.set(filterRestaurant()==='1' ? '' : '1'); triggerSearch()">
             🍽️ {{ 'filters.restaurant' | translate }}
           </button>
-          <!-- WiFi is a client-side filter — updates visibleEstates() immediately -->
+          <!-- WiFi is now unified — updates visibleEstates() immediately AND triggers debounced server search -->
           <button class="ms__chip" [class.on]="filterWifi()==='1'"
-            (click)="filterWifi.set(filterWifi()==='1' ? '' : '1')">
+            (click)="filterWifi.set(filterWifi()==='1' ? '' : '1'); triggerSearch()">
             📶 {{ 'filters.wifi' | translate }}
           </button>
         </div>
@@ -104,11 +104,11 @@
         <div class="ms__range">
           <input type="number" class="ms__range-in" [placeholder]="'map.min_placeholder' | translate"
             [ngModel]="filterMinPrice()"
-            (ngModelChange)="filterMinPrice.set($event ? +$event : null)"/>
+            (ngModelChange)="filterMinPrice.set($event ? +$event : null); triggerSearch()"/>
           <span class="ms__range-sep">–</span>
           <input type="number" class="ms__range-in" [placeholder]="'map.max_placeholder' | translate"
             [ngModel]="filterMaxPrice()"
-            (ngModelChange)="filterMaxPrice.set($event ? +$event : null)"/>
+            (ngModelChange)="filterMaxPrice.set($event ? +$event : null); triggerSearch()"/>
         </div>
       </div>
 
@@ -400,3 +400,4 @@
     </aside>
   </div>
 </div>
+

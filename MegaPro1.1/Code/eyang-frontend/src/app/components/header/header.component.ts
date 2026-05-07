@@ -211,3 +211,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     return labels[this.currentLang]?.[role] ?? role;
   }
 }
+
+
+
+

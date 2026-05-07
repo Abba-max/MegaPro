@@ -6,13 +6,20 @@ from django.db.models import Q
 from django.contrib.auth.hashers import make_password
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .models import Estate, EstateImage, Review, QuickOrder, ContactRequest, Conversation, Message, User, RoomCategory, RoomImage
+from .models import (
+    Estate, EstateImage, Review, QuickOrder, ContactRequest,
+    Conversation, Message, User, RoomCategory, RoomImage,
+    Reservation, Invoice, Equipment, RoomEquipment, Supplement,
+)
 from .serializers import (
     EstateSerializer, EstateImageSerializer, ReviewSerializer, QuickOrderSerializer,
     ContactRequestSerializer, RegisterSerializer,
     MyTokenObtainPairSerializer, UserSerializer,
     ConversationSerializer, MessageSerializer,
     RoomCategorySerializer, RoomImageSerializer,
+    ReservationSerializer, InvoiceSerializer,
+    EquipmentSerializer, RoomEquipmentWriteSerializer, RoomEquipmentReadSerializer,
+    SupplementSerializer,
 )
 from .permissions import IsVerifiedOwner
 from django.utils import timezone
@@ -90,6 +97,31 @@ def verify_email_view(request):
         return Response({'error': 'Invalid or expired token.'}, status=400)
 
 
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def password_reset_request_view(request):
+    email = request.data.get('email')
+    if not email:
+        return Response({'error': 'Email is required.'}, status=400)
+
+    try:
+        user = User.objects.get(email=email)
+        # Create a ContactRequest for the admin
+        ContactRequest.objects.create(
+            user=user,
+            name="Password Reset Request",
+            email=user.email,
+            phone=user.contact or "N/A",
+            message=f"L'utilisateur {user.username} ({user.email}) a demandé la réinitialisation de son mot de passe. Veuillez le contacter ou modifier son mot de passe depuis la gestion des utilisateurs."
+        )
+    except User.DoesNotExist:
+        # Don't reveal that the user does not exist
+        pass
+
+    return Response({'message': 'Demande envoyée. Un administrateur vous contactera.'})
+
+
+
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def me_view(request):
@@ -125,11 +157,25 @@ class EstateViewSet(viewsets.ModelViewSet):
         )
         p = self.request.query_params
         if loc := p.get('location'): qs = qs.filter(location__icontains=loc)
-        if st := p.get('status'): qs = qs.filter(status=st)
-        if gen := p.get('generator'): qs = qs.filter(generator=gen)
-        if fog := p.get('forage'): qs = qs.filter(forage=fog)
+        if st  := p.get('status'):   qs = qs.filter(status=st)
+        
+        # ── Boolean / Char features ──────────────────────────────────────────
+        if gen := p.get('generator'):  qs = qs.filter(generator=gen)
+        if fog := p.get('forage'):     qs = qs.filter(forage=fog)
         if rst := p.get('restaurant'): qs = qs.filter(restaurant=rst)
-        if mxd := p.get('max_dist'): qs = qs.filter(distance__lte=mxd)
+        if wifi := p.get('wifi'):      qs = qs.filter(wifi=(wifi == '1'))
+        if tv   := p.get('tv'):        qs = qs.filter(tv=(tv == '1'))
+        if frid := p.get('fridge'):    qs = qs.filter(fridge=(frid == '1'))
+        
+        # ── Numeric filters ──────────────────────────────────────────────────
+        if mxd := p.get('max_dist'):   qs = qs.filter(distance__lte=mxd)
+        if minp := p.get('min_price'): qs = qs.filter(price__gte=minp)
+        if maxp := p.get('max_price'): qs = qs.filter(price__lte=maxp)
+        
+        # ── Nested filters ───────────────────────────────────────────────────
+        if rsz := p.get('room_size'):
+            qs = qs.filter(room_categories__room_size=rsz).distinct()
+
         if p.get('mine') == '1' and self.request.user.is_authenticated:
             qs = qs.filter(owner=self.request.user)
         return qs
@@ -224,21 +270,42 @@ class EstateViewSet(viewsets.ModelViewSet):
         except User.DoesNotExist:
             return Response({'error': 'Nouveau proprietaire introuvable.'}, status=404)
 
+    @action(detail=True, methods=['get', 'post'], url_path='supplements',
+            permission_classes=[permissions.IsAuthenticatedOrReadOnly])
+    def supplements(self, request, pk=None):
+        """GET: list supplements for estate. POST: add a supplement (owner/admin)."""
+        estate = self.get_object()
+        if request.method == 'GET':
+            sups = estate.supplements.filter(is_available=True)
+            return Response(SupplementSerializer(sups, many=True, context={'request': request}).data)
+        # POST
+        if estate.owner != request.user and not request.user.is_staff:
+            return Response({'error': 'Non autorisé.'}, status=403)
+        serializer = SupplementSerializer(
+            data={**request.data, 'estate': estate.id},
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=201)
+
 
 class RoomCategoryViewSet(viewsets.ModelViewSet):
-    queryset = RoomCategory.objects.all().prefetch_related('images')
+    queryset = RoomCategory.objects.all().prefetch_related('images', 'equipment__equipment')
     serializer_class = RoomCategorySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        qs = RoomCategory.objects.all().prefetch_related('images')
+        qs = RoomCategory.objects.all().prefetch_related('images', 'equipment__equipment')
         eid = self.request.query_params.get('estate')
         if eid:
             qs = qs.filter(estate_id=eid)
         return qs
 
     def perform_create(self, serializer):
-        serializer.save()
+        """Auto-set available_rooms = total_rooms on creation."""
+        total = int(self.request.data.get('total_rooms', 1))
+        serializer.save(available_rooms=total)
 
     @action(detail=True, methods=['post'], url_path='images',
             parser_classes=[MultiPartParser, FormParser])
@@ -250,6 +317,27 @@ class RoomCategoryViewSet(viewsets.ModelViewSet):
             img = RoomImage.objects.create(room_category=room_cat, image=f)
             created.append(RoomImageSerializer(img, context={'request': request}).data)
         return Response(created, status=201)
+
+    @action(detail=True, methods=['get', 'post'], url_path='equipment',
+            permission_classes=[permissions.IsAuthenticatedOrReadOnly])
+    def equipment(self, request, pk=None):
+        """GET: list equipment. POST: add equipment item (owner/admin)."""
+        room_cat = self.get_object()
+        if request.method == 'GET':
+            items = room_cat.equipment.select_related('equipment').all()
+            return Response(RoomEquipmentReadSerializer(items, many=True).data)
+        # POST — only owner or admin
+        if room_cat.estate.owner != request.user and not request.user.is_staff:
+            return Response({'error': 'Non autorisé.'}, status=403)
+        serializer = RoomEquipmentWriteSerializer(
+            data={**request.data, 'room_category': room_cat.id},
+            context={'request': request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(
+            RoomEquipmentReadSerializer(serializer.instance).data, status=201
+        )
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
@@ -689,3 +777,182 @@ class NotificationViewSet(viewsets.ModelViewSet):
         notif.read = True
         notif.save(update_fields=['read'])
         return Response({'status': 'ok'})
+
+# ── New Architecture ViewSets ─────────────────────────────────────────────────────
+from .services import accept_reservation, reject_reservation, cancel_reservation
+
+
+class ReservationViewSet(viewsets.ModelViewSet):
+    """
+    Endpoints:
+      GET    /api/reservations/              – list (scoped to user/owner/admin)
+      POST   /api/reservations/              – create (client: snapshot + total_price built here)
+      GET    /api/reservations/{id}/         – detail with snapshot + bill_url
+      POST   /api/reservations/{id}/accept/  – owner/admin: concurrency-safe accept + async PDF
+      POST   /api/reservations/{id}/reject/  – owner/admin: reject (restores rooms if accepted)
+      POST   /api/reservations/{id}/cancel/  – client: cancel own reservation
+    """
+    serializer_class   = ReservationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx['request'] = self.request
+        return ctx
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = (
+            Reservation.objects
+            .select_related('room_category__estate__owner', 'user')
+            .prefetch_related(
+                'room_category__equipment__equipment',
+                'room_category__estate__supplements',
+                'selected_supplements',
+                'invoice',
+            )
+        )
+        if user.is_staff or user.is_superuser:
+            return qs.order_by('-created_at')
+        if user.user_type == 'owner':
+            return qs.filter(room_category__estate__owner=user).order_by('-created_at')
+        # Student / Parent / Visitor
+        return qs.filter(user=user).order_by('-created_at')
+
+    # ── Accept ────────────────────────────────────────────────────────────────
+    @action(detail=True, methods=['post'], url_path='accept',
+            permission_classes=[permissions.IsAuthenticated])
+    def accept(self, request, pk=None):
+        reservation = self.get_object()
+        user = request.user
+
+        # Permission: estate owner or admin only
+        if reservation.room_category.estate.owner != user and not user.is_staff:
+            return Response({'error': 'Non autorisé.'}, status=403)
+
+        try:
+            updated = accept_reservation(reservation.id)
+            updated.refresh_from_db()
+            return Response(
+                ReservationSerializer(updated, context={'request': request}).data
+            )
+        except Exception as exc:
+            # Return the business-rule message (e.g. "not enough rooms") to UI
+            return Response({'error': str(exc)}, status=400)
+
+    # ── Reject ───────────────────────────────────────────────────────────────
+    @action(detail=True, methods=['post'], url_path='reject',
+            permission_classes=[permissions.IsAuthenticated])
+    def reject(self, request, pk=None):
+        reservation = self.get_object()
+        user = request.user
+        if reservation.room_category.estate.owner != user and not user.is_staff:
+            return Response({'error': 'Non autorisé.'}, status=403)
+        try:
+            updated = reject_reservation(reservation.id)
+            return Response(
+                ReservationSerializer(updated, context={'request': request}).data
+            )
+        except Exception as exc:
+            return Response({'error': str(exc)}, status=400)
+
+    # ── Cancel (client) ──────────────────────────────────────────────────────
+    @action(detail=True, methods=['post'], url_path='cancel',
+            permission_classes=[permissions.IsAuthenticated])
+    def cancel(self, request, pk=None):
+        reservation = self.get_object()
+        try:
+            updated = cancel_reservation(reservation.id, request.user)
+            return Response(
+                ReservationSerializer(updated, context={'request': request}).data
+            )
+        except Exception as exc:
+            return Response({'error': str(exc)}, status=400)
+
+    # ── Download bill ────────────────────────────────────────────────────────
+    @action(detail=True, methods=['get'], url_path='bill',
+            permission_classes=[permissions.IsAuthenticated])
+    def download_bill(self, request, pk=None):
+        """Returns the bill PDF URL (or 404 if not yet generated)."""
+        reservation = self.get_object()
+        user = request.user
+        if reservation.user != user and reservation.room_category.estate.owner != user and not user.is_staff:
+            return Response({'error': 'Non autorisé.'}, status=403)
+        try:
+            inv = reservation.invoice
+            if inv and inv.pdf_file:
+                url = inv.pdf_file.url
+                if not url.startswith('http'):
+                    url = request.build_absolute_uri(url)
+                return Response({'bill_url': url, 'invoice_id': inv.invoice_id})
+        except Exception:
+            pass
+        return Response({'bill_url': None, 'message': 'Facture non encore générée.'}, status=202)
+
+
+class InvoiceViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class   = InvoiceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx['request'] = self.request
+        return ctx
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = Invoice.objects.all().select_related('reservation__room_category__estate', 'reservation__user')
+        if user.is_staff or user.is_superuser:
+            return qs
+        if user.user_type == 'owner':
+            return qs.filter(reservation__room_category__estate__owner=user)
+        return qs.filter(reservation__user=user)
+
+
+class EquipmentViewSet(viewsets.ModelViewSet):
+    """
+    CRUD for Equipment types (part names).
+    GET  /api/equipment/   – list all (public, for dropdowns)
+    POST /api/equipment/   – create new type (owner / admin)
+    """
+    queryset           = Equipment.objects.all().order_by('part_name')
+    serializer_class   = EquipmentSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save()
+
+
+class SupplementViewSet(viewsets.ModelViewSet):
+    """
+    CRUD for Supplements.
+    GET  /api/supplements/?estate=<id>  – list
+    POST /api/supplements/              – create (owner / admin)
+    """
+    queryset           = Supplement.objects.all().select_related('estate')
+    serializer_class   = SupplementSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx['request'] = self.request
+        return ctx
+
+    def get_queryset(self):
+        qs = Supplement.objects.all().select_related('estate')
+        eid = self.request.query_params.get('estate')
+        if eid:
+            qs = qs.filter(estate_id=eid)
+        return qs
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+
+class RoomEquipmentViewSet(viewsets.ModelViewSet):
+    """
+    Manages equipment assigned to a room category.
+    """
+    queryset           = RoomEquipment.objects.all().select_related('room_category', 'equipment')
+    serializer_class   = RoomEquipmentWriteSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]

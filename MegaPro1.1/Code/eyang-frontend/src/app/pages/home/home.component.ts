@@ -267,10 +267,11 @@ export class HomeComponent implements OnInit, OnDestroy {
       const matchFridge     = !this.filterFridge     || h.fridge === this.filterFridge;
       
       const matchRoomSize = !this.filterRoomSize || h.room_categories.some(rc => rc.room_size === this.filterRoomSize);
-      const matchDist = !this.filterMaxDist || h.distance <= this.filterMaxDist;
       
-      const minPrice = this.filterMinPrice || 0;
-      const maxPrice = this.filterMaxPrice || Infinity;
+      const matchDist = (this.filterMaxDist === null || this.filterMaxDist === undefined) || h.distance <= this.filterMaxDist;
+      
+      const minPrice = this.filterMinPrice ?? 0;
+      const maxPrice = this.filterMaxPrice ?? Infinity;
       const matchPrice = h.price >= minPrice && h.price <= maxPrice;
       
       const matchFree = h.free >= this.filterMinFree;
@@ -394,3 +395,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.router.navigate(['/login']);
   }
 }
+
+
+
+

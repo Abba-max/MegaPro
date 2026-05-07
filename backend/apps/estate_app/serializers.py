@@ -1,7 +1,12 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import User, Estate, EstateImage, Review, QuickOrder, ContactRequest, Conversation, Message, Notification
+from .models import (
+    User, Estate, EstateImage, Review, QuickOrder, ContactRequest,
+    Conversation, Message, Notification,
+    RoomCategory, RoomImage,
+    Reservation, Invoice, Room, Equipment, RoomEquipment, Supplement, Characteristic,
+)
 
 
 def _resolve_role(user) -> str:
@@ -119,10 +124,7 @@ class EstateImageSerializer(serializers.ModelSerializer):
         return None
 
 
-# ── Room Serializers ──────────────────────────────────────────────────────────
-
-from .models import RoomCategory, RoomImage
-
+# ── Room & Equipment Serializers ─────────────────────────────────────────────
 
 class RoomImageSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
@@ -141,14 +143,79 @@ class RoomImageSerializer(serializers.ModelSerializer):
         return None
 
 
+class EquipmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Equipment
+        fields = ['id', 'part_name', 'removable']
+
+
+class RoomEquipmentReadSerializer(serializers.ModelSerializer):
+    """Read-only view of room equipment, used inside RoomCategorySerializer."""
+    equipment_name = serializers.CharField(source='equipment.part_name', read_only=True)
+    part           = serializers.CharField(source='equipment.part_name', read_only=True)
+
+    class Meta:
+        model  = RoomEquipment
+        fields = ['id', 'equipment', 'equipment_name', 'part',
+                  'quantity', 'surface_area_m2', 'condition', 'note']
+
+
+class RoomEquipmentWriteSerializer(serializers.ModelSerializer):
+    """
+    Writable serializer. Accepts equipment FK id OR custom_name to create
+    a new Equipment type on-the-fly.
+    """
+    custom_name = serializers.CharField(write_only=True, required=False, allow_blank=True)
+
+    class Meta:
+        model  = RoomEquipment
+        fields = ['id', 'room_category', 'equipment', 'custom_name',
+                  'quantity', 'surface_area_m2', 'condition', 'note']
+        extra_kwargs = {'equipment': {'required': False, 'allow_null': True}}
+
+    def validate(self, attrs):
+        if not attrs.get('equipment') and not attrs.get('custom_name'):
+            raise serializers.ValidationError(
+                "Fournissez 'equipment' (id) ou 'custom_name'."
+            )
+        return attrs
+
+    def create(self, validated_data):
+        custom_name = validated_data.pop('custom_name', None)
+        if not validated_data.get('equipment') and custom_name:
+            eq, _ = Equipment.objects.get_or_create(
+                part_name=custom_name, defaults={'removable': True}
+            )
+            validated_data['equipment'] = eq
+        return super().create(validated_data)
+
+
+class SupplementSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Supplement
+        fields = ['id', 'estate', 'name', 'price', 'description',
+                  'is_available', 'is_paid_service']
+        read_only_fields = ['id']
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            validated_data['created_by'] = request.user
+        return super().create(validated_data)
+
+
 class RoomCategorySerializer(serializers.ModelSerializer):
-    images = RoomImageSerializer(many=True, read_only=True)
+    images    = RoomImageSerializer(many=True, read_only=True)
+    equipment = RoomEquipmentReadSerializer(many=True, read_only=True)
 
     class Meta:
         model  = RoomCategory
-        fields = ['id', 'estate', 'name', 'occupancy', 'price',
-                  'quantity_available', 'wifi', 'tv', 'fridge',
-                  'room_size', 'description', 'images']
+        fields = [
+            'id', 'estate', 'name', 'occupancy', 'price', 'price_per_month',
+            'total_rooms', 'available_rooms', 'surface_area',
+            'quantity_available', 'wifi', 'tv', 'fridge',
+            'room_size', 'description', 'images', 'equipment',
+        ]
 
 
 # ── Estate Serializer ─────────────────────────────────────────────────────────
@@ -398,3 +465,80 @@ class NotificationSerializer(serializers.ModelSerializer):
         model = Notification
         fields = '__all__'
         read_only_fields = ['created_at']
+
+# ── Invoice & Reservation Serializers ────────────────────────────────────────
+
+class InvoiceSerializer(serializers.ModelSerializer):
+    pdf_download_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = Invoice
+        fields = ['id', 'reservation', 'invoice_id', 'total_amount',
+                  'status', 'created_at', 'pdf_download_url']
+
+    def get_pdf_download_url(self, obj):
+        request = self.context.get('request')
+        if obj.pdf_file:
+            url = obj.pdf_file.url
+            if url.startswith('http'):
+                return url
+            return request.build_absolute_uri(url) if request else url
+        return None
+
+
+class ReservationSerializer(serializers.ModelSerializer):
+    """
+    Full read/write serializer for Reservation.
+    - Read:  returns snapshot JSON, bill_url, estate/room names, invoice.
+    - Write: delegates to create_reservation_with_snapshot() service so the
+             snapshot is built and total_price computed before saving.
+    """
+    invoice             = InvoiceSerializer(read_only=True)
+    estate_name         = serializers.CharField(source='room_category.estate.name', read_only=True)
+    room_category_name  = serializers.CharField(source='room_category.name', read_only=True)
+    bill_url            = serializers.SerializerMethodField()
+    selected_supplements = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Supplement.objects.all(), required=False
+    )
+    # Expose start_date/end_date as aliases for check_in/check_out
+    start_date = serializers.DateField(source='check_in', required=False)
+    end_date   = serializers.DateField(source='check_out', required=False)
+
+    class Meta:
+        model  = Reservation
+        fields = [
+            'id', 'user', 'room_category', 'estate_name', 'room_category_name',
+            'check_in', 'check_out', 'start_date', 'end_date',
+            'num_rooms', 'total_price', 'status',
+            'reservation_details_json',
+            'selected_supplements',
+            'bill_url', 'invoice',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = [
+            'status', 'user', 'created_at', 'updated_at', 'invoice',
+            'total_price', 'reservation_details_json', 'bill_url',
+            'estate_name', 'room_category_name',
+        ]
+
+    def get_bill_url(self, obj):
+        """Returns PDF URL from the Invoice linked to this reservation."""
+        request = self.context.get('request')
+        try:
+            inv = obj.invoice
+            if inv and inv.pdf_file:
+                url = inv.pdf_file.url
+                return url if url.startswith('http') else (
+                    request.build_absolute_uri(url) if request else url
+                )
+        except Exception:
+            pass
+        return None
+
+    def create(self, validated_data):
+        from .services import create_reservation_with_snapshot
+        request = self.context.get('request')
+        user = request.user if (request and request.user.is_authenticated) else None
+        if user is None:
+            raise serializers.ValidationError("Authentification requise.")
+        return create_reservation_with_snapshot(validated_data, user)

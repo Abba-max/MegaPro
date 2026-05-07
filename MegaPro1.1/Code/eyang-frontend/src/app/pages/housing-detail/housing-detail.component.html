@@ -114,17 +114,17 @@
                 {{ 'detail.room_types' | translate }}
               </h3>
               <div class="room-cats-grid">
-                <div class="rc-card" *ngFor="let rc of housing?.room_categories" 
+                <div class="rc-card" *ngFor="let rc of housing.room_categories" 
                      [class.selected]="selectedRoomCategory?.id === rc.id"
                      [class.unavailable]="rc.quantity_available === 0"
                      (click)="selectRoomCategory(rc)">
                     
-                    <div class="rc-gallery-trigger" *ngIf="rc.images?.length" (click)="$event.stopPropagation(); openRoomGallery(rc)">
+                    <div class="rc-gallery-trigger" *ngIf="rc.images.length" (click)="$event.stopPropagation(); openRoomGallery(rc)">
                         <lucide-icon [img]="ImagesIcon" class="icon-sm"></lucide-icon>
                         <span>{{ rc.images.length }} photos</span>
                     </div>
 
-                    <div class="rc-image-swiper" *ngIf="rc.images?.length">
+                    <div class="rc-image-swiper" *ngIf="rc.images.length">
                     </div>
 
                   <div class="rcc-header" [ngClass]="'rcc-occ-' + rc.occupancy">
@@ -752,3 +752,4 @@
       (close)="closeRoomGallery()">
   </app-room-gallery>
 </div>
+

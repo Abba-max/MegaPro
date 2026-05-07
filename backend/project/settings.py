@@ -49,15 +49,23 @@ WSGI_APPLICATION    = 'project.wsgi.application'
 ASGI_APPLICATION    = 'project.asgi.application'
 
 # ── Channels ───────────────────────────────────────────────────────────────
-_REDIS_URL = config('REDIS_URL', default='redis://redis:6379/0')
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [_REDIS_URL],
+_REDIS_URL = config('REDIS_URL', default=None)
+if _REDIS_URL:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                'hosts': [_REDIS_URL],
+            },
         },
-    },
-}
+    }
+else:
+    # Fallback for local development without Redis
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer'
+        }
+    }
 
 TEMPLATES = [{
     'BACKEND': 'django.template.backends.django.DjangoTemplates',

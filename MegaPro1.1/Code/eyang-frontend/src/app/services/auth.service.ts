@@ -116,6 +116,10 @@ export class AuthService {
     return this.http.post<any>(`${this.BASE}/auth/verify/`, { uid, token });
   }
 
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post<any>(`${this.BASE}/auth/password-reset/`, { email });
+  }
+
   refreshToken(): Observable<{ access: string; refresh?: string }> {
     return this.http
       .post<{ access: string; refresh?: string }>(
@@ -218,3 +222,7 @@ export class AuthService {
 
   setUser(user: User): void { this.currentUserSubject.next(user); }
 }
+
+
+
+

@@ -52,3 +52,7 @@ export class SiteSettingsService {
   get siteName(): string    { return this.current.siteName; }
   get language(): 'fr'|'en' { return this.current.language; }
 }
+
+
+
+

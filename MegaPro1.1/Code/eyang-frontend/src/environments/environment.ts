@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'https://www.eyangestate.com/api',
-  wsUrl: 'ws://www.eyangestate.com/ws'
+  apiUrl: 'http://localhost:8000/api',
+  wsUrl: 'ws://localhost:8000/ws'
 };

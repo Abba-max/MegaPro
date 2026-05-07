@@ -88,9 +88,19 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
     const minP = this.filterMinPrice();
     const maxP = this.filterMaxPrice();
     const wifi = this.filterWifi();
+    const gen  = this.filterGenerator();
+    const fog  = this.filterForage();
+    const rst  = this.filterRestaurant();
+    const dist = this.filterMaxDist();
+
     if (minP != null) list = list.filter(e => e.price >= minP);
     if (maxP != null) list = list.filter(e => e.price <= maxP);
     if (wifi)         list = list.filter(e => e.wifi === wifi);
+    if (gen)          list = list.filter(e => e.generator === gen);
+    if (fog)          list = list.filter(e => e.forage === fog);
+    if (rst)          list = list.filter(e => e.restaurant === rst);
+    if (dist != null) list = list.filter(e => e.distance <= dist);
+
     return list;
   });
 
@@ -160,7 +170,11 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.filterGenerator())  f.generator  = this.filterGenerator();
     if (this.filterForage())     f.forage     = this.filterForage();
     if (this.filterRestaurant()) f.restaurant = this.filterRestaurant();
+    if (this.filterWifi())       f.wifi       = this.filterWifi();
+    if (this.filterMinPrice())   f.min_price  = this.filterMinPrice()!;
+    if (this.filterMaxPrice())   f.max_price  = this.filterMaxPrice()!;
     if (this.filterMaxDist())    f.max_dist   = this.filterMaxDist()!;
+    
     this.filterTrigger$.next(f);
   }
 
@@ -333,3 +347,7 @@ export class MapSearchComponent implements OnInit, AfterViewInit, OnDestroy {
   get currentUser()     { return this.auth.currentUser; }
   get isAuthenticated() { return this.auth.isAuthenticated(); }
 }
+
+
+
+

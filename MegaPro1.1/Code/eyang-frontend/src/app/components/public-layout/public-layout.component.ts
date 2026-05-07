@@ -175,7 +175,7 @@ import {
       margin-bottom: 1rem;
     }
     .f-logo-img {
-      height:        60px;
+      height:        80px;
       width:         auto;
       object-fit:    contain;
       border-radius: 8px;
@@ -508,3 +508,7 @@ export class PublicLayoutComponent implements OnInit {
     }
   }
 }
+
+
+
+

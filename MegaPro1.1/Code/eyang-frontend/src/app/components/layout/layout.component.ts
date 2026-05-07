@@ -63,3 +63,7 @@ export class LayoutComponent implements OnInit {
   toggleSidebar(): void { this.sidebarOpen = !this.sidebarOpen; }
   closeSidebar():  void { this.sidebarOpen = false; }
 }
+
+
+
+
