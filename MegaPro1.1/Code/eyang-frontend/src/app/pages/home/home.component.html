@@ -115,7 +115,6 @@
 <div class="listings-grid" *ngIf="!isLoading && !errorMessage">
     <div class="housing-card" *ngFor="let h of pagedHousings" [routerLink]="['/housing', h.id]">
 
-    <!-- IMAGE SWIPER (Studapart-style) -->
     <div class="card-image-area"
          (touchstart)="onSwipeTouchStart($event, h)"
          (touchend)="onSwipeTouchEnd($event, h)"

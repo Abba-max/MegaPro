@@ -188,22 +188,38 @@ class EstateViewSet(viewsets.ModelViewSet):
         return ctx
 
     def perform_create(self, serializer):
-        user = self.request.user
-        if user.user_type == 'owner' and not user.is_verified:
-            from rest_framework.exceptions import PermissionDenied
-            raise PermissionDenied("Votre compte n'est pas encore verifie.")
+        try:
+            user = self.request.user
+            if not user.is_authenticated:
+                from rest_framework.exceptions import NotAuthenticated
+                raise NotAuthenticated("Authentification requise.")
 
-        owner = user if user.is_authenticated else None
+            if user.user_type == 'owner' and not user.is_verified:
+                from rest_framework.exceptions import PermissionDenied
+                raise PermissionDenied("Votre compte n'est pas encore verifie.")
 
-        if user.is_staff or user.is_superuser:
-            owner_id = self.request.data.get('owner_id')
-            if owner_id:
-                try:
-                    owner = User.objects.get(pk=owner_id)
-                except User.DoesNotExist:
-                    pass
+            # Default owner to current user
+            owner = user
 
-        serializer.save(owner=owner, is_verified=False)
+            # Staff can override owner
+            if user.is_staff or user.is_superuser:
+                owner_id = self.request.data.get('owner_id')
+                if owner_id:
+                    try:
+                        owner = User.objects.get(pk=owner_id)
+                    except (User.DoesNotExist, ValueError, TypeError):
+                        # If invalid owner_id, fallback to current user or error
+                        pass
+
+            if not owner:
+                from rest_framework.exceptions import ValidationError
+                raise ValidationError({"owner": "Un propriétaire est requis."})
+
+            serializer.save(owner=owner, is_verified=False)
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            raise e
 
     def perform_update(self, serializer):
         user = self.request.user

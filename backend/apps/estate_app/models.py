@@ -53,6 +53,7 @@ class Estate(models.Model):
     parking = models.BooleanField(default=False)
     wifi = models.BooleanField(default=False)
     cctv = models.BooleanField(default=False)
+    cleaning_service = models.BooleanField(default=False)
     Terrain_de_sport = models.BooleanField(default=False)
     allowed_gender = models.CharField(max_length=10, choices=(('all','All'),('male','Male'),('female','Female')), default='all')
     max_capacity = models.PositiveIntegerField(null=True, blank=True)

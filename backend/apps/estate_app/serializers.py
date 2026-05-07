@@ -278,17 +278,12 @@ class EstateSerializer(serializers.ModelSerializer):
         # Uses prefetched room_categories in memory
         total = 0
         for rc in obj.room_categories.all():
-            total += rc.quantity_available * {'single': 1, 'double': 2, 'shared': 4}.get(rc.occupancy, 1)
+            total += rc.available_rooms * {'single': 1, 'double': 2, 'shared': 4}.get(rc.occupancy, 1)
         return total
 
     def get_free(self, obj) -> int:
         # Uses prefetched room_categories in memory
-        total = 0
-        occupied = 0
-        for rc in obj.room_categories.all():
-            total += rc.quantity_available
-            occupied += rc.occupied_count
-        return max(0, total - occupied)
+        return sum(rc.available_rooms for rc in obj.room_categories.all())
 
     def get_price(self, obj) -> int:
         # Uses prefetched room_categories in memory
