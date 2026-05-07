@@ -113,11 +113,16 @@ class Review(models.Model):
         return f"Review by {self.name} on {self.estate}"
 
 
+# In backend/apps/estate_app/models.py
+# Replace the QuickOrder STATUS_CHOICES and add Payment model
+
 class QuickOrder(models.Model):
     STATUS_CHOICES = (
-        ('pending',  'En attente'),
-        ('accepted', 'Acceptée'),
-        ('rejected', 'Rejetée'),
+        ('pending_payment', 'Paiement en attente'),   # ← NEW: waiting for payment
+        ('pending',         'En attente'),             # paid, waiting owner approval
+        ('accepted',        'Acceptée'),
+        ('rejected',        'Rejetée'),
+        ('payment_failed',  'Paiement échoué'),        # ← NEW
     )
     estate        = models.ForeignKey(Estate, on_delete=models.CASCADE, related_name='quick_orders')
     room_category = models.ForeignKey(RoomCategory, on_delete=models.SET_NULL,
@@ -127,13 +132,44 @@ class QuickOrder(models.Model):
     name       = models.CharField(max_length=100)
     phone      = models.CharField(max_length=20)
     note       = models.TextField(blank=True)
-    status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_payment')
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Order by {self.name} for {self.estate}"
 
 
+class Payment(models.Model):
+    STATUS_CHOICES = (
+        ('initiated', 'Initiée'),
+        ('success',   'Succès'),
+        ('failed',    'Échouée'),
+        ('cancelled', 'Annulée'),
+    )
+    order          = models.OneToOneField(
+        QuickOrder, on_delete=models.CASCADE,
+        related_name='payment', null=True, blank=True
+    )
+    user           = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='payments'
+    )
+    transaction_id = models.CharField(max_length=100, unique=True)
+    cinetpay_id    = models.CharField(max_length=100, blank=True, null=True)
+    amount         = models.IntegerField(default=200)
+    currency       = models.CharField(max_length=10, default='XAF')
+    status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default='initiated')
+    phone          = models.CharField(max_length=20, blank=True, null=True)
+    payment_method = models.CharField(max_length=50, blank=True, null=True)
+    raw_notify     = models.JSONField(default=dict, blank=True)
+    created_at     = models.DateTimeField(auto_now_add=True)
+    updated_at     = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Payment {self.transaction_id} - {self.status}"
 class ContactRequest(models.Model):
     user         = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
                                       null=True, blank=True, related_name='contact_requests')
@@ -203,4 +239,4 @@ class Notification(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Notification for {self.user.username}: {self.type}"
+        return f"Notification for {self.user.username}: {self.type}"
