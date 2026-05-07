@@ -544,30 +544,195 @@
      MODALS
 ════════════════════════════════════════════════════════ -->
 
-<!-- Estate modal -->
+<!-- Estate modal (Refactored 5-Step Stepper) -->
 <div class="m-back" *ngIf="showEstateModal" (click)="closeEstateModal()">
   <div class="m-box m-box--lg" (click)="$event.stopPropagation()">
-    <div class="m-head"><h2 class="m-title">{{ isEditMode?('dashboard.modal_edit_title'|translate):('dashboard.modal_add_title'|translate) }}</h2><button class="m-close" (click)="closeEstateModal()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
-    <div class="m-body">
-      <div class="f-group"><label class="f-label">{{ 'form.name' | translate }} *</label><input class="f-input" [(ngModel)]="estateForm.name" [placeholder]="'dashboard.form_name_ph' | translate"></div>
-      <div class="f-row"><div class="f-group"><label class="f-label">{{ 'form.location' | translate }} *</label><input class="f-input" [(ngModel)]="estateForm.location" [placeholder]="'dashboard.form_location_ph' | translate"></div><div class="f-group"><label class="f-label">{{ 'admin.col_price' | translate }} ({{ 'price.currency' | translate }})</label><input class="f-input" type="number" [(ngModel)]="estateForm.price" placeholder="35000"></div></div>
-      <div class="f-row"><div class="f-group"><label class="f-label">{{ 'admin.distance_label' | translate }}</label><input class="f-input" [(ngModel)]="distanceDisplay" placeholder="500"></div><div class="f-group"><label class="f-label">{{ 'admin.col_status' | translate }}</label><select class="f-input" [(ngModel)]="estateForm.status"><option value="published">{{ 'admin.status_published' | translate }}</option><option value="draft">{{ 'admin.status_draft' | translate }}</option><option value="archived">{{ 'admin.status_archived' | translate }}</option></select></div></div>
-      <div class="f-group">
-        <label class="f-label"><lucide-icon [img]="MapPinIcon" style="color:#EF4444;width:14px;height:14px"></lucide-icon> {{ 'admin.gps_position' | translate }} <span class="f-hint">— {{ 'admin.click_on_map' | translate }}</span></label>
-        <div class="f-row" style="margin-bottom:.5rem"><div class="f-group" style="margin:0"><input class="f-input" type="number" step="0.0000001" [(ngModel)]="estateForm.lat" placeholder="3.884041" (ngModelChange)="onLatLngInput()"><small class="f-hint">{{ 'admin.latitude' | translate }}</small></div><div class="f-group" style="margin:0"><input class="f-input" type="number" step="0.0000001" [(ngModel)]="estateForm.lng" placeholder="11.390736" (ngModelChange)="onLatLngInput()"><small class="f-hint">{{ 'admin.longitude' | translate }}</small></div></div>
-        <div id="map-picker" style="height:200px;border-radius:10px;overflow:hidden;border:1.5px solid #E2E8F0;z-index:0;position:relative"></div>
-      </div>
-      <div class="f-group"><label class="f-label">{{ 'filters.equipment' | translate }}</label><div class="equip-chips"><label class="equip-chip" *ngFor="let eq of availableEquipments" [class.equip-chip--on]="estateForm[eq.key]==='1'"><input type="checkbox" [checked]="estateForm[eq.key]==='1'" (change)="toggleEquipment(eq.key)" style="display:none"><lucide-icon [img]="eq.icon" style="width:14px;height:14px"></lucide-icon>{{ eq.label }}</label></div></div>
-      <div class="f-group"><label class="f-label">{{ 'form.description' | translate }}</label><textarea class="f-input f-textarea" [(ngModel)]="estateForm.description" rows="3" [placeholder]="'dashboard.form_description_ph' | translate"></textarea></div>
-      <div class="f-group">
-        <label class="f-label">{{ 'admin.photos' | translate }}</label>
-        <div class="photo-row" *ngIf="isEditMode&&estateForm.existingImages?.length>0"><div class="photo-item" *ngFor="let img of estateForm.existingImages"><img [src]="img.image"><button class="photo-del" (click)="removeExistingImage(img)">×</button></div></div>
-        <div class="photo-row" *ngIf="newImagePreviews.length>0"><div class="photo-item" *ngFor="let p of newImagePreviews; let i=index"><img [src]="p"><button class="photo-del" (click)="removeNewImage(i)">×</button></div></div>
-        <label class="photo-drop" for="imgInput"><lucide-icon [img]="PlusIcon" style="width:16px;height:16px"></lucide-icon><span>{{ 'admin.click_to_add_photos' | translate }}</span><small>{{ 'admin.upload_hint' | translate }}</small></label>
-        <input id="imgInput" type="file" accept="image/*" multiple style="display:none" (change)="onImagesSelected($event)">
+    <div class="m-head">
+      <h2 class="m-title">
+        {{ isEditMode ? ('dashboard.modal_edit_title' | translate) : ('dashboard.modal_add_title' | translate) }}
+        <span class="m-step-indicator">{{ currentStep }} / {{ TOTAL_STEPS }}</span>
+      </h2>
+      <button class="m-close" (click)="closeEstateModal()"><lucide-icon [img]="XIcon"></lucide-icon></button>
+    </div>
+
+    <!-- Stepper Header -->
+    <div class="stepper-nav">
+      <div class="step-dot" *ngFor="let s of [1,2,3,4,5]" [class.step-dot--active]="currentStep === s" [class.step-dot--done]="currentStep > s" (click)="currentStep = s">
+        <span class="step-dot__num" *ngIf="currentStep <= s">{{ s }}</span>
+        <lucide-icon [img]="CheckIcon" *ngIf="currentStep > s" class="step-dot__check"></lucide-icon>
       </div>
     </div>
-    <div class="m-foot"><button *ngIf="isEditMode" class="btn btn--ghost" (click)="switchToRoomManagerFromEdit()"><lucide-icon [img]="BuildingIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.rooms_title' | translate }}</button><div style="flex:1"></div><button class="btn btn--ghost" (click)="closeEstateModal()">{{ 'dashboard.cancel' | translate }}</button><button class="btn btn--primary" (click)="saveEstate()" [disabled]="isSavingEstate">{{ isSavingEstate?('dashboard.saving'|translate):isEditMode?('dashboard.save_changes'|translate):('dashboard.create'|translate) }}</button></div>
+
+    <div class="m-body">
+      <!-- STEP 1: General Info -->
+      <div class="step-content" *ngIf="currentStep === 1">
+        <div class="f-group">
+          <label class="f-label">{{ 'form.name' | translate }} *</label>
+          <input class="f-input" [formControl]="$any(estateForm.get('name'))" [placeholder]="'dashboard.form_name_ph' | translate">
+        </div>
+
+        <div class="f-row">
+          <div class="f-group">
+            <label class="f-label">{{ 'form.location' | translate }} *</label>
+            <input class="f-input" [formControl]="$any(estateForm.get('location'))" [placeholder]="'dashboard.form_location_ph' | translate">
+          </div>
+          <div class="f-group">
+            <label class="f-label">{{ 'admin.col_price' | translate }} ({{ 'price.currency' | translate }})</label>
+            <input class="f-input" type="number" [formControl]="$any(estateForm.get('price'))" placeholder="35000">
+          </div>
+        </div>
+
+        <div class="f-row">
+          <div class="f-group">
+            <label class="f-label">{{ 'admin.distance_label' | translate }}</label>
+            <input class="f-input" type="number" [formControl]="$any(estateForm.get('distance'))">
+          </div>
+          <div class="f-group">
+            <label class="f-label">{{ 'admin.col_status' | translate }}</label>
+            <select class="f-input" [formControl]="$any(estateForm.get('status'))">
+              <option value="published">{{ 'admin.status_published' | translate }}</option>
+              <option value="draft">{{ 'admin.status_draft' | translate }}</option>
+              <option value="archived">{{ 'admin.status_archived' | translate }}</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="f-group">
+          <label class="f-label">{{ 'form.description' | translate }}</label>
+          <textarea class="f-input f-textarea" [formControl]="$any(estateForm.get('description'))" rows="4" [placeholder]="'dashboard.form_description_ph' | translate"></textarea>
+        </div>
+      </div>
+
+      <!-- STEP 2: Details & Amenities -->
+      <div class="step-content" *ngIf="currentStep === 2">
+        <div class="f-grid-2">
+          <div class="f-group">
+            <label class="f-label">{{ 'admin.allowed_gender' | translate }}</label>
+            <div class="gender-toggle">
+              <button type="button" class="gt-btn" [class.gt-btn--on]="estateForm.get('allowed_gender')?.value === 'all'" (click)="estateForm.get('allowed_gender')?.setValue('all')">{{ 'common.all' | translate }}</button>
+              <button type="button" class="gt-btn" [class.gt-btn--on]="estateForm.get('allowed_gender')?.value === 'male'" (click)="estateForm.get('allowed_gender')?.setValue('male')">{{ 'common.male' | translate }}</button>
+              <button type="button" class="gt-btn" [class.gt-btn--on]="estateForm.get('allowed_gender')?.value === 'female'" (click)="estateForm.get('allowed_gender')?.setValue('female')">{{ 'common.female' | translate }}</button>
+            </div>
+          </div>
+          <div class="f-group">
+            <label class="f-label">{{ 'admin.etages' | translate }}</label>
+            <input type="number" class="f-input" [formControl]="$any(estateForm.get('etages'))" min="1">
+          </div>
+        </div>
+
+        <div class="amenities-section">
+          <h4 class="amen-title">{{ 'admin.main_amenities' | translate }}</h4>
+          <div class="amen-grid">
+            <label class="amen-check"><input type="checkbox" [formControl]="$any(estateForm.get('water_bills'))"><span>{{ 'admin.water_bills' | translate }}</span></label>
+            <label class="amen-check"><input type="checkbox" [formControl]="$any(estateForm.get('electricity_bills'))"><span>{{ 'admin.electricity_bills' | translate }}</span></label>
+            <label class="amen-check"><input type="checkbox" [formControl]="$any(estateForm.get('parking'))"><span>{{ 'admin.parking' | translate }}</span></label>
+            <label class="amen-check"><input type="checkbox" [formControl]="$any(estateForm.get('cleaning_service'))"><span>{{ 'admin.cleaning' | translate }}</span></label>
+          </div>
+
+          <h4 class="amen-title">{{ 'admin.security_services' | translate }}</h4>
+          <div class="amen-grid">
+            <label class="amen-check"><input type="checkbox" [formControl]="$any(estateForm.get('fence'))"><span>{{ 'admin.fence' | translate }}</span></label>
+            <label class="amen-check"><input type="checkbox" [formControl]="$any(estateForm.get('security_guard'))"><span>{{ 'admin.security_guard' | translate }}</span></label>
+            <label class="amen-check"><input type="checkbox" [formControl]="$any(estateForm.get('caretaker'))"><span>{{ 'admin.caretaker' | translate }}</span></label>
+            <label class="amen-check"><input type="checkbox" [formControl]="$any(estateForm.get('cctv'))"><span>{{ 'admin.cctv' | translate }}</span></label>
+          </div>
+        </div>
+
+        <div class="f-group" style="margin-top: 1.5rem;">
+          <label class="f-label">{{ 'admin.characteristics' | translate }}</label>
+          <div class="char-tags">
+            <button type="button" *ngFor="let c of globalCharacteristics()" class="char-tag" [class.char-tag--on]="selectedCharacteristics().includes(c.id)" (click)="toggleCharacteristic(c.id)">
+              {{ c.name }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: Supplements -->
+      <div class="step-content" *ngIf="currentStep === 3">
+        <header class="step-hd">
+          <h3 class="step-title">{{ 'admin.supplements' | translate }}</h3>
+          <button type="button" class="btn btn--ghost btn--sm" (click)="addSupplement()"><lucide-icon [img]="PlusIcon" class="btn__ico"></lucide-icon> {{ 'admin.add_supplement' | translate }}</button>
+        </header>
+
+        <div class="supp-list">
+          <div class="supp-row" *ngFor="let s of estateSupplements(); let i = index">
+            <input class="f-input" [(ngModel)]="s.name" [placeholder]="'form.name' | translate">
+            <div class="supp-price-wrap">
+              <input class="f-input" type="number" [(ngModel)]="s.price" placeholder="0">
+              <span class="supp-currency">FCFA</span>
+            </div>
+            <label class="supp-paid">
+              <input type="checkbox" [(ngModel)]="s.is_paid_service">
+              <span>{{ 'admin.paid' | translate }}</span>
+            </label>
+            <button class="ico-btn ico-btn--red" (click)="removeSupplement(i)"><lucide-icon [img]="TrashIcon"></lucide-icon></button>
+          </div>
+          <div class="empty-supp" *ngIf="estateSupplements().length === 0">
+            <lucide-icon [img]="InfoIcon"></lucide-icon>
+            <p>{{ 'admin.no_supplements' | translate }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: GPS Location -->
+      <div class="step-content" *ngIf="currentStep === 4">
+        <div class="f-row" style="margin: 1rem 0">
+          <div class="f-group" style="margin:0">
+            <label class="f-label">{{ 'admin.latitude' | translate }}</label>
+            <input class="f-input" type="number" step="0.0000001" [formControl]="$any(estateForm.get('lat'))" (ngModelChange)="onLatLngInput()">
+          </div>
+          <div class="f-group" style="margin:0">
+            <label class="f-label">{{ 'admin.longitude' | translate }}</label>
+            <input class="f-input" type="number" step="0.0000001" [formControl]="$any(estateForm.get('lng'))" (ngModelChange)="onLatLngInput()">
+          </div>
+        </div>
+
+        <div id="map-picker" style="height:300px;border-radius:10px;overflow:hidden;border:1.5px solid #E2E8F0;z-index:0;position:relative"></div>
+      </div>
+
+      <!-- STEP 5: Photos -->
+      <div class="step-content" *ngIf="currentStep === 5">
+        <div class="photo-manager">
+          <div class="photo-section" *ngIf="isEditMode && estateForm.get('existingImages')?.value?.length > 0">
+            <h4 class="amen-title">{{ 'admin.existing_photos' | translate }}</h4>
+            <div class="photo-grid">
+              <div class="photo-card" *ngFor="let img of estateForm.get('existingImages')?.value">
+                <img [src]="img.image" alt="Estate photo">
+                <button class="photo-card__del" (click)="removeExistingImage(img)">×</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="photo-section">
+            <h4 class="amen-title">{{ 'admin.new_photos' | translate }}</h4>
+            <div class="photo-grid">
+              <div class="photo-card" *ngFor="let p of newImagePreviews; let i = index">
+                <img [src]="p" alt="Preview">
+                <button class="photo-card__del" (click)="removeNewImage(i)">×</button>
+              </div>
+              <label class="photo-add-card" for="dashImgInput">
+                <lucide-icon [img]="PlusIcon"></lucide-icon>
+                <span>{{ 'admin.add' | translate }}</span>
+              </label>
+            </div>
+            <input id="dashImgInput" type="file" accept="image/*" multiple style="display:none" (change)="onImagesSelected($event)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="m-foot">
+      <button class="btn btn--ghost" (click)="prevStep()" *ngIf="currentStep > 1">{{ 'admin.prev' | translate }}</button>
+      <div style="flex:1"></div>
+      <button class="btn btn--ghost" (click)="closeEstateModal()">{{ 'dashboard.cancel' | translate }}</button>
+      <button class="btn btn--primary" (click)="nextStep()" *ngIf="currentStep < TOTAL_STEPS">
+        {{ 'auth.continue' | translate }} <lucide-icon [img]="NextIcon" class="btn__ico-right"></lucide-icon>
+      </button>
+      <button class="btn btn--primary" (click)="saveEstate()" *ngIf="currentStep === TOTAL_STEPS" [disabled]="isSavingEstate()">
+        {{ isSavingEstate() ? ('dashboard.saving' | translate) : isEditMode ? ('dashboard.save_changes' | translate) : ('dashboard.create' | translate) }}
+      </button>
+    </div>
   </div>
 </div>
 

@@ -202,6 +202,42 @@
                     </span>
                   </div>
 
+                  <!-- ══ ROOM EQUIPMENT (expandable) ══ -->
+                  <div class="rcc-equip-block" *ngIf="rc.equipment && rc.equipment.length > 0">
+                    <button class="rcc-equip-toggle" type="button"
+                            (click)="$event.stopPropagation(); toggleRoomEquipment(rc.id)">
+                      <lucide-icon [img]="LayoutIcon" class="rcc-equip-ico"></lucide-icon>
+                      <span>{{ rc.equipment.length }} équipement{{ rc.equipment.length > 1 ? 's' : '' }}</span>
+                      <svg class="rcc-chevron" [class.open]="isRoomEquipmentExpanded(rc.id)"
+                           viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="6 9 12 15 18 9"></polyline>
+                      </svg>
+                    </button>
+                    <div class="rcc-equip-list" [class.expanded]="isRoomEquipmentExpanded(rc.id)"
+                         (click)="$event.stopPropagation()">
+                      <div class="rcc-equip-item" *ngFor="let eq of rc.equipment">
+                        <div class="rcc-equip-name">
+                          <span class="rcc-equip-dot"
+                                [class.dot-new]="eq.condition === 'NEW'"
+                                [class.dot-good]="eq.condition === 'GOOD'"
+                                [class.dot-bad]="eq.condition === 'BAD'"></span>
+                          <span>{{ eq.equipment_name || eq.part }}</span>
+                          <span class="rcc-equip-qty" *ngIf="eq.quantity > 1">×{{ eq.quantity }}</span>
+                        </div>
+                        <div class="rcc-equip-meta">
+                          <span class="rcc-equip-cond"
+                                [class.cond-new]="eq.condition === 'NEW'"
+                                [class.cond-good]="eq.condition === 'GOOD'"
+                                [class.cond-bad]="eq.condition === 'BAD'">
+                            {{ eq.condition === 'NEW' ? 'Neuf' : eq.condition === 'GOOD' ? 'Bon état' : 'À remplacer' }}
+                          </span>
+                          <span class="rcc-equip-surface" *ngIf="eq.surface_area_m2">{{ eq.surface_area_m2 }} m²</span>
+                          <span class="rcc-equip-note" *ngIf="eq.note">{{ eq.note }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div class="rcc-footer">
                     <div class="rcc-avail" [class.rcc-avail-full]="rc.quantity_available === 0">
                       <lucide-icon [img]="UsersIcon" class="rcc-avail-ico"></lucide-icon>
@@ -241,6 +277,63 @@
                   <lucide-icon [img]="eq.icon" class="feat-pill-ico" [ngClass]="'eq-' + eq.color"></lucide-icon>
                   {{ eq.name }}
                 </span>
+              </div>
+            </div>
+
+            <!-- ══ ESTATE CHARACTERISTICS ══ -->
+            <div class="detail-card characteristics-card"
+                 *ngIf="characteristics && characteristics.length > 0">
+              <h3 class="detail-card-title">
+                <lucide-icon [img]="TagIcon" class="detail-card-title-icon"></lucide-icon>
+                Caractéristiques
+              </h3>
+              <div class="characteristics-cloud">
+                <span class="char-pill" *ngFor="let c of characteristics">
+                  <lucide-icon [img]="CheckCircleIcon" class="char-pill-ico"></lucide-icon>
+                  {{ c.characteristic_name }}
+                </span>
+              </div>
+            </div>
+
+            <!-- ══ SUPPLEMENTS / SERVICES ══ -->
+            <div class="detail-card supplements-card"
+                 *ngIf="supplements && supplements.length > 0">
+              <h3 class="detail-card-title">
+                <lucide-icon [img]="GiftIcon" class="detail-card-title-icon"></lucide-icon>
+                Services & Suppléments
+              </h3>
+
+              <!-- Free / included services -->
+              <div class="supp-group" *ngIf="freeSupplements.length > 0">
+                <p class="supp-group-label included-label">
+                  <span class="supp-label-dot dot-included"></span>
+                  Inclus dans le loyer
+                </p>
+                <div class="supp-grid">
+                  <div class="supp-pill included" *ngFor="let s of freeSupplements"
+                       [title]="s.description || ''">
+                    <lucide-icon [img]="CheckCircleIcon" class="supp-pill-ico"></lucide-icon>
+                    <span class="supp-pill-name">{{ s.name }}</span>
+                    <span class="supp-pill-desc" *ngIf="s.description">{{ s.description }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Paid / optional services -->
+              <div class="supp-group mt-3" *ngIf="paidSupplements.length > 0">
+                <p class="supp-group-label paid-label">
+                  <span class="supp-label-dot dot-paid"></span>
+                  Services payants optionnels
+                </p>
+                <div class="supp-grid">
+                  <div class="supp-pill paid" *ngFor="let s of paidSupplements"
+                       [title]="s.description || ''"
+                       [class.unavailable]="!s.is_available">
+                    <span class="supp-pill-name">{{ s.name }}</span>
+                    <span class="supp-pill-price">{{ s.price | number }} {{ 'price.currency' | translate }}/mois</span>
+                    <span class="supp-unavail-badge" *ngIf="!s.is_available">Indisponible</span>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -752,4 +845,3 @@
       (close)="closeRoomGallery()">
   </app-room-gallery>
 </div>
-

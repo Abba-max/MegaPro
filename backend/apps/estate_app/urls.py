@@ -13,6 +13,7 @@ from .api_views import (
     NotificationViewSet,
     ReservationViewSet, InvoiceViewSet,
     EquipmentViewSet, SupplementViewSet, RoomEquipmentViewSet,
+    CharacteristicViewSet,
 
     # Stats
     stats_view, owner_stats_view, client_stats_view, online_users_view,
@@ -44,6 +45,7 @@ router.register(r'invoices',         InvoiceViewSet,         basename='invoice')
 router.register(r'equipment',        EquipmentViewSet,       basename='equipment')
 router.register(r'supplements',      SupplementViewSet,      basename='supplement')
 router.register(r'room-equipment',   RoomEquipmentViewSet,   basename='room-equipment')
+router.register(r'characteristics',  CharacteristicViewSet,  basename='characteristic')
 
 urlpatterns = [
     # ── Auth ──────────────────────────────────────────────────────────────

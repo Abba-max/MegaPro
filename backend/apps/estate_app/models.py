@@ -53,7 +53,7 @@ class Estate(models.Model):
     parking = models.BooleanField(default=False)
     wifi = models.BooleanField(default=False)
     cctv = models.BooleanField(default=False)
-    cleaning_service = models.BooleanField(default=False)
+    Terrain_de_sport = models.BooleanField(default=False)
     allowed_gender = models.CharField(max_length=10, choices=(('all','All'),('male','Male'),('female','Female')), default='all')
     max_capacity = models.PositiveIntegerField(null=True, blank=True)
     # Extensible custom flags (key:value dict)
@@ -69,8 +69,8 @@ class Estate(models.Model):
         choices=(("draft","Draft"),("published","Published"),("archived","Archived"))
     )
     # ── GPS coordinates ──────────────────────────────────────────────────────
-    lat = models.DecimalField(max_digits=10, decimal_places=7, default=3.8840410)
-    lng = models.DecimalField(max_digits=10, decimal_places=7, default=11.3907360)
+    lat = models.DecimalField(max_digits=25, decimal_places=20, default=3.8840410)
+    lng = models.DecimalField(max_digits=25, decimal_places=20, default=11.3907360)
     # ── Admin verification ───────────────────────────────────────────────────
     is_verified = models.BooleanField(
         default=False,
@@ -378,4 +378,4 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"Invoice {self.invoice_id}"
-
+

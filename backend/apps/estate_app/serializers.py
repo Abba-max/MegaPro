@@ -5,7 +5,8 @@ from .models import (
     User, Estate, EstateImage, Review, QuickOrder, ContactRequest,
     Conversation, Message, Notification,
     RoomCategory, RoomImage,
-    Reservation, Invoice, Room, Equipment, RoomEquipment, Supplement, Characteristic,
+    Reservation, Invoice, Room, Equipment, RoomEquipment, Supplement,
+    Characteristic, EstateCharacteristic,
 )
 
 
@@ -246,6 +247,11 @@ class EstateSerializer(serializers.ModelSerializer):
             'wifi', 'tv', 'fridge',
             'reviews_count', 'orders_count',
             'lat', 'lng',
+            # ── New fields ────────────────────────────────────────────────────
+            'etages', 'water_bills', 'electricity_bills', 'fence',
+            'caretaker', 'security_guard', 'restaurant_on_site',
+            'borehole_forage', 'generator_available', 'parking',
+            'cctv', 'cleaning_service', 'allowed_gender', 'max_capacity',
             # ── Admin verification ────────────────────────────────────────────
             'is_verified',
         ]
@@ -542,3 +548,21 @@ class ReservationSerializer(serializers.ModelSerializer):
         if user is None:
             raise serializers.ValidationError("Authentification requise.")
         return create_reservation_with_snapshot(validated_data, user)
+
+
+# ── Characteristics ──────────────────────────────────────────────────────────
+
+class CharacteristicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Characteristic
+        fields = ['id', 'name', 'description']
+
+
+class EstateCharacteristicSerializer(serializers.ModelSerializer):
+    characteristic_name = serializers.CharField(
+        source='characteristic.name', read_only=True
+    )
+
+    class Meta:
+        model  = EstateCharacteristic
+        fields = ['id', 'estate', 'characteristic', 'characteristic_name']

@@ -85,7 +85,7 @@ export class NotificationService implements OnDestroy {
     if (!this.pollSub) {
       this.pollSub = interval(30_000).subscribe(() => {
         if (!this.authService.getAccessToken()) return;
-        this.http.get<any[]>(`${this.BASE}/api/conversations/`).subscribe({
+        this.http.get<any[]>(`${this.BASE}/conversations/`).subscribe({
           next: (convs) => {
             const total = convs.reduce((s, c) => s + (c.unread_count || 0), 0);
             if (total > 0) {

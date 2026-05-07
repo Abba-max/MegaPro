@@ -37,6 +37,19 @@ export interface Supplement {
   is_paid_service: boolean;
 }
 
+export interface Characteristic {
+  id: number;
+  name: string;
+  description?: string;
+}
+
+export interface EstateCharacteristic {
+  id: number;
+  estate: number;
+  characteristic: number;
+  characteristic_name?: string;
+}
+
 // ── Room Category (expanded) ───────────────────────────────────────────────────
 
 export interface RoomCategory {
@@ -700,6 +713,23 @@ export class EstateService {
 
   deleteSupplement(id: number): Observable<void> {
     return this.http.delete<void>(`${this.BASE}/supplements/${id}/`);
+  }
+
+  // ── Characteristics ──────────────────────────────────────────────────
+  getCharacteristicList(): Observable<Characteristic[]> {
+    return this.http.get<Characteristic[]>(`${this.BASE}/characteristics/`);
+  }
+
+  getEstateCharacteristics(estateId: number): Observable<EstateCharacteristic[]> {
+    return this.http.get<EstateCharacteristic[]>(`${this.BASE}/estates/${estateId}/characteristics/`);
+  }
+
+  addEstateCharacteristic(estateId: number, characteristicId: number): Observable<EstateCharacteristic> {
+    return this.http.post<EstateCharacteristic>(`${this.BASE}/estates/${estateId}/characteristics/`, { characteristic: characteristicId });
+  }
+
+  deleteEstateCharacteristic(estateId: number, characteristicId: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/estates/${estateId}/characteristics/${characteristicId}/`);
   }
 
   // ── Static helpers ───────────────────────────────────────────────────

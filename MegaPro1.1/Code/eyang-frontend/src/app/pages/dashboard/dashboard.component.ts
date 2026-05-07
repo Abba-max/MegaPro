@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, AfterViewChecked, ElementRef, ViewChild, ChangeDetectorRef, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, AfterViewChecked, ElementRef, ViewChild, ChangeDetectorRef, HostListener, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -10,7 +11,7 @@ import {
   MessageSquare, FileText, Phone, MapPin, Calendar,
   CheckCircle, AlertCircle, Info, Send, ArrowLeft,
   Edit, Package, User, Mail, Building, Pencil, ChevronDown,
-  Navigation
+  Navigation, Check, Save, Search, Loader, ArrowRight
 } from 'lucide-angular';
 import { AuthService, User as AuthUser } from '../../services/auth.service';
 import { WebSocketService } from '../../services/websocket.service';
@@ -19,8 +20,9 @@ import {
   Conversation, ChatMessage, OwnerDashboardStats, ClientDashboardStats,
   enrichReview
 } from '../../services/estate.service';
-import { Subscription, filter, interval } from 'rxjs';
+import { Subscription, filter, interval, catchError, of, forkJoin, Observable, map, switchMap } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 // ── Fix Leaflet icon paths when bundled by Angular ──────────────────────────
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -41,7 +43,7 @@ export interface Toast {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, RouterModule, TranslateModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, LucideAngularModule, RouterModule, TranslateModule],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css'
 })
@@ -82,6 +84,11 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   readonly BuildingIcon   = Building;
   readonly ChevronDownIcon = ChevronDown;
   readonly NavigationIcon = Navigation;
+  readonly SaveIcon       = Save;
+  readonly SearchIcon     = Search;
+  readonly LocateIcon     = Navigation;
+  readonly LoaderIcon     = Loader;
+  readonly NextIcon       = ArrowRight;
 
   // ── State ─────────────────────────────────────────────────
   currentUser: AuthUser | null = null;
@@ -179,13 +186,24 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   showEstateModal = false;
   isEditMode      = false;
   editingId: number | null = null;
-  isSavingEstate  = false;
-  estateForm: any = {};
+  isSavingEstate  = signal(false);
+  estateForm!: FormGroup;
   distanceDisplay = '';
+  currentStep = 1;
+  readonly TOTAL_STEPS = 5;
+
+  selectedCharacteristics = signal<number[]>([]);
+  estateSupplements       = signal<any[]>([]);
+
+  globalCharacteristics = signal<any[]>([]);
+  globalEquipment       = signal<any[]>([]);
 
   // ── Leaflet map picker (estate modal — owner sets coords) ──
-  private mapPicker?: L.Map;
-  private mapPickerMarker?: L.Marker;
+  private map?: L.Map;
+  private marker?: L.Marker;
+  isGeocoding = false;
+  searchAddressQuery = '';
+  removedImageIds: number[] = [];
 
   // ── Leaflet estate map (owner "Carte" view) ────────────────
   showEstateMap = false;
@@ -265,8 +283,53 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     private wsService:     WebSocketService,
     private router:        Router,
     private cdr:           ChangeDetectorRef,
-    private translate:     TranslateService
-  ) { }
+    private translate:     TranslateService,
+    private fb:            FormBuilder,
+    private http:          HttpClient
+  ) { 
+    this.initForm();
+  }
+
+  private initForm(): void {
+    this.estateForm = this.fb.group({
+      name: ['', Validators.required],
+      location: ['', Validators.required],
+      price: [0, [Validators.required, Validators.min(0)]],
+      distance: [500],
+      status: ['published'],
+      description: [''],
+      lat: [3.884041, Validators.required],
+      lng: [11.390736, Validators.required],
+      
+      // Detailed fields
+      etages: [1],
+      water_bills: [false],
+      electricity_bills: [false],
+      fence: [false],
+      caretaker: [false],
+      security_guard: [false],
+      restaurant_on_site: [false],
+      borehole_forage: [false],
+      generator_available: [false],
+      parking: [false],
+      cctv: [false],
+      cleaning_service: [false],
+      allowed_gender: ['all'],
+
+      // Compatibility legacy fields
+      generator: ['0'],
+      forage: ['0'],
+      restaurant: ['0'],
+      wifi: ['0'],
+      tv: ['0'],
+      fridge: ['0']
+    });
+
+    // Sync legacy fields with new checkboxes
+    this.estateForm.get('generator_available')?.valueChanges.subscribe(v => this.estateForm.patchValue({ generator: v ? '1' : '0' }, { emitEvent: false }));
+    this.estateForm.get('borehole_forage')?.valueChanges.subscribe(v => this.estateForm.patchValue({ forage: v ? '1' : '0' }, { emitEvent: false }));
+    this.estateForm.get('restaurant_on_site')?.valueChanges.subscribe(v => this.estateForm.patchValue({ restaurant: v ? '1' : '0' }, { emitEvent: false }));
+  }
 
   ngOnInit(): void {
     const sub = this.authService.currentUser$.pipe(
@@ -310,7 +373,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   ngOnDestroy(): void {
     this.subs.forEach(s => s.unsubscribe());
     this.pollSub?.unsubscribe();
-    this.destroyMapPicker();
     this.destroyEstateMap();
   }
 
@@ -381,6 +443,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.estateService.getMyReviews().subscribe({
       next: r => { this.myReviews = r; this.resetReviewPage(); }, error: () => {}
     });
+
+    // Load characteristics for selection
+    this.estateService.getCharacteristicList().subscribe(c => this.globalCharacteristics.set(c));
   }
 
   // ── Owner conversations ───────────────────────────────────
@@ -542,181 +607,116 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
     this.isEditMode  = false;
     this.editingId   = null;
-    this.estateForm  = {
-      name: '', location: '', description: '', status: 'published',
-      restaurant: '0', generator: '0', forage: '0',
-      existingImages: [],
+    this.currentStep = 1;
+    this.estateForm.reset({
+      name: '', location: '', distance: 500, price: 0, status: 'published', description: '',
+      generator: '0', forage: '0', restaurant: '0', wifi: '0', tv: '0', fridge: '0',
       lat: EYANG_CENTER[0], lng: EYANG_CENTER[1],
-    };
-    this.distanceDisplay  = '';
+      etages: 1, water_bills: false, electricity_bills: false, fence: false,
+      caretaker: false, security_guard: false, restaurant_on_site: false,
+      borehole_forage: false, generator_available: false, parking: false,
+      cctv: false, cleaning_service: false, allowed_gender: 'all'
+    });
     this.newImageFiles    = [];
     this.newImagePreviews = [];
+    this.selectedCharacteristics.set([]);
+    this.estateSupplements.set([]);
     this.showEstateModal  = true;
-    this.destroyMapPicker();
-    this.initMapPicker();
+    setTimeout(() => this.initMap(), 100);
   }
 
   openEditModal(estate: Estate): void {
     this.isEditMode = true;
     this.editingId  = estate.id;
-    this.estateForm = {
-      name:           estate.name,
-      location:       estate.location,
-      description:    estate.description,
-      status:         estate.status,
-      restaurant:     estate.restaurant,
-      generator:      estate.generator,
-      forage:         estate.forage,
-      existingImages: [...(estate.images ?? [])],
-      lat:            estate.lat ?? EYANG_CENTER[0],
-      lng:            estate.lng ?? EYANG_CENTER[1],
-    };
-    this.distanceDisplay  = String(estate.distance);
+    this.currentStep = 1;
+    this.estateForm.patchValue({
+      name: estate.name, location: estate.location, distance: estate.distance,
+      price: estate.price, status: estate.status, description: estate.description,
+      generator: estate.generator, forage: estate.forage, restaurant: estate.restaurant,
+      wifi: estate.wifi, tv: estate.tv, fridge: estate.fridge,
+      lat: Number(estate.lat), lng: Number(estate.lng),
+      // New fields
+      etages: (estate as any).etages || 1,
+      water_bills: (estate as any).water_bills || false,
+      electricity_bills: (estate as any).electricity_bills || false,
+      fence: (estate as any).fence || false,
+      caretaker: (estate as any).caretaker || false,
+      security_guard: (estate as any).security_guard || false,
+      restaurant_on_site: (estate as any).restaurant_on_site || false,
+      borehole_forage: (estate as any).borehole_forage || false,
+      generator_available: (estate as any).generator_available || false,
+      parking: (estate as any).parking || false,
+      cctv: (estate as any).cctv || false,
+      cleaning_service: (estate as any).cleaning_service || false,
+      allowed_gender: (estate as any).allowed_gender || 'all'
+    });
+    this.estateForm.get('existingImages')?.setValue([...(estate.images ?? [])]);
+    
     this.newImageFiles    = [];
     this.newImagePreviews = [];
+    
+    // Load existing characteristics and supplements
+    this.estateService.getEstateCharacteristics(estate.id).subscribe((chars: any[]) => {
+      this.selectedCharacteristics.set(chars.map((c: any) => c.characteristic));
+    });
+    this.estateService.getEstateSupplements(estate.id).subscribe((supps: any[]) => {
+      this.estateSupplements.set(supps);
+    });
+
     this.showEstateModal  = true;
-    this.destroyMapPicker();
-    this.initMapPicker();
+    setTimeout(() => this.initMap(), 100);
   }
 
   closeEstateModal(): void {
     this.showEstateModal  = false;
     this.newImageFiles    = [];
     this.newImagePreviews = [];
-    this.destroyMapPicker();
-  }
-
-  toggleEquipment(key: string): void {
-    this.estateForm[key] = this.estateForm[key] === '1' ? '0' : '1';
-  }
-
-  // ── Leaflet map picker (inside modal — owner pins exact coords) ─────────
-
-  private initMapPicker(): void {
-    setTimeout(() => {
-      const el = document.getElementById('map-picker');
-      if (!el || this.mapPicker) return;
-
-      const lat = this.estateForm.lat ?? EYANG_CENTER[0];
-      const lng = this.estateForm.lng ?? EYANG_CENTER[1];
-
-      this.mapPicker = L.map(el, { center: [lat, lng], zoom: 16 });
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19, attribution: '© OpenStreetMap'
-      }).addTo(this.mapPicker);
-
-      // Branded red tear-drop SVG pin icon
-      const pinIcon = () => L.divIcon({
-        className: '',
-        iconSize:    [38, 50],
-        iconAnchor:  [19, 50],
-        popupAnchor: [0, -52],
-        html: `<svg width="38" height="50" viewBox="0 0 38 50" xmlns="http://www.w3.org/2000/svg"
-                    style="filter:drop-shadow(0 4px 8px rgba(255,107,107,.45))">
-          <path d="M19 1C9.61 1 2 8.61 2 18c0 11.75 15.68 28.5 16.34 29.28a.9.9 0 0 0 1.32 0C20.32 46.5 36 29.75 36 18 36 8.61 28.39 1 19 1z"
-                fill="#FF4444" stroke="rgba(255,255,255,.7)" stroke-width="1.5"/>
-          <circle cx="19" cy="18" r="10.5" fill="#fff" opacity=".97"/>
-          <g transform="translate(19,18)" fill="none" stroke="#FF4444" stroke-width="2.2"
-             stroke-linecap="round" stroke-linejoin="round">
-            <path d="M0 -7C-3.5 -7 -6 -4.5 -6 -1.5C-6 2.5 0 8.5 0 8.5S6 2.5 6 -1.5C6 -4.5 3.5 -7 0 -7Z"/>
-            <circle cx="0" cy="-1.5" r="2.5"/>
-          </g>
-        </svg>`,
-      });
-
-      this.mapPickerMarker = L.marker([lat, lng], {
-        draggable: true,
-        icon: pinIcon(),
-      }).addTo(this.mapPicker);
-
-      // Drag → update form coords
-      this.mapPickerMarker.on('dragend', (e: any) => {
-        const pos = e.target.getLatLng();
-        this.estateForm.lat = +pos.lat.toFixed(7);
-        this.estateForm.lng = +pos.lng.toFixed(7);
-        this.cdr.detectChanges();
-      });
-
-      // Click on map → move pin + update coords
-      this.mapPicker.on('click', (e: L.LeafletMouseEvent) => {
-        const { lat, lng } = e.latlng;
-        this.estateForm.lat = +lat.toFixed(7);
-        this.estateForm.lng = +lng.toFixed(7);
-        this.mapPickerMarker?.setLatLng([lat, lng]);
-        this.cdr.detectChanges();
-      });
-    }, 150);
-  }
-
-  private destroyMapPicker(): void {
-    this.mapPicker?.remove();
-    this.mapPicker       = undefined;
-    this.mapPickerMarker = undefined;
-  }
-
-  /** Called when the user types directly into the lat/lng fields */
-  onLatLngInput(): void {
-    const lat = this.estateForm.lat;
-    const lng = this.estateForm.lng;
-    if (lat && lng && this.mapPicker && this.mapPickerMarker) {
-      this.mapPickerMarker.setLatLng([lat, lng]);
-      this.mapPicker.setView([lat, lng], this.mapPicker.getZoom());
+    if (this.map) {
+      this.map.remove();
+      this.map = undefined;
+      this.marker = undefined;
     }
   }
 
-  /** Use the browser's geolocation API to auto-fill the estate coordinates */
-  useMyLocation(): void {
-    if (!navigator.geolocation) {
-      this.showToast(this.translate.instant('messages.geolocation_not_supported'), 'warning');
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        const lat = +pos.coords.latitude.toFixed(7);
-        const lng = +pos.coords.longitude.toFixed(7);
-        this.estateForm.lat = lat;
-        this.estateForm.lng = lng;
-        this.mapPickerMarker?.setLatLng([lat, lng]);
-        this.mapPicker?.setView([lat, lng], 17);
-        this.cdr.detectChanges();
-      },
-      () => this.showToast(this.translate.instant('messages.location_error'), 'error')
+  toggleCharacteristic(id: number): void {
+    this.selectedCharacteristics.update((list: number[]) => 
+      list.includes(id) ? list.filter((item: number) => item !== id) : [...list, id]
     );
   }
 
-  // ── Image management ──────────────────────────────────────
+  addSupplement(): void {
+    this.estateSupplements.update((list: any[]) => [...list, { name: '', price: 0, is_paid_service: true, is_available: true }]);
+  }
 
-  onImagesSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (!input.files) return;
-    Array.from(input.files).forEach(file => {
-      if (file.size > 5 * 1024 * 1024) {
-        this.showToast(`"${file.name}" ${this.translate.instant('messages.file_max_size')}`, 'error');
+  removeSupplement(index: number): void {
+    this.estateSupplements.update((list: any[]) => list.filter((_, i: number) => i !== index));
+  }
+
+  nextStep(): void {
+    if (this.currentStep === 1) {
+      if (this.estateForm.get('name')?.invalid || this.estateForm.get('location')?.invalid) {
+        this.showToast(this.translate.instant('admin.fill_required'), 'warning');
         return;
       }
-      this.newImageFiles.push(file);
-      const reader = new FileReader();
-      reader.onload = e => this.newImagePreviews.push(e.target!.result as string);
-      reader.readAsDataURL(file);
-    });
-    input.value = '';
+    } else if (this.currentStep === 4) {
+      if (!this.estateForm.get('lat')?.value || !this.estateForm.get('lng')?.value) {
+        this.showToast(this.translate.instant('admin.location_required'), 'warning');
+        return;
+      }
+    }
+
+    if (this.currentStep < this.TOTAL_STEPS) {
+      this.currentStep++;
+      if (this.currentStep === 4) {
+        this.initMap();
+      }
+    }
   }
 
-  removeNewImage(index: number): void {
-    this.newImageFiles.splice(index, 1);
-    this.newImagePreviews.splice(index, 1);
+  prevStep(): void {
+    if (this.currentStep > 1) this.currentStep--;
   }
 
-  removeExistingImage(img: EstateImage): void {
-    if (!this.editingId) return;
-    this.estateService.deleteEstateImage(this.editingId, img.id).subscribe({
-      next: () => {
-        this.estateForm.existingImages = this.estateForm.existingImages.filter((i: EstateImage) => i.id !== img.id);
-        this.showToast(this.translate.instant('messages.file_sent'), 'success');
-      },
-      error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
-    });
-  }
 
   // ── Room Category Methods ─────────────────────────────────
 
@@ -837,18 +837,14 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   // ── Save estate (create or update) ────────────────────────
 
   saveEstate(): void {
-    if (!this.estateForm.name || !this.estateForm.location) {
-      this.showToast(this.translate.instant('auth.error_missing_fields'), 'error');
+    if (this.estateForm.invalid) {
+      this.estateForm.markAllAsTouched();
+      this.showToast(this.translate.instant('admin.fill_required'), 'warning');
       return;
     }
-    this.isSavingEstate = true;
-    const payload = {
-      ...this.estateForm,
-      distance: parseFloat(this.distanceDisplay) || 0,
-      lat: this.estateForm.lat ?? EYANG_CENTER[0],
-      lng: this.estateForm.lng ?? EYANG_CENTER[1],
-    };
-    delete payload.existingImages;
+
+    this.isSavingEstate.set(true);
+    const payload = this.estateForm.value;
 
     const req$ = this.isEditMode && this.editingId
       ? this.estateService.updateEstate(this.editingId, payload)
@@ -856,33 +852,55 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     req$.subscribe({
       next: savedEstate => {
-        const finalizeCreation = () => {
-          this.isSavingEstate = false;
-          this.showToast(
-            this.isEditMode
-              ? this.translate.instant('admin.update')
-              : this.translate.instant('admin.create'),
-            'success'
-          );
-          this.closeEstateModal();
-          this.loadOwnerData();
-          if (!this.isEditMode) this.openManageRooms(savedEstate);
-        };
+        this.syncEstateDetails(savedEstate.id).subscribe(() => {
+          const finalizeCreation = () => {
+            this.isSavingEstate.set(false);
+            this.showToast(this.isEditMode ? 'admin.update' : 'admin.create', 'success');
+            this.closeEstateModal();
+            this.loadOwnerData();
+            if (!this.isEditMode) this.openManageRooms(savedEstate);
+          };
 
-        if (this.newImageFiles.length > 0) {
-          this.estateService.uploadEstateImages(savedEstate.id, this.newImageFiles).subscribe({
-            next:  () => finalizeCreation(),
-            error: () => finalizeCreation(),
-          });
-        } else {
-          finalizeCreation();
-        }
+          if (this.newImageFiles.length > 0) {
+            this.estateService.uploadEstateImages(savedEstate.id, this.newImageFiles).subscribe({
+              next:  () => finalizeCreation(),
+              error: () => finalizeCreation(),
+            });
+          } else {
+            finalizeCreation();
+          }
+        });
       },
-      error: () => {
-        this.isSavingEstate = false;
-        this.showToast(this.translate.instant('admin.error_load'), 'error');
+      error: (err) => {
+        this.isSavingEstate.set(false);
+        this.showToast(err?.error?.detail || this.translate.instant('admin.error_load'), 'error');
       }
     });
+  }
+
+  private syncEstateDetails(estateId: number): Observable<any> {
+    const chars = this.selectedCharacteristics();
+    const supps = this.estateSupplements();
+
+    const charObs = this.estateService.getEstateCharacteristics(estateId).pipe(
+      switchMap((existing: any[]) => {
+        const toDelete = existing.map((e: any) => this.estateService.deleteEstateCharacteristic(estateId, e.id));
+        const toAdd = chars.map((c: number) => this.estateService.addEstateCharacteristic(estateId, c));
+        const all = [...toDelete, ...toAdd];
+        return all.length ? forkJoin(all) : of([]);
+      })
+    );
+
+    const suppObs = this.estateService.getEstateSupplements(estateId).pipe(
+      switchMap((existing: any[]) => {
+        const toDelete = existing.map((e: any) => this.estateService.deleteSupplement(e.id));
+        const toAdd = supps.map((s: any) => this.estateService.addEstateSupplement(estateId, s));
+        const all = [...toDelete, ...toAdd];
+        return all.length ? forkJoin(all) : of([]);
+      })
+    );
+
+    return forkJoin({ chars: charObs, supps: suppObs });
   }
 
   deleteEstate(estate: Estate): void {
@@ -1395,6 +1413,120 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       next: data => { this.onlineUsers = new Set(data.online_user_ids); this.cdr.detectChanges(); },
       error: () => {}
     });
+  }
+
+  // ── Refactored Helpers ────────────────────────────────────
+
+  getImageUrl(path: string): string {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    return `https://res.cloudinary.com/dfm8v939p/${path}`;
+  }
+
+  onLatLngInput(): void {
+    const lat = this.estateForm.get('lat')?.value;
+    const lng = this.estateForm.get('lng')?.value;
+    if (lat && lng && this.map && this.marker) {
+      const pos = L.latLng(lat, lng);
+      this.marker.setLatLng(pos);
+      this.map.setView(pos, 16);
+    }
+  }
+
+  searchAddress(): void {
+    if (!this.searchAddressQuery.trim()) return;
+    this.isGeocoding = true;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(this.searchAddressQuery)}`;
+
+    this.http.get<any[]>(url).subscribe({
+      next: results => {
+        this.isGeocoding = false;
+        if (results && results.length > 0) {
+          const first = results[0];
+          const lat = parseFloat(first.lat);
+          const lng = parseFloat(first.lon);
+          this.estateForm.patchValue({ lat, lng });
+          this.onLatLngInput();
+        } else {
+          this.showToast('Location not found', 'warning');
+        }
+      },
+      error: () => {
+        this.isGeocoding = false;
+        this.showToast('Error searching address', 'error');
+      }
+    });
+  }
+
+  useMyLocation(): void {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          const { latitude, longitude } = pos.coords;
+          this.estateForm.patchValue({ lat: latitude, lng: longitude });
+          this.onLatLngInput();
+        },
+        () => this.showToast('Could not get your location', 'warning')
+      );
+    }
+  }
+
+  private initMap(): void {
+    // Small delay to ensure container is rendered
+    setTimeout(() => {
+      const lat = this.estateForm.get('lat')?.value || 3.8480;
+      const lng = this.estateForm.get('lng')?.value || 11.5021;
+
+      if (this.map) {
+        this.map.remove();
+      }
+
+      this.map = L.map('map-picker').setView([lat, lng], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(this.map);
+
+      this.marker = L.marker([lat, lng], { draggable: true }).addTo(this.map);
+
+      this.marker.on('dragend', () => {
+        const pos = this.marker!.getLatLng();
+        this.estateForm.patchValue({ lat: pos.lat, lng: pos.lng });
+      });
+
+      this.map.on('click', (e: any) => {
+        this.marker!.setLatLng(e.latlng);
+        this.estateForm.patchValue({ lat: e.latlng.lat, lng: e.latlng.lng });
+      });
+
+      // Force a resize fix
+      setTimeout(() => this.map?.invalidateSize(), 200);
+    }, 100);
+  }
+
+  onImagesSelected(event: any): void {
+    const files: FileList = event.target.files;
+    if (!files) return;
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      this.newImageFiles.push(file);
+
+      const reader = new FileReader();
+      reader.onload = (e: any) => this.newImagePreviews.push(e.target.result);
+      reader.readAsDataURL(file);
+    }
+  }
+
+  removeNewImage(idx: number): void {
+    this.newImageFiles.splice(idx, 1);
+    this.newImagePreviews.splice(idx, 1);
+  }
+
+  removeExistingImage(img: any): void {
+    const current = this.estateForm.get('existingImages')?.value || [];
+    const updated = current.filter((i: any) => i.id !== img.id);
+    this.estateForm.get('existingImages')?.setValue(updated);
+    this.removedImageIds.push(img.id);
   }
 }
 

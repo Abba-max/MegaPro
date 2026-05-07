@@ -8,12 +8,11 @@ import {
   MapPin, Star, Building, ChevronLeft, ChevronRight, Users, Bed, BedDouble,
   LayoutDashboard, Wifi, Zap, Droplets, Utensils, Calendar,
   MessageSquare, Send, X, Images, Loader, CheckCircle, XCircle, AlertCircle,
-  Heart, Tv, Thermometer, Phone, Info
+  Heart, Tv, Thermometer, Phone, Info ,Tag, Gift, Package, CheckSquare
 } from 'lucide-angular';
-import { EstateService, Estate, Review, Conversation, RoomCategory, AverageRating, getAbsoluteUrl } from '../../services/estate.service';
+import { EstateService, Estate, Review, Conversation, RoomCategory, AverageRating, getAbsoluteUrl,Supplement, EstateCharacteristic} from '../../services/estate.service';
 import { AuthService, User } from '../../services/auth.service';
 import { RoomGalleryComponent } from '../../components/room-gallery/room-gallery.component';
-
 export interface Toast {
   id: number;
   type: 'success' | 'error' | 'warning' | 'info';
@@ -57,6 +56,10 @@ export class HousingDetailComponent implements OnInit {
   readonly FridgeIcon       = Thermometer;
   readonly PhoneIcon        = Phone;
   readonly InfoIcon         = Info;
+  readonly TagIcon          = Tag;
+readonly GiftIcon         = Gift;
+readonly PackageIcon      = Package;
+readonly CheckSquareIcon  = CheckSquare;
 
   housing: Estate | null = null;
   hosingEquipmentsWithIcons: { name: string; icon: any; color: string; colorKey: string }[] = [];
@@ -90,6 +93,8 @@ export class HousingDetailComponent implements OnInit {
   showRoomGallery = false;
   roomGalleryImages: any[] = [];
   roomGalleryIndex = 0;
+  supplements: Supplement[]           = [];
+characteristics: EstateCharacteristic[] = [];
 
   openRoomGallery(rc: RoomCategory, index: number = 0): void {
     if (!rc.images || rc.images.length === 0) return;
@@ -113,6 +118,13 @@ export class HousingDetailComponent implements OnInit {
 
   toasts: Toast[] = [];
   private toastCounter = 0;
+private expandedRoomEquipmentIds = new Set<number>();
+get freeSupplements(): Supplement[] {
+  return this.supplements.filter(s => !s.is_paid_service && s.is_available !== false);
+}
+get paidSupplements(): Supplement[] {
+  return this.supplements.filter(s => s.is_paid_service);
+}
 
   constructor(
     private route: ActivatedRoute,
@@ -133,6 +145,7 @@ export class HousingDetailComponent implements OnInit {
     if (id) {
       this.loadEstate(Number(id));
       this.loadReviews(Number(id));
+      this.loadSupplementsAndCharacteristics(Number(id));
     }
   }
 
@@ -170,6 +183,28 @@ export class HousingDetailComponent implements OnInit {
       }
     });
   }
+toggleRoomEquipment(roomCategoryId: number): void {
+  if (this.expandedRoomEquipmentIds.has(roomCategoryId)) {
+    this.expandedRoomEquipmentIds.delete(roomCategoryId);
+  } else {
+    this.expandedRoomEquipmentIds.add(roomCategoryId);
+  }
+}
+ 
+isRoomEquipmentExpanded(roomCategoryId: number): boolean {
+  return this.expandedRoomEquipmentIds.has(roomCategoryId);
+}
+private loadSupplementsAndCharacteristics(estateId: number): void {
+  this.estateService.getEstateSupplements(estateId).subscribe({
+    next: (data) => { this.supplements = data; },
+    error: () => { this.supplements = []; }
+  });
+ 
+  this.estateService.getEstateCharacteristics(estateId).subscribe({
+    next: (data) => { this.characteristics = data; },
+    error: () => { this.characteristics = []; }
+  });
+}
 
   loadReviews(estateId: number): void {
     this.estateService.getReviews(estateId).subscribe({

@@ -183,11 +183,16 @@
             <div class="step-line" [class.active]="currentStep > 2"></div>
             <div class="step" [class.active]="currentStep >= 3" [class.completed]="currentStep > 3">
                 <span class="step-num">3</span>
-                <span class="step-label">{{ 'admin.gps_location' | translate }}</span>
+                <span class="step-label">{{ 'admin.supplements' | translate }}</span>
             </div>
             <div class="step-line" [class.active]="currentStep > 3"></div>
-            <div class="step" [class.active]="currentStep >= 4">
+            <div class="step" [class.active]="currentStep >= 4" [class.completed]="currentStep > 4">
                 <span class="step-num">4</span>
+                <span class="step-label">{{ 'admin.gps_location' | translate }}</span>
+            </div>
+            <div class="step-line" [class.active]="currentStep > 4"></div>
+            <div class="step" [class.active]="currentStep >= 5">
+                <span class="step-num">5</span>
                 <span class="step-label">{{ 'admin.photos' | translate }}</span>
             </div>
         </div>
@@ -202,18 +207,12 @@
                         <input type="text" formControlName="name" class="input" 
                                [class.invalid]="estateForm.get('name')?.invalid && estateForm.get('name')?.touched"
                                [placeholder]="'dashboard.form_name_ph' | translate">
-                        <div class="field-error" *ngIf="estateForm.get('name')?.invalid && estateForm.get('name')?.touched">
-                            {{ 'form.error_required' | translate }}
-                        </div>
                     </div>
                     <div class="form-group">
                         <label>{{ 'form.location' | translate }} <span class="required">*</span></label>
                         <input type="text" formControlName="location" class="input"
                                [class.invalid]="estateForm.get('location')?.invalid && estateForm.get('location')?.touched"
                                [placeholder]="'dashboard.form_location_ph' | translate">
-                        <div class="field-error" *ngIf="estateForm.get('location')?.invalid && estateForm.get('location')?.touched">
-                            {{ 'form.error_required' | translate }}
-                        </div>
                     </div>
                 </div>
                 <div class="form-row-modal">
@@ -222,13 +221,31 @@
                         <input type="number" formControlName="distance" class="input" placeholder="500" min="0">
                     </div>
                     <div class="form-group">
-                        <label>{{ 'admin.col_status' | translate }}</label>
-                        <select formControlName="status" class="select-input full-width">
-                            <option value="draft">{{ 'admin.status_draft' | translate }}</option>
-                            <option value="published">{{ 'admin.status_published' | translate }}</option>
-                            <option value="archived">{{ 'admin.status_archived' | translate }}</option>
+                        <label>{{ 'price.from' | translate }} ({{ 'price.currency' | translate }}) <span class="required">*</span></label>
+                        <input type="number" formControlName="price" class="input" placeholder="0" min="0">
+                    </div>
+                </div>
+                <div class="form-row-modal">
+                    <div class="form-group">
+                        <label>{{ 'admin.allowed_gender' | translate }}</label>
+                        <select formControlName="allowed_gender" class="select-input full-width">
+                            <option value="all">{{ 'common.all' | translate }}</option>
+                            <option value="male">{{ 'common.male' | translate }}</option>
+                            <option value="female">{{ 'common.female' | translate }}</option>
                         </select>
                     </div>
+                    <div class="form-group">
+                        <label>{{ 'admin.etages' | translate }}</label>
+                        <input type="number" formControlName="etages" class="input" placeholder="1" min="0">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>{{ 'admin.col_status' | translate }}</label>
+                    <select formControlName="status" class="select-input full-width">
+                        <option value="draft">{{ 'admin.status_draft' | translate }}</option>
+                        <option value="published">{{ 'admin.status_published' | translate }}</option>
+                        <option value="archived">{{ 'admin.status_archived' | translate }}</option>
+                    </select>
                 </div>
                 <div class="form-group" *ngIf="!isEditMode">
                     <label>{{ 'admin.col_owner' | translate }} <span class="required">*</span></label>
@@ -237,48 +254,177 @@
                         <input type="text" class="input input-sm" [placeholder]="'admin.search_owner_ph' | translate"
                                (input)="userSearchQuery.set($any($event.target).value)">
                     </div>
-                    <select formControlName="owner_id" class="select-input full-width"
-                            [class.invalid]="estateForm.get('owner_id')?.invalid && estateForm.get('owner_id')?.touched">
+                    <select formControlName="owner_id" class="select-input full-width">
                         <option [ngValue]="null" disabled>{{ 'admin.select_owner_ph' | translate }}</option>
                         <option *ngFor="let u of filteredOwners()" [ngValue]="u.id">{{ u.name }} ({{ u.email }})</option>
                     </select>
-                    <div class="field-error" *ngIf="estateForm.get('owner_id')?.invalid && estateForm.get('owner_id')?.touched">
-                        {{ 'form.error_select_owner' | translate }}
-                    </div>
                 </div>
             </div>
 
             <!-- Step 2: Details & Amenities -->
             <div class="form-section fade-in" *ngIf="currentStep === 2">
-                <div class="form-group">
-                    <label>{{ 'form.description' | translate }}</label>
-                    <textarea formControlName="description" class="input textarea-field" rows="4"
-                        [placeholder]="'dashboard.form_description_ph' | translate"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>{{ 'filters.equipment' | translate }}</label>
+                <div class="amenities-section">
+                    <h4 class="section-subtitle">{{ 'admin.main_amenities' | translate }}</h4>
                     <div class="equipments-grid">
-                        <label class="equip-item" [class.active]="estateForm.get('generator')?.value === '1'">
-                            <input type="checkbox" [checked]="estateForm.get('generator')?.value === '1'"
-                                (change)="estateForm.get('generator')?.setValue($any($event.target).checked ? '1' : '0')">
-                            <span class="equip-emoji">⚡</span><span>{{ 'admin.form_generator' | translate }}</span>
+                        <label class="equip-item" [class.active]="estateForm.get('generator_available')?.value">
+                            <input type="checkbox" formControlName="generator_available">
+                            <span class="equip-emoji">⚡</span><span>{{ 'filters.generator' | translate }}</span>
                         </label>
-                        <label class="equip-item" [class.active]="estateForm.get('forage')?.value === '1'">
-                            <input type="checkbox" [checked]="estateForm.get('forage')?.value === '1'"
-                                (change)="estateForm.get('forage')?.setValue($any($event.target).checked ? '1' : '0')">
-                            <span class="equip-emoji">💧</span><span>{{ 'admin.form_borehole_forage' | translate }}</span>
+                        <label class="equip-item" [class.active]="estateForm.get('borehole_forage')?.value">
+                            <input type="checkbox" formControlName="borehole_forage">
+                            <span class="equip-emoji">💧</span><span>{{ 'filters.water' | translate }}</span>
                         </label>
-                        <label class="equip-item" [class.active]="estateForm.get('restaurant')?.value === '1'">
-                            <input type="checkbox" [checked]="estateForm.get('restaurant')?.value === '1'"
-                                (change)="estateForm.get('restaurant')?.setValue($any($event.target).checked ? '1' : '0')">
+                        <label class="equip-item" [class.active]="estateForm.get('restaurant_on_site')?.value">
+                            <input type="checkbox" formControlName="restaurant_on_site">
                             <span class="equip-emoji">🍽️</span><span>{{ 'filters.restaurant' | translate }}</span>
                         </label>
+                        <label class="equip-item" [class.active]="estateForm.get('wifi')?.value === '1'">
+                            <input type="checkbox" [checked]="estateForm.get('wifi')?.value === '1'"
+                                (change)="estateForm.get('wifi')?.setValue($any($event.target).checked ? '1' : '0')">
+                            <span class="equip-emoji">📶</span><span>{{ 'filters.wifi_label' | translate }}</span>
+                        </label>
+                        <label class="equip-item" [class.active]="estateForm.get('tv')?.value === '1'">
+                            <input type="checkbox" [checked]="estateForm.get('tv')?.value === '1'"
+                                (change)="estateForm.get('tv')?.setValue($any($event.target).checked ? '1' : '0')">
+                            <span class="equip-emoji">📺</span><span>{{ 'filters.tv_label' | translate }}</span>
+                        </label>
+                        <label class="equip-item" [class.active]="estateForm.get('fridge')?.value === '1'">
+                            <input type="checkbox" [checked]="estateForm.get('fridge')?.value === '1'"
+                                (change)="estateForm.get('fridge')?.setValue($any($event.target).checked ? '1' : '0')">
+                            <span class="equip-emoji">❄️</span><span>{{ 'filters.fridge_label' | translate }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="amenities-section mt-4">
+                    <h4 class="section-subtitle">{{ 'admin.security_services' | translate }}</h4>
+                    <div class="equipments-grid">
+                        <label class="equip-item" [class.active]="estateForm.get('fence')?.value">
+                            <input type="checkbox" formControlName="fence">
+                            <span class="equip-emoji">🧱</span><span>{{ 'admin.fence' | translate }}</span>
+                        </label>
+                        <label class="equip-item" [class.active]="estateForm.get('security_guard')?.value">
+                            <input type="checkbox" formControlName="security_guard">
+                            <span class="equip-emoji">👮</span><span>{{ 'admin.security_guard' | translate }}</span>
+                        </label>
+                        <label class="equip-item" [class.active]="estateForm.get('caretaker')?.value">
+                            <input type="checkbox" formControlName="caretaker">
+                            <span class="equip-emoji">🧹</span><span>{{ 'admin.caretaker' | translate }}</span>
+                        </label>
+                        <label class="equip-item" [class.active]="estateForm.get('cctv')?.value">
+                            <input type="checkbox" formControlName="cctv">
+                            <span class="equip-emoji">📹</span><span>{{ 'admin.cctv' | translate }}</span>
+                        </label>
+                        <label class="equip-item" [class.active]="estateForm.get('parking')?.value">
+                            <input type="checkbox" formControlName="parking">
+                            <span class="equip-emoji">🚗</span><span>{{ 'admin.parking' | translate }}</span>
+                        </label>
+                        <label class="equip-item" [class.active]="estateForm.get('cleaning_service')?.value">
+                            <input type="checkbox" formControlName="cleaning_service">
+                            <span class="equip-emoji">🧽</span><span>{{ 'admin.cleaning' | translate }}</span>
+                        </label>
+                        <label class="equip-item" [class.active]="estateForm.get('water_bills')?.value">
+                            <input type="checkbox" formControlName="water_bills">
+                            <span class="equip-emoji">🚰</span><span>{{ 'admin.water_bills' | translate }}</span>
+                        </label>
+                        <label class="equip-item" [class.active]="estateForm.get('electricity_bills')?.value">
+                            <input type="checkbox" formControlName="electricity_bills">
+                            <span class="equip-emoji">💡</span><span>{{ 'admin.electricity_bills' | translate }}</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="amenities-section mt-4">
+                    <h4 class="section-subtitle">{{ 'admin.characteristics' | translate }}</h4>
+                    <div class="characteristics-tags">
+                        <div *ngFor="let char of globalCharacteristics()" 
+                             class="char-tag" 
+                             [class.active]="selectedCharacteristics().includes(char.id)"
+                             (click)="toggleCharacteristic(char.id)">
+                            {{ char.name }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group mt-4">
+                    <label>{{ 'form.description' | translate }}</label>
+                    <textarea formControlName="description" class="input textarea-field" rows="4"></textarea>
+                </div>
+            </div>
+
+            <!-- Step 3: Supplements -->
+            <div class="form-section fade-in" *ngIf="currentStep === 3">
+                <div class="supplements-header">
+                    <div>
+                        <h3 class="section-subtitle">{{ 'admin.supplements' | translate }}</h3>
+                        <p class="section-hint">Définissez les services inclus (gratuits) et les services optionnels payants.</p>
+                    </div>
+                    <button type="button" class="btn-add btn-sm" (click)="addSupplement()">
+                        <lucide-icon [img]="PlusIcon" size="14"></lucide-icon> {{ 'admin.add_supplement' | translate }}
+                    </button>
+                </div>
+                <div class="supplements-list mt-4">
+                    <div *ngFor="let supp of estateSupplements(); let i = index" class="supplement-card">
+                        <div class="supp-card-header">
+                            <div class="supp-badges">
+                                <span class="supp-type-badge" [class.badge-free]="!supp.is_paid_service" [class.badge-paid]="supp.is_paid_service">
+                                    {{ supp.is_paid_service ? 'Payant' : 'Inclus' }}
+                                </span>
+                                <span class="supp-avail-badge" [class.badge-avail]="supp.is_available !== false" [class.badge-unavail]="supp.is_available === false">
+                                    {{ supp.is_available !== false ? 'Disponible' : 'Indisponible' }}
+                                </span>
+                            </div>
+                            <button type="button" class="btn-icon danger" (click)="removeSupplement(i)">
+                                <lucide-icon [img]="TrashIcon" size="16"></lucide-icon>
+                            </button>
+                        </div>
+                        <div class="supp-card-body">
+                            <div class="form-row-modal">
+                                <div class="form-group flex-2">
+                                    <label class="sub-label">Nom du service *</label>
+                                    <input type="text" [(ngModel)]="supp.name" [ngModelOptions]="{standalone: true}"
+                                           class="input" placeholder="Ex: Eau potable, Ménage hebdo...">
+                                </div>
+                                <div class="form-group" *ngIf="supp.is_paid_service">
+                                    <label class="sub-label">Prix ({{ 'price.currency' | translate }}/mois)</label>
+                                    <input type="number" [(ngModel)]="supp.price" [ngModelOptions]="{standalone: true}"
+                                           class="input" placeholder="0" min="0">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="sub-label">Description (optionnel)</label>
+                                <input type="text" [(ngModel)]="supp.description" [ngModelOptions]="{standalone: true}"
+                                       class="input" placeholder="Ex: Inclus dans le loyer, accès 24h/24...">
+                            </div>
+                            <div class="supp-toggles">
+                                <label class="toggle-label">
+                                    <span class="toggle-switch">
+                                        <input type="checkbox" [(ngModel)]="supp.is_paid_service" [ngModelOptions]="{standalone: true}">
+                                        <span class="toggle-slider"></span>
+                                    </span>
+                                    <span>Service payant</span>
+                                </label>
+                                <label class="toggle-label">
+                                    <span class="toggle-switch">
+                                        <input type="checkbox" [ngModel]="supp.is_available !== false"
+                                               [ngModelOptions]="{standalone: true}"
+                                               (ngModelChange)="supp.is_available = $event">
+                                        <span class="toggle-slider"></span>
+                                    </span>
+                                    <span>Disponible actuellement</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div *ngIf="estateSupplements().length === 0" class="empty-state-sm">
+                        <lucide-icon [img]="PlusIcon" class="icon-sm opacity-40"></lucide-icon>
+                        {{ 'admin.no_supplements' | translate }}
                     </div>
                 </div>
             </div>
 
-            <!-- Step 3: Location Picker -->
-            <div class="form-section fade-in" *ngIf="currentStep === 3">
+            <!-- Step 4: GPS Location -->
+            <div class="form-section fade-in" *ngIf="currentStep === 4">
                 <div class="location-search-group">
                     <div class="form-group flex-1">
                         <label>{{ 'admin.search_address' | translate }}</label>
@@ -302,11 +448,11 @@
                 <div class="gps-inputs mt-4">
                     <div class="form-group">
                         <label class="sub-label">Latitude</label>
-                        <input type="number" formControlName="lat" (change)="onLatLngInput()" class="input" step="0.000001">
+                        <input type="number" formControlName="lat" (change)="onLatLngInput()" class="input" step="any" placeholder="Ex: 3.884041">
                     </div>
                     <div class="form-group">
                         <label class="sub-label">Longitude</label>
-                        <input type="number" formControlName="lng" (change)="onLatLngInput()" class="input" step="0.000001">
+                        <input type="number" formControlName="lng" (change)="onLatLngInput()" class="input" step="any" placeholder="Ex: 11.390736">
                     </div>
                 </div>
 
@@ -319,8 +465,8 @@
                 </div>
             </div>
 
-            <!-- Step 4: Photos -->
-            <div class="form-section fade-in" *ngIf="currentStep === 4">
+            <!-- Step 5: Photos -->
+            <div class="form-section fade-in" *ngIf="currentStep === 5">
                 <div class="image-upload-zone" (click)="fileInput.click()" [class.has-files]="previewImages.length > 0">
                     <input #fileInput type="file" accept="image/*" multiple (change)="onFilesSelected($event)" style="display:none">
                     <div class="upload-placeholder" *ngIf="previewImages.length === 0">
@@ -350,25 +496,22 @@
             </div>
         </form>
 
-        <div class="modal-actions" style="justify-content: space-between;">
-            <div style="display: flex; gap: 0.5rem;">
-                <button type="button" class="btn-secondary" (click)="prevStep()" *ngIf="currentStep > 1">
-                    <lucide-icon [img]="PrevIcon" class="icon-xs"></lucide-icon> {{ 'admin.prev' | translate }}
-                </button>
-            </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <button type="button" class="btn-cancel" (click)="closeModal()">{{ 'admin.cancel' | translate }}</button>
-                
-                <button type="button" class="btn-next" (click)="nextStep()" *ngIf="currentStep < TOTAL_STEPS">
-                    {{ 'admin.next' | translate }} <lucide-icon [img]="NextIcon" class="icon-xs"></lucide-icon>
-                </button>
+        <div class="modal-actions mt-6">
+            <button type="button" class="btn-secondary" (click)="prevStep()" *ngIf="currentStep > 1">
+                <lucide-icon [img]="PrevIcon" class="icon-xs"></lucide-icon> {{ 'admin.prev' | translate }}
+            </button>
+            <div class="spacer"></div>
+            <button type="button" class="btn-cancel" (click)="closeModal()">{{ 'admin.cancel' | translate }}</button>
+            
+            <button type="button" class="btn-next" (click)="nextStep()" *ngIf="currentStep < TOTAL_STEPS">
+                {{ 'admin.next' | translate }} <lucide-icon [img]="NextIcon" class="icon-xs"></lucide-icon>
+            </button>
 
-                <button type="button" class="btn-save-modal" (click)="save()" *ngIf="currentStep === TOTAL_STEPS" [disabled]="isSaving()">
-                    <lucide-icon *ngIf="isSaving()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
-                    <lucide-icon *ngIf="!isSaving()" [img]="SaveIcon" class="icon-xs"></lucide-icon>
-                    {{ isSaving() ? ('admin.saving' | translate) : (isEditMode ? ('admin.update' | translate) : ('admin.create' | translate)) }}
-                </button>
-            </div>
+            <button type="button" class="btn-save-modal" (click)="save()" *ngIf="currentStep === TOTAL_STEPS" [disabled]="isSaving()">
+                <lucide-icon *ngIf="isSaving()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
+                <lucide-icon *ngIf="!isSaving()" [img]="SaveIcon" class="icon-xs"></lucide-icon>
+                {{ isSaving() ? ('admin.saving' | translate) : (isEditMode ? ('admin.update' | translate) : ('admin.create' | translate)) }}
+            </button>
         </div>
     </div>
 </div>
@@ -431,7 +574,7 @@
                             </div>
                         </td>
                         <td data-label="PRIX">{{ rm.price }} FCFA</td>
-                        <td data-label="QUANTITÉ">{{ rm.quantity_available }}</td>
+                        <td data-label="QUANTITÉ">{{ rm.total_rooms }}</td>
                         <td class="text-right" data-label="ACTIONS">
                             <div class="action-buttons">
                                 <button class="icon-btn" (click)="openEditRoom(rm)" [title]="'admin.update' | translate">
@@ -482,7 +625,7 @@
                 </div>
                 <div class="form-group">
                     <label>{{ 'admin.col_quantity' | translate }} (Total)</label>
-                    <input type="number" formControlName="total_quantity" class="input" min="1">
+                    <input type="number" formControlName="total_rooms" class="input" min="1">
                 </div>
             </div>
             <div class="form-row-modal">
@@ -495,31 +638,104 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label>{{ 'form.description_optional' | translate }}</label>
-                    <textarea formControlName="description" class="input textarea-field" rows="2"></textarea>
+                    <label>{{ 'admin.surface_area' | translate }} (m²)</label>
+                    <input type="number" formControlName="surface_area" class="input" step="0.1">
                 </div>
             </div>
-            <div class="form-group">
-                <label>{{ 'admin.room_equipments' | translate }}</label>
+
+            <!-- Room Basic Amenities -->
+            <div class="amenities-section mt-4">
+                <h4 class="section-subtitle">Équipements de base de la chambre</h4>
                 <div class="equipments-grid">
                     <label class="equip-item" [class.active]="roomFormGroup.get('wifi')?.value === '1'">
-                        <input type="checkbox" [checked]="roomFormGroup.get('wifi')?.value === '1'"
-                            (change)="roomFormGroup.get('wifi')?.setValue($any($event.target).checked ? '1' : '0')">
-                        <span class="equip-emoji">📶</span><span>WiFi</span>
+                        <input type="checkbox"
+                               [checked]="roomFormGroup.get('wifi')?.value === '1'"
+                               (change)="roomFormGroup.get('wifi')?.setValue($any($event.target).checked ? '1' : '0')">
+                        <span class="equip-emoji">📶</span>
+                        <span>WiFi</span>
                     </label>
                     <label class="equip-item" [class.active]="roomFormGroup.get('tv')?.value === '1'">
-                        <input type="checkbox" [checked]="roomFormGroup.get('tv')?.value === '1'"
-                            (change)="roomFormGroup.get('tv')?.setValue($any($event.target).checked ? '1' : '0')">
-                        <span class="equip-emoji">📺</span><span>{{ 'filters.tv_label' | translate }}</span>
+                        <input type="checkbox"
+                               [checked]="roomFormGroup.get('tv')?.value === '1'"
+                               (change)="roomFormGroup.get('tv')?.setValue($any($event.target).checked ? '1' : '0')">
+                        <span class="equip-emoji">📺</span>
+                        <span>TV</span>
                     </label>
                     <label class="equip-item" [class.active]="roomFormGroup.get('fridge')?.value === '1'">
-                        <input type="checkbox" [checked]="roomFormGroup.get('fridge')?.value === '1'"
-                            (change)="roomFormGroup.get('fridge')?.setValue($any($event.target).checked ? '1' : '0')">
-                        <span class="equip-emoji">❄️</span><span>{{ 'filters.fridge_label' | translate }}</span>
+                        <input type="checkbox"
+                               [checked]="roomFormGroup.get('fridge')?.value === '1'"
+                               (change)="roomFormGroup.get('fridge')?.setValue($any($event.target).checked ? '1' : '0')">
+                        <span class="equip-emoji">❄️</span>
+                        <span>{{ 'filters.fridge_label' | translate }}</span>
                     </label>
                 </div>
             </div>
-            <div class="form-group">
+            <!-- Room Equipment Manager -->
+            <div class="amenities-section mt-4">
+                <div class="equip-manager-header">
+                    <h4 class="section-subtitle">{{ 'admin.room_equipment' | translate }}</h4>
+                    <button type="button" class="btn btn-secondary btn-sm" (click)="addRoomEquipment()">
+                        <lucide-icon [img]="PlusIcon" size="14"></lucide-icon> {{ 'admin.add_equipment' | translate }}
+                    </button>
+                </div>
+                <div class="room-equipment-list mt-3">
+                    <div *ngFor="let equip of roomEquipment(); let i = index" class="room-equipment-card">
+                        <div class="equip-card-row">
+                            <div class="form-group flex-2">
+                                <label class="sub-label">Équipement</label>
+                                <select [(ngModel)]="equip.equipment" [ngModelOptions]="{standalone: true}"
+                                        class="select-input">
+                                    <option [value]="null">— Personnalisé —</option>
+                                    <option *ngFor="let item of globalEquipment()" [value]="item.id">{{ item.part_name }}</option>
+                                </select>
+                            </div>
+                            <div class="form-group" *ngIf="!equip.equipment">
+                                <label class="sub-label">Nom personnalisé</label>
+                                <input type="text" [(ngModel)]="equip.custom_name" [ngModelOptions]="{standalone: true}"
+                                       class="input" placeholder="Ex: Bureau en bois...">
+                            </div>
+                            <div class="form-group equip-qty-group">
+                                <label class="sub-label">Qté</label>
+                                <input type="number" [(ngModel)]="equip.quantity" [ngModelOptions]="{standalone: true}"
+                                       class="input equip-qty" min="1" placeholder="1">
+                            </div>
+                            <div class="form-group">
+                                <label class="sub-label">État</label>
+                                <select [(ngModel)]="equip.condition" [ngModelOptions]="{standalone: true}" class="select-input">
+                                    <option value="NEW">Neuf</option>
+                                    <option value="GOOD">Bon</option>
+                                    <option value="BAD">Mauvais</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn-icon danger align-end" (click)="removeRoomEquipment(i)">
+                                <lucide-icon [img]="TrashIcon" size="16"></lucide-icon>
+                            </button>
+                        </div>
+                        <div class="equip-card-row mt-1">
+                            <div class="form-group">
+                                <label class="sub-label">Surface (m²)</label>
+                                <input type="number" [(ngModel)]="equip.surface_area_m2" [ngModelOptions]="{standalone: true}"
+                                       class="input" step="0.1" placeholder="12">
+                            </div>
+                            <div class="form-group flex-2">
+                                <label class="sub-label">Note (optionnel)</label>
+                                <input type="text" [(ngModel)]="equip.note" [ngModelOptions]="{standalone: true}"
+                                       class="input" placeholder="Ex: partagé, à l'entrée...">
+                            </div>
+                        </div>
+                    </div>
+                    <p *ngIf="roomEquipment().length === 0" class="empty-state-sm mt-2">
+                        Aucun équipement. Cliquez sur « Ajouter » pour commencer.
+                    </p>
+                </div>
+            </div>
+
+            <div class="form-group mt-4">
+                <label>{{ 'form.description_optional' | translate }}</label>
+                <textarea formControlName="description" class="input textarea-field" rows="3"></textarea>
+            </div>
+            
+            <div class="form-group mt-4">
                 <label>{{ 'admin.photos' | translate }}</label>
                 <div class="image-upload-zone" (click)="roomFileInput.click()" [class.has-files]="roomPreviewImages.length > 0">
                     <input #roomFileInput type="file" accept="image/*" multiple (change)="onRoomFilesSelected($event)" style="display:none">
@@ -537,7 +753,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="existing-images" *ngIf="roomEditId && roomExistingImages.length > 0">
+                <div class="existing-images mt-2" *ngIf="roomEditId && roomExistingImages.length > 0">
                     <p class="existing-label">{{ 'admin.existing_photos' | translate }} :</p>
                     <div class="preview-grid">
                         <div class="preview-item" *ngFor="let img of roomExistingImages; let i = index">
@@ -547,8 +763,10 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-actions mt-4">
+
+            <div class="modal-actions mt-6">
                 <button type="button" class="btn-cancel" (click)="isRoomEditMode = false">{{ 'admin.cancel' | translate }}</button>
+                <div class="spacer"></div>
                 <button type="button" class="btn-save-modal" (click)="saveRoom()" [disabled]="isSavingRoom()">
                     <lucide-icon *ngIf="isSavingRoom()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
                     <lucide-icon *ngIf="!isSavingRoom()" [img]="SaveIcon" class="icon-xs"></lucide-icon>
@@ -602,10 +820,9 @@
         <div class="modal-actions">
             <button class="btn-cancel" (click)="closeTransfer()">{{ 'admin.cancel' | translate }}</button>
             <button class="btn-save-modal" (click)="confirmTransfer()" [disabled]="isSaving() || !newOwnerId">
-                <lucide-icon *ngIf="isSaving()" [img]="LoaderIcon" class="spin-sm"></lucide-icon>
+                <lucide-icon [img]="LoaderIcon" class="spin-sm" *ngIf="isSaving()"></lucide-icon>
                 {{ 'admin.transfer_confirm' | translate }}
             </button>
         </div>
     </div>
 </div>
-

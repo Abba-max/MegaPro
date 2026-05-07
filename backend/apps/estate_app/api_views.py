@@ -10,6 +10,7 @@ from .models import (
     Estate, EstateImage, Review, QuickOrder, ContactRequest,
     Conversation, Message, User, RoomCategory, RoomImage,
     Reservation, Invoice, Equipment, RoomEquipment, Supplement,
+    Characteristic, EstateCharacteristic,
 )
 from .serializers import (
     EstateSerializer, EstateImageSerializer, ReviewSerializer, QuickOrderSerializer,
@@ -20,6 +21,7 @@ from .serializers import (
     ReservationSerializer, InvoiceSerializer,
     EquipmentSerializer, RoomEquipmentWriteSerializer, RoomEquipmentReadSerializer,
     SupplementSerializer,
+    CharacteristicSerializer, EstateCharacteristicSerializer,
 )
 from .permissions import IsVerifiedOwner
 from django.utils import timezone
@@ -288,6 +290,52 @@ class EstateViewSet(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=201)
+
+    @action(detail=True, methods=['get', 'post', 'delete'], 
+            url_path=r'characteristics(?:/(?P<char_id>\d+))?',
+            permission_classes=[permissions.IsAuthenticatedOrReadOnly])
+    def characteristics(self, request, pk=None, char_id=None):
+        """
+        GET: list characteristics for estate. 
+        POST: link a characteristic (body: {characteristic: id}).
+        DELETE: unlink a characteristic (path: /characteristics/{char_id}/).
+        """
+        estate = self.get_object()
+        
+        if request.method == 'GET':
+            chars = estate.estate_characteristics.select_related('characteristic').all()
+            return Response(EstateCharacteristicSerializer(chars, many=True).data)
+            
+        # POST / DELETE — only owner or admin
+        if estate.owner != request.user and not request.user.is_staff:
+            return Response({'error': 'Non autorisé.'}, status=403)
+            
+        if request.method == 'DELETE':
+            if not char_id:
+                return Response({'error': 'char_id requis dans l\'URL pour la suppression.'}, status=400)
+            try:
+                # Note: char_id here is the ID of the EstateCharacteristic junction record,
+                # or the ID of the Characteristic itself? 
+                # The frontend service seems to pass the Characteristic ID.
+                ec = estate.estate_characteristics.filter(characteristic_id=char_id).first()
+                if not ec:
+                    return Response({'error': 'Association introuvable.'}, status=404)
+                ec.delete()
+                return Response(status=204)
+            except Exception as e:
+                return Response({'error': str(e)}, status=400)
+                
+        # POST
+        char_id_body = request.data.get('characteristic')
+        if not char_id_body:
+            return Response({'error': 'characteristic ID requis.'}, status=400)
+        
+        if estate.estate_characteristics.filter(characteristic_id=char_id_body).exists():
+            return Response({'error': 'Cette caractéristique est déjà associée.'}, status=400)
+            
+        from .models import EstateCharacteristic
+        ec = EstateCharacteristic.objects.create(estate=estate, characteristic_id=char_id_body)
+        return Response(EstateCharacteristicSerializer(ec).data, status=201)
 
 
 class RoomCategoryViewSet(viewsets.ModelViewSet):
@@ -956,3 +1004,20 @@ class RoomEquipmentViewSet(viewsets.ModelViewSet):
     queryset           = RoomEquipment.objects.all().select_related('room_category', 'equipment')
     serializer_class   = RoomEquipmentWriteSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+
+class CharacteristicViewSet(viewsets.ModelViewSet):
+    """
+    GET  /api/characteristics/        — list all characteristics (public)
+    POST /api/characteristics/        — create (admin only)
+    GET  /api/characteristics/{id}/   — retrieve single
+    PATCH/PUT /api/characteristics/{id}/ — update (admin only)
+    DELETE /api/characteristics/{id}/ — delete (admin only)
+    """
+    queryset           = Characteristic.objects.all().order_by('name')
+    serializer_class   = CharacteristicSerializer
+
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve'):
+            return [permissions.AllowAny()]
+        return [permissions.IsAdminUser()]

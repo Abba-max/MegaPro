@@ -11,7 +11,7 @@ import {
 import { EstateService, Estate, EstateRaw, EstateImage, RoomCategory, RoomImage, AdminUser } from '../../services/estate.service';
 import * as L from 'leaflet';
 import { environment } from '../../../environments/environment';
-import { catchError, of, forkJoin, Observable } from 'rxjs';
+import { catchError, of, forkJoin, Observable, map, switchMap } from 'rxjs';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -21,9 +21,25 @@ interface EstateForm {
   name: string; location: string; distance: number;
   status: 'draft' | 'published' | 'archived'; description: string;
   generator: '0'|'1'; forage: '0'|'1'; restaurant: '0'|'1';
+  wifi: '0'|'1'; tv: '0'|'1'; fridge: '0'|'1';
+  price: number;
   lat:  number; lng: number; 
   is_verified?: boolean;
   owner_id?: number;
+  // New fields from models.py
+  etages: number;
+  water_bills: boolean;
+  electricity_bills: boolean;
+  fence: boolean;
+  caretaker: boolean;
+  security_guard: boolean;
+  restaurant_on_site: boolean;
+  borehole_forage: boolean;
+  generator_available: boolean;
+  parking: boolean;
+  cctv: boolean;
+  cleaning_service: boolean;
+  allowed_gender: 'all' | 'male' | 'female';
 }
 
 @Component({
@@ -153,7 +169,16 @@ export class AdminLogementsComponent implements OnInit {
   roomRemovedImageIds: number[] = [];
   // Stepper state
   currentStep = 1;
-  readonly TOTAL_STEPS = 4;
+  readonly TOTAL_STEPS = 5; // Increased steps for characteristics and supplements
+
+  // Lists for selection
+  globalCharacteristics = signal<any[]>([]);
+  globalEquipment       = signal<any[]>([]);
+  
+  // Temporary state for create/edit
+  selectedCharacteristics = signal<number[]>([]);
+  estateSupplements       = signal<any[]>([]);
+  roomEquipment           = signal<any[]>([]);
 
   estateForm!: FormGroup;
   roomFormGroup!: FormGroup;
@@ -177,29 +202,47 @@ export class AdminLogementsComponent implements OnInit {
       name: ['', [Validators.required]],
       location: ['', [Validators.required]],
       distance: [500],
+      price: [0, [Validators.required, Validators.min(0)]],
       status: ['draft'],
       description: [''],
       generator: ['0'],
       forage: ['0'],
       restaurant: ['0'],
+      wifi: ['0'],
+      tv: ['0'],
+      fridge: ['0'],
       lat: [3.884041],
       lng: [11.390736],
-      owner_id: [null]
+      owner_id: [null],
+      // New fields
+      etages: [1, [Validators.required, Validators.min(0)]],
+      water_bills: [false],
+      electricity_bills: [false],
+      fence: [false],
+      caretaker: [false],
+      security_guard: [false],
+      restaurant_on_site: [false],
+      borehole_forage: [false],
+      generator_available: [false],
+      parking: [false],
+      cctv: [false],
+      cleaning_service: [false],
+      allowed_gender: ['all']
     });
 
     this.roomFormGroup = this.fb.group({
       name: ['', [Validators.required]],
       price: [300000, [Validators.required, Validators.min(0)]],
       price_per_month: [0, [Validators.required, Validators.min(0)]],
-      total_quantity: [1, [Validators.required, Validators.min(1)]],
+      total_rooms: [1, [Validators.required, Validators.min(1)]],
       dimensions: [''],
       occupancy: ['single'],
-      quantity_available: [1, [Validators.required, Validators.min(1)]],
       wifi: ['0'],
       tv: ['0'],
       fridge: ['0'],
       room_size: ['2'],
-      description: ['']
+      description: [''],
+      surface_area: [null, [Validators.min(0)]]
     });
   }
 
@@ -209,15 +252,19 @@ export class AdminLogementsComponent implements OnInit {
     this.isLoading.set(true);
     forkJoin({
       estates: this.estateService.getEstates(),
-      users: this.estateService.getAdminUsers()
+      users: this.estateService.getAdminUsers(),
+      characteristics: this.estateService.getCharacteristicList(),
+      equipment: this.estateService.getEquipmentList()
     }).subscribe({
       next: (res) => {
         this.allHousings.set(res.estates);
         this.allUsers.set(res.users);
+        this.globalCharacteristics.set(res.characteristics);
+        this.globalEquipment.set(res.equipment);
         this.isLoading.set(false);
       },
       error: () => {
-        this.showToast('Erreur de chargement.', 'error');
+        this.showToast(this.translate.instant('admin.loading_error'), 'error');
         this.isLoading.set(false);
       }
     });
@@ -239,9 +286,9 @@ export class AdminLogementsComponent implements OnInit {
           if (idx !== -1) list[idx] = { ...list[idx], ...updated };
           return [...list];
         });
-        this.showToast(`"${estate.name}" vérifié et approuvé.`, 'success');
+        this.showToast(this.translate.instant('admin.verify_success', { name: estate.name }), 'success');
       },
-      error: () => this.showToast('Erreur lors de la vérification.', 'error')
+      error: () => this.showToast(this.translate.instant('admin.verify_error'), 'error')
     });
   }
 
@@ -253,9 +300,9 @@ export class AdminLogementsComponent implements OnInit {
           if (idx !== -1) list[idx] = { ...list[idx], ...updated };
           return [...list];
         });
-        this.showToast(`Vérification de "${estate.name}" annulée.`, 'info');
+        this.showToast(this.translate.instant('admin.verify_cancelled', { name: estate.name }), 'info');
       },
-      error: () => this.showToast('Erreur.', 'error')
+      error: () => this.showToast(this.translate.instant('common.error'), 'error')
     });
   }
 
@@ -266,12 +313,18 @@ export class AdminLogementsComponent implements OnInit {
     this.isEditMode = false; this.editId = null;
     this.currentStep = 1;
     this.estateForm.reset({
-      name: '', location: '', distance: 500, status: 'draft', description: '',
-      generator: '0', forage: '0', restaurant: '0',
-      lat: 3.884041, lng: 11.390736, owner_id: null
+      name: '', location: '', distance: 500, price: 0, status: 'draft', description: '',
+      generator: '0', forage: '0', restaurant: '0', wifi: '0', tv: '0', fridge: '0',
+      lat: 3.884041, lng: 11.390736, owner_id: null,
+      etages: 1, water_bills: false, electricity_bills: false, fence: false,
+      caretaker: false, security_guard: false, restaurant_on_site: false,
+      borehole_forage: false, generator_available: false, parking: false,
+      cctv: false, cleaning_service: false, allowed_gender: 'all'
     });
     this.selectedFiles = []; this.previewImages = [];
     this.existingImages = []; this.removedImageIds = [];
+    this.selectedCharacteristics.set([]);
+    this.estateSupplements.set([]);
     this.showModal = true;
     setTimeout(() => this.initMap(), 100);
   }
@@ -282,13 +335,37 @@ export class AdminLogementsComponent implements OnInit {
     this.currentStep = 1;
     this.estateForm.patchValue({
       name: estate.name, location: estate.location, distance: estate.distance,
-      status: estate.status, description: estate.description,
+      price: estate.price, status: estate.status, description: estate.description,
       generator: estate.generator, forage: estate.forage, restaurant: estate.restaurant,
+      wifi: estate.wifi, tv: estate.tv, fridge: estate.fridge,
       lat: Number(estate.lat), lng: Number(estate.lng),
-      owner_id: estate.owner?.id || null
+      owner_id: estate.owner?.id || null,
+      // New fields
+      etages: (estate as any).etages || 1,
+      water_bills: (estate as any).water_bills || false,
+      electricity_bills: (estate as any).electricity_bills || false,
+      fence: (estate as any).fence || false,
+      caretaker: (estate as any).caretaker || false,
+      security_guard: (estate as any).security_guard || false,
+      restaurant_on_site: (estate as any).restaurant_on_site || false,
+      borehole_forage: (estate as any).borehole_forage || false,
+      generator_available: (estate as any).generator_available || false,
+      parking: (estate as any).parking || false,
+      cctv: (estate as any).cctv || false,
+      cleaning_service: (estate as any).cleaning_service || false,
+      allowed_gender: (estate as any).allowed_gender || 'all'
     });
     this.existingImages = [...(estate.images ?? [])];
     this.selectedFiles = []; this.previewImages = []; this.removedImageIds = [];
+    
+    // Load existing characteristics and supplements
+    this.estateService.getEstateCharacteristics(estate.id).subscribe(chars => {
+      this.selectedCharacteristics.set(chars.map(c => c.characteristic));
+    });
+    this.estateService.getEstateSupplements(estate.id).subscribe(supps => {
+      this.estateSupplements.set(supps);
+    });
+
     this.showModal = true;
     setTimeout(() => this.initMap(), 100);
   }
@@ -327,7 +404,7 @@ export class AdminLogementsComponent implements OnInit {
   save(): void {
     if (this.estateForm.invalid) {
       this.estateForm.markAllAsTouched();
-      this.showToast('Veuillez remplir tous les champs obligatoires.', 'warning');
+      this.showToast(this.translate.instant('admin.fill_required'), 'warning');
       return;
     }
 
@@ -336,29 +413,64 @@ export class AdminLogementsComponent implements OnInit {
 
     if (this.isEditMode && this.editId) {
       this.estateService.updateEstate(this.editId, payload)
-        .pipe(catchError(err => { this.showToast(err?.error?.detail ?? 'Erreur.', 'error'); this.isSaving.set(false); return of(null); }))
+        .pipe(catchError(err => { this.showToast(err?.error?.detail ?? this.translate.instant('common.error'), 'error'); this.isSaving.set(false); return of(null); }))
         .subscribe(updated => {
           if (!updated) return;
-          this.showToast(`"${updated.name}" mis à jour. En attente de vérification admin.`, 'info');
-          if (this.selectedFiles.length) {
-            this.uploadImages(this.editId!).subscribe(() => { this.isSaving.set(false); this.showModal = false; this.load(); });
-          } else { this.isSaving.set(false); this.showModal = false; this.load(); }
+          this.syncEstateDetails(updated.id).subscribe(() => {
+            this.showToast(this.translate.instant('admin.update_success', { name: updated.name }), 'info');
+            if (this.selectedFiles.length) {
+              this.uploadImages(this.editId!).subscribe(() => { this.isSaving.set(false); this.showModal = false; this.load(); });
+            } else { this.isSaving.set(false); this.showModal = false; this.load(); }
+          });
         });
     } else {
       this.estateService.createEstate(payload)
-        .pipe(catchError(err => { this.showToast(err?.error?.detail ?? 'Erreur.', 'error'); this.isSaving.set(false); return of(null); }))
+        .pipe(catchError(err => { this.showToast(err?.error?.detail ?? this.translate.instant('common.error'), 'error'); this.isSaving.set(false); return of(null); }))
         .subscribe(created => {
           if (!created) return;
-          this.showToast(`"${created.name}" créé. Veuillez configurer les chambres.`, 'success');
-          const finalize = () => { this.isSaving.set(false); this.showModal = false; this.load(); this.openManageRooms(created); };
-          if (this.selectedFiles.length) {
-            this.estateService.uploadEstateImages(created.id, this.selectedFiles).subscribe({
-              next: () => finalize(),
-              error: () => { this.showToast('Erreur lors de l\'upload des images.', 'error'); finalize(); }
-            });
-          } else finalize();
+          this.syncEstateDetails(created.id).subscribe(() => {
+            this.showToast(this.translate.instant('admin.create_success', { name: created.name }), 'success');
+            const finalize = () => { this.isSaving.set(false); this.showModal = false; this.load(); this.openManageRooms(created); };
+            if (this.selectedFiles.length) {
+              this.estateService.uploadEstateImages(created.id, this.selectedFiles).subscribe({
+                next: () => finalize(),
+                error: () => { this.showToast(this.translate.instant('admin.upload_error'), 'error'); finalize(); }
+              });
+            } else finalize();
+          });
         });
     }
+  }
+
+  private syncEstateDetails(estateId: number): Observable<any> {
+    const chars = this.selectedCharacteristics();
+    const supps = this.estateSupplements();
+
+    // 1. Characteristics Sync
+    const charObs = this.estateService.getEstateCharacteristics(estateId).pipe(
+      switchMap((existing: any[]) => {
+        // Use Characteristic ID for deletion, matching backend action expectations
+        const toDelete = existing.map((e: any) => this.estateService.deleteEstateCharacteristic(estateId, e.characteristic));
+        const toAdd = chars.map((c: number) => this.estateService.addEstateCharacteristic(estateId, c));
+        const all = [...toDelete, ...toAdd];
+        return all.length ? forkJoin(all) : of([]);
+      })
+    );
+
+    // 2. Supplements Sync
+    const suppObs = this.estateService.getEstateSupplements(estateId).pipe(
+      switchMap((existing: any[]) => {
+        const toDelete = existing.map((e: any) => this.estateService.deleteSupplement(e.id));
+        const toAdd = supps.map((s: any) => this.estateService.addEstateSupplement(estateId, s));
+        const all = [...toDelete, ...toAdd];
+        return all.length ? forkJoin(all) : of([]);
+      })
+    );
+
+    return forkJoin({
+      chars: charObs,
+      supps: suppObs
+    });
   }
 
   nextStep(): void {
@@ -370,7 +482,7 @@ export class AdminLogementsComponent implements OnInit {
         this.showToast(this.translate.instant('admin.step1_invalid'), 'warning');
         return;
       }
-    } else if (this.currentStep === 3) {
+    } else if (this.currentStep === 4) { // GPS Step is now 4
       if (!this.estateForm.get('lat')?.value || !this.estateForm.get('lng')?.value) {
         this.showToast(this.translate.instant('admin.location_required'), 'warning');
         return;
@@ -379,7 +491,7 @@ export class AdminLogementsComponent implements OnInit {
 
     if (this.currentStep < this.TOTAL_STEPS) {
       this.currentStep++;
-      if (this.currentStep === 3) {
+      if (this.currentStep === 4) { // Map Init on step 4
         setTimeout(() => {
           if (this.map) {
             this.map.invalidateSize();
@@ -401,6 +513,29 @@ export class AdminLogementsComponent implements OnInit {
       }
     });
     return isValid;
+  }
+
+  // ── Characteristics & Supplements management ──────────────────────────────
+  toggleCharacteristic(id: number): void {
+    this.selectedCharacteristics.update(list => 
+      list.includes(id) ? list.filter(item => item !== id) : [...list, id]
+    );
+  }
+
+  addSupplement(): void {
+    this.estateSupplements.update(list => [...list, { name: '', price: 0, is_paid_service: true, is_available: true }]);
+  }
+
+  removeSupplement(index: number): void {
+    this.estateSupplements.update(list => list.filter((_, i) => i !== index));
+  }
+
+  addRoomEquipment(): void {
+    this.roomEquipment.update(list => [...list, { equipment: null, quantity: 1, condition: 'GOOD', note: '' }]);
+  }
+
+  removeRoomEquipment(index: number): void {
+    this.roomEquipment.update(list => list.filter((_, i) => i !== index));
   }
 
   prevStep(): void {
@@ -435,7 +570,8 @@ export class AdminLogementsComponent implements OnInit {
           if (idx !== -1) list[idx] = { ...list[idx], status: newStatus };
           return [...list];
         });
-        this.showToast(`"${estate.name}" ${newStatus === 'published' ? 'publié' : 'repassé en brouillon'}.`, 'success');
+        const msg = newStatus === 'published' ? 'admin.published_success' : 'admin.draft_success';
+        this.showToast(this.translate.instant(msg, { name: estate.name }), 'success');
       });
   }
 
@@ -445,10 +581,10 @@ export class AdminLogementsComponent implements OnInit {
     if (!this.estateToDelete) return;
     this.isSaving.set(true);
     this.estateService.deleteEstate(this.estateToDelete.id)
-      .pipe(catchError(() => { this.showToast('Erreur.', 'error'); this.isSaving.set(false); return of(null); }))
+      .pipe(catchError(() => { this.showToast(this.translate.instant('common.error'), 'error'); this.isSaving.set(false); return of(null); }))
       .subscribe(() => {
         this.allHousings.update(list => list.filter(h => h.id !== this.estateToDelete!.id));
-        this.showToast(`"${this.estateToDelete!.name}" supprimé.`, 'info');
+        this.showToast(this.translate.instant('admin.delete_success_msg', { name: this.estateToDelete!.name }), 'info');
         this.isSaving.set(false); this.cancelDelete();
       });
   }
@@ -507,15 +643,15 @@ export class AdminLogementsComponent implements OnInit {
       attribution: '© OpenStreetMap contributors'
     }).addTo(this.map);
 
-    const icon = L.divIcon({
-      className: 'custom-div-icon',
-      html: `
-        <div class="custom-map-marker">
-          <div class="marker-inner-dot"></div>
-        </div>
-      `,
-      iconSize: [32, 32],
-      iconAnchor: [16, 32]
+    const icon = L.icon({
+      iconUrl: 'assets/leaflet/marker-icon.png',
+      iconRetinaUrl: 'assets/leaflet/marker-icon-2x.png',
+      shadowUrl: 'assets/leaflet/marker-shadow.png',
+      iconSize: [25, 41],
+      iconAnchor: [12, 41],
+      popupAnchor: [1, -34],
+      tooltipAnchor: [16, -28],
+      shadowSize: [41, 41]
     });
 
     this.marker = L.marker([lat, lng], { icon, draggable: true }).addTo(this.map);
@@ -601,14 +737,13 @@ export class AdminLogementsComponent implements OnInit {
   }
 
   openCreateRoom(): void {
-    this.isRoomEditMode = true; this.roomEditId = null;
     this.roomFormGroup.reset({
-      name: '', price: 300000, price_per_month: 0, total_quantity: 1, dimensions: '',
-      occupancy: 'single', quantity_available: 1,
-      wifi: '0', tv: '0', fridge: '0', room_size: '2', description: ''
+      name: '', price: 300000, price_per_month: 0, total_rooms: 1, dimensions: '',
+      occupancy: 'single', wifi: '0', tv: '0', fridge: '0', room_size: '2', description: '', surface_area: null
     });
     this.roomSelectedFiles = []; this.roomPreviewImages = [];
     this.roomExistingImages = []; this.roomRemovedImageIds = [];
+    this.roomEquipment.set([]);
   }
 
   openEditRoom(room: RoomCategory): void {
@@ -616,12 +751,22 @@ export class AdminLogementsComponent implements OnInit {
     this.roomFormGroup.patchValue({ ...room });
     this.roomExistingImages = [...(room.images || [])];
     this.roomSelectedFiles = []; this.roomPreviewImages = []; this.roomRemovedImageIds = [];
+    
+    this.estateService.getRoomEquipment(room.id).subscribe(equip => {
+      this.roomEquipment.set(equip.map(e => ({
+        equipment: e.equipment,
+        quantity: e.quantity,
+        condition: e.condition,
+        note: e.note,
+        id: e.id
+      })));
+    });
   }
 
   deleteRoom(room: RoomCategory): void {
-    if (confirm(`Supprimer la catégorie "${room.name}" ?`)) {
+    if (confirm(this.translate.instant('admin.delete_room_confirm', { name: room.name }))) {
       this.estateService.deleteRoomCategory(room.id).subscribe(() => {
-        this.showToast('Chambre supprimée.', 'info');
+        this.showToast(this.translate.instant('admin.delete_room_success'), 'info');
         if (this.selectedEstateForRooms) this.loadRooms(this.selectedEstateForRooms.id);
       });
     }
@@ -641,17 +786,38 @@ export class AdminLogementsComponent implements OnInit {
       : this.estateService.createRoomCategory(payload);
     req.subscribe({
       next: saved => {
-        const afterSave = () => {
-          this.isSavingRoom.set(false); this.isRoomEditMode = false;
-          this.showToast(`Chambre ${this.roomEditId ? 'mise à jour' : 'ajoutée'}.`, 'success');
-          this.loadRooms(this.selectedEstateForRooms!.id);
-        };
-        if (this.roomSelectedFiles.length > 0) {
-          this.estateService.uploadRoomImages(saved.id, this.roomSelectedFiles).subscribe(afterSave);
-        } else afterSave();
+        this.syncRoomEquipment(saved.id).subscribe(() => {
+          const afterSave = () => {
+            this.isSavingRoom.set(false); this.isRoomEditMode = false;
+            const msg = this.roomEditId ? 'admin.room_update_success' : 'admin.room_create_success';
+            this.showToast(this.translate.instant(msg), 'success');
+            this.loadRooms(this.selectedEstateForRooms!.id);
+          };
+          if (this.roomSelectedFiles.length > 0) {
+            this.estateService.uploadRoomImages(saved.id, this.roomSelectedFiles).subscribe(afterSave);
+          } else afterSave();
+        });
       },
       error: () => { this.showToast('Erreur.', 'error'); this.isSavingRoom.set(false); }
     });
+  }
+
+  private syncRoomEquipment(categoryId: number): Observable<any> {
+    const equip = this.roomEquipment();
+    return this.estateService.getRoomEquipment(categoryId).pipe(
+      map((existing: any[]) => {
+        const toDelete = existing.map((e: any) => this.estateService.deleteRoomEquipment(e.id));
+        const toAdd = equip.map((e: any) => this.estateService.addRoomEquipment({
+          room_category: categoryId,
+          equipment: e.equipment,
+          quantity: e.quantity,
+          condition: e.condition,
+          note: e.note
+        }));
+        return [...toDelete, ...toAdd];
+      }),
+      map((obs: Observable<any>[]) => obs.length ? forkJoin(obs) : of([]))
+    );
   }
 
   onRoomFilesSelected(e: Event): void {
