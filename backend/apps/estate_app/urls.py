@@ -24,6 +24,10 @@ from .api_views import (
     admin_toggle_user_view,
     admin_update_user_view,
     admin_delete_user_view,
+    # Payment APIs import
+    initiate_payment_view,
+    cinetpay_notify_view,
+    payment_status_view,
 )
 
 # ── DRF Router (handles CRUD + custom @action endpoints automatically) ────────
@@ -67,4 +71,9 @@ urlpatterns = [
     path('api/admin/users/<int:user_id>/toggle/',  admin_toggle_user_view,   name='admin-toggle-user'),
     path('api/admin/users/<int:user_id>/update/',  admin_update_user_view,   name='admin-update-user'),
     path('api/admin/users/<int:user_id>/delete/',  admin_delete_user_view,   name='admin-delete-user'),
+    
+    # ── Payment endpoints ─────────────────────────────────────────────────
+    path('api/payments/initiate/<int:order_id>/',  initiate_payment_view, name='payment-initiate'),
+    path('api/payments/notify/',                   cinetpay_notify_view,  name='payment-notify'),
+    path('api/payments/status/<str:transaction_id>/', payment_status_view, name='payment-status'),
 ]
