@@ -108,8 +108,8 @@
             </div>
           </div>
 
-          <!-- Auth-gated details -->
-          <ng-container *ngIf="currentUser">
+          <!-- All details are public now -->
+          <ng-container>
 
             <!-- Description -->
             <div class="detail-card" *ngIf="housing!.description">
@@ -351,15 +351,16 @@
             <div class="action-row">
               <button class="action-btn btn-primary"
                       (click)="openContact()"
-                      [disabled]="housing!.room_categories.length > 0 && !selectedRoomCategory">
+                      [disabled]="housing!.room_categories.length > 0 && !selectedRoomCategory"
+                      [class.blurred-unauth]="!currentUser">
                 <lucide-icon [img]="CalendarIcon" class="icon-sm"></lucide-icon>
                 {{ selectedRoomCategory ? (('action.reserve' | translate) + ' — ' + (selectedRoomCategory.price | number) + ' ' + ('price.currency' | translate)) : ('action.reserve' | translate) }}
               </button>
-              <button class="action-btn btn-message" (click)="openMessageModal()">
+              <button class="action-btn btn-message" (click)="openMessageModal()" [class.blurred-unauth]="!currentUser">
                 <lucide-icon [img]="MessageIcon" class="icon-sm"></lucide-icon>
                 {{ 'action.negotiate' | translate }}
               </button>
-              <button class="action-btn btn-ghost" (click)="openContact()">
+              <button class="action-btn btn-ghost" (click)="openContact()" [class.blurred-unauth]="!currentUser">
                 <lucide-icon [img]="PhoneIcon" class="icon-sm"></lucide-icon>
                 {{ 'action.contact' | translate }}
               </button>
@@ -434,9 +435,9 @@
             </div>
 
             <!-- Add Review Form -->
-            <div class="add-review-block" *ngIf="currentUser">
+            <div class="add-review-block">
               <div class="add-review-toggle" *ngIf="!showReviewForm">
-                <button class="add-review-btn" (click)="toggleReviewForm()">
+                <button class="add-review-btn" (click)="toggleReviewForm()" [class.blurred-unauth]="!currentUser">
                   <lucide-icon [img]="StarIcon" class="icon-sm"></lucide-icon>
                   {{ 'reviews.add_review' | translate }}
                 </button>
@@ -508,7 +509,8 @@
               <p class="review-comment">{{ r.comment }}</p>
               <div class="review-footer">
                 <button class="like-btn" [class.liked]="r.liked_by_me" (click)="likeReview(r, $event)"
-                  [title]="r.liked_by_me ? ('reviews.unlike_hint' | translate) : ('reviews.like_hint' | translate)">
+                  [title]="r.liked_by_me ? ('reviews.unlike_hint' | translate) : ('reviews.like_hint' | translate)"
+                  [class.blurred-unauth]="!currentUser">
                   <lucide-icon [img]="HeartIcon" class="like-icon"></lucide-icon>
                   <span class="like-count">{{ r.likes_count || 0 }}</span>
                   <span class="like-label">{{ r.liked_by_me ? ('reviews.liked' | translate) : ('reviews.like' | translate) }}</span>
@@ -593,14 +595,15 @@
               </div>
             </div>
 
-            <div class="price-card-actions" *ngIf="currentUser">
+            <div class="price-card-actions">
               <button class="action-btn btn-primary w-full"
                       (click)="openContact()"
-                      [disabled]="housing!.room_categories.length > 0 && !selectedRoomCategory">
+                      [disabled]="housing!.room_categories.length > 0 && !selectedRoomCategory"
+                      [class.blurred-unauth]="!currentUser">
                 <lucide-icon [img]="CalendarIcon" class="icon-sm"></lucide-icon>
                 {{ selectedRoomCategory ? ('action.book_room' | translate) : ('action.reserve' | translate) }}
               </button>
-              <button class="action-btn btn-message w-full mt-2" (click)="openMessageModal()">
+              <button class="action-btn btn-message w-full mt-2" (click)="openMessageModal()" [class.blurred-unauth]="!currentUser">
                 <lucide-icon [img]="MessageIcon" class="icon-sm"></lucide-icon>
                 {{ 'action.send_message' | translate }}
               </button>
@@ -608,11 +611,6 @@
                  *ngIf="housing!.room_categories.length > 0 && !selectedRoomCategory">
                 {{ 'detail.select_first' | translate }}
               </p>
-            </div>
-            <div class="price-card-actions" *ngIf="!currentUser">
-              <button class="action-btn btn-primary w-full" (click)="openLogin()">
-                {{ 'detail.login_to_book' | translate }}
-              </button>
             </div>
           </div>
         </div>

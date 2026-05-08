@@ -718,18 +718,25 @@ def stats_view(request):
 @permission_classes([permissions.IsAuthenticated])
 def owner_stats_view(request):
     estates = Estate.objects.filter(owner=request.user)
+    # Count both legacy and new bookings
     orders = QuickOrder.objects.filter(estate__owner=request.user)
+    reservations = Reservation.objects.filter(room_category__estate__owner=request.user)
+    
     room_stats = RoomCategory.objects.filter(estate__owner=request.user).aggregate(
         total_qty=Sum('quantity_available'), avg_price=Avg('price'))
     total_cap = room_stats['total_qty'] or 0
-    occupied = min(total_cap, orders.count())
+    
+    # Simple occupancy heuristic: total confirmed/pending bookings vs total rooms
+    occupied = min(total_cap, orders.count() + reservations.count())
     occ_pct = round((occupied / total_cap) * 100) if total_cap > 0 else 0
+    
     ratings = [float(e.rating) for e in estates if e.rating and float(e.rating) > 0]
     avg_rating = round(sum(ratings) / len(ratings), 1) if ratings else 0
+    
     return Response({
         'total_estates': estates.count(),
         'occupancy_pct': occ_pct,
-        'pending_orders': orders.filter(status='pending').count(),
+        'pending_orders': orders.filter(status='pending').count() + reservations.filter(status='PENDING').count(),
         'avg_rating': avg_rating,
     })
 
@@ -738,8 +745,12 @@ def owner_stats_view(request):
 @permission_classes([permissions.IsAuthenticated])
 def client_stats_view(request):
     user = request.user
+    # Count both legacy QuickOrders and new Reservations
+    total_orders = QuickOrder.objects.filter(user=user).count()
+    total_res    = Reservation.objects.filter(user=user).count()
+    
     return Response({
-        'total_reservations': QuickOrder.objects.filter(user=user).count(),
+        'total_reservations': total_orders + total_res,
         'total_reviews': Review.objects.filter(user=user).count(),
         'total_messages': Message.objects.filter(sender=user).count(),
         'total_contacts': ContactRequest.objects.filter(user=user).count(),
@@ -765,26 +776,48 @@ def admin_stats_view(request):
 
     total_users = User.objects.filter(is_active=True).count()
     total_estates = Estate.objects.count()
-    total_orders = QuickOrder.objects.count()
+    
+    # Combined counts
+    total_orders = QuickOrder.objects.count() + Reservation.objects.count()
     total_reviews = Review.objects.count()
     pending_verifications = Estate.objects.filter(status='published', is_verified=False).count()
 
     recent_orders = QuickOrder.objects.select_related('estate').order_by('-created_at')[:5]
+    recent_reservations = Reservation.objects.select_related('room_category__estate').order_by('-created_at')[:5]
     recent_reviews = Review.objects.select_related('estate').order_by('-created_at')[:5]
 
     activities = []
     for o in recent_orders:
         activities.append({'type': 'order', 'title': f"Reservation : {o.estate.name}",
                            'subtitle': o.name, 'created_at': o.created_at.isoformat()})
-    for r in recent_reviews:
-        activities.append({'type': 'review', 'title': f"Avis sur : {r.estate.name}",
-                           'subtitle': r.name, 'created_at': r.created_at.isoformat()})
+    for r in recent_reservations:
+        activities.append({'type': 'order', 'title': f"Reservation : {r.room_category.estate.name}",
+                           'subtitle': r.user.get_full_name() or r.user.username, 'created_at': r.created_at.isoformat()})
+    for rev in recent_reviews:
+        activities.append({'type': 'review', 'title': f"Avis sur : {rev.estate.name}",
+                           'subtitle': rev.name, 'created_at': rev.created_at.isoformat()})
+    
     activities.sort(key=lambda x: x['created_at'], reverse=True)
 
     six_months_ago = timezone.now() - timedelta(days=180)
-    monthly = (QuickOrder.objects.filter(created_at__gte=six_months_ago)
-               .annotate(month=TruncMonth('created_at'))
-               .values('month').annotate(count=Count('id')).order_by('month'))
+    
+    # Monthly combined
+    monthly_orders = (QuickOrder.objects.filter(created_at__gte=six_months_ago)
+                .annotate(month=TruncMonth('created_at'))
+                .values('month').annotate(count=Count('id')))
+    monthly_res = (Reservation.objects.filter(created_at__gte=six_months_ago)
+                .annotate(month=TruncMonth('created_at'))
+                .values('month').annotate(count=Count('id')))
+    
+    # Merge monthly stats
+    stats_map = {}
+    for m in monthly_orders:
+        stats_map[m['month']] = m['count']
+    for m in monthly_res:
+        stats_map[m['month']] = stats_map.get(m['month'], 0) + m['count']
+        
+    sorted_months = sorted(stats_map.keys())
+    monthly_data = [{'month': m.strftime('%b'), 'value': stats_map[m]} for m in sorted_months]
 
     pending_payments = QuickOrder.objects.filter(status='paid', is_payment_verified=False).count()
 
@@ -794,7 +827,7 @@ def admin_stats_view(request):
         'pending_verifications': pending_verifications,
         'pending_payments': pending_payments,
         'recent_activities': activities[:8],
-        'monthly_orders': [{'month': m['month'].strftime('%b'), 'value': m['count']} for m in monthly],
+        'monthly_orders': monthly_data,
     })
 
 

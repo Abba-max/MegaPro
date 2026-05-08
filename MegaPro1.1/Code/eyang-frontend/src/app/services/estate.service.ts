@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { Observable, map, shareReplay } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 
@@ -376,6 +376,13 @@ export function roomSizeLabel(s: string): string {
 export class EstateService {
   private readonly BASE = environment.apiUrl;
 
+  private stats$?: Observable<PlatformStats>;
+  private ownerStats$?: Observable<OwnerDashboardStats>;
+  private clientStats$?: Observable<ClientDashboardStats>;
+  private adminStats$?: Observable<AdminStats>;
+  private characteristics$?: Observable<Characteristic[]>;
+  private equipment$?: Observable<Equipment[]>;
+
   constructor(public http: HttpClient) { }
 
   private buildParams(f?: EstateFilters): HttpParams {
@@ -398,14 +405,20 @@ export class EstateService {
   }
 
   getStats(): Observable<PlatformStats> {
-    return this.http.get<PlatformStats>(`${this.BASE}/stats/`);
+    if (!this.stats$) {
+      this.stats$ = this.http.get<PlatformStats>(`${this.BASE}/stats/`).pipe(shareReplay(1));
+    }
+    return this.stats$;
   }
 
   // ── Owner dashboard ───────────────────────────────────────
   getMyEstates(): Observable<Estate[]> { return this.getEstates({ mine: '1' }); }
 
   getOwnerStats(): Observable<OwnerDashboardStats> {
-    return this.http.get<OwnerDashboardStats>(`${this.BASE}/dashboard/stats/`);
+    if (!this.ownerStats$) {
+      this.ownerStats$ = this.http.get<OwnerDashboardStats>(`${this.BASE}/dashboard/stats/`).pipe(shareReplay(1));
+    }
+    return this.ownerStats$;
   }
 
   getMyOrders(): Observable<QuickOrder[]> {
@@ -422,10 +435,13 @@ export class EstateService {
 
   // ── Client dashboard ──────────────────────────────────────
   getClientStats(): Observable<ClientDashboardStats> {
-    return this.http.get<ClientDashboardStats>(`${this.BASE}/client/stats/`);
+    if (!this.clientStats$) {
+      this.clientStats$ = this.http.get<ClientDashboardStats>(`${this.BASE}/client/stats/`).pipe(shareReplay(1));
+    }
+    return this.clientStats$;
   }
 
-  getMyReservations(): Observable<QuickOrder[]> {
+  getMyLegacyOrders(): Observable<QuickOrder[]> {
     return this.http.get<QuickOrder[]>(`${this.BASE}/orders/?client=1`).pipe(
       map(list => list.map(o => ({ ...o, estate_image: getAbsoluteUrl(o.estate_image) })))
     );
@@ -493,7 +509,10 @@ export class EstateService {
 
   // ── Admin ─────────────────────────────────────────────────
   getAdminStats(): Observable<AdminStats> {
-    return this.http.get<AdminStats>(`${this.BASE}/admin/stats/`);
+    if (!this.adminStats$) {
+      this.adminStats$ = this.http.get<AdminStats>(`${this.BASE}/admin/stats/`).pipe(shareReplay(1));
+    }
+    return this.adminStats$;
   }
 
   getAdminBookings(): Observable<QuickOrder[]> {
@@ -568,11 +587,15 @@ export class EstateService {
 
   // ── Reservations & Invoices ───────────────────────────────
   getReservations(): Observable<Reservation[]> {
-    return this.http.get<Reservation[]>(`${this.BASE}/reservations/`);
+    return this.http.get<Reservation[]>(`${this.BASE}/reservations/`).pipe(
+      map(list => list.map(r => ({ ...r, estate_image: getAbsoluteUrl(r.estate_image) })))
+    );
   }
 
   getReservation(id: number): Observable<Reservation> {
-    return this.http.get<Reservation>(`${this.BASE}/reservations/${id}/`);
+    return this.http.get<Reservation>(`${this.BASE}/reservations/${id}/`).pipe(
+      map(r => ({ ...r, estate_image: getAbsoluteUrl(r.estate_image) }))
+    );
   }
 
   /**
@@ -735,7 +758,10 @@ export class EstateService {
 
   // ── Equipment ────────────────────────────────────────────────────────
   getEquipmentList(): Observable<Equipment[]> {
-    return this.http.get<Equipment[]>(`${this.BASE}/equipment/`);
+    if (!this.equipment$) {
+      this.equipment$ = this.http.get<Equipment[]>(`${this.BASE}/equipment/`).pipe(shareReplay(1));
+    }
+    return this.equipment$;
   }
 
   createEquipment(data: { part_name: string; removable?: boolean }): Observable<Equipment> {
@@ -796,7 +822,10 @@ export class EstateService {
 
   // ── Characteristics ──────────────────────────────────────────────────
   getCharacteristicList(): Observable<Characteristic[]> {
-    return this.http.get<Characteristic[]>(`${this.BASE}/characteristics/`);
+    if (!this.characteristics$) {
+      this.characteristics$ = this.http.get<Characteristic[]>(`${this.BASE}/characteristics/`).pipe(shareReplay(1));
+    }
+    return this.characteristics$;
   }
 
   createCharacteristic(data: { name: string; description?: string }): Observable<Characteristic> {

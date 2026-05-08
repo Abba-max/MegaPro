@@ -445,7 +445,7 @@
               </div>
             </div>
             <div class="o-card__meta" style="margin-top:8px;">
-              <span *ngIf="r.total_price" style="font-weight:700; color:var(--indigo);"><lucide-icon [img]="CreditCardIcon"></lucide-icon>{{ formatPrice(r.total_price) }} FCFA</span>
+              <span *ngIf="r.total_price" style="font-weight:700; color:var(--indigo);"><lucide-icon [img]="CreditCardIcon"></lucide-icon>{{ formatPrice(r.total_price) }}</span>
               <span><lucide-icon [img]="CalendarIcon"></lucide-icon>{{ formatDate(r.created_at) }}</span>
             </div>
             <!-- Actions -->

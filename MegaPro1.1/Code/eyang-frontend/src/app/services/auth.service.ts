@@ -101,7 +101,14 @@ export class AuthService {
     phone?: string;
     role: 'Student' | 'Parent' | 'Owner';
   }): Observable<any> {
-    return this.http.post<any>(`${this.BASE}/auth/register/`, userData);
+    return this.http.post<any>(`${this.BASE}/auth/register/`, userData).pipe(
+      tap(res => {
+        if (res.access && res.refresh) {
+          this.storeTokens(res.access, res.refresh);
+          this.fetchMe().subscribe();
+        }
+      })
+    );
   }
 
   /**
@@ -109,7 +116,14 @@ export class AuthService {
    * Used for Owner registrations; falls back gracefully for other roles too.
    */
   registerFormData(formData: FormData): Observable<any> {
-    return this.http.post<any>(`${this.BASE}/auth/register/`, formData);
+    return this.http.post<any>(`${this.BASE}/auth/register/`, formData).pipe(
+      tap(res => {
+        if (res.access && res.refresh) {
+          this.storeTokens(res.access, res.refresh);
+          this.fetchMe().subscribe();
+        }
+      })
+    );
   }
 
   verifyEmail(uid: string, token: string): Observable<any> {

@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { Subject } from 'rxjs';
@@ -202,7 +202,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private estateService: EstateService,
     private authService: AuthService,
     private translate: TranslateService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.searchSubject.pipe(
       debounceTime(300),
@@ -225,6 +226,23 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     this.translate.onLangChange.subscribe(() => {
       this.buildFaqs();
+    });
+
+    // Detect if redirected from registration
+    this.route.queryParams.subscribe(params => {
+      if (params['registered'] === 'true') {
+        // Delay slightly to ensure toast is visible and animations are ready
+        setTimeout(() => {
+          this.showToast(this.translate.instant('auth.success_signup'), 'success');
+          // Clean up URL to avoid showing toast again on refresh
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: { registered: null },
+            queryParamsHandling: 'merge',
+            replaceUrl: true
+          });
+        }, 500);
+      }
     });
   }
 

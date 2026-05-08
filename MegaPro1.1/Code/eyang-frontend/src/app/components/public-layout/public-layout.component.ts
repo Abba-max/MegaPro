@@ -181,8 +181,8 @@ import {
       border-radius: 8px;
     }
     .f-logo-text {
-      font-size:      1.15rem;
-      font-weight:    800;
+      font-size:      1.8rem;
+      font-weight:    900;
       color:          #fff;
       letter-spacing: -0.01em;
     }

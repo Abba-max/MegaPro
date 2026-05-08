@@ -153,9 +153,9 @@ export class SignupComponent {
 
     this.authService.registerFormData(fd).subscribe({
       next: (res) => {
-        // Redirection logic: go to login with success flag
+        // Redirection logic: go to home with success flag
         this.isLoading.set(false);
-        this.router.navigate(['/login'], { queryParams: { registered: 'true' } });
+        this.router.navigate(['/'], { queryParams: { registered: 'true' } });
       },
       error: (err) => {
         this.isLoading.set(false);

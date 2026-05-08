@@ -509,6 +509,9 @@ class ReservationSerializer(serializers.ModelSerializer):
     invoice             = InvoiceSerializer(read_only=True)
     estate_name         = serializers.CharField(source='room_category.estate.name', read_only=True)
     room_category_name  = serializers.CharField(source='room_category.name', read_only=True)
+    client_name         = serializers.CharField(source='user.get_full_name', read_only=True)
+    client_phone        = serializers.CharField(source='user.contact', read_only=True)
+    estate_image        = serializers.SerializerMethodField()
     bill_url            = serializers.SerializerMethodField()
     selected_supplements = serializers.PrimaryKeyRelatedField(
         many=True, queryset=Supplement.objects.all(), required=False
@@ -521,6 +524,7 @@ class ReservationSerializer(serializers.ModelSerializer):
         model  = Reservation
         fields = [
             'id', 'user', 'room_category', 'estate_name', 'room_category_name',
+            'client_name', 'client_phone', 'estate_image',
             'check_in', 'check_out', 'start_date', 'end_date',
             'num_rooms', 'total_price', 'status',
             'reservation_details_json',
@@ -531,8 +535,18 @@ class ReservationSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'status', 'user', 'created_at', 'updated_at', 'invoice',
             'total_price', 'reservation_details_json', 'bill_url',
-            'estate_name', 'room_category_name',
+            'estate_name', 'room_category_name', 'client_name', 'client_phone', 'estate_image',
         ]
+
+    def get_estate_image(self, obj):
+        request     = self.context.get('request')
+        first_image = obj.room_category.estate.images.first()
+        if first_image:
+            url = first_image.image.url
+            if url.startswith('http'):
+                return url
+            return request.build_absolute_uri(url) if request else url
+        return None
 
     def get_bill_url(self, obj):
         """Returns PDF URL from the Invoice linked to this reservation."""

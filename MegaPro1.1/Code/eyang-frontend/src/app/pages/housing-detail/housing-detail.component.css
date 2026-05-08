@@ -140,6 +140,14 @@
 .action-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 700; border: none; cursor: pointer; transition: all .2s; }
 .action-btn:hover { transform: translateY(-2px); }
 .action-btn:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.blurred-unauth {
+  filter: blur(2.5px);
+  opacity: 0.6;
+  pointer-events: none !important;
+  cursor: not-allowed;
+  user-select: none;
+}
+
 .btn-primary { background: linear-gradient(135deg,#2563EB,#1d4ed8); color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,.3); }
 .btn-primary:hover { box-shadow: 0 8px 20px rgba(37,99,235,.4); }
 .btn-message { background: linear-gradient(135deg,#10b981,#059669); color: #fff; box-shadow: 0 4px 12px rgba(16,185,129,.3); }

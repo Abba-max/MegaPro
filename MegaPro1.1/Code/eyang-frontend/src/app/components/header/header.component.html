@@ -166,7 +166,10 @@
 
   <!-- Drawer header: logo + close button -->
   <div class="mobile-drawer-header">
-    <img src="/assets/images/logo.png" alt="Eyang Estate" class="mobile-drawer-logo">
+    <div class="logo-section">
+      <img src="/assets/images/logo.png" alt="Eyang Estate" class="mobile-drawer-logo">
+      <span class="logo-title">Eyang Estate</span>
+    </div>
     <button class="mobile-drawer-close" (click)="closeMobileMenu()" [attr.aria-label]="'nav.close_menu' | translate">✕</button>
   </div>
 
