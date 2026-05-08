@@ -243,9 +243,6 @@ class EstateSerializer(serializers.ModelSerializer):
     owner           = UserSerializer(read_only=True)
     images          = EstateImageSerializer(many=True, read_only=True)
     room_categories = RoomCategorySerializer(many=True, read_only=True)
-    wifi            = serializers.SerializerMethodField()
-    tv              = serializers.SerializerMethodField()
-    fridge          = serializers.SerializerMethodField()
     capacity        = serializers.SerializerMethodField()
     free            = serializers.SerializerMethodField()
     price           = serializers.SerializerMethodField()
@@ -269,7 +266,8 @@ class EstateSerializer(serializers.ModelSerializer):
             'etages', 'water_bills', 'electricity_bills', 'fence',
             'caretaker', 'security_guard', 'restaurant_on_site',
             'borehole_forage', 'generator_available', 'parking',
-            'cctv', 'cleaning_service', 'allowed_gender', 'max_capacity',
+            'cctv', 'cleaning_service', 'Terrain_de_sport', 'playground',
+            'allowed_gender', 'max_capacity',
             'characteristics', 'supplements',
             # ── Admin verification ────────────────────────────────────────────
             'is_verified',
@@ -311,15 +309,6 @@ class EstateSerializer(serializers.ModelSerializer):
         # Uses prefetched room_categories in memory
         prices = [rc.price for rc in obj.room_categories.all()]
         return min(prices) if prices else 0
-
-    def get_wifi(self, obj) -> str:
-        return '1' if any(rc.wifi == '1' for rc in obj.room_categories.all()) else '0'
-
-    def get_tv(self, obj) -> str:
-        return '1' if any(rc.tv == '1' for rc in obj.room_categories.all()) else '0'
-
-    def get_fridge(self, obj) -> str:
-        return '1' if any(rc.fridge == '1' for rc in obj.room_categories.all()) else '0'
 
     def get_reviews_count(self, obj) -> int:
         # Uses prefetched reviews in memory

@@ -39,6 +39,8 @@ interface EstateForm {
   parking: boolean;
   cctv: boolean;
   cleaning_service: boolean;
+  Terrain_de_sport: boolean;
+  max_capacity: number | null;
   allowed_gender: 'all' | 'male' | 'female';
 }
 
@@ -228,8 +230,20 @@ export class AdminLogementsComponent implements OnInit {
   roomFormGroup!: FormGroup;
 
   emptyRoomForm(): Partial<RoomCategory> {
-    return { name: '', price: 300000, occupancy: 'single', quantity_available: 1,
-             wifi: '0', tv: '0', fridge: '0', room_size: '2', description: '' };
+    return { 
+      name: '', 
+      price: 300000, 
+      occupancy: 'single', 
+      total_rooms: 1,
+      available_rooms: 1,
+      quantity_available: 1,
+      surface_area: 0,
+      wifi: false, 
+      tv: false, 
+      fridge: false, 
+      room_size: '2', 
+      description: '' 
+    };
   }
 
   constructor(
@@ -271,6 +285,8 @@ export class AdminLogementsComponent implements OnInit {
       parking: [false],
       cctv: [false],
       cleaning_service: [false],
+      Terrain_de_sport: [false],
+      max_capacity: [null],
       allowed_gender: ['all']
     });
 
@@ -281,9 +297,9 @@ export class AdminLogementsComponent implements OnInit {
       total_rooms: [1, [Validators.required, Validators.min(1)]],
       dimensions: [''],
       occupancy: ['single'],
-      wifi: ['0'],
-      tv: ['0'],
-      fridge: ['0'],
+      wifi: [false],
+      tv: [false],
+      fridge: [false],
       room_size: ['2'],
       description: [''],
       surface_area: [null, [Validators.min(0)]]
@@ -397,6 +413,8 @@ export class AdminLogementsComponent implements OnInit {
       parking: (estate as any).parking || false,
       cctv: (estate as any).cctv || false,
       cleaning_service: (estate as any).cleaning_service || false,
+      Terrain_de_sport: (estate as any).Terrain_de_sport || false,
+      max_capacity: (estate as any).max_capacity || null,
       allowed_gender: (estate as any).allowed_gender || 'all'
     });
     this.existingImages = [...(estate.images ?? [])];

@@ -62,31 +62,35 @@
         <span class="filter-badge" *ngIf="activeFilterCount > 0">{{ activeFilterCount }}</span>
         <span class="adv-btn-arrow" [class.rotated]="showAdvanced">▾</span>
     </button>
-    <button class="filter-item" [class.filter-on]="filterWifi==='1'"
-        (click)="filterWifi=filterWifi==='1'?'':'1'; applyFilters()">
+    <button class="filter-item" [class.filter-on]="filterWifi"
+        (click)="filterWifi=!filterWifi; applyFilters()">
         <lucide-icon [img]="WifiIcon" class="filter-icon orange"></lucide-icon><span>{{ 'filters.wifi_label' | translate }}</span>
     </button>
-    <button class="filter-item" [class.filter-on]="filterGenerator==='1'"
-        (click)="filterGenerator=filterGenerator==='1'?'':'1'; applyFilters()">
+    <button class="filter-item" [class.filter-on]="filterGenerator"
+        (click)="filterGenerator=!filterGenerator; applyFilters()">
         <lucide-icon [img]="ZapIcon" class="filter-icon yellow"></lucide-icon>
         <span>{{ 'filters.generator' | translate }}</span>
     </button>
-    <button class="filter-item" [class.filter-on]="filterForage==='1'"
-        (click)="filterForage=filterForage==='1'?'':'1'; applyFilters()">
+    <button class="filter-item" [class.filter-on]="filterForage"
+        (click)="filterForage=!filterForage; applyFilters()">
         <lucide-icon [img]="DropletsIcon" class="filter-icon blue"></lucide-icon>
         <span>{{ 'filters.water' | translate }}</span>
     </button>
-    <button class="filter-item" [class.filter-on]="filterRestaurant==='1'"
-        (click)="filterRestaurant=filterRestaurant==='1'?'':'1'; applyFilters()">
+    <button class="filter-item" [class.filter-on]="filterRestaurant"
+        (click)="filterRestaurant=!filterRestaurant; applyFilters()">
         <lucide-icon [img]="CoffeeIcon" class="filter-icon brown"></lucide-icon>
         <span>{{ 'filters.restaurant' | translate }}</span>
     </button>
-    <button class="filter-item" [class.filter-on]="filterTv==='1'" (click)="filterTv=filterTv==='1'?'':'1'; applyFilters()">
+    <button class="filter-item" [class.filter-on]="filterTv" (click)="filterTv=!filterTv; applyFilters()">
         <lucide-icon [img]="TvIcon" class="filter-icon purple"></lucide-icon><span>{{ 'filters.tv_label' | translate }}</span>
     </button>
-    <button class="filter-item" [class.filter-on]="filterFridge==='1'"
-        (click)="filterFridge=filterFridge==='1'?'':'1'; applyFilters()">
+    <button class="filter-item" [class.filter-on]="filterFridge"
+        (click)="filterFridge=!filterFridge; applyFilters()">
         <lucide-icon [img]="FridgeIcon" class="filter-icon teal"></lucide-icon><span>{{ 'filters.fridge_label' | translate }}</span>
+    </button>
+    <button class="filter-item" [class.filter-on]="filterPlayground"
+        (click)="filterPlayground=!filterPlayground; applyFilters()">
+        <lucide-icon [img]="Gamepad2Icon" class="filter-icon red"></lucide-icon><span>{{ 'admin.playground' | translate }}</span>
     </button>
     <button class="filter-item filter-reset-btn" *ngIf="activeFilterCount>0" (click)="resetFilters()">
         <lucide-icon [img]="XIcon" class="filter-icon red"></lucide-icon><span>{{ 'common.reset' | translate }}</span>
@@ -223,16 +227,19 @@
             <lucide-icon *ngIf="f.key==='restaurant'" [img]="CoffeeIcon"   class="feat-pill-ico"></lucide-icon>
             <lucide-icon *ngIf="f.key==='tv'"         [img]="TvIcon"       class="feat-pill-ico"></lucide-icon>
             <lucide-icon *ngIf="f.key==='fridge'"     [img]="FridgeIcon"   class="feat-pill-ico"></lucide-icon>
+            <lucide-icon *ngIf="f.key==='parking'"    [img]="ParkingIcon"  class="feat-pill-ico"></lucide-icon>
+            <lucide-icon *ngIf="f.key==='security'"   [img]="SecurityIcon" class="feat-pill-ico"></lucide-icon>
+            <lucide-icon *ngIf="f.key==='cctv'"       [img]="VideoIcon"    class="feat-pill-ico"></lucide-icon>
+            <lucide-icon *ngIf="f.key==='cleaning'"   [img]="SparklesIcon" class="feat-pill-ico"></lucide-icon>
+            <lucide-icon *ngIf="f.key==='water_bills'" [img]="WaterBillIcon" class="feat-pill-ico"></lucide-icon>
+            <lucide-icon *ngIf="f.key==='elec_bills'"  [img]="ZapIcon"      class="feat-pill-ico"></lucide-icon>
             <span class="feat-pill-label">{{ f.label | translate }}</span>
         </span>
         <!-- Dynamic characteristics -->
         <ng-container *ngIf="h.characteristics">
-            <span *ngFor="let char of h.characteristics.slice(0, 3)" class="feat-pill" style="background: var(--bg-100); border: 1px solid var(--border-color); color: var(--text-primary);">
+            <span *ngFor="let char of h.characteristics.slice(0, 2)" class="feat-pill" style="background: var(--bg-100); border: 1px solid var(--border-color); color: var(--text-primary);">
                 <lucide-icon [img]="CheckIcon" class="feat-pill-ico" style="color: var(--primary-color);"></lucide-icon>
                 <span class="feat-pill-label">{{ char.characteristic_name }}</span>
-            </span>
-            <span *ngIf="h.characteristics.length > 3" class="feat-pill" style="background: transparent; border: none; font-size: 0.75rem; color: var(--text-tertiary); padding: 0;">
-                +{{ h.characteristics.length - 3 }} autres
             </span>
         </ng-container>
     </div>
@@ -585,29 +592,41 @@
         <div class="adv-section">
             <label class="adv-label">{{ 'filters.equipment' | translate }}</label>
             <div class="adv-equip-grid">
-                <button class="adv-equip-btn" [class.adv-equip-on]="filterWifi==='1'" (click)="filterWifi=filterWifi==='1'?'':'1'">
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterWifi" (click)="filterWifi=!filterWifi">
                     <lucide-icon [img]="WifiIcon" class="equip-icon orange"></lucide-icon><span>{{ 'filters.wifi_label' | translate }}</span>
-                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterWifi==='1'"></lucide-icon>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterWifi"></lucide-icon>
                 </button>
-                <button class="adv-equip-btn" [class.adv-equip-on]="filterGenerator==='1'" (click)="filterGenerator=filterGenerator==='1'?'':'1'">
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterGenerator" (click)="filterGenerator=!filterGenerator">
                     <lucide-icon [img]="ZapIcon" class="equip-icon yellow"></lucide-icon><span>{{ 'filters.generator' | translate }}</span>
-                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterGenerator==='1'"></lucide-icon>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterGenerator"></lucide-icon>
                 </button>
-                <button class="adv-equip-btn" [class.adv-equip-on]="filterForage==='1'" (click)="filterForage=filterForage==='1'?'':'1'">
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterForage" (click)="filterForage=!filterForage">
                     <lucide-icon [img]="DropletsIcon" class="equip-icon blue"></lucide-icon><span>{{ 'filters.water' | translate }}</span>
-                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterForage==='1'"></lucide-icon>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterForage"></lucide-icon>
                 </button>
-                <button class="adv-equip-btn" [class.adv-equip-on]="filterRestaurant==='1'" (click)="filterRestaurant=filterRestaurant==='1'?'':'1'">
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterRestaurant" (click)="filterRestaurant=!filterRestaurant">
                     <lucide-icon [img]="CoffeeIcon" class="equip-icon brown"></lucide-icon><span>{{ 'filters.restaurant' | translate }}</span>
-                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterRestaurant==='1'"></lucide-icon>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterRestaurant"></lucide-icon>
                 </button>
-                <button class="adv-equip-btn" [class.adv-equip-on]="filterTv==='1'" (click)="filterTv=filterTv==='1'?'':'1'">
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterTv" (click)="filterTv=!filterTv">
                     <lucide-icon [img]="TvIcon" class="equip-icon purple"></lucide-icon><span>{{ 'filters.tv_label' | translate }}</span>
-                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterTv==='1'"></lucide-icon>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterTv"></lucide-icon>
                 </button>
-                <button class="adv-equip-btn" [class.adv-equip-on]="filterFridge==='1'" (click)="filterFridge=filterFridge==='1'?'':'1'">
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterFridge" (click)="filterFridge=!filterFridge">
                     <lucide-icon [img]="FridgeIcon" class="equip-icon teal"></lucide-icon><span>{{ 'filters.fridge_label' | translate }}</span>
-                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterFridge==='1'"></lucide-icon>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterFridge"></lucide-icon>
+                </button>
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterCctv" (click)="filterCctv=!filterCctv">
+                    <lucide-icon [img]="VideoIcon" class="equip-icon slate"></lucide-icon><span>{{ 'admin.cctv' | translate }}</span>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterCctv"></lucide-icon>
+                </button>
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterCleaning" (click)="filterCleaning=!filterCleaning">
+                    <lucide-icon [img]="SparklesIcon" class="equip-icon sky"></lucide-icon><span>{{ 'admin.cleaning' | translate }}</span>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterCleaning"></lucide-icon>
+                </button>
+                <button class="adv-equip-btn" [class.adv-equip-on]="filterPlayground" (click)="filterPlayground=!filterPlayground">
+                    <lucide-icon [img]="Gamepad2Icon" class="equip-icon rose"></lucide-icon><span>{{ 'admin.playground' | translate }}</span>
+                    <lucide-icon [img]="CheckIcon" class="equip-check" *ngIf="filterPlayground"></lucide-icon>
                 </button>
             </div>
         </div>

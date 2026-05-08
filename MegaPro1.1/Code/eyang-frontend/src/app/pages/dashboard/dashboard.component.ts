@@ -11,7 +11,8 @@ import {
   MessageSquare, FileText, Phone, MapPin, Calendar,
   CheckCircle, AlertCircle, Info, Send, ArrowLeft,
   Edit, Package, User, Mail, Building, Pencil, ChevronDown,
-  Navigation, Check, Save, Search, Loader, ArrowRight
+  Navigation, Check, Save, Search, Loader, ArrowRight,
+  ParkingCircle, ShieldCheck, CreditCard, Video, Sparkles, Dribbble, Gamepad2
 } from 'lucide-angular';
 import { AuthService, User as AuthUser } from '../../services/auth.service';
 import { WebSocketService } from '../../services/websocket.service';
@@ -89,6 +90,13 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   readonly LocateIcon     = Navigation;
   readonly LoaderIcon     = Loader;
   readonly NextIcon       = ArrowRight;
+  readonly ParkingIcon    = ParkingCircle;
+  readonly ShieldCheckIcon = ShieldCheck;
+  readonly CreditCardIcon  = CreditCard;
+  readonly VideoIcon       = Video;
+  readonly SparklesIcon    = Sparkles;
+  readonly DribbbleIcon    = Dribbble;
+  readonly Gamepad2Icon    = Gamepad2;
 
   // ── State ─────────────────────────────────────────────────
   currentUser: AuthUser | null = null;
@@ -122,7 +130,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   myEstates: Estate[] = [];
   myOrders:  Reservation[] = [];
   myInvoices: Invoice[] = [];
-  myReviews: Review[] = [];
   myReviews: Review[] = [];
 
   // ── Action Modal State ──
@@ -272,8 +279,20 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   roomRemovedImageIds: number[]   = [];
 
   emptyRoomForm(): Partial<RoomCategory> {
-    return { name: '', price: 300000, occupancy: 'single', quantity_available: 1,
-             wifi: '0', tv: '0', fridge: '0', room_size: '2', description: '' };
+    return { 
+      name: '', 
+      price: 300000, 
+      occupancy: 'single', 
+      total_rooms: 1,
+      available_rooms: 1,
+      quantity_available: 1,
+      surface_area: 0,
+      wifi: false, 
+      tv: false, 
+      fridge: false, 
+      room_size: '2', 
+      description: '' 
+    };
   }
 
   newImageFiles:    File[]   = [];
@@ -353,27 +372,21 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       fence: [false],
       caretaker: [false],
       security_guard: [false],
-      restaurant_on_site: [false],
-      borehole_forage: [false],
-      generator_available: [false],
+      restaurant: [false],
+      forage: [false],
+      generator: [false],
       parking: [false],
       cctv: [false],
+      wifi: [false],
+      tv: [false],
+      fridge: [false],
       cleaning_service: [false],
-      allowed_gender: ['all'],
+      Terrain_de_sport: [false],
+      playground: [false],
+      max_capacity: [null],
+      allowed_gender: ['all']
 
-      // Compatibility legacy fields
-      generator: ['0'],
-      forage: ['0'],
-      restaurant: ['0'],
-      wifi: ['0'],
-      tv: ['0'],
-      fridge: ['0']
     });
-
-    // Sync legacy fields with new checkboxes
-    this.estateForm.get('generator_available')?.valueChanges.subscribe(v => this.estateForm.patchValue({ generator: v ? '1' : '0' }, { emitEvent: false }));
-    this.estateForm.get('borehole_forage')?.valueChanges.subscribe(v => this.estateForm.patchValue({ forage: v ? '1' : '0' }, { emitEvent: false }));
-    this.estateForm.get('restaurant_on_site')?.valueChanges.subscribe(v => this.estateForm.patchValue({ restaurant: v ? '1' : '0' }, { emitEvent: false }));
   }
 
   ngOnInit(): void {
@@ -729,16 +742,57 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     );
   }
 
-  createNewCharacteristic(): void {
-    const name = window.prompt(this.translate.instant('admin.enter_characteristic_name') || 'Enter new characteristic name:');
-    if (name && name.trim()) {
-      this.estateService.createCharacteristic({ name: name.trim() }).subscribe({
+  // ── Dynamic Creation Modal State ──
+  showDynamicCreateModal = false;
+  dynamicCreateType: 'characteristic' | 'equipment' | null = null;
+  dynamicCreateName = '';
+  dynamicCreateTargetEquipObj: any = null;
+
+  openCreateCharacteristicModal(): void {
+    this.dynamicCreateType = 'characteristic';
+    this.dynamicCreateName = '';
+    this.showDynamicCreateModal = true;
+  }
+
+  openCreateEquipmentModal(equipObj: any): void {
+    this.dynamicCreateType = 'equipment';
+    this.dynamicCreateName = '';
+    this.dynamicCreateTargetEquipObj = equipObj;
+    this.showDynamicCreateModal = true;
+  }
+
+  closeDynamicCreateModal(): void {
+    this.showDynamicCreateModal = false;
+    this.dynamicCreateType = null;
+    this.dynamicCreateName = '';
+    this.dynamicCreateTargetEquipObj = null;
+  }
+
+  submitDynamicCreate(): void {
+    const name = this.dynamicCreateName.trim();
+    if (!name) return;
+
+    if (this.dynamicCreateType === 'characteristic') {
+      this.estateService.createCharacteristic({ name }).subscribe({
         next: (c) => {
           this.globalCharacteristics.update(list => [...list, c].sort((a, b) => a.name.localeCompare(b.name)));
           this.toggleCharacteristic(c.id);
-          this.showToast('Created successfully', 'success');
+          this.openActionModal('success', this.translate.instant('admin.success') || 'Success', this.translate.instant('admin.characteristic_created') || 'Characteristic created successfully', 'OK');
+          this.closeDynamicCreateModal();
         },
-        error: () => this.showToast('Error creating characteristic', 'error')
+        error: () => this.openActionModal('error', this.translate.instant('admin.error') || 'Error', this.translate.instant('admin.error_creating_characteristic') || 'Error creating characteristic', 'OK')
+      });
+    } else if (this.dynamicCreateType === 'equipment') {
+      this.estateService.createEquipment({ part_name: name }).subscribe({
+        next: (eq) => {
+          this.globalEquipment.update(list => [...list, eq].sort((a, b) => a.part_name.localeCompare(b.part_name)));
+          if (this.dynamicCreateTargetEquipObj) {
+            this.dynamicCreateTargetEquipObj.equipment = eq.id;
+          }
+          this.openActionModal('success', 'Success', 'Equipment created successfully', 'OK');
+          this.closeDynamicCreateModal();
+        },
+        error: () => this.openActionModal('error', 'Error', 'Error creating equipment', 'OK')
       });
     }
   }
@@ -826,39 +880,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   addRoomEquipment(): void {
     this.roomEquipment.update(list => [...list, { equipment: null, quantity: 1, condition: 'GOOD', note: '' }]);
-  }
-
-  // ── Dynamic Creation Modal State ──
-  showDynamicCreateModal = false;
-  dynamicCreateName = '';
-  dynamicCreateTargetEquipObj: any = null;
-
-  openCreateEquipmentModal(equipObj: any): void {
-    this.dynamicCreateName = '';
-    this.dynamicCreateTargetEquipObj = equipObj;
-    this.showDynamicCreateModal = true;
-  }
-
-  closeDynamicCreateModal(): void {
-    this.showDynamicCreateModal = false;
-    this.dynamicCreateTargetEquipObj = null;
-  }
-
-  submitDynamicCreate(): void {
-    const name = this.dynamicCreateName.trim();
-    if (!name) return;
-
-    this.estateService.createEquipment({ part_name: name }).subscribe({
-      next: (eq) => {
-        this.globalEquipment.update(list => [...list, eq].sort((a, b) => a.part_name.localeCompare(b.part_name)));
-        if (this.dynamicCreateTargetEquipObj) {
-          this.dynamicCreateTargetEquipObj.equipment = eq.id;
-        }
-        this.openActionModal('success', 'Success', 'Equipment created successfully', 'OK');
-        this.closeDynamicCreateModal();
-      },
-      error: () => this.openActionModal('error', 'Error', 'Error creating equipment', 'OK')
-    });
   }
 
   removeRoomEquipment(index: number): void {
@@ -986,22 +1007,29 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     req$.subscribe({
       next: savedEstate => {
-        this.syncEstateDetails(savedEstate.id).subscribe(() => {
-          const finalizeCreation = () => {
-            this.isSavingEstate.set(false);
-            this.showToast(this.isEditMode ? 'admin.update' : 'admin.create', 'success');
-            this.closeEstateModal();
-            this.loadOwnerData();
-            if (!this.isEditMode) this.openManageRooms(savedEstate);
-          };
+        this.syncEstateDetails(savedEstate.id).subscribe({
+          next: () => {
+            const finalizeCreation = () => {
+              this.isSavingEstate.set(false);
+              this.showToast(this.isEditMode ? 'admin.update' : 'admin.create', 'success');
+              this.closeEstateModal();
+              this.loadOwnerData();
+              if (!this.isEditMode) this.openManageRooms(savedEstate);
+            };
 
-          if (this.newImageFiles.length > 0) {
-            this.estateService.uploadEstateImages(savedEstate.id, this.newImageFiles).subscribe({
-              next:  () => finalizeCreation(),
-              error: () => finalizeCreation(),
-            });
-          } else {
-            finalizeCreation();
+            if (this.newImageFiles.length > 0) {
+              this.estateService.uploadEstateImages(savedEstate.id, this.newImageFiles).subscribe({
+                next:  () => finalizeCreation(),
+                error: () => finalizeCreation(),
+              });
+            } else {
+              finalizeCreation();
+            }
+          },
+          error: (err) => {
+            this.isSavingEstate.set(false);
+            this.showToast(this.translate.instant('admin.error_sync_details'), 'error');
+            console.error('Sync details error:', err);
           }
         });
       },
@@ -1013,13 +1041,24 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   private syncEstateDetails(estateId: number): Observable<any> {
-    const chars = this.selectedCharacteristics();
-    const supps = this.estateSupplements();
+    const chars = this.selectedCharacteristics(); // number[]
+    const supps = this.estateSupplements();      // Supplement[]
 
     const charObs = this.estateService.getEstateCharacteristics(estateId).pipe(
       switchMap((existing: any[]) => {
-        const toDelete = existing.map((e: any) => this.estateService.deleteEstateCharacteristic(estateId, e.id));
-        const toAdd = chars.map((c: number) => this.estateService.addEstateCharacteristic(estateId, c));
+        // existing characteristics are EstateCharacteristic objects { id, characteristic, ... }
+        const existingCharIds = existing.map(ec => ec.characteristic);
+        
+        // 1. Delete ones that are no longer selected
+        const toDelete = existing
+          .filter(ec => !chars.includes(ec.characteristic))
+          .map(ec => this.estateService.deleteEstateCharacteristic(estateId, ec.characteristic));
+        
+        // 2. Add ones that are newly selected
+        const toAdd = chars
+          .filter(id => !existingCharIds.includes(id))
+          .map(id => this.estateService.addEstateCharacteristic(estateId, id));
+        
         const all = [...toDelete, ...toAdd];
         return all.length ? forkJoin(all) : of([]);
       })
@@ -1027,9 +1066,25 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     const suppObs = this.estateService.getEstateSupplements(estateId).pipe(
       switchMap((existing: any[]) => {
-        const toDelete = existing.map((e: any) => this.estateService.deleteSupplement(e.id));
-        const toAdd = supps.map((s: any) => this.estateService.addEstateSupplement(estateId, s));
-        const all = [...toDelete, ...toAdd];
+        const existingIds = existing.map(s => s.id);
+        const incomingIds = supps.filter(s => s.id).map(s => s.id);
+        
+        // Delete ones that are gone
+        const toDelete = existing
+          .filter(s => !incomingIds.includes(s.id))
+          .map(s => this.estateService.deleteSupplement(s.id));
+        
+        // Add new ones (no id)
+        const toAdd = supps
+          .filter(s => !s.id)
+          .map(s => this.estateService.addEstateSupplement(estateId, s));
+        
+        // Update existing ones (has id)
+        const toUpdate = supps
+          .filter(s => s.id && existingIds.includes(s.id))
+          .map(s => this.estateService.updateSupplement(s.id, s));
+          
+        const all = [...toDelete, ...toAdd, ...toUpdate];
         return all.length ? forkJoin(all) : of([]);
       })
     );
@@ -1608,14 +1663,14 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   private initMap(): void {
     // Small delay to ensure container is rendered
     setTimeout(() => {
-      const lat = this.estateForm.get('lat')?.value || 3.8480;
-      const lng = this.estateForm.get('lng')?.value || 11.5021;
+      const lat = this.estateForm.get('lat')?.value || 3.884041;
+      const lng = this.estateForm.get('lng')?.value || 11.390736;
 
       if (this.map) {
         this.map.remove();
       }
 
-      this.map = L.map('map-picker').setView([lat, lng], 13);
+      this.map = L.map('map-picker').setView([lat, lng], 15);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
       }).addTo(this.map);

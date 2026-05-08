@@ -58,11 +58,13 @@ def build_reservation_snapshot(room_category) -> dict:
         'laundry_service':    estate.cleaning_service,
         'cctv':               getattr(estate, 'cctv', False),
         'allowed_gender':     getattr(estate, 'allowed_gender', 'all'),
+        'terrain_de_sport':   getattr(estate, 'Terrain_de_sport', False),
+        'max_capacity':       getattr(estate, 'max_capacity', None),
     }
 
     # Equipment list
     equipment_list = []
-    for eq in room_category.equipment.select_related('equipment').all():
+    for eq in room_category.equipment_set.select_related('equipment').all():
         equipment_list.append({
             'name':         eq.equipment.part_name,
             'quantity':     eq.quantity,
@@ -72,7 +74,7 @@ def build_reservation_snapshot(room_category) -> dict:
 
     # Supplements
     supplements_list = []
-    for sup in estate.supplements.filter(is_available=True):
+    for sup in estate.supplements_set.filter(is_available=True):
         supplements_list.append({
             'id':          sup.id,
             'name':        sup.name,
@@ -92,8 +94,13 @@ def build_reservation_snapshot(room_category) -> dict:
         'room_category': {
             'id':             room_category.id,
             'name':           room_category.name,
-            'surface_area':   float(room_category.dimensions or 0),
+            'surface_area':   float(room_category.dimensions or room_category.surface_area or 0),
             'price_per_month': float(room_category.price_per_month or room_category.price),
+            'occupancy':      room_category.occupancy,
+            'room_size':      room_category.get_room_size_display() if hasattr(room_category, 'get_room_size_display') else room_category.room_size,
+            'wifi':           room_category.wifi == '1',
+            'tv':             room_category.tv == '1',
+            'fridge':         room_category.fridge == '1',
             'description':    room_category.description,
             'equipment':      equipment_list,
         },
@@ -146,6 +153,11 @@ def generate_invoice_pdf(invoice) -> bool:
         filename = f"bills/invoice_{invoice.invoice_id}.pdf"
         invoice.pdf_file.save(filename, ContentFile(pdf_bytes), save=True)
         logger.info("Bill PDF generated: %s", filename)
+
+        # Trigger email notification
+        from .utils import send_bill_email
+        send_bill_email(reservation, invoice)
+        
         return True
 
     except Exception as exc:

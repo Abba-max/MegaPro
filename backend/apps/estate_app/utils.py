@@ -5,8 +5,10 @@ from django.conf import settings
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
-
+import logging
 import threading
+
+logger = logging.getLogger(__name__)
 
 def send_styled_email(subject, template_name, context, to_email):
     """
@@ -75,5 +77,65 @@ def send_welcome_email(user):
         context,
         user.email
     )
+
+
+def send_bill_email(reservation, invoice):
+    """
+    Sends the bill (invoice) as a PDF attachment to both the client and the owner.
+    """
+    def _send():
+        try:
+            client = reservation.user
+            owner = reservation.room_category.estate.owner
+            estate_name = reservation.room_category.estate.name
+            
+            # Context for the email template
+            context = {
+                'estate_name': estate_name,
+                'invoice_id': invoice.invoice_id,
+                'room_name': reservation.room_category.name,
+                'start_date': reservation.start_date.strftime('%d/%m/%Y') if reservation.start_date else reservation.check_in.strftime('%d/%m/%Y'),
+                'end_date': reservation.end_date.strftime('%d/%m/%Y') if reservation.end_date else reservation.check_out.strftime('%d/%m/%Y'),
+                'total_amount': f"{invoice.total_amount:,.0f}".replace(',', ' '),
+                'dashboard_url': getattr(settings, 'FRONTEND_URL', 'https://www.eyangestate.com') + '/dashboard'
+            }
+            
+            subject = f"Facture Eyang Estate - {invoice.invoice_id} - {estate_name}"
+            html_content = render_to_string('emails/bill_notification.html', context)
+            text_content = strip_tags(html_content)
+            
+            # Recipients: client and owner
+            recipients = [client.email]
+            if owner.email and owner.email != client.email:
+                recipients.append(owner.email)
+            
+            msg = EmailMultiAlternatives(
+                subject,
+                text_content,
+                settings.DEFAULT_FROM_EMAIL,
+                recipients
+            )
+            msg.attach_alternative(html_content, "text/html")
+            
+            # Attach the PDF file
+            if invoice.pdf_file:
+                # Read the file content. If it's on Cloudinary, we need to handle it.
+                # Usually .file.read() works even with remote storages.
+                try:
+                    pdf_content = invoice.pdf_file.read()
+                    msg.attach(f"Facture_{invoice.invoice_id}.pdf", pdf_content, "application/pdf")
+                except Exception as e:
+                    logger.error(f"Could not attach PDF for invoice {invoice.invoice_id}: {e}")
+            
+            msg.send()
+            logger.info(f"Bill email sent to {recipients} for invoice {invoice.invoice_id}")
+            
+        except Exception as e:
+            logger.error(f"Error sending bill email: {e}")
+
+    # Launch in a separate thread
+    thread = threading.Thread(target=_send)
+    thread.daemon = True
+    thread.start()
 
 

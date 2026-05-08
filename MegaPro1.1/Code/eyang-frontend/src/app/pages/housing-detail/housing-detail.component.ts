@@ -8,7 +8,8 @@ import {
   MapPin, Star, Building, ChevronLeft, ChevronRight, Users, Bed, BedDouble,
   LayoutDashboard, Wifi, Zap, Droplets, Utensils, Calendar,
   MessageSquare, Send, X, Images, Loader, CheckCircle, XCircle, AlertCircle,
-  Heart, Tv, Thermometer, Phone, Info ,Tag, Gift, Package, CheckSquare
+  Heart, Tv, Thermometer, Phone, Info ,Tag, Gift, Package, CheckSquare,
+  ParkingCircle, ShieldCheck, Video, Sparkles, Dribbble, Droplet
 } from 'lucide-angular';
 import { EstateService, Estate, Review, Conversation, RoomCategory, AverageRating, getAbsoluteUrl,Supplement, EstateCharacteristic} from '../../services/estate.service';
 import { AuthService, User } from '../../services/auth.service';
@@ -60,6 +61,12 @@ export class HousingDetailComponent implements OnInit {
 readonly GiftIcon         = Gift;
 readonly PackageIcon      = Package;
 readonly CheckSquareIcon  = CheckSquare;
+readonly ParkingIcon      = ParkingCircle;
+readonly SecurityIcon     = ShieldCheck;
+readonly VideoIcon        = Video;
+readonly SparklesIcon     = Sparkles;
+readonly DribbbleIcon     = Dribbble;
+readonly DropletIcon      = Droplet;
 
   housing: Estate | null = null;
   hosingEquipmentsWithIcons: { name: string; icon: any; color: string; colorKey: string }[] = [];
@@ -167,7 +174,7 @@ get paidSupplements(): Supplement[] {
     this.isLoading = true;
     this.estateService.getEstate(id).subscribe({
       next: (data) => {
-        this.hosingEquipmentsWithIcons = this.buildEquipments(data);
+        this.hosingEquipmentsWithIcons = this.getEquipmentsWithIcons(data);
         this.housing    = data;
         this.photos     = data.images.map((img: any) => getAbsoluteUrl(img.image, 1200)).filter(Boolean);
         this.isLoading  = false;
@@ -213,19 +220,29 @@ private loadSupplementsAndCharacteristics(estateId: number): void {
     });
   }
 
-  private buildEquipments(h: Estate): { name: string; icon: any; color: string; colorKey: string }[] {
-    const eq: { name: string; icon: any; color: string; colorKey: string }[] = [];
-    if (h.wifi === '1')       eq.push({ name: 'WiFi',          icon: this.WifiIcon,     color: 'orange', colorKey: 'wifi'       });
-    if (h.generator === '1')  eq.push({ name: 'Générateur',    icon: this.ZapIconRef,   color: 'yellow', colorKey: 'generator'  });
-    if (h.forage === '1')     eq.push({ name: 'Forage / Eau',  icon: this.DropletsIcon, color: 'blue',   colorKey: 'forage'     });
-    if (h.restaurant === '1') eq.push({ name: 'Restaurant',    icon: this.UtensilsIcon, color: 'brown',  colorKey: 'restaurant' });
-    if (h.tv === '1')         eq.push({ name: 'Télévision',    icon: this.TvIcon,       color: 'purple', colorKey: 'tv'         });
-    if (h.fridge === '1')     eq.push({ name: 'Réfrigérateur', icon: this.FridgeIcon,   color: 'teal',   colorKey: 'fridge'     });
-    
-    // Translate names
-    return eq.map(item => ({
-      ...item,
-      name: this.translate.instant('housing.' + item.colorKey)
+  private getEquipmentsWithIcons(h: Estate): any[] {
+    const iconMap: Record<string, any> = {
+      wifi: this.WifiIcon,
+      generator: this.ZapIconRef,
+      forage: this.DropletsIcon,
+      restaurant: this.UtensilsIcon,
+      tv: this.TvIcon,
+      fridge: this.FridgeIcon,
+      parking: this.ParkingIcon,
+      security_guard: this.SecurityIcon,
+      cctv: this.VideoIcon,
+      cleaning: this.SparklesIcon,
+      sport_field: this.DribbbleIcon,
+      water_bills: this.DropletIcon,
+      electricity_bills: this.ZapIconRef,
+      fence: this.SecurityIcon,
+      caretaker: this.UsersIcon
+    };
+
+    return (h.equipments || []).map(eq => ({
+      ...eq,
+      icon: iconMap[eq.colorKey] || this.InfoIcon,
+      name: this.translate.instant('admin.' + eq.colorKey)
     }));
   }
 

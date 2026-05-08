@@ -10,7 +10,8 @@ import {
   MapPin, Search, Wifi, Zap, Droplets, Star, Filter,
   Coffee, Check, Lock, Home, Building, Shield, MessageSquare, Loader,
   CheckCircle, XCircle, AlertCircle, Info, Tv, Thermometer,
-  Maximize2, Navigation, BedDouble, Bed, X, Users, ChevronDown
+  Maximize2, Navigation, BedDouble, Bed, X, Users, ChevronDown,
+  ParkingCircle, ShieldCheck, Droplet, Video, Sparkles, Dribbble, Gamepad2
 } from 'lucide-angular';
 import { EstateService, Estate, PlatformStats, getAbsoluteUrl } from '../../services/estate.service';
 import { AuthService } from '../../services/auth.service';
@@ -57,6 +58,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   readonly UsersIcon         = Users;
   readonly XIcon             = X;
   readonly ChevronDownIcon   = ChevronDown;
+  readonly ParkingIcon       = ParkingCircle;
+  readonly SecurityIcon      = ShieldCheck;
+  readonly WaterBillIcon     = Droplet;
+  readonly VideoIcon         = Video;
+  readonly SparklesIcon      = Sparkles;
+  readonly DribbbleIcon      = Dribbble;
+  readonly Gamepad2Icon      = Gamepad2;
 
   searchQuery  = '';
   private searchSubject = new Subject<string>();
@@ -120,15 +128,18 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   // ── Quick filter bar ─────────────────────────────────────
-  filterWifi       = '';
-  filterGenerator  = '';
-  filterForage     = '';
-  filterRestaurant = '';
+  filterWifi       = false;
+  filterGenerator  = false;
+  filterForage     = false;
+  filterRestaurant = false;
+  filterCctv       = false;
+  filterCleaning   = false;
+  filterPlayground = false;
 
   // ── Advanced filter drawer ───────────────────────────────
   showAdvanced   = false;
-  filterTv       = '';
-  filterFridge   = '';
+  filterTv       = false;
+  filterFridge   = false;
   filterRoomSize = '';
   filterMaxDist: number | null = null;
   filterMinPrice: number | null = null;
@@ -276,12 +287,15 @@ export class HomeComponent implements OnInit, OnDestroy {
         h.name.toLowerCase().includes(query) || 
         h.location.toLowerCase().includes(query);
       
-      const matchWifi       = !this.filterWifi       || h.wifi === this.filterWifi;
-      const matchGenerator  = !this.filterGenerator  || h.generator === this.filterGenerator;
-      const matchForage     = !this.filterForage     || h.forage === this.filterForage;
-      const matchRestaurant = !this.filterRestaurant || h.restaurant === this.filterRestaurant;
-      const matchTv         = !this.filterTv         || h.tv === this.filterTv;
-      const matchFridge     = !this.filterFridge     || h.fridge === this.filterFridge;
+      const matchWifi       = !this.filterWifi       || !!h.wifi;
+      const matchGenerator  = !this.filterGenerator  || !!h.generator;
+      const matchForage     = !this.filterForage     || !!h.forage;
+      const matchRestaurant = !this.filterRestaurant || !!h.restaurant;
+      const matchTv         = !this.filterTv         || !!h.tv;
+      const matchFridge     = !this.filterFridge     || !!h.fridge;
+      const matchCctv       = !this.filterCctv       || !!h.cctv;
+      const matchCleaning   = !this.filterCleaning   || !!h.cleaning_service;
+      const matchPlayground = !this.filterPlayground || !!h.playground;
       
       const matchRoomSize = !this.filterRoomSize || h.room_categories.some(rc => rc.room_size === this.filterRoomSize);
       
@@ -295,7 +309,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
       return matchSearch && matchWifi && matchGenerator && matchForage && 
              matchRestaurant && matchTv && matchFridge && matchRoomSize && 
-             matchDist && matchPrice && matchFree;
+             matchDist && matchPrice && matchFree && 
+             matchCctv && matchCleaning && matchPlayground;
     });
 
     this.resetHomePage();
@@ -308,8 +323,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   resetFilters(): void {
-    this.filterWifi = this.filterGenerator = this.filterForage = this.filterRestaurant = '';
-    this.filterTv = this.filterFridge = this.filterRoomSize = '';
+    this.filterWifi = this.filterGenerator = this.filterForage = this.filterRestaurant = false;
+    this.filterTv = this.filterFridge = this.filterCctv = this.filterCleaning = this.filterPlayground = false;
+    this.filterRoomSize = '';
     this.filterMaxDist = this.filterMinPrice = this.filterMaxPrice = null;
     this.filterMinFree = 0;
     this.searchQuery = '';
@@ -341,6 +357,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     if (this.filterRestaurant) c++;
     if (this.filterTv)         c++;
     if (this.filterFridge)     c++;
+    if (this.filterCctv)       c++;
+    if (this.filterCleaning)   c++;
+    if (this.filterPlayground) c++;
     if (this.filterRoomSize)   c++;
     if (this.filterMaxDist)    c++;
     if (this.filterMaxPrice)   c++;
@@ -388,14 +407,23 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   getTopFeatures(h: Estate): { key: string; label: string }[] {
     const all: { key: string; label: string; active: boolean }[] = [
-      { key: 'wifi',       label: 'filters.wifi_label',   active: h.wifi === '1' },
-      { key: 'forage',     label: 'filters.water',        active: h.forage === '1' },
-      { key: 'generator',  label: 'filters.generator',    active: h.generator === '1' },
-      { key: 'restaurant', label: 'filters.restaurant',   active: h.restaurant === '1' },
-      { key: 'tv',         label: 'filters.tv_label',     active: h.tv === '1' },
-      { key: 'fridge',     label: 'filters.fridge_label', active: h.fridge === '1' },
+      { key: 'wifi',       label: 'filters.wifi_label',   active: !!h.wifi },
+      { key: 'forage',     label: 'filters.water',        active: !!h.forage || !!h.borehole_forage },
+      { key: 'generator',  label: 'filters.generator',    active: !!h.generator || !!h.generator_available },
+      { key: 'restaurant', label: 'filters.restaurant',   active: !!h.restaurant || !!h.restaurant_on_site },
+      { key: 'tv',         label: 'filters.tv_label',     active: !!h.tv },
+      { key: 'fridge',     label: 'filters.fridge_label', active: !!h.fridge },
+      { key: 'parking',    label: 'admin.parking',        active: !!h.parking },
+      { key: 'security',   label: 'admin.security_guard', active: !!h.security_guard },
+      { key: 'cctv',       label: 'admin.cctv',           active: !!h.cctv },
+      { key: 'cleaning',   label: 'admin.cleaning',       active: !!h.cleaning_service },
+      { key: 'playground', label: 'admin.playground',     active: !!h.playground },
+      { key: 'stadium',    label: 'admin.sport_field',    active: !!h.Terrain_de_sport },
+      { key: 'water_bills', label: 'admin.water_bills',   active: !!h.water_bills },
+      { key: 'elec_bills',  label: 'admin.electricity_bills', active: !!h.electricity_bills },
     ];
-    return all.filter(f => f.active).slice(0, 3).map(({ key, label }) => ({ key, label }));
+    // Return up to 4 features for the card
+    return all.filter(f => f.active).slice(0, 4).map(({ key, label }) => ({ key, label }));
   }
 
   scrollToListings(): void {

@@ -234,7 +234,7 @@ def _generate_invoice_background(reservation_id: int) -> None:
         reservation = (
             Reservation.objects
             .select_related('room_category__estate', 'user')
-            .prefetch_related('room_category__equipment__equipment', 'room_category__estate__supplements')
+            .prefetch_related('room_category__equipment_set__equipment', 'room_category__estate__supplements_set')
             .get(id=reservation_id)
         )
     except Reservation.DoesNotExist:
@@ -267,8 +267,12 @@ def _generate_invoice_background(reservation_id: int) -> None:
         return
 
     # Generate PDF and upload to Cloudinary (or local media)
-    success = generate_invoice_pdf(invoice)
-    if success:
-        logger.info("Invoice PDF ready: %s", invoice.invoice_id)
-    else:
-        logger.warning("PDF generation failed for invoice %s. Will retry next accept.", invoice.invoice_id)
+    try:
+        success = generate_invoice_pdf(invoice)
+        if success:
+            logger.info("Invoice PDF ready: %s", invoice.invoice_id)
+        else:
+            logger.warning("PDF generation failed for invoice %s. Will retry next accept.", invoice.invoice_id)
+    except Exception:
+        import traceback
+        logger.error("Invoice generation crashed:\n%s", traceback.format_exc())

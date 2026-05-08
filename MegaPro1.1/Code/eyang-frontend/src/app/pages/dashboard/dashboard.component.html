@@ -119,7 +119,11 @@
         </div>
         <div class="kpi kpi--amber">
           <div class="kpi__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div>
-          <div class="kpi__body"><span class="kpi__val">{{ ownerStats.pending_orders }}</span><span class="kpi__lbl">{{ 'dashboard.status_pending' | translate }}</span></div>
+          <div class="kpi__body">
+            <span class="kpi__val">{{ ownerStats.pending_orders }}</span>
+            <span class="kpi__lbl">{{ 'dashboard.status_pending' | translate }}</span>
+            <div class="pulse" *ngIf="ownerStats.pending_orders > 0" style="position:absolute; top:12px; right:12px; background:var(--amber);"></div>
+          </div>
         </div>
         <div class="kpi kpi--yellow">
           <div class="kpi__ico"><lucide-icon [img]="StarIcon"></lucide-icon></div>
@@ -201,6 +205,15 @@
                 <button class="ico-btn ico-btn--red" (click)="deleteEstate(e)" [title]="'dashboard.delete' | translate"><lucide-icon [img]="TrashIcon"></lucide-icon></button>
               </div>
             </div>
+            <div class="e-card__chips">
+              <span *ngIf="e.wifi" class="chip chip--ghost" style="padding:2px 6px; font-size:10px; border: 1px solid var(--border);"><lucide-icon [img]="WifiIcon" style="width:10px; height:10px; margin-right:3px;"></lucide-icon>WiFi</span>
+              <span *ngIf="e.parking" class="chip chip--ghost" style="padding:2px 6px; font-size:10px; border: 1px solid var(--border);"><lucide-icon [img]="ParkingIcon" style="width:10px; height:10px; margin-right:3px;"></lucide-icon>Parking</span>
+              <span *ngIf="e.security_guard" class="chip chip--ghost" style="padding:2px 6px; font-size:10px; border: 1px solid var(--border);"><lucide-icon [img]="ShieldCheckIcon" style="width:10px; height:10px; margin-right:3px;"></lucide-icon>Sécurité</span>
+              <span *ngIf="e.cctv" class="chip chip--ghost" style="padding:2px 6px; font-size:10px; border: 1px solid var(--border);"><lucide-icon [img]="VideoIcon" style="width:10px; height:10px; margin-right:3px;"></lucide-icon>CCTV</span>
+              <span *ngIf="e.cleaning_service" class="chip chip--ghost" style="padding:2px 6px; font-size:10px; border: 1px solid var(--border);"><lucide-icon [img]="SparklesIcon" style="width:10px; height:10px; margin-right:3px;"></lucide-icon>Ménage</span>
+              <span *ngIf="e.Terrain_de_sport" class="chip chip--ghost" style="padding:2px 6px; font-size:10px; border: 1px solid var(--border);"><lucide-icon [img]="DribbbleIcon" style="width:10px; height:10px; margin-right:3px;"></lucide-icon>Sport</span>
+              <span *ngIf="e.playground" class="chip chip--ghost" style="padding:2px 6px; font-size:10px; border: 1px solid var(--border);"><lucide-icon [img]="Gamepad2Icon" style="width:10px; height:10px; margin-right:3px;"></lucide-icon>Jeux</span>
+            </div>
           </div>
         </article>
       </div>
@@ -217,24 +230,24 @@
           <div class="o-card__body">
             <div class="o-card__top">
               <div><span class="o-card__name">{{ o.client_name || 'Guest' }}</span><span class="o-card__where">{{ o.estate_name }}</span></div>
-              <span class="chip chip--{{(o.status||'PENDING').toLowerCase()}}">{{ o.status==='ACCEPTED' ? ('dashboard.status_accepted_long' | translate) : o.status==='REJECTED' ? ('dashboard.status_rejected_long' | translate) : ('dashboard.status_pending_long' | translate) }}</span>
+              <div class="status-badge-lg" [class]="'status-badge-lg--' + (o.status||'PENDING').toLowerCase()">
+                <div class="pulse" *ngIf="o.status === 'PENDING'"></div>
+                {{ o.status==='ACCEPTED' ? ('dashboard.status_accepted_long' | translate) : o.status==='REJECTED' ? ('dashboard.status_rejected_long' | translate) : ('dashboard.status_pending_long' | translate) }}
+              </div>
             </div>
             <div class="o-card__meta">
               <span *ngIf="o.client_phone"><lucide-icon [img]="PhoneIcon"></lucide-icon>{{ o.client_phone }}</span>
               <span *ngIf="o.room_category_name"><lucide-icon [img]="BuildingIcon"></lucide-icon>{{ o.room_category_name }}</span>
+              <span *ngIf="o.total_price"><lucide-icon [img]="CreditCardIcon"></lucide-icon>{{ formatPrice(o.total_price) }} FCFA</span>
               <span><lucide-icon [img]="CalendarIcon"></lucide-icon>{{ formatDate(o.created_at) }}</span>
             </div>
-            <div class="o-card__acts" *ngIf="!o.status||o.status==='PENDING'">
-              <button class="btn btn--accept" (click)="acceptReservation(o)"><lucide-icon [img]="CheckIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.accept' | translate }}</button>
-              <button class="btn btn--reject" (click)="rejectReservation(o)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.refuse' | translate }}</button>
-            </div>
-            <!-- Actions -->
-            <div class="o-card__acts" *ngIf="o.status==='ACCEPTED'">
-              <button class="btn btn--ghost btn--xs" (click)="openReservationDetails(o)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> Détails</button>
-              <button class="btn btn--primary btn--xs" (click)="openBill(o)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'admin.download_invoice' | translate }}</button>
-            </div>
-            <div class="o-card__acts" *ngIf="o.status==='PENDING'">
-              <button class="btn btn--ghost btn--xs" (click)="openReservationDetails(o)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> Détails</button>
+            <div class="o-card__acts">
+              <button class="btn btn--ghost btn--sm" (click)="openReservationDetails(o)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'dashboard.view_details' | translate }}</button>
+              <ng-container *ngIf="!o.status||o.status==='PENDING'">
+                <button class="btn btn--accept btn--sm" (click)="acceptReservation(o)"><lucide-icon [img]="CheckIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.accept' | translate }}</button>
+                <button class="btn btn--reject btn--sm" (click)="rejectReservation(o)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.refuse' | translate }}</button>
+              </ng-container>
+              <button *ngIf="o.status==='ACCEPTED'" class="btn btn--primary btn--sm" (click)="openBill(o)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'dashboard.download_bill' | translate }}</button>
             </div>
           </div>
         </div>
@@ -425,22 +438,21 @@
           </div>
           <div class="o-card__body">
             <div class="o-card__top">
-              <div><span class="o-card__name">{{ r.estate_name }}</span></div>
-              <span class="chip chip--{{(r.status||'PENDING').toLowerCase()}}">{{ r.status==='ACCEPTED' ? ('dashboard.status_accepted_long' | translate) : r.status==='REJECTED' ? ('dashboard.status_rejected_long' | translate) : ('dashboard.status_pending_long' | translate) }}</span>
+              <div><span class="o-card__name" style="font-size:16px;">{{ r.estate_name }}</span><span class="o-card__where" style="font-size:13px;">{{ r.room_category_name }}</span></div>
+              <div class="status-badge-lg" [class]="'status-badge-lg--' + (r.status||'PENDING').toLowerCase()">
+                <div class="pulse" *ngIf="r.status === 'PENDING'"></div>
+                {{ r.status==='ACCEPTED' ? ('dashboard.status_accepted_long' | translate) : r.status==='REJECTED' ? ('dashboard.status_rejected_long' | translate) : ('dashboard.status_pending_long' | translate) }}
+              </div>
             </div>
-            <div class="o-card__meta">
-              <span *ngIf="r.room_category_name"><lucide-icon [img]="BuildingIcon"></lucide-icon>{{ r.room_category_name }}</span>
-              <span *ngIf="r.total_price">{{ formatPrice(r.total_price) }}{{ 'dashboard.per_month' | translate }}</span>
+            <div class="o-card__meta" style="margin-top:8px;">
+              <span *ngIf="r.total_price" style="font-weight:700; color:var(--indigo);"><lucide-icon [img]="CreditCardIcon"></lucide-icon>{{ formatPrice(r.total_price) }} FCFA</span>
               <span><lucide-icon [img]="CalendarIcon"></lucide-icon>{{ formatDate(r.created_at) }}</span>
             </div>
             <!-- Actions -->
-            <div class="o-card__acts" *ngIf="r.status==='ACCEPTED'">
-              <button class="btn btn--ghost btn--xs" (click)="openReservationDetails(r)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> Détails</button>
-              <button class="btn btn--primary btn--xs" (click)="openBill(r)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'admin.download_invoice' | translate }}</button>
-            </div>
-            <div class="o-card__acts" *ngIf="r.status==='PENDING'">
-              <button class="btn btn--ghost-red btn--xs" (click)="deleteReservation(r)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.cancel_reservation' | translate }}</button>
-              <button class="btn btn--ghost btn--xs" (click)="openReservationDetails(r)" style="margin-left: 0.5rem;"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> Détails</button>
+            <div class="o-card__acts" style="margin-top:12px;">
+              <button class="btn btn--ghost btn--sm" (click)="openReservationDetails(r)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'dashboard.view_details' | translate }}</button>
+              <button *ngIf="r.status==='ACCEPTED'" class="btn btn--primary btn--sm" (click)="openBill(r)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'dashboard.download_bill' | translate }}</button>
+              <button *ngIf="r.status==='PENDING'" class="btn btn--ghost-red btn--sm" (click)="deleteReservation(r)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.cancel_reservation' | translate }}</button>
             </div>
           </div>
         </div>
@@ -605,7 +617,7 @@
 
       <!-- STEP 2: Details & Amenities -->
       <div class="step-content" *ngIf="currentStep === 2">
-        <div class="f-grid-2">
+        <div class="f-grid-3">
           <div class="f-group">
             <label class="f-label">{{ 'admin.allowed_gender' | translate }}</label>
             <div class="gender-toggle">
@@ -617,6 +629,10 @@
           <div class="f-group">
             <label class="f-label">{{ 'admin.etages' | translate }}</label>
             <input type="number" class="f-input" [formControl]="$any(estateForm.get('etages'))" min="1">
+          </div>
+          <div class="f-group">
+            <label class="f-label">{{ 'admin.max_capacity' | translate }}</label>
+            <input type="number" class="f-input" [formControl]="$any(estateForm.get('max_capacity'))" min="1" placeholder="Ex: 50">
           </div>
         </div>
 
@@ -635,6 +651,8 @@
             <label class="amen-check"><input type="checkbox" [formControl]="$any(estateForm.get('security_guard'))"><span>{{ 'admin.security_guard' | translate }}</span></label>
             <label class="amen-check"><input type="checkbox" [formControl]="$any(estateForm.get('caretaker'))"><span>{{ 'admin.caretaker' | translate }}</span></label>
             <label class="amen-check"><input type="checkbox" [formControl]="$any(estateForm.get('cctv'))"><span>{{ 'admin.cctv' | translate }}</span></label>
+            <label class="amen-check"><input type="checkbox" [formControl]="$any(estateForm.get('Terrain_de_sport'))"><span>{{ 'admin.sport_field' | translate }}</span></label>
+            <label class="amen-check"><input type="checkbox" [formControl]="$any(estateForm.get('playground'))"><span>{{ 'admin.playground' | translate }}</span></label>
           </div>
         </div>
 
@@ -644,7 +662,7 @@
             <button type="button" *ngFor="let c of globalCharacteristics()" class="char-tag" [class.char-tag--on]="selectedCharacteristics().includes(c.id)" (click)="toggleCharacteristic(c.id)">
               {{ c.name }}
             </button>
-            <button type="button" class="char-tag" (click)="createNewCharacteristic()" style="border: 1px dashed #94A3B8; background: transparent; color: #475569;">
+            <button type="button" class="char-tag" (click)="openCreateCharacteristicModal()" style="border: 1px dashed #94A3B8; background: transparent; color: #475569;">
               <lucide-icon [img]="PlusIcon" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: middle;"></lucide-icon> {{ 'dashboard.add' | translate }}
             </button>
           </div>
@@ -751,8 +769,15 @@
       </ng-container>
       <ng-container *ngIf="isRoomEditMode">
         <div class="f-row"><div class="f-group"><label class="f-label">{{ 'form.name' | translate }} *</label><input class="f-input" [(ngModel)]="roomForm.name"></div><div class="f-group"><label class="f-label">{{ 'admin.col_price' | translate }} ({{ 'price.currency' | translate }}) *</label><input class="f-input" type="number" [(ngModel)]="roomForm.price" min="0"></div></div>
-        <div class="f-row"><div class="f-group"><label class="f-label">{{ 'detail.capacity' | translate }}</label><select class="f-input" [(ngModel)]="roomForm.occupancy"><option value="single">{{ 'detail.1_person' | translate }}</option><option value="double">{{ 'detail.2_people' | translate }}</option><option value="shared">{{ 'detail.shared' | translate }}</option></select></div><div class="f-group"><label class="f-label">{{ 'admin.col_quantity' | translate }}</label><input class="f-input" type="number" [(ngModel)]="roomForm.quantity_available" min="1"></div></div>
-        <div class="f-group"><label class="f-label">{{ 'filters.equipment' | translate }}</label><div class="equip-chips"><label class="equip-chip" [class.equip-chip--on]="roomForm.wifi==='1'"><input type="checkbox" [checked]="roomForm.wifi==='1'" (change)="roomForm.wifi=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="WifiIcon" style="width:14px;height:14px"></lucide-icon>WiFi</label><label class="equip-chip" [class.equip-chip--on]="roomForm.tv==='1'"><input type="checkbox" [checked]="roomForm.tv==='1'" (change)="roomForm.tv=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="TvIcon" style="width:14px;height:14px"></lucide-icon>{{ 'filters.tv_label' | translate }}</label><label class="equip-chip" [class.equip-chip--on]="roomForm.fridge==='1'"><input type="checkbox" [checked]="roomForm.fridge==='1'" (change)="roomForm.fridge=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="FridgeIcon" style="width:14px;height:14px"></lucide-icon>{{ 'filters.fridge_label' | translate }}</label></div></div>
+        <div class="f-row">
+            <div class="f-group"><label class="f-label">{{ 'detail.capacity' | translate }}</label><select class="f-input" [(ngModel)]="roomForm.occupancy"><option value="single">{{ 'detail.1_person' | translate }}</option><option value="double">{{ 'detail.2_people' | translate }}</option><option value="shared">{{ 'detail.shared' | translate }}</option></select></div>
+            <div class="f-group"><label class="f-label">{{ 'admin.col_quantity' | translate }}</label><input class="f-input" type="number" [(ngModel)]="roomForm.total_rooms" min="1" (change)="roomForm.quantity_available = roomForm.total_rooms"></div>
+        </div>
+        <div class="f-row">
+            <div class="f-group"><label class="f-label">{{ 'admin.surface_area' | translate }} (m²)</label><input class="f-input" type="number" [(ngModel)]="roomForm.surface_area" min="0"></div>
+            <div class="f-group"><label class="f-label">{{ 'admin.room_size' | translate }}</label><select class="f-input" [(ngModel)]="roomForm.room_size"><option value="1">{{ 'admin.size_large' | translate }}</option><option value="2">{{ 'admin.size_medium' | translate }}</option><option value="3">{{ 'admin.size_small' | translate }}</option></select></div>
+        </div>
+        <div class="f-group"><label class="f-label">{{ 'filters.equipment' | translate }}</label><div class="equip-chips"><label class="equip-chip" [class.equip-chip--on]="roomForm.wifi"><input type="checkbox" [checked]="roomForm.wifi" (change)="roomForm.wifi=$any($event.target).checked" style="display:none"><lucide-icon [img]="WifiIcon" style="width:14px;height:14px"></lucide-icon>WiFi</label><label class="equip-chip" [class.equip-chip--on]="roomForm.tv"><input type="checkbox" [checked]="roomForm.tv" (change)="roomForm.tv=$any($event.target).checked" style="display:none"><lucide-icon [img]="TvIcon" style="width:14px;height:14px"></lucide-icon>{{ 'filters.tv_label' | translate }}</label><label class="equip-chip" [class.equip-chip--on]="roomForm.fridge"><input type="checkbox" [checked]="roomForm.fridge" (change)="roomForm.fridge=$any($event.target).checked" style="display:none"><lucide-icon [img]="FridgeIcon" style="width:14px;height:14px"></lucide-icon>{{ 'filters.fridge_label' | translate }}</label></div></div>
         
         <div class="f-group">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
@@ -890,92 +915,122 @@
 
 <!-- Reservation Details Modal -->
 <div class="m-back" *ngIf="showReservationModal" (click)="closeReservationDetails()">
-  <div class="m-box m-box--lg" style="max-height: 90vh; overflow-y: auto;" (click)="$event.stopPropagation()">
-    <div class="m-head"><h2 class="m-title">Détails de la réservation</h2><button class="m-close" (click)="closeReservationDetails()"><lucide-icon [img]="XIcon"></lucide-icon></button></div>
-    <div class="m-body" *ngIf="selectedReservation">
-      
-      <div style="display:flex; justify-content:space-between; margin-bottom: 1rem;">
-        <div>
-          <h3 style="font-size: 1.25rem;">{{ selectedReservation.estate_name }}</h3>
-          <p style="color:#64748B; font-size: 0.875rem;">{{ selectedReservation.reservation_details_json?.estate?.address }}</p>
-        </div>
-        <div style="text-align:right;">
-          <span class="chip chip--{{selectedReservation.status.toLowerCase()}}">{{ selectedReservation.status==='ACCEPTED'?('dashboard.status_accepted_long'|translate):selectedReservation.status==='REJECTED'?('dashboard.status_rejected_long'|translate):('dashboard.status_pending_long'|translate) }}</span>
-        </div>
-      </div>
-
-      <div class="f-row">
-        <div class="f-group">
-          <label class="f-label">Date d'arrivée</label>
-          <div style="padding: 0.75rem; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px;">{{ formatDate(selectedReservation.start_date || selectedReservation.check_in) }}</div>
-        </div>
-        <div class="f-group">
-          <label class="f-label">Date de départ</label>
-          <div style="padding: 0.75rem; background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 6px;">{{ formatDate(selectedReservation.end_date || selectedReservation.check_out) }}</div>
-        </div>
-      </div>
-
-      <div class="f-group" style="margin-top: 1rem;">
-        <label class="f-label">Logement ({{ selectedReservation.num_rooms }} unité(s) réservée(s))</label>
-        <div style="padding: 1rem; border: 1px solid #E2E8F0; border-radius: 8px;">
-          <strong>{{ selectedReservation.room_category_name || selectedReservation.reservation_details_json?.room_category?.name }}</strong>
-          <p style="margin-top: 0.5rem; font-size: 0.875rem; color: #475569;">{{ selectedReservation.reservation_details_json?.room_category?.description }}</p>
-          
-          <div *ngIf="selectedReservation.reservation_details_json?.room_category?.equipment?.length">
-            <h4 style="margin-top: 1rem; font-size: 0.8rem; text-transform: uppercase; color: #64748B;">Équipements inclus:</h4>
-            <ul style="margin-top: 0.5rem; padding-left: 1.25rem; color: #475569; font-size: 0.875rem;">
-              <li *ngFor="let eq of selectedReservation.reservation_details_json?.room_category?.equipment">
-                {{ eq.name }} (x{{ eq.quantity }})
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <div class="f-group" style="margin-top: 1rem;" *ngIf="selectedReservation.reservation_details_json?.supplements?.length">
-        <label class="f-label">Services supplémentaires sélectionnés</label>
-        <div style="padding: 1rem; border: 1px solid #E2E8F0; border-radius: 8px;">
-          <div *ngFor="let sup of selectedReservation.reservation_details_json?.supplements" style="display:flex; justify-content:space-between; margin-bottom:0.5rem; font-size: 0.875rem; color: #1E293B;">
-            <span>{{ sup.name }}</span>
-            <strong style="color: #64748B;">{{ sup.price > 0 ? formatPrice(sup.price) + ' FCFA' : 'Inclus' }}</strong>
-          </div>
-        </div>
-      </div>
-
-      <div class="f-group" style="margin-top: 1.5rem;">
-        <div style="display:flex; justify-content:space-between; align-items: center; padding-top: 1rem; border-top: 2px dashed #CBD5E1;">
-          <strong style="font-size: 1.1rem; color: #1E293B;">Total estimé</strong>
-          <strong style="color: #3B82F6; font-size: 1.25rem;">{{ selectedReservation.total_price ? formatPrice(selectedReservation.total_price) : formatPrice(selectedReservation.invoice?.total_amount || 0) }} FCFA</strong>
-        </div>
-      </div>
-
+  <div class="m-box m-box--lg" (click)="$event.stopPropagation()">
+    <div class="m-head">
+      <h2 class="m-title">{{ 'dashboard.reservation_details' | translate }}</h2>
+      <button class="m-close" (click)="closeReservationDetails()"><lucide-icon [img]="XIcon"></lucide-icon></button>
     </div>
+    
+    <div class="m-body" *ngIf="selectedReservation">
+      <!-- Status & Summary -->
+      <div class="res-detail-header">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div>
+            <h3 style="font-size: 20px; font-weight:800; color:var(--tx); margin:0;">{{ selectedReservation.estate_name }}</h3>
+            <div style="display:flex; align-items:center; gap:5px; color:var(--tx-3); font-size:13px; margin-top:4px;">
+              <lucide-icon [img]="MapPinIcon" style="width:14px; height:14px; color:var(--red)"></lucide-icon>
+              {{ selectedReservation.reservation_details_json?.estate?.address || 'Eyang' }}
+            </div>
+          </div>
+          <div class="status-badge-lg" [class]="'status-badge-lg--' + selectedReservation.status.toLowerCase()">
+            <div class="pulse" *ngIf="selectedReservation.status === 'PENDING'"></div>
+            {{ selectedReservation.status === 'ACCEPTED' ? ('dashboard.status_accepted_long' | translate) : 
+               selectedReservation.status === 'REJECTED' ? ('dashboard.status_rejected_long' | translate) : 
+               selectedReservation.status === 'CANCELLED' ? ('dashboard.status_cancelled' | translate) :
+               ('dashboard.status_pending_long' | translate) }}
+          </div>
+        </div>
+      </div>
+
+      <div class="res-detail-grid">
+        <!-- Left Column: Dates & Property -->
+        <div class="res-col">
+          <div class="res-section">
+            <h4 class="res-section-title"><lucide-icon [img]="CalendarIcon"></lucide-icon> {{ 'filters.dates' | translate }}</h4>
+            <div class="res-data-row">
+              <span class="res-data-label">{{ 'filters.check_in' | translate }}</span>
+              <span class="res-data-value">{{ formatDate(selectedReservation.start_date || selectedReservation.check_in) }}</span>
+            </div>
+            <div class="res-data-row">
+              <span class="res-data-label">{{ 'filters.check_out' | translate }}</span>
+              <span class="res-data-value">{{ formatDate(selectedReservation.end_date || selectedReservation.check_out) }}</span>
+            </div>
+          </div>
+
+          <div class="res-section">
+            <h4 class="res-section-title"><lucide-icon [img]="BuildingIcon"></lucide-icon> {{ 'common.estate' | translate }}</h4>
+            <div class="amenity-grid-mini">
+              <div class="amenity-item-mini" [class.active]="selectedReservation.reservation_details_json?.estate?.characteristics?.['wifi']">
+                <lucide-icon [img]="WifiIcon"></lucide-icon> WiFi
+              </div>
+              <div class="amenity-item-mini" [class.active]="selectedReservation.reservation_details_json?.estate?.characteristics?.['parking']">
+                <lucide-icon [img]="ParkingIcon"></lucide-icon> Parking
+              </div>
+              <div class="amenity-item-mini" [class.active]="selectedReservation.reservation_details_json?.estate?.characteristics?.['security_guard']">
+                <lucide-icon [img]="ShieldCheckIcon"></lucide-icon> Sécurité
+              </div>
+              <div class="amenity-item-mini" [class.active]="selectedReservation.reservation_details_json?.estate?.characteristics?.['generator_available']">
+                <lucide-icon [img]="ZapIcon"></lucide-icon> Groupe
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Room & Price -->
+        <div class="res-col">
+          <div class="res-section">
+            <h4 class="res-section-title"><lucide-icon [img]="HomeIcon"></lucide-icon> {{ 'detail.room' | translate }}</h4>
+            <div class="snapshot-card">
+              <img [src]="selectedReservation.estate_image || 'assets/img/ph.png'" class="snapshot-img" alt="Room">
+              <div class="snapshot-info">
+                <span style="display:block; font-weight:800; color:var(--tx);">{{ selectedReservation.room_category_name }}</span>
+                <span style="display:block; font-size:12px; color:var(--tx-3); margin-top:2px;">
+                  {{ selectedReservation.num_rooms }} {{ 'detail.unit' | translate }}(s) · {{ selectedReservation.reservation_details_json?.room_category?.surface_area }}m²
+                </span>
+                <div *ngIf="selectedReservation.reservation_details_json?.room_category?.equipment?.length" style="margin-top:6px; display:flex; flex-wrap:wrap; gap:4px;">
+                  <span *ngFor="let eq of selectedReservation.reservation_details_json?.room_category?.equipment" 
+                        style="font-size:10px; background:var(--indigo-l); color:var(--indigo); padding:1px 5px; border-radius:4px;">
+                    {{ eq.name }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="res-section">
+            <h4 class="res-section-title"><lucide-icon [img]="CreditCardIcon"></lucide-icon> {{ 'common.payment' | translate }}</h4>
+            <div class="res-data-row" *ngFor="let sup of selectedReservation.reservation_details_json?.supplements">
+              <span class="res-data-label">{{ sup.name }}</span>
+              <span class="res-data-value">{{ sup.price > 0 ? formatPrice(sup.price) + ' FCFA' : 'Inclus' }}</span>
+            </div>
+            <div style="margin-top:12px; padding-top:10px; border-top:1.5px dashed var(--border); display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-weight:700; color:var(--tx-2);">Total</span>
+              <span style="font-size:18px; font-weight:900; color:var(--indigo);">{{ formatPrice(selectedReservation.total_price || 0) }} FCFA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="m-foot">
-      <button class="btn btn--ghost" (click)="closeReservationDetails()">Fermer</button>
+      <button class="btn btn--ghost" (click)="closeReservationDetails()">{{ 'common.close' | translate }}</button>
       <button *ngIf="selectedReservation?.status==='ACCEPTED'" class="btn btn--primary" (click)="openBill(selectedReservation!)">
-        <lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> Facture
+        <lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'dashboard.download_bill' | translate }}
       </button>
     </div>
   </div>
 </div>
 
-<!-- Dynamic Create Modal (Equipment) -->
+<!-- Dynamic Create Modal (Characteristic & Equipment) -->
 <div class="m-back" *ngIf="showDynamicCreateModal" (click)="closeDynamicCreateModal()">
   <div class="m-box m-box--xs" (click)="$event.stopPropagation()">
-    <div class="m-head">
-      <h2 class="m-title">{{ 'admin.enter_equipment_name' | translate }}</h2>
-      <button class="m-close" (click)="closeDynamicCreateModal()"><lucide-icon [img]="XIcon"></lucide-icon></button>
-    </div>
-    <div class="m-body" style="padding-top: 1rem;">
-      <div class="f-group">
-        <input type="text" [(ngModel)]="dynamicCreateName" class="f-input" placeholder="Ex: Machine à laver..." (keyup.enter)="submitDynamicCreate()">
-      </div>
+    <h3 class="m-title">{{ dynamicCreateType === 'characteristic' ? ('admin.new_characteristic' | translate) : ('admin.new_equipment' | translate) }}</h3>
+    <div class="m-body">
+      <input type="text" class="f-input" [(ngModel)]="dynamicCreateName" [placeholder]="dynamicCreateType === 'characteristic' ? ('admin.characteristic_name' | translate) : ('admin.equipment_name' | translate)" (keyup.enter)="submitDynamicCreate()">
     </div>
     <div class="m-foot">
       <button class="btn btn--ghost" (click)="closeDynamicCreateModal()">{{ 'dashboard.cancel' | translate }}</button>
-      <button class="btn btn--primary" (click)="submitDynamicCreate()" [disabled]="!dynamicCreateName.trim()">
-        OK
-      </button>
+      <button class="btn btn--primary" (click)="submitDynamicCreate()">{{ 'dashboard.save' | translate }}</button>
     </div>
   </div>
 </div>

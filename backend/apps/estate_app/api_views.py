@@ -170,9 +170,14 @@ class EstateViewSet(viewsets.ModelViewSet):
         if gen := p.get('generator'):  qs = qs.filter(generator=gen)
         if fog := p.get('forage'):     qs = qs.filter(forage=fog)
         if rst := p.get('restaurant'): qs = qs.filter(restaurant=rst)
-        if wifi := p.get('wifi'):      qs = qs.filter(wifi=(wifi == '1'))
-        if tv   := p.get('tv'):        qs = qs.filter(tv=(tv == '1'))
-        if frid := p.get('fridge'):    qs = qs.filter(fridge=(frid == '1'))
+        if wifi := p.get('wifi'):      qs = qs.filter(wifi=(wifi.lower() == 'true' or wifi == '1'))
+        if tv   := p.get('tv'):        qs = qs.filter(tv=(tv.lower() == 'true' or tv == '1'))
+        if frid := p.get('fridge'):    qs = qs.filter(fridge=(frid.lower() == 'true' or frid == '1'))
+        if ply  := p.get('playground'): qs = qs.filter(playground=(ply.lower() == 'true' or ply == '1'))
+        if park := p.get('parking'):    qs = qs.filter(parking=(park.lower() == 'true' or park == '1'))
+        if cctv := p.get('cctv'):       qs = qs.filter(cctv=(cctv.lower() == 'true' or cctv == '1'))
+        if cln  := p.get('cleaning'):   qs = qs.filter(cleaning_service=(cln.lower() == 'true' or cln == '1'))
+        if sport := p.get('sport'):     qs = qs.filter(Terrain_de_sport=(sport.lower() == 'true' or sport == '1'))
         
         # ── Numeric filters ──────────────────────────────────────────────────
         if mxd := p.get('max_dist'):   qs = qs.filter(distance__lte=mxd)
@@ -299,7 +304,7 @@ class EstateViewSet(viewsets.ModelViewSet):
         """GET: list supplements for estate. POST: add a supplement (owner/admin)."""
         estate = self.get_object()
         if request.method == 'GET':
-            sups = estate.supplements.filter(is_available=True)
+            sups = estate.supplements_set.filter(is_available=True)
             return Response(SupplementSerializer(sups, many=True, context={'request': request}).data)
         # POST
         if estate.owner != request.user and not request.user.is_staff:
@@ -324,7 +329,7 @@ class EstateViewSet(viewsets.ModelViewSet):
         estate = self.get_object()
         
         if request.method == 'GET':
-            chars = estate.estate_characteristics.select_related('characteristic').all()
+            chars = estate.characteristics_set.select_related('characteristic').all()
             return Response(EstateCharacteristicSerializer(chars, many=True).data)
             
         # POST / DELETE — only owner or admin
@@ -335,10 +340,7 @@ class EstateViewSet(viewsets.ModelViewSet):
             if not char_id:
                 return Response({'error': 'char_id requis dans l\'URL pour la suppression.'}, status=400)
             try:
-                # Note: char_id here is the ID of the EstateCharacteristic junction record,
-                # or the ID of the Characteristic itself? 
-                # The frontend service seems to pass the Characteristic ID.
-                ec = estate.estate_characteristics.filter(characteristic_id=char_id).first()
+                ec = estate.characteristics_set.filter(characteristic_id=char_id).first()
                 if not ec:
                     return Response({'error': 'Association introuvable.'}, status=404)
                 ec.delete()
@@ -351,7 +353,7 @@ class EstateViewSet(viewsets.ModelViewSet):
         if not char_id_body:
             return Response({'error': 'characteristic ID requis.'}, status=400)
         
-        if estate.estate_characteristics.filter(characteristic_id=char_id_body).exists():
+        if estate.characteristics_set.filter(characteristic_id=char_id_body).exists():
             return Response({'error': 'Cette caractéristique est déjà associée.'}, status=400)
             
         from .models import EstateCharacteristic
@@ -360,12 +362,12 @@ class EstateViewSet(viewsets.ModelViewSet):
 
 
 class RoomCategoryViewSet(viewsets.ModelViewSet):
-    queryset = RoomCategory.objects.all().prefetch_related('images', 'equipment__equipment')
+    queryset = RoomCategory.objects.all().prefetch_related('images', 'equipment_set__equipment')
     serializer_class = RoomCategorySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
-        qs = RoomCategory.objects.all().prefetch_related('images', 'equipment__equipment')
+        qs = RoomCategory.objects.all().prefetch_related('images', 'equipment_set__equipment')
         eid = self.request.query_params.get('estate')
         if eid:
             qs = qs.filter(estate_id=eid)
@@ -393,7 +395,7 @@ class RoomCategoryViewSet(viewsets.ModelViewSet):
         """GET: list equipment. POST: add equipment item (owner/admin)."""
         room_cat = self.get_object()
         if request.method == 'GET':
-            items = room_cat.equipment.select_related('equipment').all()
+            items = room_cat.equipment_set.select_related('equipment').all()
             return Response(RoomEquipmentReadSerializer(items, many=True).data)
         # POST — only owner or admin
         if room_cat.estate.owner != request.user and not request.user.is_staff:
@@ -525,10 +527,11 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
             try:
                 with transaction.atomic():
                     rc = RoomCategory.objects.select_for_update().get(pk=order.room_category_id)
-                    if rc.occupied_count >= rc.quantity_available:
+                    if rc.available_rooms <= 0:
                         return Response({'error': 'error.no_availability'}, status=400)
                     rc.occupied_count += 1
-                    rc.save(update_fields=['occupied_count'])
+                    rc.available_rooms = max(0, rc.available_rooms - 1)
+                    rc.save(update_fields=['occupied_count', 'available_rooms', 'available_quantity', 'quantity_available'])
                     order.status = 'accepted'
                     order.save(update_fields=['status'])
             except Exception:
@@ -551,7 +554,8 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
             with transaction.atomic():
                 rc = RoomCategory.objects.select_for_update().get(pk=order.room_category_id)
                 rc.occupied_count = max(0, rc.occupied_count - 1)
-                rc.save(update_fields=['occupied_count'])
+                rc.available_rooms = min(rc.total_rooms, rc.available_rooms + 1)
+                rc.save(update_fields=['occupied_count', 'available_rooms', 'available_quantity', 'quantity_available'])
 
         order.status = 'rejected'
         order.save(update_fields=['status'])
@@ -573,9 +577,6 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
         order.status  = 'paid' # Moves to 'paid' but awaiting admin validation
         order.save(update_fields=['receipt', 'status'])
         
-        # Notify Admin (Simulation or real notification)
-        # In a real app, we'd find an admin and send a Notification object
-        
         return Response(QuickOrderSerializer(order, context={'request': request}).data)
 
     @action(detail=True, methods=['post'], url_path='verify-payment',
@@ -590,7 +591,7 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
             order.save(update_fields=['is_payment_verified', 'status'])
             
             # Notify Student
-            from .notifications_utils import notify_user
+            from .utils import notify_user
             try:
                 notify_user(
                     user=order.user,
@@ -619,7 +620,7 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
         elif action_type == 'reject':
             order.is_payment_verified = False
             order.status = 'payment_failed'
-            order.save(update_fields=['is_payment_verified', 'status'])
+            order.save(update_fields=['is_payment_verified', status])
             return Response({'message': 'Paiement rejeté.'})
             
         return Response({'error': 'Action invalide.'}, status=400)
@@ -748,8 +749,11 @@ def client_stats_view(request):
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def online_users_view(request):
-    from .consumers import ONLINE_USERS
-    return Response({'online_user_ids': list(ONLINE_USERS)})
+    try:
+        from .consumers import ONLINE_USERS
+        return Response({'online_user_ids': list(ONLINE_USERS)})
+    except ImportError:
+        return Response({'online_user_ids': []})
 
 
 @api_view(['GET'])
@@ -897,13 +901,13 @@ def admin_verify_owner_view(request, user_id):
     act = request.data.get('action')
     if act == 'approve':
         user.is_verified = True
-        user.save(update_fields=['is_verified'])          # ← triggers the signal correctly
+        user.save(update_fields=['is_verified'])
         return Response({'id': user.id, 'is_verified': True})
     elif act == 'reject':
         user.is_verified = False
         if user.id_card:
             user.id_card.delete(save=False)
-        user.save(update_fields=['is_verified', 'id_card'])  # ← no spurious notification
+        user.save(update_fields=['is_verified', 'id_card'])
         return Response({'id': user.id, 'is_verified': False, 'rejected': True})
     return Response({'error': 'Action invalide.'}, status=400)
 
@@ -973,21 +977,12 @@ class NotificationViewSet(viewsets.ModelViewSet):
         notif.save(update_fields=['read'])
         return Response({'status': 'ok'})
 
-<<<<<<< HEAD
+
 # ── New Architecture ViewSets ─────────────────────────────────────────────────────
 from .services import accept_reservation, reject_reservation, cancel_reservation
 
 
 class ReservationViewSet(viewsets.ModelViewSet):
-    """
-    Endpoints:
-      GET    /api/reservations/              – list (scoped to user/owner/admin)
-      POST   /api/reservations/              – create (client: snapshot + total_price built here)
-      GET    /api/reservations/{id}/         – detail with snapshot + bill_url
-      POST   /api/reservations/{id}/accept/  – owner/admin: concurrency-safe accept + async PDF
-      POST   /api/reservations/{id}/reject/  – owner/admin: reject (restores rooms if accepted)
-      POST   /api/reservations/{id}/cancel/  – client: cancel own reservation
-    """
     serializer_class   = ReservationSerializer
     permission_classes = [permissions.IsAuthenticated]
 
@@ -1002,8 +997,8 @@ class ReservationViewSet(viewsets.ModelViewSet):
             Reservation.objects
             .select_related('room_category__estate__owner', 'user')
             .prefetch_related(
-                'room_category__equipment__equipment',
-                'room_category__estate__supplements',
+                'room_category__equipment_set__equipment',
+                'room_category__estate__supplements_set',
                 'selected_supplements',
                 'invoice',
             )
@@ -1012,17 +1007,13 @@ class ReservationViewSet(viewsets.ModelViewSet):
             return qs.order_by('-created_at')
         if user.user_type == 'owner':
             return qs.filter(room_category__estate__owner=user).order_by('-created_at')
-        # Student / Parent / Visitor
         return qs.filter(user=user).order_by('-created_at')
 
-    # ── Accept ────────────────────────────────────────────────────────────────
     @action(detail=True, methods=['post'], url_path='accept',
             permission_classes=[permissions.IsAuthenticated])
     def accept(self, request, pk=None):
         reservation = self.get_object()
         user = request.user
-
-        # Permission: estate owner or admin only
         if reservation.room_category.estate.owner != user and not user.is_staff:
             return Response({'error': 'Non autorisé.'}, status=403)
 
@@ -1033,10 +1024,8 @@ class ReservationViewSet(viewsets.ModelViewSet):
                 ReservationSerializer(updated, context={'request': request}).data
             )
         except Exception as exc:
-            # Return the business-rule message (e.g. "not enough rooms") to UI
             return Response({'error': str(exc)}, status=400)
 
-    # ── Reject ───────────────────────────────────────────────────────────────
     @action(detail=True, methods=['post'], url_path='reject',
             permission_classes=[permissions.IsAuthenticated])
     def reject(self, request, pk=None):
@@ -1052,7 +1041,6 @@ class ReservationViewSet(viewsets.ModelViewSet):
         except Exception as exc:
             return Response({'error': str(exc)}, status=400)
 
-    # ── Cancel (client) ──────────────────────────────────────────────────────
     @action(detail=True, methods=['post'], url_path='cancel',
             permission_classes=[permissions.IsAuthenticated])
     def cancel(self, request, pk=None):
@@ -1065,11 +1053,9 @@ class ReservationViewSet(viewsets.ModelViewSet):
         except Exception as exc:
             return Response({'error': str(exc)}, status=400)
 
-    # ── Download bill ────────────────────────────────────────────────────────
     @action(detail=True, methods=['get'], url_path='bill',
             permission_classes=[permissions.IsAuthenticated])
     def download_bill(self, request, pk=None):
-        """Returns the bill PDF URL (or 404 if not yet generated)."""
         reservation = self.get_object()
         user = request.user
         if reservation.user != user and reservation.room_category.estate.owner != user and not user.is_staff:
@@ -1106,11 +1092,6 @@ class InvoiceViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class EquipmentViewSet(viewsets.ModelViewSet):
-    """
-    CRUD for Equipment types (part names).
-    GET  /api/equipment/   – list all (public, for dropdowns)
-    POST /api/equipment/   – create new type (owner / admin)
-    """
     queryset           = Equipment.objects.all().order_by('part_name')
     serializer_class   = EquipmentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -1120,11 +1101,6 @@ class EquipmentViewSet(viewsets.ModelViewSet):
 
 
 class SupplementViewSet(viewsets.ModelViewSet):
-    """
-    CRUD for Supplements.
-    GET  /api/supplements/?estate=<id>  – list
-    POST /api/supplements/              – create (owner / admin)
-    """
     queryset           = Supplement.objects.all().select_related('estate')
     serializer_class   = SupplementSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -1146,22 +1122,12 @@ class SupplementViewSet(viewsets.ModelViewSet):
 
 
 class RoomEquipmentViewSet(viewsets.ModelViewSet):
-    """
-    Manages equipment assigned to a room category.
-    """
     queryset           = RoomEquipment.objects.all().select_related('room_category', 'equipment')
     serializer_class   = RoomEquipmentWriteSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
 
 class CharacteristicViewSet(viewsets.ModelViewSet):
-    """
-    GET  /api/characteristics/        — list all characteristics (public)
-    POST /api/characteristics/        — create (admin only)
-    GET  /api/characteristics/{id}/   — retrieve single
-    PATCH/PUT /api/characteristics/{id}/ — update (admin only)
-    DELETE /api/characteristics/{id}/ — delete (admin only)
-    """
     queryset           = Characteristic.objects.all().order_by('name')
     serializer_class   = CharacteristicSerializer
 
@@ -1169,69 +1135,42 @@ class CharacteristicViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
         return [permissions.IsAdminUser()]
-=======
+
 
 # Payment APIs
-
-# --- CinetPay temporarily disabled ---
-# @api_view(['POST'])
-# @permission_classes([permissions.IsAuthenticated])
-# def initiate_payment_view(request, order_id):
-#     ...
-
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 def cinetpay_notify_view(request):
-    """
-    CinetPay webhook — called by CinetPay server after payment.
-    Must be publicly accessible (no auth). CinetPay sends a POST
-    with cpm_trans_id (transaction_id) in the body.
-    """
-    # CinetPay sends form data or JSON depending on configuration
     transaction_id = (
         request.data.get('cpm_trans_id')
         or request.data.get('transaction_id')
         or request.POST.get('cpm_trans_id')
     )
-
     if not transaction_id:
         return Response({'error': 'transaction_id manquant.'}, status=400)
-
     try:
         payment = Payment.objects.get(transaction_id=transaction_id)
     except Payment.DoesNotExist:
         return Response({'error': 'Paiement introuvable.'}, status=404)
-
-    # Already processed — idempotent
     if payment.status == 'success':
         return Response({'status': 'already_processed'}, status=200)
-
-    # Verify with CinetPay API
     try:
         verify_data = verify_payment(transaction_id)
     except Exception as e:
-        print(f"[payment] CinetPay verify error: {e}")
         return Response({'error': 'Erreur de vérification.'}, status=502)
-
-    # Store raw notification for audit
     payment.raw_notify = verify_data
     cinetpay_status = verify_data.get('data', {}).get('status', '')
     payment.cinetpay_id    = verify_data.get('data', {}).get('operator_id', '')
     payment.payment_method = verify_data.get('data', {}).get('payment_method', '')
-
     if cinetpay_status == 'ACCEPTED':
         payment.status = 'success'
         payment.save()
-
-        # Update the order: move from pending_payment → pending (awaiting owner)
         order = payment.order
         if order and order.status == 'pending_payment':
             order.status = 'pending'
             order.save(update_fields=['status'])
-
-            # Notify the estate owner
-            from .notifications_utils import notify_user
+            from .utils import notify_user
             try:
                 notify_user(
                     user=order.estate.owner,
@@ -1241,36 +1180,24 @@ def cinetpay_notify_view(request):
                     body_params={'estate': order.estate.name, 'client': order.name},
                     link='/dashboard',
                 )
-            except Exception as e:
-                print(f"[payment] Notification error: {e}")
-
+            except: pass
     else:
         payment.status = 'failed'
         payment.save()
-
-        # Mark order as payment_failed
         order = payment.order
         if order and order.status == 'pending_payment':
             order.status = 'payment_failed'
             order.save(update_fields=['status'])
-
     return Response({'status': 'ok'}, status=200)
 
 
 @api_view(['GET'])
 @permission_classes([permissions.IsAuthenticated])
 def payment_status_view(request, transaction_id):
-    """
-    Frontend polls this after returning from CinetPay to get current status.
-    """
     try:
-        payment = Payment.objects.get(
-            transaction_id=transaction_id,
-            user=request.user
-        )
+        payment = Payment.objects.get(transaction_id=transaction_id, user=request.user)
     except Payment.DoesNotExist:
         return Response({'error': 'Paiement introuvable.'}, status=404)
-
     return Response({
         'transaction_id': payment.transaction_id,
         'status':         payment.status,
@@ -1280,4 +1207,3 @@ def payment_status_view(request, transaction_id):
         'payment_method': payment.payment_method,
         'created_at':     payment.created_at.isoformat(),
     })
->>>>>>> 20eb80b4e04e9de1987ee6ac9867ce2fdc934229

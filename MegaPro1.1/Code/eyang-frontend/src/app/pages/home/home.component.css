@@ -149,6 +149,12 @@
 .filter-icon.teal   { color: #0d9488; }
 .filter-icon.red    { color: #ef4444; }
 .filter-icon.gray   { color: #9CA3AF; }
+.filter-icon.slate  { color: #475569; }
+.filter-icon.sky    { color: #0ea5e9; }
+.filter-icon.rose   { color: #f43f5e; }
+.equip-icon.slate  { color: #475569; }
+.equip-icon.sky    { color: #0ea5e9; }
+.equip-icon.rose   { color: #f43f5e; }
 
 /* ════════════════════════════════════════════════════════════
    ADVANCED FILTER DRAWER

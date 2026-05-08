@@ -52,9 +52,12 @@ class Estate(models.Model):
     generator_available = models.BooleanField(default=False)
     parking = models.BooleanField(default=False)
     wifi = models.BooleanField(default=False)
+    tv = models.BooleanField(default=False)
+    fridge = models.BooleanField(default=False)
     cctv = models.BooleanField(default=False)
     cleaning_service = models.BooleanField(default=False)
     Terrain_de_sport = models.BooleanField(default=False)
+    playground = models.BooleanField(default=False)
     allowed_gender = models.CharField(max_length=10, choices=(('all','All'),('male','Male'),('female','Female')), default='all')
     max_capacity = models.PositiveIntegerField(null=True, blank=True)
     # Extensible custom flags (key:value dict)
@@ -107,9 +110,9 @@ class RoomCategory(models.Model):
     quantity_available = models.IntegerField(default=1)
     occupied_count     = models.IntegerField(default=0)
 
-    wifi      = models.CharField(max_length=1, choices=(('1','Yes'),('0','No')), default='0')
-    tv        = models.CharField(max_length=1, choices=(('1','Yes'),('0','No')), default='0')
-    fridge    = models.CharField(max_length=1, choices=(('1','Yes'),('0','No')), default='0')
+    wifi      = models.BooleanField(default=False)
+    tv        = models.BooleanField(default=False)
+    fridge    = models.BooleanField(default=False)
     room_size = models.CharField(
         max_length=1, choices=(('1','Large'),('2','Medium'),('3','Small')), default='2'
     )
@@ -411,10 +414,12 @@ class Invoice(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        if not self.invoice_id:
-            super().save(*args, **kwargs)
-            self.invoice_id = f"INV-{self.id}-{self.created_at.year}"
+        is_new = self.pk is None
         super().save(*args, **kwargs)
+        if is_new and not self.invoice_id:
+            self.invoice_id = f"INV-{self.id}-{self.created_at.year}"
+            # Use update_fields to only save the invoice_id and avoid recursion or integrity issues
+            super().save(update_fields=['invoice_id'])
 
     def __str__(self):
         return f"Invoice {self.invoice_id}"

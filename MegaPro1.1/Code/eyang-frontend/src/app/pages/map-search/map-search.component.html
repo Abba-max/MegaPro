@@ -79,21 +79,21 @@
       <div class="ms__fgroup">
         <label class="ms__flabel">{{ 'map.equipment' | translate }}</label>
         <div class="ms__chips">
-          <button class="ms__chip" [class.on]="filterGenerator()==='1'"
-            (click)="filterGenerator.set(filterGenerator()==='1' ? '' : '1'); triggerSearch()">
+          <button class="ms__chip" [class.on]="filterGenerator()"
+            (click)="filterGenerator.set(filterGenerator() ? null : true); triggerSearch()">
             ⚡ {{ 'filters.generator' | translate }}
           </button>
-          <button class="ms__chip" [class.on]="filterForage()==='1'"
-            (click)="filterForage.set(filterForage()==='1' ? '' : '1'); triggerSearch()">
+          <button class="ms__chip" [class.on]="filterForage()"
+            (click)="filterForage.set(filterForage() ? null : true); triggerSearch()">
             💧 {{ 'filters.water' | translate }}
           </button>
-          <button class="ms__chip" [class.on]="filterRestaurant()==='1'"
-            (click)="filterRestaurant.set(filterRestaurant()==='1' ? '' : '1'); triggerSearch()">
+          <button class="ms__chip" [class.on]="filterRestaurant()"
+            (click)="filterRestaurant.set(filterRestaurant() ? null : true); triggerSearch()">
             🍽️ {{ 'filters.restaurant' | translate }}
           </button>
           <!-- WiFi is now unified — updates visibleEstates() immediately AND triggers debounced server search -->
-          <button class="ms__chip" [class.on]="filterWifi()==='1'"
-            (click)="filterWifi.set(filterWifi()==='1' ? '' : '1'); triggerSearch()">
+          <button class="ms__chip" [class.on]="filterWifi()"
+            (click)="filterWifi.set(filterWifi() ? null : true); triggerSearch()">
             📶 {{ 'filters.wifi' | translate }}
           </button>
         </div>

@@ -86,10 +86,20 @@
                 <lucide-icon [img]="MapPinIcon" class="chip-icon red"></lucide-icon>
                 <span>{{ housing!.distance }} m {{ 'detail.from_campus' | translate }}</span>
               </div>
+              <div class="meta-chip" *ngIf="housing!.etages">
+                <lucide-icon [img]="BuildingIcon" class="chip-icon gray"></lucide-icon>
+                <span>{{ housing!.etages }} {{ 'admin.etages' | translate }}</span>
+              </div>
+              <div class="meta-chip" *ngIf="housing!.allowed_gender">
+                <lucide-icon [img]="UsersIcon" class="chip-icon pink"></lucide-icon>
+                <span>
+                  {{ housing!.allowed_gender === 'all' ? ('common.all' | translate) : (housing!.allowed_gender === 'male' ? ('common.male' | translate) : ('common.female' | translate)) }}
+                </span>
+              </div>
               <!-- ── Dynamic rating chip (uses average_rating from API) ── -->
               <div class="meta-chip" *ngIf="housing!.average_rating.value > 0">
                 <lucide-icon [img]="StarIcon" class="chip-icon gold"></lucide-icon>
-                <span>{{ housing!.average_rating.display }} ({{ housing!.average_rating.count }} {{ 'dashboard.tab_reviews' | translate }})</span>
+                <span>{{ housing!.average_rating.display }} ({{ housing!.average_rating.count }})</span>
               </div>
               <div class="meta-chip">
                 <lucide-icon [img]="UsersIcon" class="chip-icon blue"></lucide-icon>
@@ -187,17 +197,17 @@
                   <p class="rcc-desc" *ngIf="rc.description">{{ rc.description }}</p>
 
                   <div class="rcc-amenities">
-                    <span class="rcc-amenity rcc-wifi" *ngIf="rc.wifi === '1'">
+                    <span class="rcc-amenity rcc-wifi" *ngIf="rc.wifi">
                       <lucide-icon [img]="WifiIcon" class="rcc-am-ico"></lucide-icon> WiFi
                     </span>
-                    <span class="rcc-amenity rcc-tv" *ngIf="rc.tv === '1'">
+                    <span class="rcc-amenity rcc-tv" *ngIf="rc.tv">
                       <lucide-icon [img]="TvIcon" class="rcc-am-ico"></lucide-icon> TV
                     </span>
-                    <span class="rcc-amenity rcc-fridge" *ngIf="rc.fridge === '1'">
+                    <span class="rcc-amenity rcc-fridge" *ngIf="rc.fridge">
                       <lucide-icon [img]="FridgeIcon" class="rcc-am-ico"></lucide-icon> {{ 'filters.fridge_label' | translate }}
                     </span>
                     <span class="rcc-amenity rcc-none"
-                          *ngIf="rc.wifi === '0' && rc.tv === '0' && rc.fridge === '0'">
+                          *ngIf="!rc.wifi && !rc.tv && !rc.fridge">
                       {{ 'listings.no_features' | translate }}
                     </span>
                   </div>

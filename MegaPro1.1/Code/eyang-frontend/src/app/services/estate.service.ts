@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../environments/environment';
 
+
 export interface EstateImage { id: number; image: string; }
 
 export interface RoomImage { id: number; image: string; caption: string; room_category: number; }
@@ -65,9 +66,9 @@ export interface RoomCategory {
   /** Legacy compatibility aliases (kept in sync server-side) */
   quantity_available: number;
   surface_area?: number | null;
-  wifi: '0' | '1';
-  tv: '0' | '1';
-  fridge: '0' | '1';
+  wifi: boolean;
+  tv: boolean;
+  fridge: boolean;
   room_size: '1' | '2' | '3';
   description: string;
   images: RoomImage[];
@@ -86,8 +87,8 @@ export interface EstateRaw {
   rating: string;
   average_rating: AverageRating;
   distance: number;
-  restaurant: '0' | '1'; generator: '0' | '1';
-  forage: '0' | '1';
+  restaurant: boolean; generator: boolean;
+  forage: boolean;
   description: string; publishedAt: string;
   status: 'draft' | 'published' | 'archived';
   images: EstateImage[];
@@ -95,12 +96,27 @@ export interface EstateRaw {
   owner?: { id: number; username: string; email: string; first_name: string; last_name: string; };
   reviews_count: number; orders_count: number;
   price: number; capacity: number; free: number;
-  wifi: '0' | '1'; tv: '0' | '1'; fridge: '0' | '1';
+  wifi: boolean; tv: boolean; fridge: boolean;
   lat: number;
   lng: number;
+  parking?: boolean;
+  security_guard?: boolean;
+  cctv?: boolean;
+  cleaning_service?: boolean;
+  borehole_forage?: boolean;
+  generator_available?: boolean;
+  restaurant_on_site?: boolean;
+  Terrain_de_sport?: boolean;
+  playground?: boolean;
+  water_bills?: boolean;
+  electricity_bills?: boolean;
+  fence?: boolean;
+  caretaker?: boolean;
+  max_capacity?: number;
+  etages?: number;
+  allowed_gender?: 'all' | 'male' | 'female';
   characteristics?: EstateCharacteristic[];
   supplements?: Supplement[];
-  /** true = admin approved, badge shown on card */
   /** true = admin approved, badge shown on card */
   is_verified?: boolean;
   owner_id?: number;
@@ -109,7 +125,7 @@ export interface EstateRaw {
 export interface Estate extends EstateRaw {
   title: string; image: string; type: string;
   features: string[]; area: number | null; minMonths: number;
-  equipments: { name: string; icon: any; color: string }[];
+  equipments: { name: string; icon: any; color: string; colorKey: string }[];
 }
 
 export interface Review {
@@ -240,6 +256,7 @@ export interface EstateFilters {
   location?: string; status?: string; wifi?: string; generator?: string;
   forage?: string; restaurant?: string; tv?: string; fridge?: string;
   min_price?: number; max_price?: number; room_size?: string; max_dist?: number; mine?: string;
+  playground?: string; cctv?: string; cleaning?: string;
 }
 
 export function getAbsoluteUrl(url: string | null | undefined, width?: number): string {
@@ -269,9 +286,54 @@ const EYANG_LNG = 11.390736;
 
 export function enrichEstate(raw: EstateRaw): Estate {
   const features: string[] = [];
-  if (raw.generator === '1') features.push('zap');
-  if (raw.forage === '1') features.push('droplets');
-  if (raw.restaurant === '1') features.push('restaurant');
+  const equipments: { name: string; icon: string; color: string; colorKey: string }[] = [];
+
+  // Feature mapping (All are now booleans from backend)
+  const hasWifi = !!raw.wifi;
+  const hasGenerator = !!raw.generator || !!raw.generator_available;
+  const hasForage = !!raw.forage || !!raw.borehole_forage;
+  const hasRestaurant = !!raw.restaurant || !!raw.restaurant_on_site;
+  const hasTv = !!raw.tv;
+  const hasFridge = !!raw.fridge;
+  const hasPlayground = !!raw.playground;
+
+  if (hasWifi) {
+    features.push('wifi');
+    equipments.push({ name: 'WiFi', icon: 'Wifi', color: 'orange', colorKey: 'wifi' });
+  }
+  if (hasGenerator) {
+    features.push('zap');
+    equipments.push({ name: 'Générateur', icon: 'Zap', color: 'yellow', colorKey: 'generator' });
+  }
+  if (hasForage) {
+    features.push('droplets');
+    equipments.push({ name: 'Forage', icon: 'Droplets', color: 'blue', colorKey: 'forage' });
+  }
+  if (hasRestaurant) {
+    features.push('restaurant');
+    equipments.push({ name: 'Restaurant', icon: 'Utensils', color: 'brown', colorKey: 'restaurant' });
+  }
+  if (hasTv) {
+    features.push('tv');
+    equipments.push({ name: 'TV', icon: 'Tv', color: 'purple', colorKey: 'tv' });
+  }
+  if (hasFridge) {
+    features.push('fridge');
+    equipments.push({ name: 'Réfrigérateur', icon: 'Thermometer', color: 'teal', colorKey: 'fridge' });
+  }
+  if (hasPlayground) {
+    features.push('playground');
+    equipments.push({ name: 'Aire de jeux', icon: 'Gamepad2', color: 'green', colorKey: 'playground' });
+  }
+
+  // New boolean flags
+  if (raw.parking) equipments.push({ name: 'Parking', icon: 'ParkingCircle', color: 'indigo', colorKey: 'parking' });
+  if (raw.security_guard) equipments.push({ name: 'Sécurité', icon: 'ShieldCheck', color: 'red', colorKey: 'security_guard' });
+  if (raw.cctv) equipments.push({ name: 'Vidéosurveillance', icon: 'Video', color: 'gray', colorKey: 'cctv' });
+  if (raw.cleaning_service) equipments.push({ name: 'Ménage', icon: 'Sparkles', color: 'blue', colorKey: 'cleaning' });
+  if (raw.Terrain_de_sport) equipments.push({ name: 'Sport', icon: 'Dribbble', color: 'green', colorKey: 'sport_field' });
+  if (raw.water_bills) equipments.push({ name: 'Eau incluse', icon: 'Droplet', color: 'cyan', colorKey: 'water_bills' });
+  if (raw.electricity_bills) equipments.push({ name: 'Élec. incluse', icon: 'Zap', color: 'yellow', colorKey: 'electricity_bills' });
 
   const images = (raw.images || []).map(img => ({ ...img, image: getAbsoluteUrl(img.image, 400) }));
   const room_categories = (raw.room_categories || []).map(rc => ({
@@ -289,7 +351,8 @@ export function enrichEstate(raw: EstateRaw): Estate {
     title: raw.name,
     image: images[0]?.image ?? '',
     type: 'Logement',
-    features, area: null, minMonths: 2, equipments: [],
+    features, area: null, minMonths: 2, 
+    equipments: equipments as any[]
   };
 }
 

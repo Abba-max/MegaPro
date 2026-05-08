@@ -240,6 +240,10 @@
                     </div>
                 </div>
                 <div class="form-group">
+                    <label>{{ 'admin.max_capacity' | translate }}</label>
+                    <input type="number" formControlName="max_capacity" class="input" placeholder="Ex: 100" min="1">
+                </div>
+                <div class="form-group">
                     <label>{{ 'admin.col_status' | translate }}</label>
                     <select formControlName="status" class="select-input full-width">
                         <option value="draft">{{ 'admin.status_draft' | translate }}</option>
@@ -292,6 +296,10 @@
                             <input type="checkbox" [checked]="estateForm.get('fridge')?.value === '1'"
                                 (change)="estateForm.get('fridge')?.setValue($any($event.target).checked ? '1' : '0')">
                             <span class="equip-emoji">❄️</span><span>{{ 'filters.fridge_label' | translate }}</span>
+                        </label>
+                        <label class="equip-item" [class.active]="estateForm.get('Terrain_de_sport')?.value">
+                            <input type="checkbox" formControlName="Terrain_de_sport">
+                            <span class="equip-emoji">⚽</span><span>{{ 'admin.sport_field' | translate }}</span>
                         </label>
                     </div>
                 </div>
@@ -609,29 +617,23 @@
             </div>
             <div class="form-row-modal">
                 <div class="form-group">
-                    <label>Price Per Month ({{ 'price.currency' | translate }})</label>
-                    <input type="number" formControlName="price_per_month" class="input" min="0">
+                    <label>{{ 'admin.surface_area' | translate }} (m²)</label>
+                    <input type="number" formControlName="surface_area" class="input" min="0" placeholder="Ex: 20">
                 </div>
-                <div class="form-group">
-                    <label>Dimensions</label>
-                    <input type="text" formControlName="dimensions" class="input" placeholder="e.g. 15m2">
-                </div>
-            </div>
-            <div class="form-row-modal">
                 <div class="form-group">
                     <label>{{ 'detail.capacity' | translate }}</label>
                     <select formControlName="occupancy" class="select-input full-width">
-                        <option value="single">{{ 'detail.single' | translate }}</option>
-                        <option value="double">{{ 'detail.double' | translate }}</option>
+                        <option value="single">{{ 'detail.1_person' | translate }}</option>
+                        <option value="double">{{ 'detail.2_people' | translate }}</option>
                         <option value="shared">{{ 'detail.shared' | translate }}</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>{{ 'admin.col_quantity' | translate }} (Total)</label>
-                    <input type="number" formControlName="total_rooms" class="input" min="1">
-                </div>
             </div>
             <div class="form-row-modal">
+                <div class="form-group">
+                    <label>{{ 'admin.col_quantity' | translate }} (Total)</label>
+                    <input type="number" formControlName="total_rooms" class="input" min="1" (change)="roomFormGroup.patchValue({quantity_available: roomFormGroup.get('total_rooms')?.value})">
+                </div>
                 <div class="form-group">
                     <label>{{ 'admin.room_size' | translate }}</label>
                     <select formControlName="room_size" class="select-input full-width">
@@ -639,10 +641,6 @@
                         <option value="2">{{ 'detail.medium' | translate }}</option>
                         <option value="3">{{ 'detail.small' | translate }}</option>
                     </select>
-                </div>
-                <div class="form-group">
-                    <label>{{ 'admin.surface_area' | translate }} (m²)</label>
-                    <input type="number" formControlName="surface_area" class="input" step="0.1">
                 </div>
             </div>
 
@@ -847,7 +845,6 @@
             <button class="btn-save-modal" style="background: var(--primary-color); color: white; padding: 0.5rem 1.25rem; border-radius: 6px; border: none; font-weight: 500;" (click)="submitDynamicCreate()" [disabled]="!dynamicCreateName.trim()">
                 OK
             </button>
-        </div>
         </div>
     </div>
 </div>
