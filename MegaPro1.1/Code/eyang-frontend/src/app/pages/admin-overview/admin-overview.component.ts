@@ -82,12 +82,12 @@ export class AdminOverviewComponent implements OnInit {
             iconColor: '#F59E0B'
           },
           {
-            title: 'sidebar.reviews',
-            value: String(data.total_reviews ?? 0),
-            change: 'sidebar.reviews',
-            changeType: 'positive',
-            icon: Star,
-            iconColor: '#8B5CF6'
+            title: 'admin.pending_payments',
+            value: String(data.pending_payments ?? 0),
+            change: 'admin.pending_payments',
+            changeType: (data.pending_payments ?? 0) > 0 ? 'warning' : 'neutral',
+            icon: ShoppingBag,
+            iconColor: '#EF4444'
           }
         ];
 

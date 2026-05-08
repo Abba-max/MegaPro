@@ -135,3 +135,23 @@
 .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
 .mt-8 { margin-top: 2rem; }
 .w-full { width: 100%; }
+
+/* ── Receipt Section Styles ────────────────────────────────── */
+.bg-yellow-50 { background-color: #FFFBEB; }
+.bg-yellow-100 { background-color: #FEF3C7; }
+.text-yellow-800 { color: #92400E; }
+.border-yellow-200 { border-color: #FDE68A; }
+
+.btn-receipt {
+    display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px;
+    background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE;
+    border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none;
+    transition: all 0.2s;
+}
+.btn-receipt:hover { background: #DBEAFE; transform: translateY(-1px); }
+
+.card-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+.gap-2 { gap: 0.5rem; }
+.items-center { display: flex; align-items: center; }
+.font-bold { font-weight: 700; }
+.justify-end { justify-content: flex-end; }

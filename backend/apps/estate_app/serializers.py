@@ -203,6 +203,8 @@ class SupplementSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             validated_data['created_by'] = request.user
         return super().create(validated_data)
+
+
 # ── Characteristics ──────────────────────────────────────────────────────────
 
 class CharacteristicSerializer(serializers.ModelSerializer):
@@ -273,8 +275,8 @@ class EstateSerializer(serializers.ModelSerializer):
             'is_verified',
         ]
         
-    characteristics = EstateCharacteristicSerializer(source='estatecharacteristic_set', many=True, read_only=True)
-    supplements = SupplementSerializer(many=True, read_only=True)
+    characteristics = EstateCharacteristicSerializer(source='characteristics_set', many=True, read_only=True)
+    supplements = SupplementSerializer(source='supplements_set', many=True, read_only=True)
 
     def get_average_rating(self, obj) -> dict:
         # Uses prefetched reviews in memory
@@ -381,7 +383,7 @@ class QuickOrderSerializer(serializers.ModelSerializer):
         model  = QuickOrder
         fields = ['id', 'estate', 'estate_name', 'estate_image', 'estate_location',
                   'room_category', 'estate_price', 'room_category_name',
-                  'name', 'phone', 'note', 'status', 'created_at']
+                  'name', 'phone', 'note', 'status', 'receipt', 'is_payment_verified', 'created_at']
 
     def get_estate_image(self, obj):
         request     = self.context.get('request')
@@ -487,6 +489,7 @@ class NotificationSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['created_at']
 
+
 # ── Invoice & Reservation Serializers ────────────────────────────────────────
 
 class InvoiceSerializer(serializers.ModelSerializer):
@@ -563,5 +566,3 @@ class ReservationSerializer(serializers.ModelSerializer):
         if user is None:
             raise serializers.ValidationError("Authentification requise.")
         return create_reservation_with_snapshot(validated_data, user)
-
-

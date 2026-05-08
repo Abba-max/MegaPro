@@ -17,6 +17,59 @@
     <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
     <span>{{ 'admin.loading' | translate }}</span>
 </div>
+<!-- Pending Payment Verifications Section -->
+<div class="card mt-8 bg-yellow-50" *ngIf="!isLoading() && getPendingPayments().length > 0">
+    <div class="card-header bg-yellow-100 p-4 rounded-t-xl border-b border-yellow-200">
+        <h2 class="text-lg font-bold flex items-center gap-2 text-yellow-800">
+            <lucide-icon [img]="AlertIcon" class="icon-sm"></lucide-icon>
+            {{ 'admin.pending_payments' | translate }} ({{ getPendingPayments().length }})
+        </h2>
+    </div>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>{{ 'admin.col_housing' | translate }}</th>
+                    <th>{{ 'admin.col_client' | translate }}</th>
+                    <th>{{ 'admin.col_date' | translate }}</th>
+                    <th>{{ 'admin.col_receipt' | translate }}</th>
+                    <th class="text-right">{{ 'admin.col_actions' | translate }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let b of getPendingPayments()" class="fade-in bg-white border-b border-gray-100">
+                    <td [attr.data-label]="'admin.col_housing' | translate">
+                        <span class="booking-title">{{ b.estate_name }}</span>
+                    </td>
+                    <td [attr.data-label]="'admin.col_client' | translate">
+                        <div>
+                            <div class="booking-title">{{ b.name }}</div>
+                            <div class="meta-sub">{{ b.phone }}</div>
+                        </div>
+                    </td>
+                    <td [attr.data-label]="'admin.col_date' | translate"><span class="text-sm">{{ formatDate(b.created_at || '') }}</span></td>
+                    <td [attr.data-label]="'admin.col_receipt' | translate">
+                        <a [href]="b.receipt" target="_blank" class="btn-receipt flex items-center gap-1" *ngIf="b.receipt">
+                            <lucide-icon [img]="EyeIcon" class="icon-xs"></lucide-icon>
+                            {{ 'admin.view_receipt' | translate }}
+                        </a>
+                        <span *ngIf="!b.receipt" class="text-gray-400">Aucun reçu</span>
+                    </td>
+                    <td class="text-right" [attr.data-label]="'admin.col_actions' | translate">
+                        <div class="action-buttons justify-end">
+                            <button class="icon-btn success" (click)="verifyPayment(b, 'approve')" [title]="'admin.approve' | translate">
+                                <lucide-icon [img]="CheckCircleIcon" class="icon-xs"></lucide-icon>
+                            </button>
+                            <button class="icon-btn warning" (click)="verifyPayment(b, 'reject')" [title]="'admin.reject' | translate">
+                                <lucide-icon [img]="XCircleIcon" class="icon-xs"></lucide-icon>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
 <div class="card mt-8" *ngIf="!isLoading()">
     <div class="toolbar">

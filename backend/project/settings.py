@@ -90,15 +90,6 @@ DATABASES = {
     }
 }
 
-# database_url = config('DATABASE_URL', default=None)
-# if database_url:
-#     database_url = database_url.replace('postgres://', 'postgresql://', 1)
-#     db_config = dj_database_url.parse(database_url)
-#     if db_config.get('ENGINE') == 'django.db.backends.postgresql':
-#         if config('REQUIRE_DB_SSL', default=False, cast=bool):
-#             db_config.setdefault('OPTIONS', {})['sslmode'] = 'require'
-#     DATABASES['default'] = db_config
-
 database_url = config('DATABASE_URL', default=None)
 if database_url and '://' in database_url and not database_url.startswith('://'):
     database_url = database_url.replace('postgres://', 'postgresql://', 1)
@@ -173,6 +164,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'EXCEPTION_HANDLER': 'apps.estate_app.exceptions.custom_exception_handler',
 }
 
 # ── SimpleJWT ──────────────────────────────────────────────────────────────
@@ -200,4 +192,13 @@ FRONTEND_URL           = config('FRONTEND_URL', default='https://eyangestate.com
 
 # ── Celery ─────────────────────────────────────────────────────────────────
 CELERY_BROKER_URL = config('REDIS_URL', default=config('CELERY_BROKER_URL', default='redis://localhost:6379/0'))
-CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
+# ── CinetPay ───────────────────────────────────────────────────────────────
+CINETPAY_API_KEY  = config('CINETPAY_API_KEY',  default='')
+CINETPAY_SITE_ID  = config('CINETPAY_SITE_ID',  default='')
+CINETPAY_NOTIFY_URL = config(
+    'CINETPAY_NOTIFY_URL',
+    default='http://147.93.47.169:3006/api/payments/notify/'
+)
+BACKEND_URL = config('BACKEND_URL', default='http://147.93.47.169:3006')

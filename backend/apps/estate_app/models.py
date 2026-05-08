@@ -168,9 +168,12 @@ class Review(models.Model):
 
 class QuickOrder(models.Model):
     STATUS_CHOICES = (
-        ('pending',  'En attente'),
-        ('accepted', 'Acceptée'),
-        ('rejected', 'Rejetée'),
+        ('pending_payment', 'Paiement en attente'),
+        ('paid',            'Payée (en attente de validation)'), # ← NEW: receipt uploaded
+        ('pending',         'En attente'),             # admin verified, waiting owner approval
+        ('accepted',        'Acceptée'),
+        ('rejected',        'Rejetée'),
+        ('payment_failed',  'Paiement échoué'),
     )
     estate        = models.ForeignKey(Estate, on_delete=models.CASCADE, related_name='quick_orders')
     room_category = models.ForeignKey(RoomCategory, on_delete=models.SET_NULL,
@@ -180,11 +183,46 @@ class QuickOrder(models.Model):
     name       = models.CharField(max_length=100)
     phone      = models.CharField(max_length=20)
     note       = models.TextField(blank=True)
-    status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_payment')
+    receipt    = models.ImageField(upload_to='receipts/', null=True, blank=True)
+    is_payment_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Order by {self.name} for {self.estate}"
+
+
+class Payment(models.Model):
+    STATUS_CHOICES = (
+        ('initiated', 'Initiée'),
+        ('success',   'Succès'),
+        ('failed',    'Échouée'),
+        ('cancelled', 'Annulée'),
+    )
+    order          = models.OneToOneField(
+        QuickOrder, on_delete=models.CASCADE,
+        related_name='payment', null=True, blank=True
+    )
+    user           = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='payments'
+    )
+    transaction_id = models.CharField(max_length=100, unique=True)
+    cinetpay_id    = models.CharField(max_length=100, blank=True, null=True)
+    amount         = models.IntegerField(default=200)
+    currency       = models.CharField(max_length=10, default='XAF')
+    status         = models.CharField(max_length=20, choices=STATUS_CHOICES, default='initiated')
+    phone          = models.CharField(max_length=20, blank=True, null=True)
+    payment_method = models.CharField(max_length=50, blank=True, null=True)
+    raw_notify     = models.JSONField(default=dict, blank=True)
+    created_at     = models.DateTimeField(auto_now_add=True)
+    updated_at     = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Payment {self.transaction_id} - {self.status}"
 
 
 class ContactRequest(models.Model):
@@ -258,6 +296,7 @@ class Notification(models.Model):
     def __str__(self):
         return f"Notification for {self.user.username}: {self.type}"
 
+
 # ── New Models for Architecture ──────────────────────────────────────────────
 
 class Characteristic(models.Model):
@@ -268,7 +307,7 @@ class Characteristic(models.Model):
         return self.name
 
 class EstateCharacteristic(models.Model):
-    estate = models.ForeignKey(Estate, on_delete=models.CASCADE, related_name='characteristics')
+    estate = models.ForeignKey(Estate, on_delete=models.CASCADE, related_name='characteristics_set') # renamed related_name to avoid conflict with Estate.characteristics field if I add it, but wait, I already have characteristics field in Serializer.
     characteristic = models.ForeignKey(Characteristic, on_delete=models.CASCADE)
     
 class Equipment(models.Model):
@@ -280,7 +319,7 @@ class Equipment(models.Model):
 
 class RoomEquipment(models.Model):
     CONDITION_CHOICES = (('NEW', 'New'), ('GOOD', 'Good'), ('BAD', 'Bad'))
-    room_category = models.ForeignKey(RoomCategory, on_delete=models.CASCADE, related_name='equipment')
+    room_category = models.ForeignKey(RoomCategory, on_delete=models.CASCADE, related_name='equipment_set')
     equipment = models.ForeignKey(Equipment, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     surface_area_m2 = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
@@ -289,7 +328,7 @@ class RoomEquipment(models.Model):
             help_text="Optional note about this equipment item (e.g., 'shared between 2 rooms')")
 
 class Supplement(models.Model):
-    estate = models.ForeignKey(Estate, on_delete=models.CASCADE, related_name='supplements')
+    estate = models.ForeignKey(Estate, on_delete=models.CASCADE, related_name='supplements_set')
     name = models.CharField(max_length=100)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     is_available = models.BooleanField(default=True)
@@ -379,4 +418,3 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"Invoice {self.invoice_id}"
-

@@ -68,6 +68,10 @@ export class AdminBookingsComponent implements OnInit {
       : [...this.allBookings];
   }
 
+  getPendingPayments(): QuickOrder[] {
+    return this.allBookings.filter(b => b.status === 'paid');
+  }
+
   // ── View modal ──────────────────────────────────────────────────────────
   openView(booking: QuickOrder): void {
     this.viewBooking = booking;
@@ -106,6 +110,25 @@ export class AdminBookingsComponent implements OnInit {
         this.showToast(this.translate.instant('dashboard.status_rejected_toast'), 'warning');
       },
       error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
+    });
+  }
+
+  verifyPayment(booking: QuickOrder, action: 'approve' | 'reject'): void {
+    if (!booking.id) return;
+    this.estateService.verifyPayment(booking.id, action).subscribe({
+      next: (res) => {
+        const idx = this.allBookings.findIndex(b => b.id === booking.id);
+        if (idx !== -1) {
+          if (action === 'approve') {
+            this.allBookings[idx] = { ...this.allBookings[idx], status: 'pending', is_payment_verified: true };
+          } else {
+            this.allBookings[idx] = { ...this.allBookings[idx], status: 'payment_failed', is_payment_verified: false };
+          }
+          this.applyFilter();
+        }
+        this.showToast(action === 'approve' ? 'Paiement vérifié.' : 'Paiement rejeté.', 'info');
+      },
+      error: () => this.showToast('Erreur lors de la vérification.', 'error')
     });
   }
 

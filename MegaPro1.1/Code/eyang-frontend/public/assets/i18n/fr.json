@@ -3,7 +3,19 @@
     "prev": "Précédent",
     "next": "Suivant",
     "warning": "Avertissement",
-    "unknown": "Inconnu"
+    "unknown": "Inconnu",
+    "apply": "Appliquer",
+    "reset": "Réinitialiser",
+    "close": "Fermer",
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "edit": "Modifier",
+    "delete": "Supprimer",
+    "this_month": "ce mois-ci",
+    "error": "Une erreur est survenue.",
+    "all": "Tous",
+    "male": "Garçons",
+    "female": "Filles"
   },
   "hero": {
     "title": "Trouvez votre logement étudiant idéal",
@@ -112,22 +124,6 @@
     "large_city": "Grande Cité",
     "login_to_view": "Connectez-vous pour voir tous les détails",
     "login_to_book": "Connectez-vous pour réserver"
-  },
-  "common": {
-    "apply": "Appliquer",
-    "reset": "Réinitialiser",
-    "close": "Fermer",
-    "save": "Enregistrer",
-    "cancel": "Annuler",
-    "edit": "Modifier",
-    "delete": "Supprimer",
-    "this_month": "ce mois-ci",
-    "warning": "Avertissement",
-    "unknown": "Inconnu",
-    "error": "Une erreur est survenue.",
-    "all": "Tous",
-    "male": "Garçons",
-    "female": "Filles"
   },
   "form": {
     "name": "Votre nom",
