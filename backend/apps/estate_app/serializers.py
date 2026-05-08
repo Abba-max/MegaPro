@@ -293,7 +293,7 @@ class QuickOrderSerializer(serializers.ModelSerializer):
         model  = QuickOrder
         fields = ['id', 'estate', 'estate_name', 'estate_image', 'estate_location',
                   'room_category', 'estate_price', 'room_category_name',
-                  'name', 'phone', 'note', 'status', 'created_at']
+                  'name', 'phone', 'note', 'status', 'receipt', 'is_payment_verified', 'created_at']
 
     def get_estate_image(self, obj):
         request     = self.context.get('request')

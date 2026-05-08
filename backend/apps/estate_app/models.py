@@ -118,11 +118,12 @@ class Review(models.Model):
 
 class QuickOrder(models.Model):
     STATUS_CHOICES = (
-        ('pending_payment', 'Paiement en attente'),   # ← NEW: waiting for payment
-        ('pending',         'En attente'),             # paid, waiting owner approval
+        ('pending_payment', 'Paiement en attente'),
+        ('paid',            'Payée (en attente de validation)'), # ← NEW: receipt uploaded
+        ('pending',         'En attente'),             # admin verified, waiting owner approval
         ('accepted',        'Acceptée'),
         ('rejected',        'Rejetée'),
-        ('payment_failed',  'Paiement échoué'),        # ← NEW
+        ('payment_failed',  'Paiement échoué'),
     )
     estate        = models.ForeignKey(Estate, on_delete=models.CASCADE, related_name='quick_orders')
     room_category = models.ForeignKey(RoomCategory, on_delete=models.SET_NULL,
@@ -133,6 +134,8 @@ class QuickOrder(models.Model):
     phone      = models.CharField(max_length=20)
     note       = models.TextField(blank=True)
     status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_payment')
+    receipt    = models.ImageField(upload_to='receipts/', null=True, blank=True)
+    is_payment_verified = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -798,11 +798,18 @@
     "id_card_for": "ID document: {{ name }}",
     "owner_role": "Landlord",
     "search_bookings_ph": "Search by name, housing, phone…",
-    "total_bookings": "{{ count }} booking{{ plural }}",
+    "total_bookings": "{{ count }} reservation{{ plural }}",
+    "pending_payments": "Pending Payment Verifications",
     "col_client": "CLIENT",
-    "col_phone": "PHONE",
     "col_date": "DATE",
     "col_note": "NOTE",
+    "col_receipt": "RECEIPT",
+    "view_receipt": "View receipt",
+    "status_paid": "Paid (Pending Verification)",
+    "status_payment_failed": "Payment Failed",
+    "status_pending_payment": "Pending Payment",
+    "view_user": "Details",
+    "col_phone": "PHONE",
     "no_bookings_found": "No bookings found.",
     "search_contacts_ph": "Search by name, email, housing…",
     "total_contacts": "{{ count }} request{{ plural }}",
@@ -889,5 +896,15 @@
     "edit_title": "Edit",
     "manage_rooms_title": "Manage rooms",
     "transfer_ownership": "Transfer ownership"
+  },
+  "notification": {
+    "payment_verified_title": "Payment Verified",
+    "payment_verified_body": "Your payment for {{ estate }} has been successfully verified.",
+    "payment_rejected_title": "Payment Rejected",
+    "payment_rejected_body": "Your receipt for {{ estate }} was rejected. Please upload a valid receipt.",
+    "new_booking_title": "New Booking",
+    "new_booking_body": "{{ client }} has made a booking for {{ estate }}. Please check your requests.",
+    "recommendation_title": "Housing Full",
+    "recommendation_body": "The housing you wanted is full, here are some alternatives for you."
   }
 }

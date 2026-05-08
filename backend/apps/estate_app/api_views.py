@@ -11,8 +11,6 @@ from django.utils.decorators import method_decorator
 from .models import Payment
 from .cinetpay import initiate_payment, verify_payment
 
-
-
 from .models import Estate, EstateImage, Review, QuickOrder, ContactRequest, Conversation, Message, User, RoomCategory, RoomImage
 from .serializers import (
     EstateSerializer, EstateImageSerializer, ReviewSerializer, QuickOrderSerializer,
@@ -293,10 +291,61 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return Response({'liked': liked, 'likes_count': review.likes.count()})
 
 
+def get_recommendations(estate, room_category=None):
+    """
+    Finds available estates in the same location as 'estate'.
+    """
+    qs = Estate.objects.filter(
+        location=estate.location,
+        status='published',
+        is_verified=True
+    ).exclude(id=estate.id).prefetch_related('images', 'room_categories')
+
+    recommendations = []
+    for suggested in qs:
+        # Check if it has any free room
+        total_qty = suggested.room_categories.aggregate(Sum('quantity_available'))['quantity_available__sum'] or 0
+        total_occ = suggested.room_categories.aggregate(Sum('occupied_count'))['occupied_count__sum'] or 0
+        if total_qty > total_occ:
+            recommendations.append(suggested)
+        if len(recommendations) >= 3:
+            break
+    return recommendations
+
+
 class QuickOrderViewSet(viewsets.ModelViewSet):
     queryset = QuickOrder.objects.all()
     serializer_class = QuickOrderSerializer
     permission_classes = [permissions.AllowAny]
+    
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        room_category = serializer.validated_data.get('room_category')
+        estate        = serializer.validated_data.get('estate')
+
+        if room_category:
+            if room_category.occupied_count >= room_category.quantity_available:
+                # Room is full, provide recommendations
+                recs = get_recommendations(estate, room_category)
+                recs_data = EstateSerializer(recs, many=True, context={'request': request}).data
+                return Response(
+                    {
+                        "error": "FULL",
+                        "detail": "Plus de chambres disponibles dans cette catégorie.",
+                        "recommendations": recs_data
+                    },
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        if request.user.is_authenticated:
+            serializer.validated_data['user'] = request.user
+
+        # Always start at pending_payment
+        serializer.validated_data['status'] = 'pending_payment'
+        self.perform_create(serializer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
@@ -355,6 +404,73 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
         order.status = 'rejected'
         order.save(update_fields=['status'])
         return Response(QuickOrderSerializer(order, context={'request': request}).data)
+
+    @action(detail=True, methods=['post'], url_path='upload-receipt',
+            permission_classes=[permissions.IsAuthenticated],
+            parser_classes=[MultiPartParser, FormParser])
+    def upload_receipt(self, request, pk=None):
+        order = self.get_object()
+        if order.user != request.user:
+            return Response({'error': 'Non autorisé.'}, status=403)
+        
+        file = request.FILES.get('receipt')
+        if not file:
+            return Response({'error': 'Aucun fichier fourni.'}, status=400)
+        
+        order.receipt = file
+        order.status  = 'paid' # Moves to 'paid' but awaiting admin validation
+        order.save(update_fields=['receipt', 'status'])
+        
+        # Notify Admin (Simulation or real notification)
+        # In a real app, we'd find an admin and send a Notification object
+        
+        return Response(QuickOrderSerializer(order, context={'request': request}).data)
+
+    @action(detail=True, methods=['post'], url_path='verify-payment',
+            permission_classes=[permissions.IsAdminUser])
+    def verify_payment(self, request, pk=None):
+        order = self.get_object()
+        action_type = request.data.get('action') # 'approve' or 'reject'
+        
+        if action_type == 'approve':
+            order.is_payment_verified = True
+            order.status = 'pending' # Now awaiting owner approval
+            order.save(update_fields=['is_payment_verified', 'status'])
+            
+            # Notify Student
+            from .notifications_utils import notify_user
+            try:
+                notify_user(
+                    user=order.user,
+                    n_type='info',
+                    title_key='notification.payment_verified_title',
+                    body_key='notification.payment_verified_body',
+                    body_params={'estate': order.estate.name},
+                    link='/dashboard',
+                )
+            except: pass
+            
+            # Notify Owner
+            try:
+                notify_user(
+                    user=order.estate.owner,
+                    n_type='new_booking',
+                    title_key='notification.new_booking_title',
+                    body_key='notification.new_booking_body',
+                    body_params={'estate': order.estate.name, 'client': order.name},
+                    link='/dashboard',
+                )
+            except: pass
+            
+            return Response({'message': 'Paiement vérifié avec succès.'})
+            
+        elif action_type == 'reject':
+            order.is_payment_verified = False
+            order.status = 'payment_failed'
+            order.save(update_fields=['is_payment_verified', 'status'])
+            return Response({'message': 'Paiement rejeté.'})
+            
+        return Response({'error': 'Action invalide.'}, status=400)
 
 
 class ContactRequestViewSet(viewsets.ModelViewSet):
@@ -514,10 +630,13 @@ def admin_stats_view(request):
                .annotate(month=TruncMonth('created_at'))
                .values('month').annotate(count=Count('id')).order_by('month'))
 
+    pending_payments = QuickOrder.objects.filter(status='paid', is_payment_verified=False).count()
+
     return Response({
         'total_users': total_users, 'total_estates': total_estates,
         'total_orders': total_orders, 'total_reviews': total_reviews,
         'pending_verifications': pending_verifications,
+        'pending_payments': pending_payments,
         'recent_activities': activities[:8],
         'monthly_orders': [{'month': m['month'].strftime('%b'), 'value': m['count']} for m in monthly],
     })
@@ -536,10 +655,14 @@ def admin_bookings_view(request):
     orders = QuickOrder.objects.select_related('estate', 'user').order_by('-created_at')
     result = []
     for o in orders:
-        result.append({'id': o.id, 'estate': o.estate_id, 'estate_name': o.estate.name,
-                       'name': o.name, 'phone': o.phone, 'note': o.note,
-                       'status': o.status, 'created_at': o.created_at.isoformat(),
-                       'user_email': o.user.email if o.user else None})
+        result.append({
+            'id': o.id, 'estate': o.estate_id, 'estate_name': o.estate.name,
+            'name': o.name, 'phone': o.phone, 'note': o.note,
+            'status': o.status, 'created_at': o.created_at.isoformat(),
+            'user_email': o.user.email if o.user else None,
+            'is_payment_verified': o.is_payment_verified,
+            'receipt': request.build_absolute_uri(o.receipt.url) if o.receipt else None
+        })
     return Response(result)
 
 
@@ -632,6 +755,7 @@ def admin_verify_owner_view(request, user_id):
         return Response({'id': user.id, 'is_verified': False, 'rejected': True})
     return Response({'error': 'Action invalide.'}, status=400)
 
+
 @api_view(['PATCH'])
 @permission_classes([permissions.IsAdminUser])
 def admin_toggle_user_view(request, user_id):
@@ -696,53 +820,15 @@ class NotificationViewSet(viewsets.ModelViewSet):
         notif.read = True
         notif.save(update_fields=['read'])
         return Response({'status': 'ok'})
-    
-    # Payment APIs
-    
-@api_view(['POST'])
-@permission_classes([permissions.IsAuthenticated])
-def initiate_payment_view(request, order_id):
-    """
-    Called by the frontend when student submits a booking.
-    Creates the QuickOrder then initiates CinetPay payment.
-    Returns a payment_url for the frontend to redirect to.
-    """
-    try:
-        order = QuickOrder.objects.get(pk=order_id, user=request.user)
-    except QuickOrder.DoesNotExist:
-        return Response({'error': 'Réservation introuvable.'}, status=404)
 
-    if order.status != 'pending_payment':
-        return Response({'error': 'Cette réservation a déjà été payée ou annulée.'}, status=400)
 
-    # Check room availability before charging
-    if order.room_category:
-        rc = order.room_category
-        if rc.occupied_count >= rc.quantity_available:
-            order.status = 'payment_failed'
-            order.save(update_fields=['status'])
-            return Response({'error': 'Plus de chambres disponibles dans cette catégorie.'}, status=400)
+# Payment APIs
 
-    try:
-        result = initiate_payment(order, request)
-    except Exception as e:
-        print(f"[payment] CinetPay initiation error: {e}")
-        return Response({'error': 'Erreur lors de l\'initiation du paiement. Réessayez.'}, status=502)
-
-    # Create a Payment record
-    Payment.objects.create(
-        order=order,
-        user=request.user,
-        transaction_id=result['transaction_id'],
-        amount=200,
-        currency='XAF',
-        status='initiated',
-    )
-
-    return Response({
-        'payment_url':    result['payment_url'],
-        'transaction_id': result['transaction_id'],
-    }, status=200)
+# --- CinetPay temporarily disabled ---
+# @api_view(['POST'])
+# @permission_classes([permissions.IsAuthenticated])
+# def initiate_payment_view(request, order_id):
+#     ...
 
 
 @api_view(['POST'])

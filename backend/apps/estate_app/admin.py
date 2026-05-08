@@ -36,9 +36,22 @@ class EstateAdmin(admin.ModelAdmin):
     list_filter = ['status', 'location', 'restaurant', 'generator']
     search_fields = ['name', 'location', 'description']
 
+class QuickOrderAdmin(admin.ModelAdmin):
+    list_display = ['name', 'estate', 'status', 'is_payment_verified', 'created_at']
+    list_filter  = ['status', 'is_payment_verified', 'created_at']
+    search_fields = ['name', 'phone', 'estate__name']
+    readonly_fields = ['receipt_preview']
+
+    def receipt_preview(self, obj):
+        if obj.receipt:
+            return f'<img src="{obj.receipt.url}" style="max-height: 200px;"/>'
+        return "Pas de reçu"
+    receipt_preview.allow_tags = True
+    receipt_preview.short_description = "Aperçu du reçu"
+
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Estate, EstateAdmin)
 admin.site.register(RoomCategory, RoomCategoryAdmin)
-admin.site.register(QuickOrder)
+admin.site.register(QuickOrder, QuickOrderAdmin)
 admin.site.register(ContactRequest)
 admin.site.register(Review)

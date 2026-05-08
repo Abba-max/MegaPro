@@ -165,6 +165,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'EXCEPTION_HANDLER': 'apps.estate_app.exceptions.custom_exception_handler',
 }
 
 # ── SimpleJWT ──────────────────────────────────────────────────────────────
@@ -192,4 +193,13 @@ FRONTEND_URL           = config('FRONTEND_URL', default='https://eyangestate.com
 
 # ── Celery ─────────────────────────────────────────────────────────────────
 CELERY_BROKER_URL = config('REDIS_URL', default=config('CELERY_BROKER_URL', default='redis://localhost:6379/0'))
-CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+
+# ── CinetPay ───────────────────────────────────────────────────────────────
+CINETPAY_API_KEY  = config('CINETPAY_API_KEY',  default='')
+CINETPAY_SITE_ID  = config('CINETPAY_SITE_ID',  default='')
+CINETPAY_NOTIFY_URL = config(
+    'CINETPAY_NOTIFY_URL',
+    default='http://147.93.47.169:3006/api/payments/notify/'
+)
+BACKEND_URL = config('BACKEND_URL', default='http://147.93.47.169:3006')

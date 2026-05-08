@@ -799,10 +799,17 @@
     "owner_role": "Bailleur",
     "search_bookings_ph": "Rechercher par nom, logement, téléphone…",
     "total_bookings": "{{ count }} réservation{{ plural }}",
+    "pending_payments": "Vérifications de paiement en attente",
     "col_client": "CLIENT",
     "col_phone": "TÉLÉPHONE",
     "col_date": "DATE",
     "col_note": "NOTE",
+    "col_receipt": "REÇU",
+    "view_receipt": "Voir le reçu",
+    "status_paid": "Payé (En attente)",
+    "status_payment_failed": "Paiement échoué",
+    "status_pending_payment": "Paiement en attente",
+    "view_user": "Détails",
     "no_bookings_found": "Aucune réservation trouvée.",
     "search_contacts_ph": "Rechercher par nom, email, logement…",
     "total_contacts": "{{ count }} demande{{ plural }}",
@@ -889,5 +896,15 @@
     "edit_title": "Modifier",
     "manage_rooms_title": "Gérer les chambres",
     "transfer_ownership": "Transférer la propriété"
+  },
+  "notification": {
+    "payment_verified_title": "Paiement vérifié",
+    "payment_verified_body": "Votre paiement pour {{ estate }} a été vérifié avec succès.",
+    "payment_rejected_title": "Paiement rejeté",
+    "payment_rejected_body": "Votre reçu pour {{ estate }} a été rejeté. Veuillez uploader un reçu valide.",
+    "new_booking_title": "Nouvelle réservation",
+    "new_booking_body": "{{ client }} a effectué une réservation pour {{ estate }}. Veuillez vérifier vos demandes.",
+    "recommendation_title": "Logement complet",
+    "recommendation_body": "Le logement que vous vouliez est complet, voici quelques alternatives pour vous."
   }
 }

@@ -70,7 +70,9 @@ export interface QuickOrder {
   room_category?: number | null; room_category_name?: string | null;
   name: string; phone: string; note?: string; created_at?: string;
   user_email?: string;
-  status?: 'pending' | 'accepted' | 'rejected';
+  status?: 'pending_payment' | 'paid' | 'pending' | 'accepted' | 'rejected' | 'payment_failed';
+  receipt?: string;
+  is_payment_verified?: boolean;
 }
 
 export interface ContactRequest {
@@ -105,6 +107,7 @@ export interface ClientDashboardStats { total_reservations: number; total_review
 export interface AdminStats {
   total_users: number; total_estates: number; total_orders: number; total_reviews: number;
   pending_verifications?: number;
+  pending_payments?: number;
   recent_activities: AdminActivity[];
   monthly_orders: { month: string; value: number }[];
 }
@@ -409,6 +412,16 @@ export class EstateService {
 
   rejectReservation(id: number): Observable<QuickOrder> {
     return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/reject/`, {});
+  }
+
+  uploadReceipt(id: number, file: File): Observable<QuickOrder> {
+    const fd = new FormData();
+    fd.append('receipt', file, file.name);
+    return this.http.post<QuickOrder>(`${this.BASE}/orders/${id}/upload-receipt/`, fd);
+  }
+
+  verifyPayment(id: number, action: 'approve' | 'reject'): Observable<any> {
+    return this.http.post(`${this.BASE}/orders/${id}/verify-payment/`, { action });
   }
 
   // ── Reviews ───────────────────────────────────────────────
