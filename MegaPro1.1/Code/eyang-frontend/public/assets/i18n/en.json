@@ -1,4 +1,10 @@
 {
+  "common": {
+    "prev": "Previous",
+    "next": "Next",
+    "warning": "Warning",
+    "unknown": "Unknown"
+  },
   "hero": {
     "title": "Find your ideal student housing",
     "subtitle": "Verified, secure and affordable university residences near your campus.",
@@ -747,6 +753,8 @@
     "back_top": "Back to top"
   },
   "admin": {
+    "enter_characteristic_name": "Enter the new characteristic name:",
+    "enter_equipment_name": "Enter the new equipment name:",
     "manage_users": "User Management",
     "manage_housings": "Housing Management",
     "manage_bookings": "Booking Management",

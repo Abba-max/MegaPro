@@ -343,6 +343,9 @@
                              (click)="toggleCharacteristic(char.id)">
                             {{ char.name }}
                         </div>
+                        <div class="char-tag" (click)="openCreateCharacteristicModal()" style="border: 1px dashed #94A3B8; background: transparent; color: #475569;">
+                            <lucide-icon [img]="PlusIcon" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: middle;"></lucide-icon> {{ 'dashboard.add' | translate }}
+                        </div>
                     </div>
                 </div>
 
@@ -682,17 +685,17 @@
                     <div *ngFor="let equip of roomEquipment(); let i = index" class="room-equipment-card">
                         <div class="equip-card-row">
                             <div class="form-group flex-2">
-                                <label class="sub-label">Équipement</label>
+                                <label class="sub-label">
+                                    Équipement
+                                    <button type="button" class="btn-icon" style="padding: 0; background: transparent; color: #3B82F6; margin-left: 8px; vertical-align: middle; width: auto; height: auto;" (click)="openCreateEquipmentModal(equip)">
+                                        <lucide-icon [img]="PlusIcon" size="14"></lucide-icon> {{ 'dashboard.add' | translate }}
+                                    </button>
+                                </label>
                                 <select [(ngModel)]="equip.equipment" [ngModelOptions]="{standalone: true}"
                                         class="select-input">
-                                    <option [value]="null">— Personnalisé —</option>
+                                    <option [value]="null">— Sélectionnez —</option>
                                     <option *ngFor="let item of globalEquipment()" [value]="item.id">{{ item.part_name }}</option>
                                 </select>
-                            </div>
-                            <div class="form-group" *ngIf="!equip.equipment">
-                                <label class="sub-label">Nom personnalisé</label>
-                                <input type="text" [(ngModel)]="equip.custom_name" [ngModelOptions]="{standalone: true}"
-                                       class="input" placeholder="Ex: Bureau en bois...">
                             </div>
                             <div class="form-group equip-qty-group">
                                 <label class="sub-label">Qté</label>
@@ -822,6 +825,49 @@
             <button class="btn-save-modal" (click)="confirmTransfer()" [disabled]="isSaving() || !newOwnerId">
                 <lucide-icon [img]="LoaderIcon" class="spin-sm" *ngIf="isSaving()"></lucide-icon>
                 {{ 'admin.transfer_confirm' | translate }}
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Dynamic Create Modal (Characteristic/Equipment) -->
+<div class="modal-backdrop fade-in" *ngIf="showDynamicCreateModal">
+    <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3>{{ dynamicCreateType === 'characteristic' ? ('admin.enter_characteristic_name' | translate) : ('admin.enter_equipment_name' | translate) }}</h3>
+            <button class="modal-close-btn" (click)="closeDynamicCreateModal()"><lucide-icon [img]="XIcon"></lucide-icon></button>
+        </div>
+        <div class="modal-body" style="padding: 1.5rem;">
+            <div class="form-group">
+                <input type="text" [(ngModel)]="dynamicCreateName" class="input" placeholder="Ex: Machine à laver..." (keyup.enter)="submitDynamicCreate()">
+            </div>
+        </div>
+        <div class="modal-actions" style="padding: 1rem 1.5rem; background: var(--bg-100); border-top: 1px solid var(--border-color); display: flex; justify-content: flex-end; gap: 0.75rem;">
+            <button class="btn-cancel" (click)="closeDynamicCreateModal()">{{ 'admin.cancel' | translate }}</button>
+            <button class="btn-save-modal" style="background: var(--primary-color); color: white; padding: 0.5rem 1.25rem; border-radius: 6px; border: none; font-weight: 500;" (click)="submitDynamicCreate()" [disabled]="!dynamicCreateName.trim()">
+                OK
+            </button>
+        </div>
+        </div>
+    </div>
+</div>
+
+<!-- Action Modal -->
+<div class="modal-backdrop fade-in" *ngIf="showActionModal">
+    <div class="modal-content" style="max-width: 450px; text-align: center; padding: 2rem;">
+        <div style="margin-bottom: 1.5rem;">
+            <lucide-icon *ngIf="actionModalType === 'success'" [img]="CheckCircleIcon" style="color: #10B981; width: 64px; height: 64px;"></lucide-icon>
+            <lucide-icon *ngIf="actionModalType === 'error'" [img]="XCircleIcon" style="color: #EF4444; width: 64px; height: 64px;"></lucide-icon>
+        </div>
+        <h3 style="font-size: 1.5rem; font-weight: 600; color: #1E293B; margin-bottom: 0.5rem;">{{ actionModalTitle }}</h3>
+        <p style="font-size: 1rem; color: #64748B; margin-bottom: 2rem;">{{ actionModalMessage }}</p>
+        
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <button *ngIf="actionModalSecondaryBtn" class="btn-cancel" (click)="handleActionSecondary()">
+                {{ actionModalSecondaryBtn }}
+            </button>
+            <button class="btn-save-modal" [style.background]="actionModalType === 'error' ? '#EF4444' : '#10B981'" style="color: white; padding: 0.75rem 1.5rem; border-radius: 8px; border: none; font-weight: 600;" (click)="handleActionPrimary()">
+                {{ actionModalPrimaryBtn }}
             </button>
         </div>
     </div>

@@ -203,6 +203,22 @@ class SupplementSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             validated_data['created_by'] = request.user
         return super().create(validated_data)
+# ── Characteristics ──────────────────────────────────────────────────────────
+
+class CharacteristicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = Characteristic
+        fields = ['id', 'name', 'description']
+
+
+class EstateCharacteristicSerializer(serializers.ModelSerializer):
+    characteristic_name = serializers.CharField(
+        source='characteristic.name', read_only=True
+    )
+
+    class Meta:
+        model  = EstateCharacteristic
+        fields = ['id', 'estate', 'characteristic', 'characteristic_name']
 
 
 class RoomCategorySerializer(serializers.ModelSerializer):
@@ -252,9 +268,13 @@ class EstateSerializer(serializers.ModelSerializer):
             'caretaker', 'security_guard', 'restaurant_on_site',
             'borehole_forage', 'generator_available', 'parking',
             'cctv', 'cleaning_service', 'allowed_gender', 'max_capacity',
+            'characteristics', 'supplements',
             # ── Admin verification ────────────────────────────────────────────
             'is_verified',
         ]
+        
+    characteristics = EstateCharacteristicSerializer(source='estatecharacteristic_set', many=True, read_only=True)
+    supplements = SupplementSerializer(many=True, read_only=True)
 
     def get_average_rating(self, obj) -> dict:
         # Uses prefetched reviews in memory
@@ -544,20 +564,4 @@ class ReservationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Authentification requise.")
         return create_reservation_with_snapshot(validated_data, user)
 
-
-# ── Characteristics ──────────────────────────────────────────────────────────
-
-class CharacteristicSerializer(serializers.ModelSerializer):
-    class Meta:
-        model  = Characteristic
-        fields = ['id', 'name', 'description']
-
-
-class EstateCharacteristicSerializer(serializers.ModelSerializer):
-    characteristic_name = serializers.CharField(
-        source='characteristic.name', read_only=True
-    )
-
-    class Meta:
-        model  = EstateCharacteristic
-        fields = ['id', 'estate', 'characteristic', 'characteristic_name']
+

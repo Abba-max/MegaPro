@@ -1,4 +1,10 @@
 {
+  "common": {
+    "prev": "Précédent",
+    "next": "Suivant",
+    "warning": "Avertissement",
+    "unknown": "Inconnu"
+  },
   "hero": {
     "title": "Trouvez votre logement étudiant idéal",
     "subtitle": "Des cités universitaires vérifiées, sécurisées et abordables près de votre campus.",
@@ -139,6 +145,8 @@
     "role_badge_admin": "Administrateur"
   },
   "admin": {
+    "enter_characteristic_name": "Entrez le nom de la nouvelle caractéristique :",
+    "enter_equipment_name": "Entrez le nom du nouvel équipement :",
     "manage_users": "Gestion des utilisateurs",
     "manage_housings": "Gestion des logements",
     "manage_bookings": "Gestion des réservations",

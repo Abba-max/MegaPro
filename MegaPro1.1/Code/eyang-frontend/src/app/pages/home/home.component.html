@@ -214,7 +214,8 @@
 
     <!-- Features pills -->
     <div class="card-divider"></div>
-    <div class="features-row" *ngIf="getTopFeatures(h).length > 0">
+    <div class="features-row">
+        <!-- Static features -->
         <span *ngFor="let f of getTopFeatures(h)" class="feat-pill" [ngClass]="'feat-pill-' + f.key">
             <lucide-icon *ngIf="f.key==='wifi'"       [img]="WifiIcon"     class="feat-pill-ico"></lucide-icon>
             <lucide-icon *ngIf="f.key==='forage'"     [img]="DropletsIcon" class="feat-pill-ico"></lucide-icon>
@@ -224,6 +225,16 @@
             <lucide-icon *ngIf="f.key==='fridge'"     [img]="FridgeIcon"   class="feat-pill-ico"></lucide-icon>
             <span class="feat-pill-label">{{ f.label | translate }}</span>
         </span>
+        <!-- Dynamic characteristics -->
+        <ng-container *ngIf="h.characteristics">
+            <span *ngFor="let char of h.characteristics.slice(0, 3)" class="feat-pill" style="background: var(--bg-100); border: 1px solid var(--border-color); color: var(--text-primary);">
+                <lucide-icon [img]="CheckIcon" class="feat-pill-ico" style="color: var(--primary-color);"></lucide-icon>
+                <span class="feat-pill-label">{{ char.characteristic_name }}</span>
+            </span>
+            <span *ngIf="h.characteristics.length > 3" class="feat-pill" style="background: transparent; border: none; font-size: 0.75rem; color: var(--text-tertiary); padding: 0;">
+                +{{ h.characteristics.length - 3 }} autres
+            </span>
+        </ng-container>
     </div>
 
     <!-- Price row -->
@@ -237,16 +248,21 @@
     </div>
 </div>
 
-<!-- ════ SHOW MORE / ALL LOADED ════ -->
-<div class="home-show-more-wrap" *ngIf="!isLoading && !errorMessage && hasMoreHousings">
-  <button class="home-btn-show-more" (click)="showMoreHousings()">
-    <lucide-icon [img]="ChevronDownIcon" class="home-chevron-icon"></lucide-icon>
-    {{ 'listings.show_more' | translate }}
-    <span class="home-show-more-count">({{ filteredHousings.length - visibleCount }} {{ 'listings.remaining' | translate }})</span>
+<!-- ════ PAGINATION ════ -->
+<div class="home-pagination-wrap" *ngIf="!isLoading && !errorMessage && totalPages > 1" style="display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem; padding: 1rem 0;">
+  <button class="btn btn--outline btn--sm" (click)="prevPage()" [disabled]="currentPage === 1" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    {{ 'common.prev' | translate }}
   </button>
-</div>
-<div class="home-all-loaded" *ngIf="!isLoading && !errorMessage && !hasMoreHousings && filteredHousings.length > HOME_PAGE_SIZE">
-  <span>✓ {{ 'listings.all_shown' | translate }}</span>
+  
+  <div style="font-size: 0.9rem; font-weight: 500; color: var(--text-secondary);">
+    {{ currentPage }} / {{ totalPages }}
+  </div>
+
+  <button class="btn btn--outline btn--sm" (click)="nextPage()" [disabled]="currentPage === totalPages" style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem;">
+    {{ 'common.next' | translate }}
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><polyline points="9 18 15 12 9 6"></polyline></svg>
+  </button>
 </div>
 
 </section>

@@ -98,6 +98,9 @@ export interface EstateRaw {
   wifi: '0' | '1'; tv: '0' | '1'; fridge: '0' | '1';
   lat: number;
   lng: number;
+  characteristics?: EstateCharacteristic[];
+  supplements?: Supplement[];
+  /** true = admin approved, badge shown on card */
   /** true = admin approved, badge shown on card */
   is_verified?: boolean;
   owner_id?: number;
@@ -718,6 +721,10 @@ export class EstateService {
   // ── Characteristics ──────────────────────────────────────────────────
   getCharacteristicList(): Observable<Characteristic[]> {
     return this.http.get<Characteristic[]>(`${this.BASE}/characteristics/`);
+  }
+
+  createCharacteristic(data: { name: string; description?: string }): Observable<Characteristic> {
+    return this.http.post<Characteristic>(`${this.BASE}/characteristics/`, data);
   }
 
   getEstateCharacteristics(estateId: number): Observable<EstateCharacteristic[]> {

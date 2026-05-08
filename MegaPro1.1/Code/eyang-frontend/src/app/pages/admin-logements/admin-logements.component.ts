@@ -58,6 +58,7 @@ export class AdminLogementsComponent implements OnInit {
   readonly LoaderIcon       = Loader;
   readonly CheckCircleIcon  = CheckCircle;
   readonly XCircleIcon      = XCircle;
+  readonly XIcon            = X;
   readonly InfoIcon         = Info;
   readonly AlertIcon        = AlertCircle;
   readonly PublishIcon      = Globe;
@@ -128,6 +129,49 @@ export class AdminLogementsComponent implements OnInit {
   pendingVerificationCount = computed(() =>
     this.allHousings().filter(h => !h.is_verified && h.status === 'published').length
   );
+
+  // Action Modal
+  showActionModal = false;
+  actionModalTitle = '';
+  actionModalMessage = '';
+  actionModalType: 'success' | 'error' = 'success';
+  actionModalPrimaryBtn = '';
+  actionModalSecondaryBtn = '';
+  actionModalPrimaryFn: (() => void) | null = null;
+  actionModalSecondaryFn: (() => void) | null = null;
+
+  openActionModal(
+    type: 'success' | 'error',
+    title: string,
+    message: string,
+    primaryBtn: string,
+    primaryFn: (() => void) | null = null,
+    secondaryBtn: string = '',
+    secondaryFn: (() => void) | null = null
+  ) {
+    this.actionModalType = type;
+    this.actionModalTitle = title;
+    this.actionModalMessage = message;
+    this.actionModalPrimaryBtn = primaryBtn;
+    this.actionModalPrimaryFn = primaryFn;
+    this.actionModalSecondaryBtn = secondaryBtn;
+    this.actionModalSecondaryFn = secondaryFn;
+    this.showActionModal = true;
+  }
+
+  closeActionModal() {
+    this.showActionModal = false;
+  }
+
+  handleActionPrimary() {
+    this.closeActionModal();
+    if (this.actionModalPrimaryFn) this.actionModalPrimaryFn();
+  }
+
+  handleActionSecondary() {
+    this.closeActionModal();
+    if (this.actionModalSecondaryFn) this.actionModalSecondaryFn();
+  }
 
   // Modal state
   showModal  = false;
@@ -413,28 +457,65 @@ export class AdminLogementsComponent implements OnInit {
 
     if (this.isEditMode && this.editId) {
       this.estateService.updateEstate(this.editId, payload)
-        .pipe(catchError(err => { this.showToast(err?.error?.detail ?? this.translate.instant('common.error'), 'error'); this.isSaving.set(false); return of(null); }))
+        .pipe(catchError(err => { 
+          this.openActionModal('error', 'Error', err?.error?.detail ?? this.translate.instant('common.error'), 'OK');
+          this.isSaving.set(false); 
+          return of(null); 
+        }))
         .subscribe(updated => {
           if (!updated) return;
           this.syncEstateDetails(updated.id).subscribe(() => {
-            this.showToast(this.translate.instant('admin.update_success', { name: updated.name }), 'info');
+            const finalize = () => {
+              this.isSaving.set(false); 
+              this.showModal = false; 
+              this.load();
+            };
+            const showSuccess = () => {
+              this.openActionModal(
+                'success',
+                this.translate.instant('admin.update_success', { name: updated.name }),
+                'The estate has been updated successfully.',
+                'OK',
+                finalize
+              );
+            };
+
             if (this.selectedFiles.length) {
-              this.uploadImages(this.editId!).subscribe(() => { this.isSaving.set(false); this.showModal = false; this.load(); });
-            } else { this.isSaving.set(false); this.showModal = false; this.load(); }
+              this.uploadImages(this.editId!).subscribe(() => showSuccess());
+            } else {
+              showSuccess();
+            }
           });
         });
     } else {
       this.estateService.createEstate(payload)
-        .pipe(catchError(err => { this.showToast(err?.error?.detail ?? this.translate.instant('common.error'), 'error'); this.isSaving.set(false); return of(null); }))
+        .pipe(catchError(err => { 
+          this.openActionModal('error', 'Error', err?.error?.detail ?? this.translate.instant('common.error'), 'OK');
+          this.isSaving.set(false); 
+          return of(null); 
+        }))
         .subscribe(created => {
           if (!created) return;
           this.syncEstateDetails(created.id).subscribe(() => {
-            this.showToast(this.translate.instant('admin.create_success', { name: created.name }), 'success');
-            const finalize = () => { this.isSaving.set(false); this.showModal = false; this.load(); this.openManageRooms(created); };
+            const finalize = () => {
+              this.openActionModal(
+                'success',
+                this.translate.instant('admin.create_success', { name: created.name }),
+                'Estate created successfully. Would you like to add rooms now?',
+                'Manage Rooms',
+                () => { this.isSaving.set(false); this.showModal = false; this.load(); this.openManageRooms(created); },
+                'Later',
+                () => { this.isSaving.set(false); this.showModal = false; this.load(); }
+              );
+            };
+
             if (this.selectedFiles.length) {
               this.estateService.uploadEstateImages(created.id, this.selectedFiles).subscribe({
                 next: () => finalize(),
-                error: () => { this.showToast(this.translate.instant('admin.upload_error'), 'error'); finalize(); }
+                error: () => { 
+                  this.openActionModal('error', 'Error', this.translate.instant('admin.upload_error'), 'OK');
+                  this.isSaving.set(false); this.showModal = false; this.load();
+                }
               });
             } else finalize();
           });
@@ -522,6 +603,60 @@ export class AdminLogementsComponent implements OnInit {
     );
   }
 
+  // ── Dynamic Creation Modal State ──
+  showDynamicCreateModal = false;
+  dynamicCreateType: 'characteristic' | 'equipment' | null = null;
+  dynamicCreateName = '';
+  dynamicCreateTargetEquipObj: any = null;
+
+  openCreateCharacteristicModal(): void {
+    this.dynamicCreateType = 'characteristic';
+    this.dynamicCreateName = '';
+    this.showDynamicCreateModal = true;
+  }
+
+  openCreateEquipmentModal(equipObj: any): void {
+    this.dynamicCreateType = 'equipment';
+    this.dynamicCreateName = '';
+    this.dynamicCreateTargetEquipObj = equipObj;
+    this.showDynamicCreateModal = true;
+  }
+
+  closeDynamicCreateModal(): void {
+    this.showDynamicCreateModal = false;
+    this.dynamicCreateType = null;
+    this.dynamicCreateTargetEquipObj = null;
+  }
+
+  submitDynamicCreate(): void {
+    const name = this.dynamicCreateName.trim();
+    if (!name) return;
+
+    if (this.dynamicCreateType === 'characteristic') {
+      this.estateService.createCharacteristic({ name }).subscribe({
+        next: (c) => {
+          this.globalCharacteristics.update(list => [...list, c].sort((a, b) => a.name.localeCompare(b.name)));
+          this.toggleCharacteristic(c.id);
+          this.openActionModal('success', 'Success', 'Characteristic created successfully', 'OK');
+          this.closeDynamicCreateModal();
+        },
+        error: () => this.openActionModal('error', 'Error', 'Error creating characteristic', 'OK')
+      });
+    } else if (this.dynamicCreateType === 'equipment') {
+      this.estateService.createEquipment({ part_name: name }).subscribe({
+        next: (eq) => {
+          this.globalEquipment.update(list => [...list, eq].sort((a, b) => a.part_name.localeCompare(b.part_name)));
+          if (this.dynamicCreateTargetEquipObj) {
+            this.dynamicCreateTargetEquipObj.equipment = eq.id;
+          }
+          this.openActionModal('success', 'Success', 'Equipment created successfully', 'OK');
+          this.closeDynamicCreateModal();
+        },
+        error: () => this.openActionModal('error', 'Error', 'Error creating equipment', 'OK')
+      });
+    }
+  }
+
   addSupplement(): void {
     this.estateSupplements.update(list => [...list, { name: '', price: 0, is_paid_service: true, is_available: true }]);
   }
@@ -533,6 +668,8 @@ export class AdminLogementsComponent implements OnInit {
   addRoomEquipment(): void {
     this.roomEquipment.update(list => [...list, { equipment: null, quantity: 1, condition: 'GOOD', note: '' }]);
   }
+
+  // Replaced by openCreateEquipmentModal
 
   removeRoomEquipment(index: number): void {
     this.roomEquipment.update(list => list.filter((_, i) => i !== index));
@@ -764,19 +901,26 @@ export class AdminLogementsComponent implements OnInit {
   }
 
   deleteRoom(room: RoomCategory): void {
-    if (confirm(this.translate.instant('admin.delete_room_confirm', { name: room.name }))) {
-      this.estateService.deleteRoomCategory(room.id).subscribe(() => {
-        this.showToast(this.translate.instant('admin.delete_room_success'), 'info');
-        if (this.selectedEstateForRooms) this.loadRooms(this.selectedEstateForRooms.id);
-      });
-    }
+    this.openActionModal(
+      'error',
+      'Confirm Deletion',
+      this.translate.instant('admin.delete_room_confirm', { name: room.name }),
+      'Delete',
+      () => {
+        this.estateService.deleteRoomCategory(room.id).subscribe(() => {
+          this.openActionModal('success', 'Success', this.translate.instant('admin.delete_room_success'), 'OK');
+          if (this.selectedEstateForRooms) this.loadRooms(this.selectedEstateForRooms.id);
+        });
+      },
+      'Cancel'
+    );
   }
 
   saveRoom(): void {
     if (!this.selectedEstateForRooms) return;
     if (this.roomFormGroup.invalid) {
       this.roomFormGroup.markAllAsTouched();
-      this.showToast('Veuillez remplir tous les champs obligatoires.', 'warning');
+      this.openActionModal('error', 'Error', 'Veuillez remplir tous les champs obligatoires.', 'OK');
       return;
     }
     this.isSavingRoom.set(true);
@@ -790,7 +934,7 @@ export class AdminLogementsComponent implements OnInit {
           const afterSave = () => {
             this.isSavingRoom.set(false); this.isRoomEditMode = false;
             const msg = this.roomEditId ? 'admin.room_update_success' : 'admin.room_create_success';
-            this.showToast(this.translate.instant(msg), 'success');
+            this.openActionModal('success', 'Success', this.translate.instant(msg), 'OK');
             this.loadRooms(this.selectedEstateForRooms!.id);
           };
           if (this.roomSelectedFiles.length > 0) {
@@ -798,7 +942,10 @@ export class AdminLogementsComponent implements OnInit {
           } else afterSave();
         });
       },
-      error: () => { this.showToast('Erreur.', 'error'); this.isSavingRoom.set(false); }
+      error: () => { 
+        this.openActionModal('error', 'Error', 'Erreur lors de la sauvegarde.', 'OK');
+        this.isSavingRoom.set(false); 
+      }
     });
   }
 

@@ -123,6 +123,50 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   myOrders:  Reservation[] = [];
   myInvoices: Invoice[] = [];
   myReviews: Review[] = [];
+  myReviews: Review[] = [];
+
+  // ── Action Modal State ──
+  showActionModal = false;
+  actionModalTitle = '';
+  actionModalMessage = '';
+  actionModalType: 'success' | 'error' = 'success';
+  actionModalPrimaryBtn = '';
+  actionModalSecondaryBtn = '';
+  actionModalPrimaryFn: (() => void) | null = null;
+  actionModalSecondaryFn: (() => void) | null = null;
+
+  openActionModal(
+    type: 'success' | 'error',
+    title: string,
+    message: string,
+    primaryBtn: string,
+    primaryFn: (() => void) | null = null,
+    secondaryBtn: string = '',
+    secondaryFn: (() => void) | null = null
+  ) {
+    this.actionModalType = type;
+    this.actionModalTitle = title;
+    this.actionModalMessage = message;
+    this.actionModalPrimaryBtn = primaryBtn;
+    this.actionModalPrimaryFn = primaryFn;
+    this.actionModalSecondaryBtn = secondaryBtn;
+    this.actionModalSecondaryFn = secondaryFn;
+    this.showActionModal = true;
+  }
+
+  closeActionModal() {
+    this.showActionModal = false;
+  }
+
+  handleActionPrimary() {
+    this.closeActionModal();
+    if (this.actionModalPrimaryFn) this.actionModalPrimaryFn();
+  }
+
+  handleActionSecondary() {
+    this.closeActionModal();
+    if (this.actionModalSecondaryFn) this.actionModalSecondaryFn();
+  }
 
   // ── Review pagination (owner) ──────────────────────────────
   readonly REVIEW_PAGE_SIZE = 5;
@@ -220,6 +264,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   isSavingRoom    = false;
   roomEditId: number | null = null;
   roomForm: Partial<RoomCategory> = this.emptyRoomForm();
+  roomEquipment = signal<any[]>([]);
 
   roomSelectedFiles: File[]   = [];
   roomPreviewImages: string[] = [];
@@ -684,6 +729,20 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     );
   }
 
+  createNewCharacteristic(): void {
+    const name = window.prompt(this.translate.instant('admin.enter_characteristic_name') || 'Enter new characteristic name:');
+    if (name && name.trim()) {
+      this.estateService.createCharacteristic({ name: name.trim() }).subscribe({
+        next: (c) => {
+          this.globalCharacteristics.update(list => [...list, c].sort((a, b) => a.name.localeCompare(b.name)));
+          this.toggleCharacteristic(c.id);
+          this.showToast('Created successfully', 'success');
+        },
+        error: () => this.showToast('Error creating characteristic', 'error')
+      });
+    }
+  }
+
   addSupplement(): void {
     this.estateSupplements.update((list: any[]) => [...list, { name: '', price: 0, is_paid_service: true, is_available: true }]);
   }
@@ -758,20 +817,93 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.roomSelectedFiles    = [];
     this.roomPreviewImages    = [];
     this.roomRemovedImageIds  = [];
+    
+    this.estateService.getRoomEquipment(room.id).subscribe({
+      next: (eq) => this.roomEquipment.set(eq),
+      error: () => this.roomEquipment.set([])
+    });
+  }
+
+  addRoomEquipment(): void {
+    this.roomEquipment.update(list => [...list, { equipment: null, quantity: 1, condition: 'GOOD', note: '' }]);
+  }
+
+  // ── Dynamic Creation Modal State ──
+  showDynamicCreateModal = false;
+  dynamicCreateName = '';
+  dynamicCreateTargetEquipObj: any = null;
+
+  openCreateEquipmentModal(equipObj: any): void {
+    this.dynamicCreateName = '';
+    this.dynamicCreateTargetEquipObj = equipObj;
+    this.showDynamicCreateModal = true;
+  }
+
+  closeDynamicCreateModal(): void {
+    this.showDynamicCreateModal = false;
+    this.dynamicCreateTargetEquipObj = null;
+  }
+
+  submitDynamicCreate(): void {
+    const name = this.dynamicCreateName.trim();
+    if (!name) return;
+
+    this.estateService.createEquipment({ part_name: name }).subscribe({
+      next: (eq) => {
+        this.globalEquipment.update(list => [...list, eq].sort((a, b) => a.part_name.localeCompare(b.part_name)));
+        if (this.dynamicCreateTargetEquipObj) {
+          this.dynamicCreateTargetEquipObj.equipment = eq.id;
+        }
+        this.openActionModal('success', 'Success', 'Equipment created successfully', 'OK');
+        this.closeDynamicCreateModal();
+      },
+      error: () => this.openActionModal('error', 'Error', 'Error creating equipment', 'OK')
+    });
+  }
+
+  removeRoomEquipment(index: number): void {
+    this.roomEquipment.update(list => list.filter((_, i) => i !== index));
+  }
+
+  private syncRoomEquipment(categoryId: number): Observable<any> {
+    const equip = this.roomEquipment();
+    return this.estateService.getRoomEquipment(categoryId).pipe(
+      switchMap((existing: any[]) => {
+        const toDelete = existing.map((e: any) => this.estateService.deleteRoomEquipment(e.id));
+        const toAdd = equip.map((e: any) => this.estateService.addRoomEquipment({
+          room_category: categoryId,
+          equipment: e.equipment,
+          quantity: e.quantity,
+          condition: e.condition,
+          note: e.note
+        }));
+        return [...toDelete, ...toAdd].length ? forkJoin([...toDelete, ...toAdd]) : of([]);
+      })
+    );
   }
 
   deleteRoom(room: RoomCategory): void {
-    this.openConfirm(this.translate.instant('admin.room_delete_confirm', { name: room.name }), () => {
-      this.estateService.deleteRoomCategory(room.id).subscribe(() => {
-        this.showToast(this.translate.instant('messages.file_sent'), 'info');
-        if (this.selectedEstateForRooms) this.loadRooms(this.selectedEstateForRooms.id);
-      });
-    });
+    this.openActionModal(
+      'error',
+      'Confirm Deletion',
+      this.translate.instant('admin.room_delete_confirm', { name: room.name }),
+      'Delete',
+      () => {
+        this.estateService.deleteRoomCategory(room.id).subscribe(() => {
+          this.openActionModal('success', 'Success', this.translate.instant('admin.delete_room_success', { name: room.name }), 'OK');
+          if (this.selectedEstateForRooms) this.loadRooms(this.selectedEstateForRooms.id);
+        });
+      },
+      'Cancel'
+    );
   }
 
   saveRoom(): void {
     if (!this.selectedEstateForRooms) return;
-    if (!this.roomForm.name) { this.showToast(this.translate.instant('auth.error_missing_fields'), 'warning'); return; }
+    if (!this.roomForm.name) { 
+      this.openActionModal('error', 'Error', this.translate.instant('auth.error_missing_fields'), 'OK'); 
+      return; 
+    }
 
     this.isSavingRoom = true;
     const payload = { ...this.roomForm, estate: this.selectedEstateForRooms.id };
@@ -782,20 +914,22 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     req.subscribe({
       next: saved => {
-        const afterSave = () => {
-          this.isSavingRoom   = false;
-          this.isRoomEditMode = false;
-          this.showToast(this.translate.instant('messages.file_sent'), 'success');
-          this.loadRooms(this.selectedEstateForRooms!.id);
-        };
-        if (this.roomSelectedFiles.length > 0) {
-          this.estateService.uploadRoomImages(saved.id, this.roomSelectedFiles).subscribe(afterSave);
-        } else {
-          afterSave();
-        }
+        this.syncRoomEquipment(saved.id).subscribe(() => {
+          const afterSave = () => {
+            this.isSavingRoom   = false;
+            this.isRoomEditMode = false;
+            this.openActionModal('success', 'Success', 'Room saved successfully', 'OK');
+            this.loadRooms(this.selectedEstateForRooms!.id);
+          };
+          if (this.roomSelectedFiles.length > 0) {
+            this.estateService.uploadRoomImages(saved.id, this.roomSelectedFiles).subscribe(afterSave);
+          } else {
+            afterSave();
+          }
+        });
       },
       error: () => {
-        this.showToast(this.translate.instant('admin.error_load'), 'error');
+        this.openActionModal('error', 'Error', this.translate.instant('admin.error_load'), 'OK');
         this.isSavingRoom = false;
         this.cdr.detectChanges();
       }

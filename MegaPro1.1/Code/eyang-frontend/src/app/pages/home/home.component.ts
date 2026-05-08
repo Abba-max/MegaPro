@@ -71,7 +71,11 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   // ── Pagination ────────────────────────────────────────────
   readonly HOME_PAGE_SIZE = 6;
-  visibleCount = this.HOME_PAGE_SIZE;
+  currentPage = 1;
+
+  get totalPages(): number {
+    return Math.ceil(this.filteredHousings.length / this.HOME_PAGE_SIZE) || 1;
+  }
 
   get sortedHousings(): Estate[] {
     return [...this.filteredHousings].sort((a, b) => {
@@ -81,25 +85,38 @@ export class HomeComponent implements OnInit, OnDestroy {
     });
   }
 
-  get hasMoreHousings(): boolean {
-    return this.visibleCount < this.filteredHousings.length;
+  nextPage(): void {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++;
+      this.updatePagedHousings();
+      this.scrollToListings();
+    }
   }
 
-  showMoreHousings(): void {
-    this.visibleCount = Math.min(
-      this.visibleCount + this.HOME_PAGE_SIZE,
-      this.filteredHousings.length
-    );
-    this.updatePagedHousings();
+  prevPage(): void {
+    if (this.currentPage > 1) {
+      this.currentPage--;
+      this.updatePagedHousings();
+      this.scrollToListings();
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.currentPage = page;
+      this.updatePagedHousings();
+      this.scrollToListings();
+    }
   }
 
   private resetHomePage(): void {
-    this.visibleCount = this.HOME_PAGE_SIZE;
+    this.currentPage = 1;
     this.updatePagedHousings();
   }
 
   private updatePagedHousings(): void {
-    this.pagedHousings = this.sortedHousings.slice(0, this.visibleCount);
+    const startIndex = (this.currentPage - 1) * this.HOME_PAGE_SIZE;
+    this.pagedHousings = this.sortedHousings.slice(startIndex, startIndex + this.HOME_PAGE_SIZE);
   }
 
   // ── Quick filter bar ─────────────────────────────────────

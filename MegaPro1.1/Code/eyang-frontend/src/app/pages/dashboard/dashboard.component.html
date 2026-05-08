@@ -644,6 +644,9 @@
             <button type="button" *ngFor="let c of globalCharacteristics()" class="char-tag" [class.char-tag--on]="selectedCharacteristics().includes(c.id)" (click)="toggleCharacteristic(c.id)">
               {{ c.name }}
             </button>
+            <button type="button" class="char-tag" (click)="createNewCharacteristic()" style="border: 1px dashed #94A3B8; background: transparent; color: #475569;">
+              <lucide-icon [img]="PlusIcon" style="width: 14px; height: 14px; margin-right: 4px; vertical-align: middle;"></lucide-icon> {{ 'dashboard.add' | translate }}
+            </button>
           </div>
         </div>
       </div>
@@ -750,6 +753,55 @@
         <div class="f-row"><div class="f-group"><label class="f-label">{{ 'form.name' | translate }} *</label><input class="f-input" [(ngModel)]="roomForm.name"></div><div class="f-group"><label class="f-label">{{ 'admin.col_price' | translate }} ({{ 'price.currency' | translate }}) *</label><input class="f-input" type="number" [(ngModel)]="roomForm.price" min="0"></div></div>
         <div class="f-row"><div class="f-group"><label class="f-label">{{ 'detail.capacity' | translate }}</label><select class="f-input" [(ngModel)]="roomForm.occupancy"><option value="single">{{ 'detail.1_person' | translate }}</option><option value="double">{{ 'detail.2_people' | translate }}</option><option value="shared">{{ 'detail.shared' | translate }}</option></select></div><div class="f-group"><label class="f-label">{{ 'admin.col_quantity' | translate }}</label><input class="f-input" type="number" [(ngModel)]="roomForm.quantity_available" min="1"></div></div>
         <div class="f-group"><label class="f-label">{{ 'filters.equipment' | translate }}</label><div class="equip-chips"><label class="equip-chip" [class.equip-chip--on]="roomForm.wifi==='1'"><input type="checkbox" [checked]="roomForm.wifi==='1'" (change)="roomForm.wifi=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="WifiIcon" style="width:14px;height:14px"></lucide-icon>WiFi</label><label class="equip-chip" [class.equip-chip--on]="roomForm.tv==='1'"><input type="checkbox" [checked]="roomForm.tv==='1'" (change)="roomForm.tv=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="TvIcon" style="width:14px;height:14px"></lucide-icon>{{ 'filters.tv_label' | translate }}</label><label class="equip-chip" [class.equip-chip--on]="roomForm.fridge==='1'"><input type="checkbox" [checked]="roomForm.fridge==='1'" (change)="roomForm.fridge=$any($event.target).checked?'1':'0'" style="display:none"><lucide-icon [img]="FridgeIcon" style="width:14px;height:14px"></lucide-icon>{{ 'filters.fridge_label' | translate }}</label></div></div>
+        
+        <div class="f-group">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <label class="f-label" style="margin-bottom: 0;">{{ 'detail.estate_equipment' | translate }}</label>
+                <button type="button" class="btn-icon" style="padding: 0; background: transparent; color: #3B82F6;" (click)="addRoomEquipment()">
+                    <lucide-icon [img]="PlusIcon" size="14" style="vertical-align: middle;"></lucide-icon> {{ 'dashboard.add' | translate }}
+                </button>
+            </div>
+            <div *ngFor="let equip of roomEquipment(); let i = index" style="background: var(--bg-100); padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; display: flex; flex-direction: column; gap: 0.75rem; border: 1px solid var(--border-color);">
+                <div style="display: flex; gap: 0.75rem; align-items: flex-end;">
+                    <div style="flex: 2;">
+                        <label class="f-label" style="font-size: 0.8rem;">
+                            Équipement
+                            <button type="button" class="btn-icon" style="padding: 0; background: transparent; color: #3B82F6; margin-left: 8px; vertical-align: middle;" (click)="openCreateEquipmentModal(equip)">
+                                <lucide-icon [img]="PlusIcon" size="14"></lucide-icon> {{ 'dashboard.add' | translate }}
+                            </button>
+                        </label>
+                        <select [(ngModel)]="equip.equipment" [ngModelOptions]="{standalone: true}" class="f-input">
+                            <option [value]="null">— Sélectionnez —</option>
+                            <option *ngFor="let item of globalEquipment()" [value]="item.id">{{ item.part_name }}</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="f-label" style="font-size: 0.8rem;">Qté</label>
+                        <input type="number" [(ngModel)]="equip.quantity" [ngModelOptions]="{standalone: true}" class="f-input" min="1">
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="f-label" style="font-size: 0.8rem;">État</label>
+                        <select [(ngModel)]="equip.condition" [ngModelOptions]="{standalone: true}" class="f-input">
+                            <option value="NEW">Neuf</option>
+                            <option value="GOOD">Bon</option>
+                            <option value="BAD">Mauvais</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    <div style="flex: 1;">
+                        <input type="text" [(ngModel)]="equip.note" [ngModelOptions]="{standalone: true}" class="f-input" placeholder="Note (optionnel)" style="font-size: 0.85rem;">
+                    </div>
+                    <button type="button" style="background: transparent; border: none; color: #EF4444; cursor: pointer; padding: 0.5rem;" (click)="removeRoomEquipment(i)">
+                        <lucide-icon [img]="TrashIcon" size="16"></lucide-icon>
+                    </button>
+                </div>
+            </div>
+            <div *ngIf="roomEquipment().length === 0" style="text-align: center; padding: 1rem; color: var(--text-tertiary); font-size: 0.9rem; border: 1px dashed var(--border-color); border-radius: 8px;">
+                Aucun équipement spécifique ajouté.
+            </div>
+        </div>
+
         <div class="f-group"><label class="f-label">{{ 'form.description' | translate }}</label><textarea class="f-input f-textarea" [(ngModel)]="roomForm.description" rows="2"></textarea></div>
         <div class="f-group"><label class="f-label">{{ 'admin.photos' | translate }}</label><div class="photo-row" *ngIf="roomPreviewImages.length>0"><div class="photo-item" *ngFor="let p of roomPreviewImages;let i=index"><img [src]="p"><button class="photo-del" (click)="removeRoomPreview(i)">×</button></div></div><label class="photo-drop photo-drop--sm" for="roomImg"><lucide-icon [img]="PlusIcon" style="width:14px;height:14px"></lucide-icon>{{ 'admin.click_to_add_photos' | translate }}</label><input id="roomImg" type="file" accept="image/*" multiple style="display:none" (change)="onRoomFilesSelected($event)"></div>
       </ng-container>
@@ -907,6 +959,27 @@
   </div>
 </div>
 
+<!-- Dynamic Create Modal (Equipment) -->
+<div class="m-back" *ngIf="showDynamicCreateModal" (click)="closeDynamicCreateModal()">
+  <div class="m-box m-box--xs" (click)="$event.stopPropagation()">
+    <div class="m-head">
+      <h2 class="m-title">{{ 'admin.enter_equipment_name' | translate }}</h2>
+      <button class="m-close" (click)="closeDynamicCreateModal()"><lucide-icon [img]="XIcon"></lucide-icon></button>
+    </div>
+    <div class="m-body" style="padding-top: 1rem;">
+      <div class="f-group">
+        <input type="text" [(ngModel)]="dynamicCreateName" class="f-input" placeholder="Ex: Machine à laver..." (keyup.enter)="submitDynamicCreate()">
+      </div>
+    </div>
+    <div class="m-foot">
+      <button class="btn btn--ghost" (click)="closeDynamicCreateModal()">{{ 'dashboard.cancel' | translate }}</button>
+      <button class="btn btn--primary" (click)="submitDynamicCreate()" [disabled]="!dynamicCreateName.trim()">
+        OK
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- Confirm -->
 <div class="m-back" *ngIf="showConfirm" (click)="confirmNo()">
   <div class="m-box m-box--xs" (click)="$event.stopPropagation()">
@@ -914,6 +987,27 @@
     <h2 class="m-confirm-title">{{ 'dashboard.confirmation_title' | translate }}</h2>
     <p class="m-confirm-msg">{{ confirmMessage }}</p>
     <div class="m-foot m-foot--center"><button class="btn btn--ghost" (click)="confirmNo()">{{ 'dashboard.cancel' | translate }}</button><button class="btn btn--danger" (click)="confirmYes()">{{ 'dashboard.confirm_yes' | translate }}</button></div>
+  </div>
+</div>
+
+<!-- Action Modal -->
+<div class="m-back" *ngIf="showActionModal">
+  <div class="m-box m-box--xs" style="text-align: center; padding: 2rem;">
+    <div style="margin-bottom: 1.5rem;">
+      <lucide-icon *ngIf="actionModalType === 'success'" [img]="CheckIcon" style="color: #10B981; width: 64px; height: 64px;"></lucide-icon>
+      <lucide-icon *ngIf="actionModalType === 'error'" [img]="AlertIcon" style="color: #EF4444; width: 64px; height: 64px;"></lucide-icon>
+    </div>
+    <h3 style="font-size: 1.5rem; font-weight: 600; color: #1E293B; margin-bottom: 0.5rem;">{{ actionModalTitle }}</h3>
+    <p style="font-size: 1rem; color: #64748B; margin-bottom: 2rem;">{{ actionModalMessage }}</p>
+    
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+      <button *ngIf="actionModalSecondaryBtn" class="btn btn--ghost" (click)="handleActionSecondary()">
+        {{ actionModalSecondaryBtn }}
+      </button>
+      <button class="btn btn--primary" [style.background]="actionModalType === 'error' ? '#EF4444' : '#10B981'" style="border: none;" (click)="handleActionPrimary()">
+        {{ actionModalPrimaryBtn }}
+      </button>
+    </div>
   </div>
 </div>
 
