@@ -298,13 +298,16 @@ export class AdminUsersComponent implements OnInit {
     return [...new Set(this.allUsers().map(u => u.type))];
   }
 
-  getRoleLabel(type: string): string {
-    const t = type.toLowerCase();
-    if (t === 'student') return 'auth.student';
-    if (t === 'parent')  return 'auth.parent';
-    if (t === 'owner')   return 'auth.owner';
-    if (t === 'admin')   return 'auth.role_badge_admin';
-    return 'auth.role_badge_admin';
+  getRoleLabel(role: string): string {
+    if (!role) return 'auth.student';
+    const t = role.toLowerCase();
+    if (t === 'proprietaire' || t === 'owner') return 'auth.owner';
+    if (t === 'etudiant' || t === 'student') return 'auth.student';
+    if (t === 'parent') return 'auth.parent';
+    if (t === 'admin') return 'auth.role_badge_admin';
+    if (t === 'resident') return 'auth.resident';
+    if (t === 'visiteur' || t === 'visitor') return 'auth.visitor';
+    return role; // Fallback to raw string if no translation key
   }
 
   private getRandomColor(id: number): string {

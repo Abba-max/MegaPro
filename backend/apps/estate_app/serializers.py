@@ -276,6 +276,19 @@ class EstateSerializer(serializers.ModelSerializer):
     characteristics = EstateCharacteristicSerializer(source='characteristics_set', many=True, read_only=True)
     supplements = SupplementSerializer(source='supplements_set', many=True, read_only=True)
 
+    def to_internal_value(self, data):
+        # Convert boolean fields from frontend to the '1'/'0' expected by model legacy CharFields
+        for field in ['restaurant', 'generator', 'forage']:
+            if field in data:
+                val = data[field]
+                if isinstance(val, bool):
+                    data[field] = '1' if val else '0'
+                elif isinstance(val, str):
+                    # Handle "true"/"false" strings
+                    if val.lower() == 'true': data[field] = '1'
+                    elif val.lower() == 'false': data[field] = '0'
+        return super().to_internal_value(data)
+
     def get_average_rating(self, obj) -> dict:
         # Uses prefetched reviews in memory
         top_reviews = [r for r in obj.reviews.all() if r.parent_id is None]
@@ -511,6 +524,9 @@ class ReservationSerializer(serializers.ModelSerializer):
     room_category_name  = serializers.CharField(source='room_category.name', read_only=True)
     client_name         = serializers.CharField(source='user.get_full_name', read_only=True)
     client_phone        = serializers.CharField(source='user.contact', read_only=True)
+    client_email        = serializers.EmailField(source='user.email', read_only=True)
+    note                = serializers.CharField(read_only=True, default='', allow_blank=True)
+    estate_location     = serializers.CharField(source='room_category.estate.location', read_only=True)
     estate_image        = serializers.SerializerMethodField()
     bill_url            = serializers.SerializerMethodField()
     selected_supplements = serializers.PrimaryKeyRelatedField(
@@ -524,9 +540,9 @@ class ReservationSerializer(serializers.ModelSerializer):
         model  = Reservation
         fields = [
             'id', 'user', 'room_category', 'estate_name', 'room_category_name',
-            'client_name', 'client_phone', 'estate_image',
+            'client_name', 'client_phone', 'client_email', 'estate_image', 'estate_location',
             'check_in', 'check_out', 'start_date', 'end_date',
-            'num_rooms', 'total_price', 'status',
+            'num_rooms', 'total_price', 'status', 'note',
             'reservation_details_json',
             'selected_supplements',
             'bill_url', 'invoice',
@@ -535,7 +551,7 @@ class ReservationSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'status', 'user', 'created_at', 'updated_at', 'invoice',
             'total_price', 'reservation_details_json', 'bill_url',
-            'estate_name', 'room_category_name', 'client_name', 'client_phone', 'estate_image',
+            'estate_name', 'room_category_name', 'client_name', 'client_phone', 'client_email', 'estate_image', 'estate_location', 'note',
         ]
 
     def get_estate_image(self, obj):

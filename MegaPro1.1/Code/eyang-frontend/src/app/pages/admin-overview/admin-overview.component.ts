@@ -74,9 +74,9 @@ export class AdminOverviewComponent implements OnInit {
             iconColor: '#10B981'
           },
           {
-            title: 'sidebar.bookings',
+            title: 'sidebar.reservations',
             value: String(data.total_orders ?? 0),
-            change: 'sidebar.bookings',
+            change: 'sidebar.reservations',
             changeType: 'warning',
             icon: Calendar,
             iconColor: '#F59E0B'

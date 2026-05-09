@@ -8,6 +8,12 @@
     "tag_secure": "Secure payments",
     "tag_fast": "Fast booking"
   },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred.",
+    "payment": "Payment",
+    "estate": "Housing"
+  },
   "nav": {
     "listings": "Housing",
     "why": "Why us",
@@ -91,17 +97,15 @@
     "users": "Users",
     "verification": "Verification",
     "logements": "Housing",
-    "bookings": "Bookings",
     "reviews": "Reviews",
     "reports": "Reports",
     "settings": "Settings",
     "back_to_site": "Back to site",
-    "housing": "Listings",
-    "reservation": "Reservations",
-    "housings": "Listings",
     "reservations": "Reservations"
   },
   "filters": {
+    "check_in": "Check-in",
+    "check_out": "Check-out",
     "filters": "Filters",
     "wifi": "WiFi",
     "wifi_label": "WiFi",
@@ -120,6 +124,7 @@
     "min_free": "Minimum free places",
     "apply": "Apply",
     "all_types": "All types",
+    "dates": "Dates",
     "unlimited": "Unlimited"
   },
   "listings": {
@@ -170,13 +175,16 @@
     "photo_prev": "Previous photo",
     "photo_next": "Next photo",
     "price_per_month": "FCFA/month",
+    "change_link": "Change",
     "all_inclusive": "All inclusive",
     "deposit": "Deposit",
     "min_duration": "Min. duration",
     "select_first": "Select one above first",
     "login_to_view": "Login to view all details",
     "login_to_book": "Login to book",
-    "select_room_type_short": "Select a room"
+    "select_room_type_short": "Select a room",
+    "room": "Room",
+    "unit(s)": "unit(s)"
   },
   "why": {
     "title": "Why choose Eyang Estate?",
@@ -263,6 +271,13 @@
     "col_rating": "RATING",
     "col_verified": "VERIFIED",
     "col_status": "STATUS",
+    "col_receipt": "RECEIPT",
+    "view_receipt": "View Receipt",
+    "status_pending": "Pending",
+    "status_accepted": "Accepted",
+    "status_rejected": "Rejected",
+    "status_cancelled": "Cancelled",
+    "status_payment_failed": "Payment Failed",
     "col_actions": "ACTIONS",
     "col_price": "PRICE",
     "col_quantity": "QUANTITY",
@@ -292,6 +307,7 @@
     "main_amenities": "Main Amenities",
     "security_services": "Security & Services",
     "characteristics": "Residence Characteristics",
+     "characterics_name": "Name of the characteristic",
     "transfer_ownership": "Transfer ownership",
     "delete_title": "Confirm deletion",
     "delete_confirm_housing": "Are you sure you want to delete {{ name }}? This action is irreversible.",
@@ -341,7 +357,9 @@
     "surface_area": "Surface area",
     "pending_payments":"Pending Payments",
     "pending_payments_desc": "Manage awaiting payments",
-    "edit_housing":"Edit Housing"
+    "edit_housing":"Edit Housing",
+    "forages": "Boreholes",
+    "forage": "Borehole"
   },
   "auth": {
     "login_title": "Login",
@@ -351,9 +369,6 @@
     "login_identifier_placeholder": "your@email.com or username",
     "password": "Password",
     "password_placeholder": "••••••••",
-    "login_btn": "Log in",
-    "no_account": "No account?",
-    "register_link": "Sign up",
     "signup_title": "Sign up",
     "firstname": "First name",
     "firstname_placeholder": "First name",
@@ -371,13 +386,13 @@
     "signup_btn": "Sign up",
     "already_account": "Already have an account?",
     "login_link": "Log in",
+    "back": "Back",
     "login_subtitle_premium": "Access your premium real estate space.",
     "or_with_email": "Or with email",
     "remember_me": "Remember me",
     "forgot_password": "Forgot password?",
     "error_missing_fields": "Please fill in all required fields.",
     "error_invalid_credentials": "Invalid email or password.",
-    "i_am_a": "I am a...",
     "error_signup_failed": "Registration failed. Please try again.",
     "error_id_required": "Identification document is required for owners.",
     "owner_id_notice": "For security reasons, landlords must provide a valid ID to publish listings.",
@@ -400,6 +415,8 @@
     "role_badge_student": "Student",
     "role_badge_owner": "Owner",
     "role_badge_admin": "Admin",
+    "resident": "Local Resident",
+    "visitor": "Visitor",
     "username": "Username",
     "username_placeholder": "e.g. Thierry.emmanuel",
     "step_account": "Account",
@@ -409,7 +426,6 @@
     "step2_subtitle": "Your personal information",
     "step3_subtitle": "Owner information & document",
     "continue": "Continue",
-    "back": "Back",
     "owner_notice": "As a landlord, your account will be subject to <strong>verification</strong> by our team before activation. Please provide accurate information.",
     "address": "Property / business address",
     "address_placeholder": "e.g. Yaoundé, Biyem-Assi, Odza",
@@ -427,8 +443,6 @@
     "notifications": "Notifications",
     "no_notifications": "No notifications",
     "no_notifications_hint": "Important events will appear here.",
-    "privacy_policy": "Privacy Policy",
-    "terms_of_service": "Terms of Service",
     "create_account": "Create account",
     "forgot_title": "Forgot your password?",
     "forgot_subtitle": "Enter your email and we'll send you a reset link.",
@@ -448,7 +462,13 @@
     "new_password": "New password",
     "confirm_password": "Confirm password",
     "error_passwords_mismatch": "Passwords do not match",
-    "error_password_too_short": "Password must be at least 8 characters"
+    "error_password_too_short": "Password must be at least 8 characters",
+    "login_btn":"Log in",
+    "register_link":"Sign up",
+    "i_am_a":"I am a...",
+  "no_account":"No account?",
+  "privacy_policy":"Privacy Policy",
+  "terms_of_service":"Terms of Service"
   },
   "dashboard": {
     "welcome": "Welcome",
@@ -463,13 +483,6 @@
     "verification_required": "Your account must be verified by an administrator before adding a housing.",
     "recent_activity": "Recent activity",
     "no_activity": "No recent activity yet.",
-    "tab_overview": "Overview",
-    "tab_listings": "My listings",
-    "tab_reservations": "Bookings",
-    "tab_reviews": "My reviews",
-    "tab_messages": "Messages",
-    "tab_my_reviews": "My reviews",
-    "tab_contacts": "Contacts",
     "my_reservations": "My reservations",
     "my_reviews": "My reviews",
     "my_messages": "Sent messages",
@@ -492,10 +505,6 @@
     "status_published": "Published",
     "status_draft": "Draft",
     "status_archived": "Archived",
-    "status_pending": "Pending",
-    "status_accepted": "Accepted",
-    "status_rejected": "Rejected",
-    "status_cancelled": "Cancelled",
     "accept": "Accept",
     "reject": "Reject",
     "refuse": "Refuse",
@@ -663,7 +672,6 @@
     "update": "Update",
     "create": "Create",
     "rooms_btn": "Rooms",
-    "cancel_reservation_confirm": "Cancel the reservation for \"{{name}}\"?",
     "delete_conv_confirm": "Delete the conversation with {{name}}?",
     "account_verified": "✅ Account verified! {{message}}",
     "water_bills": "Water bills",
@@ -685,6 +693,11 @@
     "add_supplement": "Add supplement",
     "no_supplements": "No supplements added",
     "latitude": "Latitude",
-    "longitude": "Longitude"
+    "longitude": "Longitude",
+    "longitude": "Longitude",
+    "cancel_reservation_confirm":"Are you sure you want to cancel the reservation "
+  },
+  "housing":{
+    "currency": ""
   }
 }

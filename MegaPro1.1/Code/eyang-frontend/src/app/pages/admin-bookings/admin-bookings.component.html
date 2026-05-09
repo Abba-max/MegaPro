@@ -17,60 +17,6 @@
     <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
     <span>{{ 'admin.loading' | translate }}</span>
 </div>
-<!-- Pending Payment Verifications Section -->
-<div class="card mt-8 bg-yellow-50" *ngIf="!isLoading() && getPendingPayments().length > 0">
-    <div class="card-header bg-yellow-100 p-4 rounded-t-xl border-b border-yellow-200">
-        <h2 class="text-lg font-bold flex items-center gap-2 text-yellow-800">
-            <lucide-icon [img]="AlertIcon" class="icon-sm"></lucide-icon>
-            {{ 'admin.pending_payments' | translate }} ({{ getPendingPayments().length }})
-        </h2>
-    </div>
-    <div class="table-responsive">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>{{ 'admin.col_housing' | translate }}</th>
-                    <th>{{ 'admin.col_client' | translate }}</th>
-                    <th>{{ 'admin.col_date' | translate }}</th>
-                    <th>{{ 'admin.col_receipt' | translate }}</th>
-                    <th class="text-right">{{ 'admin.col_actions' | translate }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let b of getPendingPayments()" class="fade-in bg-white border-b border-gray-100">
-                    <td [attr.data-label]="'admin.col_housing' | translate">
-                        <span class="booking-title">{{ b.estate_name }}</span>
-                    </td>
-                    <td [attr.data-label]="'admin.col_client' | translate">
-                        <div>
-                            <div class="booking-title">{{ b.name }}</div>
-                            <div class="meta-sub">{{ b.phone }}</div>
-                        </div>
-                    </td>
-                    <td [attr.data-label]="'admin.col_date' | translate"><span class="text-sm">{{ formatDate(b.created_at || '') }}</span></td>
-                    <td [attr.data-label]="'admin.col_receipt' | translate">
-                        <a [href]="b.receipt" target="_blank" class="btn-receipt flex items-center gap-1" *ngIf="b.receipt">
-                            <lucide-icon [img]="EyeIcon" class="icon-xs"></lucide-icon>
-                            {{ 'admin.view_receipt' | translate }}
-                        </a>
-                        <span *ngIf="!b.receipt" class="text-gray-400">Aucun reçu</span>
-                    </td>
-                    <td class="text-right" [attr.data-label]="'admin.col_actions' | translate">
-                        <div class="action-buttons justify-end">
-                            <button class="icon-btn success" (click)="verifyPayment(b, 'approve')" [title]="'admin.approve' | translate">
-                                <lucide-icon [img]="CheckCircleIcon" class="icon-xs"></lucide-icon>
-                            </button>
-                            <button class="icon-btn warning" (click)="verifyPayment(b, 'reject')" [title]="'admin.reject' | translate">
-                                <lucide-icon [img]="XCircleIcon" class="icon-xs"></lucide-icon>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
 <div class="card mt-8" *ngIf="!isLoading()">
     <div class="toolbar">
         <div class="search-input-group">
@@ -78,6 +24,13 @@
             <input type="text" [(ngModel)]="searchQuery" (input)="applyFilter()"
                 [placeholder]="'admin.search_bookings_ph' | translate" class="search-input">
         </div>
+        <select class="select-input" [(ngModel)]="statusFilter" (change)="applyFilter()">
+            <option value="ALL">{{ 'admin.all_status' | translate }}</option>
+            <option value="PENDING">{{ 'admin.status_pending' | translate }}</option>
+            <option value="ACCEPTED">{{ 'admin.status_accepted' | translate }}</option>
+            <option value="REJECTED">{{ 'admin.status_rejected' | translate }}</option>
+            <option value="CANCELLED">{{ 'admin.status_cancelled' | translate }}</option>
+        </select>
         <span class="total-counter">{{ 'admin.total_bookings' | translate:{count: filtered.length, plural: filtered.length !== 1 ? 's' : ''} }}</span>
     </div>
 
@@ -96,15 +49,15 @@
         <tbody>
             <tr *ngFor="let b of filtered" class="fade-in">
                 <td [attr.data-label]="'admin.col_housing' | translate">
-                    <span class="booking-title">{{ b.estate_name || (('admin.col_housing' | translate) + ' #' + b.estate) }}</span>
+                    <span class="booking-title">{{ b.estate_name || (('admin.col_housing' | translate) + ' #' + b.room_category) }}</span>
                 </td>
                 <td [attr.data-label]="'admin.col_client' | translate">
                     <div>
-                        <div class="booking-title">{{ b.name }}</div>
-                        <div class="meta-sub" *ngIf="b.user_email">{{ b.user_email }}</div>
+                        <div class="booking-title">{{ b.client_name }}</div>
+                        <div class="meta-sub" *ngIf="b.client_email">{{ b.client_email }}</div>
                     </div>
                 </td>
-                <td [attr.data-label]="'admin.col_phone' | translate"><span class="text-sm">{{ b.phone }}</span></td>
+                <td [attr.data-label]="'admin.col_phone' | translate"><span class="text-sm">{{ b.client_phone }}</span></td>
                 <td [attr.data-label]="'admin.col_date' | translate"><span class="text-sm">{{ formatDate(b.created_at || '') }}</span></td>
                 <td [attr.data-label]="'admin.col_note' | translate">
                     <span class="note-text" *ngIf="b.note">"{{ b.note }}"</span>
@@ -112,15 +65,19 @@
                 </td>
                 <td class="text-right" [attr.data-label]="'admin.col_actions' | translate">
                     <div class="action-buttons">
-                        <span class="status-badge" [class]="b.status || 'pending'">
-                            {{ 'admin.status_' + (b.status || 'pending') | translate }}
+                        <span class="status-badge" [class]="(b.status || 'PENDING').toLowerCase()">
+                            {{ 'admin.status_' + (b.status || 'PENDING').toLowerCase() | translate }}
                         </span>
                         
-                        <button class="icon-btn" (click)="openView(b)" [title]="'admin.view_user' | translate">
+                        <button class="icon-btn" (click)="openView(b)" [title]="'common.view' | translate">
                             <lucide-icon [img]="EyeIcon" class="icon-xs"></lucide-icon>
                         </button>
                         
-                        <ng-container *ngIf="(b.status || 'pending') === 'pending'">
+                        <button class="icon-btn" *ngIf="b.bill_url || b.invoice?.pdf_download_url" (click)="openBill(b)" [title]="'admin.col_receipt' | translate">
+                            <lucide-icon [img]="FileIcon" class="icon-xs"></lucide-icon>
+                        </button>
+                        
+                        <ng-container *ngIf="(b.status || 'PENDING') === 'PENDING'">
                             <button class="icon-btn success" (click)="accept(b)" [title]="'admin.approve' | translate">
                                 <lucide-icon [img]="CheckCircleIcon" class="icon-xs"></lucide-icon>
                             </button>
@@ -157,9 +114,9 @@
             <div class="view-section">
                 <label>{{ 'admin.col_client' | translate }}</label>
                 <div class="view-value-box">
-                    <div class="booking-title">{{ viewBooking.name }}</div>
-                    <div class="meta-sub">{{ viewBooking.user_email }}</div>
-                    <div class="meta-sub">{{ viewBooking.phone }}</div>
+                    <div class="booking-title">{{ viewBooking.client_name }}</div>
+                    <div class="meta-sub">{{ viewBooking.client_email }}</div>
+                    <div class="meta-sub">{{ viewBooking.client_phone }}</div>
                 </div>
             </div>
 
@@ -179,10 +136,14 @@
 
             <div class="view-section mt-4">
                 <label>{{ 'admin.col_status' | translate }}</label>
-                <div class="mt-2">
-                    <span class="status-badge" [class]="viewBooking.status || 'pending'">
-                        {{ 'admin.status_' + (viewBooking.status || 'pending') | translate }}
+                <div class="mt-2 flex items-center justify-between">
+                    <span class="status-badge" [class]="(viewBooking.status || 'PENDING').toLowerCase()">
+                        {{ 'admin.status_' + (viewBooking.status || 'PENDING').toLowerCase() | translate }}
                     </span>
+                    <button class="btn-receipt flex items-center gap-1" *ngIf="viewBooking.bill_url || viewBooking.invoice?.pdf_download_url" (click)="openBill(viewBooking)">
+                        <lucide-icon [img]="FileIcon" class="icon-xs"></lucide-icon>
+                        {{ 'admin.col_receipt' | translate }}
+                    </button>
                 </div>
             </div>
         </div>

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, map, shareReplay } from 'rxjs';
+import { Observable, map, shareReplay, forkJoin, of, catchError } from 'rxjs';
 import { environment } from '../../environments/environment';
 
 
@@ -198,7 +198,12 @@ export interface Reservation {
   room_category_name?: string;
   client_name?: string;
   client_phone?: string;
+  client_email?: string;
+  note?: string;
   estate_image?: string;
+  estate_location?: string;
+  is_legacy?: boolean;
+  legacy_receipt?: string;
 }
 
 export interface ContactRequest {
@@ -588,8 +593,63 @@ export class EstateService {
   // ── Reservations & Invoices ───────────────────────────────
   getReservations(): Observable<Reservation[]> {
     return this.http.get<Reservation[]>(`${this.BASE}/reservations/`).pipe(
-      map(list => list.map(r => ({ ...r, estate_image: getAbsoluteUrl(r.estate_image) })))
+      map(list => list.map(r => ({ ...r, estate_image: getAbsoluteUrl(r.estate_image) }))),
+      catchError(() => of([]))
     );
+  }
+
+  /**
+   * Returns a merged list of new Reservations and legacy QuickOrders
+   * for the current user's role.
+   */
+  getUnifiedReservations(role: 'admin' | 'owner' | 'client'): Observable<Reservation[]> {
+    const res$ = this.getReservations();
+    let legacy$: Observable<QuickOrder[]>;
+
+    if (role === 'admin') {
+      legacy$ = this.getAdminBookings().pipe(catchError(() => of([])));
+    } else if (role === 'owner') {
+      legacy$ = this.getMyOrders().pipe(catchError(() => of([])));
+    } else {
+      legacy$ = this.getMyLegacyOrders().pipe(catchError(() => of([])));
+    }
+
+    return forkJoin([res$, legacy$]).pipe(
+      map(([res, legacy]) => {
+        const mappedLegacy = legacy.map(o => this.mapLegacyToReservation(o));
+        return [...res, ...mappedLegacy].sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      })
+    );
+  }
+
+  private mapLegacyToReservation(o: QuickOrder): Reservation {
+    // Map legacy 'pending_payment', 'paid' etc to new statuses
+    let status: Reservation['status'] = 'PENDING';
+    if (o.status === 'accepted') status = 'ACCEPTED';
+    else if (o.status === 'rejected') status = 'REJECTED';
+    else if (o.status === 'payment_failed') status = 'REJECTED';
+
+    return {
+      id: o.id || 0,
+      user: 0,
+      room_category: o.room_category || 0,
+      check_in: o.created_at?.split('T')[0] || '', // Fallback to creation date
+      check_out: '',
+      num_rooms: 1,
+      status: status,
+      created_at: o.created_at || new Date().toISOString(),
+      updated_at: o.created_at || new Date().toISOString(),
+      estate_name: o.estate_name,
+      estate_image: o.estate_image,
+      client_name: o.name,
+      client_phone: o.phone,
+      note: o.note,
+      estate_location: o.estate_location,
+      is_legacy: true,
+      legacy_receipt: o.receipt
+    } as any;
   }
 
   getReservation(id: number): Observable<Reservation> {
@@ -643,7 +703,17 @@ export class EstateService {
   }
 
   /** Open the PDF bill in a new browser tab (polls once if URL not yet cached). */
-  openBill(reservation: Reservation): void {
+  openBill(reservation: any): void {
+    if (reservation.is_legacy) {
+      if (reservation.legacy_receipt) {
+        const url = reservation.legacy_receipt.startsWith('http') ? reservation.legacy_receipt : `${this.BASE.replace('/api', '')}${reservation.legacy_receipt}`;
+        window.open(url, '_blank');
+      } else {
+        alert("Ce reçu n'est pas disponible pour les anciennes réservations.");
+      }
+      return;
+    }
+
     const url = reservation.bill_url ?? reservation.invoice?.pdf_download_url;
     if (url) {
       window.open(url, '_blank');

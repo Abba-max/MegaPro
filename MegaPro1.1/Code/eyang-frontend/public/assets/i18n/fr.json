@@ -15,7 +15,9 @@
     "error": "Une erreur est survenue.",
     "all": "Tous",
     "male": "Garçons",
-    "female": "Filles"
+    "female": "Filles",
+    "payment": "Paiement",
+    "estate": "Logement"
   },
   "hero": {
     "title": "Trouvez votre logement étudiant idéal",
@@ -51,15 +53,15 @@
     "users": "Utilisateurs",
     "verification": "Vérification",
     "logements": "Logements",
-    "housings": "Logements",
-    "bookings": "Réservations",
-    "reservation": "Réservations",
+    "reservations": "Réservations",
     "reviews": "Avis",
     "reports": "Rapports",
     "settings": "Paramètres",
     "back_to_site": "Retour au site"
   },
   "filters": {
+    "check_in": "Arrivée",
+    "check_out": "Départ",
     "filters": "Filtres",
     "wifi": "WiFi",
     "wifi_label": "WiFi",
@@ -78,7 +80,8 @@
     "min_free": "Places libres minimum",
     "apply": "Appliquer",
     "all_types": "Tous les types",
-    "unlimited": "Illimité"
+    "unlimited": "Illimité",
+    "dates": "Dates"
   },
   "listings": {
     "title": "Logements",
@@ -96,6 +99,8 @@
     "verified": "Vérifié"
   },
   "detail": {
+    "unit(s)": "unité(s)",
+    "login_to_view_desc": "Connectez-vous pour pouvoir réserver",
     "back": "Retour",
     "room_types": "Types de chambres disponibles",
     "places_available": "places libres",
@@ -114,6 +119,8 @@
     "2_persons": "2 personnes",
     "capacity": "Capacité",
     "amenities": "Équipements",
+    "estate_equipment": "Équipements de la résidence",
+    "change_link":"Changer ",
     "reviews": "Avis",
     "no_reviews": "Aucun avis pour le moment",
     "rating": "Note",
@@ -123,10 +130,15 @@
     "city": "Cité",
     "large_city": "Grande Cité",
     "login_to_view": "Connectez-vous pour voir tous les détails",
-    "login_to_book": "Connectez-vous pour réserver"
+    "login_to_book": "Connectez-vous pour réserver",
+    "from_campus": "Distance du campus ",
+    "free_places": "places libres",
+    "select_first": "Veuillez sélectionner une chambre",
+    "room": "chambre",
+    "select_room_type_short": "Sélectionnez une chambre"
   },
   "form": {
-    "name": "Votre nom",
+    "name": "Noms ",
     "phone": "Téléphone",
     "message_optional": "Message (optionnel)",
     "your_request": "Précisez votre demande...",
@@ -138,7 +150,9 @@
     "student": "Étudiant",
     "parent": "Parent",
     "owner": "Bailleur",
-    "role_badge_admin": "Administrateur"
+    "role_badge_admin": "Administrateur",
+    "description": "Description",
+    "location":"Locaisation"
   },
   "admin": {
     "enter_characteristic_name": "Entrez le nom de la nouvelle caractéristique :",
@@ -171,6 +185,13 @@
     "col_rating": "NOTE",
     "col_verified": "VÉRIFIÉ",
     "col_status": "STATUT",
+    "col_receipt": "REÇU",
+    "view_receipt": "Voir le reçu",
+    "status_pending": "En attente",
+    "status_accepted": "Acceptée",
+    "status_rejected": "Rejetée",
+    "status_cancelled": "Annulée",
+    "status_payment_failed": "Paiement échoué",
     "col_actions": "ACTIONS",
     "col_price": "PRIX",
     "col_quantity": "QUANTITÉ",
@@ -217,6 +238,7 @@
     "max_capacity": "Capacité maximale",
     "allowed_gender": "Genre autorisé",
     "etages": "Nombre d'étages",
+    "characterics_name": "Nom de la caractéristique",
     "search_owner_ph": "Rechercher propriétaire...",
     "select_owner_ph": "Sélectionner un propriétaire",
     "map_hint": "Glissez le marqueur ou cliquez sur la carte pour définir la position.",
@@ -229,6 +251,7 @@
     "create": "Créer",
     "update": "Mettre à jour",
     "cancel": "Annuler",
+    "playground": "Terrain de jeu",
     "step1_invalid": "Veuillez remplir correctement les informations générales",
     "location_required": "La position GPS est requise",
     "no_results_found": "Aucun résultat trouvé",
@@ -329,7 +352,6 @@
     "status_active": "Actif",
     "status_inactive": "Inactif",
     "status_verified": "Vérifié",
-    "status_pending": "En attente",
     "status_published": "Publié",
     "status_draft": "Brouillon",
     "status_archived": "Archivé",
@@ -382,7 +404,11 @@
     "click_on_map": "cliquer sur la carte",
     "pending_payments":"Paiements en attente",
     "pending_payments_desc": "Gérez les paiements en attente de confirmation.",
-     "edit_housing":"Modifier le logement"
+     "edit_housing":"Modifier le logement",
+     "generator": "Groupe électrogène",
+     "restaurant": "Restaurant",
+     "forages": "Forages",
+     "forage": "Forage"
     
   },
   "home": {
@@ -480,7 +506,9 @@
     "like": "J'aime",
     "liked": "Aimé",
     "love_it": "J'adore",
-    "view_more": "Voir plus d'avis"
+    "view_more": "Voir plus d'avis",
+    "login_to_leave_desc": "Connectez-vous pour laisser un avis"
+    
   },
   "action": {
     "reserve": "Réserver",
@@ -567,11 +595,13 @@
     "back_top": "Retour en haut"
   },
   "dashboard": {
-    "form_name_ph": "Ex: Résidence Les Palmiers",
-    "form_location_ph": "Ex: Yaoundé, Soa",
-    "form_description_ph": "Description du logement…",
-    "room_form_name_ph": "Ex: Chambre VIP",
-    "delete": "Supprimer",
+    "tab_overview": "Aperçu",
+    "tab_listings": "Mes Logements",
+    "tab_reservations": "Réservations",
+    "tab_reviews": "Avis",
+    "tab_messages": "Messages",
+    "tab_my_reviews": "Mes Avis",
+    "tab_contacts": "Contacts",
     "hello": "Bonjour",
     "summary": "Voici un résumé de votre activité",
     "new_housing": "Nouveau logement",
@@ -626,6 +656,9 @@
     "gps_pos": "Position GPS",
     "gps_hint": "cliquer sur la carte",
     "lat": "Latitude",
+    "form_location_ph": "Ex: Yaoundé, Biyem-Assi...",
+    "form_description_ph": "Description du logement, équipements, conditions…",
+    "form_name_ph": "Ex: Heaven City...",
     "lng": "Longitude",
     "existing_photos": "Photos existantes",
     "rating_1": "Mauvais",
@@ -643,14 +676,6 @@
     "modal_edit_title": "Modifier le logement",
     "modal_review_title": "Publier un avis",
     "back_home": "Retour à l'accueil",
-    "tab_overview": "Vue d'ensemble",
-    "tab_listings": "Logements",
-    "tab_bookings": "Réservations",
-    "tab_reviews": "Avis",
-    "tab_messages": "Messages",
-    "tab_reservations": "Mes réservations",
-    "tab_my_reviews": "Mes avis",
-    "tab_contacts": "Demandes de contact",
     "my_space": "Mon espace",
     "my_reservations": "Mes réservations",
     "stat_listings": "Logements",
@@ -704,7 +729,8 @@
     "add_supplement": "Ajouter un supplément",
     "no_supplements": "Aucun supplément ajouté",
     "latitude": "Latitude",
-    "longitude": "Longitude"
+    "longitude": "Longitude",
+    "cancel_reservation_confirm":"Êtes-vous sûr de vouloir annuler cette réservation ?"
   },
   "auth": {
     "go_to_dashboard": "Accéder au tableau de bord",
@@ -712,6 +738,8 @@
     "parent": "Parent",
     "owner": "Bailleur",
     "role_badge_admin": "Administrateur",
+    "resident": "Résident local",
+    "visitor": "Visiteur",
     "firstname": "Prénom",
     "lastname": "Nom",
     "username": "Nom d'utilisateur",
@@ -742,7 +770,22 @@
     "login_subtitle_premium": "Accédez à votre espace immobilier premium.",
     "remember_me": "Se souvenir de moi",
     "step_account": "Compte",
-    "continue": "Continuer"
+    "continue": "Continuer",
+    "login_btn": "Se connecter",
+    "register_link": "Créer un compte",
+    "i_am_a": "Je suis un(e)…",
+    "already_account": "Déjà un compte ? Se connecter",
+    "privacy_policy": "Politique de confidentialité",
+    "terms_of_service": "Conditions d'utilisation",
+    "no_account": "Pas de compte ? ",
+    "login_link": "Se connecter",
+    "back":"Retour",
+    "phone_placeholder": "Entrez votre numéro de téléphone",
+    "address_placeholder": "Entrez votre adresse",
+    "step_profile": "Profil",
+    "owner_id_notice": "Pour des raisons de sécurité, les bailleurs doivent fournir un document d'identité valide pour publier des annonces.",
+    "click_to_upload_id": "Cliquez pour télécharger votre pièce d'identité",
+    "step_owner": "Bailleur"
   },
   "why": {
     "title": "Pourquoi choisir Eyang Estate ?",
@@ -787,5 +830,20 @@
     "reservations": "Réservations",
     "students": "Étudiants au total",
     "satisfaction": "Avis positifs"
-  }
-}
+  },
+  "testimonials": {
+    "title": "Ce que disent nos utilisateurs",
+    "subtitle": "Des étudiants et des bailleurs partagent leur expérience avec Eyang Estate.",
+    "t1_name": "Amina T.",
+    "t1_role": "Étudiante en droit",
+    "t1_text": "Eyang Estate m'a permis de trouver un logement sûr et abordable à proximité de mon campus. Le processus de réservation était simple et rapide.",
+    "t2_name": "Jean M.",
+    "t2_role": "Bailleur",
+    "t2_text": "En tant que bailleur, Eyang Estate m'a donné une visibilité incroyable auprès des étudiants. J'ai pu louer mes chambres en un temps record !",
+    "t3_name": "Sophie L.",
+    "t3_role": "Étudiante en médecine",
+    "t3_text": "J'étais stressée à l'idée de trouver un logement pour mes études, mais Eyang Estate a rendu tout ça tellement facile. Je recommande vivement !"
+},
+"housing":{
+  "currency": ""
+}}

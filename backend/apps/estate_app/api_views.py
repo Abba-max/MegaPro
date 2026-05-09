@@ -28,7 +28,7 @@ from .serializers import (
     SupplementSerializer,
     CharacteristicSerializer, EstateCharacteristicSerializer,
 )
-from .permissions import IsVerifiedOwner
+from .permissions import IsVerifiedOwner, IsEyangAdmin
 from django.utils import timezone
 from django.db.models import Sum, Avg
 from .utils import send_verification_email, send_welcome_email
@@ -167,9 +167,16 @@ class EstateViewSet(viewsets.ModelViewSet):
         if st  := p.get('status'):   qs = qs.filter(status=st)
         
         # ── Boolean / Char features ──────────────────────────────────────────
-        if gen := p.get('generator'):  qs = qs.filter(generator=gen)
-        if fog := p.get('forage'):     qs = qs.filter(forage=fog)
-        if rst := p.get('restaurant'): qs = qs.filter(restaurant=rst)
+        if gen := p.get('generator'):
+            val = (gen.lower() == 'true' or gen == '1')
+            qs = qs.filter(generator=('1' if val else '0'))
+        if fog := p.get('forage'):
+            val = (fog.lower() == 'true' or fog == '1')
+            qs = qs.filter(forage=('1' if val else '0'))
+        if rst := p.get('restaurant'):
+            val = (rst.lower() == 'true' or rst == '1')
+            qs = qs.filter(restaurant=('1' if val else '0'))
+        
         if wifi := p.get('wifi'):      qs = qs.filter(wifi=(wifi.lower() == 'true' or wifi == '1'))
         if tv   := p.get('tv'):        qs = qs.filter(tv=(tv.lower() == 'true' or tv == '1'))
         if frid := p.get('fridge'):    qs = qs.filter(fridge=(frid.lower() == 'true' or frid == '1'))
@@ -768,7 +775,7 @@ def online_users_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAdminUser])
+@permission_classes([IsEyangAdmin])
 def admin_stats_view(request):
     from django.db.models import Count
     from django.db.models.functions import TruncMonth
@@ -832,7 +839,7 @@ def admin_stats_view(request):
 
 
 @api_view(['GET', 'DELETE'])
-@permission_classes([permissions.IsAdminUser])
+@permission_classes([IsEyangAdmin])
 def admin_bookings_view(request):
     if request.method == 'DELETE':
         bid = request.query_params.get('id')
@@ -856,7 +863,7 @@ def admin_bookings_view(request):
 
 
 @api_view(['GET', 'DELETE'])
-@permission_classes([permissions.IsAdminUser])
+@permission_classes([IsEyangAdmin])
 def admin_reviews_view(request):
     if request.method == 'DELETE':
         rid = request.query_params.get('id')
@@ -876,7 +883,7 @@ def admin_reviews_view(request):
 
 
 @api_view(['GET', 'DELETE'])
-@permission_classes([permissions.IsAdminUser])
+@permission_classes([IsEyangAdmin])
 def admin_contacts_view(request):
     if request.method == 'DELETE':
         cid = request.query_params.get('id')
@@ -896,7 +903,7 @@ def admin_contacts_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([permissions.IsAdminUser])
+@permission_classes([IsEyangAdmin])
 def admin_users_view(request):
     users = User.objects.all().order_by('-date_joined')
     if request.query_params.get('pending_only') == '1':
@@ -925,7 +932,7 @@ def admin_users_view(request):
 
 
 @api_view(['POST'])
-@permission_classes([permissions.IsAdminUser])
+@permission_classes([IsEyangAdmin])
 def admin_verify_owner_view(request, user_id):
     try:
         user = User.objects.get(pk=user_id, user_type='owner')
@@ -946,7 +953,7 @@ def admin_verify_owner_view(request, user_id):
 
 
 @api_view(['PATCH'])
-@permission_classes([permissions.IsAdminUser])
+@permission_classes([IsEyangAdmin])
 def admin_toggle_user_view(request, user_id):
     try:
         user = User.objects.get(pk=user_id)
@@ -958,7 +965,7 @@ def admin_toggle_user_view(request, user_id):
 
 
 @api_view(['PATCH'])
-@permission_classes([permissions.IsAdminUser])
+@permission_classes([IsEyangAdmin])
 def admin_update_user_view(request, user_id):
     try:
         user = User.objects.get(pk=user_id)
@@ -975,7 +982,7 @@ def admin_update_user_view(request, user_id):
 
 
 @api_view(['DELETE'])
-@permission_classes([permissions.IsAdminUser])
+@permission_classes([IsEyangAdmin])
 def admin_delete_user_view(request, user_id):
     try:
         user = User.objects.get(pk=user_id)
@@ -1036,18 +1043,31 @@ class ReservationViewSet(viewsets.ModelViewSet):
                 'invoice',
             )
         )
-        if user.is_staff or user.is_superuser:
+        if user.is_staff or user.is_superuser or user.user_type == 'admin':
             return qs.order_by('-created_at')
         if user.user_type == 'owner':
             return qs.filter(room_category__estate__owner=user).order_by('-created_at')
         return qs.filter(user=user).order_by('-created_at')
 
+    def _get_unscoped_reservation(self, pk):
+        """
+        Fetch a reservation by PK without applying the user-scoped get_queryset filter.
+        Used by @action endpoints that do their own authorization checks.
+        """
+        from django.shortcuts import get_object_or_404
+        return get_object_or_404(
+            Reservation.objects.select_related(
+                'room_category__estate__owner', 'user'
+            ).prefetch_related('invoice'),
+            pk=pk
+        )
+
     @action(detail=True, methods=['post'], url_path='accept',
             permission_classes=[permissions.IsAuthenticated])
     def accept(self, request, pk=None):
-        reservation = self.get_object()
+        reservation = self._get_unscoped_reservation(pk)
         user = request.user
-        if reservation.room_category.estate.owner != user and not user.is_staff:
+        if reservation.room_category.estate.owner != user and not user.is_staff and user.user_type != 'admin':
             return Response({'error': 'Non autorisé.'}, status=403)
 
         try:
@@ -1062,9 +1082,9 @@ class ReservationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='reject',
             permission_classes=[permissions.IsAuthenticated])
     def reject(self, request, pk=None):
-        reservation = self.get_object()
+        reservation = self._get_unscoped_reservation(pk)
         user = request.user
-        if reservation.room_category.estate.owner != user and not user.is_staff:
+        if reservation.room_category.estate.owner != user and not user.is_staff and user.user_type != 'admin':
             return Response({'error': 'Non autorisé.'}, status=403)
         try:
             updated = reject_reservation(reservation.id)
@@ -1077,7 +1097,7 @@ class ReservationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'], url_path='cancel',
             permission_classes=[permissions.IsAuthenticated])
     def cancel(self, request, pk=None):
-        reservation = self.get_object()
+        reservation = self._get_unscoped_reservation(pk)
         try:
             updated = cancel_reservation(reservation.id, request.user)
             return Response(
@@ -1089,9 +1109,9 @@ class ReservationViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['get'], url_path='bill',
             permission_classes=[permissions.IsAuthenticated])
     def download_bill(self, request, pk=None):
-        reservation = self.get_object()
+        reservation = self._get_unscoped_reservation(pk)
         user = request.user
-        if reservation.user != user and reservation.room_category.estate.owner != user and not user.is_staff:
+        if reservation.user != user and reservation.room_category.estate.owner != user and not user.is_staff and user.user_type != 'admin':
             return Response({'error': 'Non autorisé.'}, status=403)
         try:
             inv = reservation.invoice
@@ -1103,6 +1123,7 @@ class ReservationViewSet(viewsets.ModelViewSet):
         except Exception:
             pass
         return Response({'bill_url': None, 'message': 'Facture non encore générée.'}, status=202)
+
 
 
 class InvoiceViewSet(viewsets.ReadOnlyModelViewSet):
@@ -1117,7 +1138,7 @@ class InvoiceViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         user = self.request.user
         qs = Invoice.objects.all().select_related('reservation__room_category__estate', 'reservation__user')
-        if user.is_staff or user.is_superuser:
+        if user.is_staff or user.is_superuser or user.user_type == 'admin':
             return qs
         if user.user_type == 'owner':
             return qs.filter(reservation__room_category__estate__owner=user)
@@ -1167,7 +1188,7 @@ class CharacteristicViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
-        return [permissions.IsAdminUser()]
+        return [permissions.IsAuthenticated(), IsVerifiedOwner()]
 
 
 # Payment APIs

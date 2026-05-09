@@ -42,9 +42,9 @@
         <span class="snav__lbl">{{ 'dashboard.tab_listings' | translate }}</span>
         <span class="snav__count" *ngIf="myEstates.length>0">{{ myEstates.length }}</span>
       </button>
-      <button class="snav" [class.snav--on]="activeTab==='orders'" (click)="selectTab('orders')">
+      <button class="snav" [class.snav--on]="activeTab==='reservations'" (click)="selectTab('reservations')">
         <span class="snav__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></span>
-        <span class="snav__lbl">{{ 'dashboard.tab_bookings' | translate }}</span>
+        <span class="snav__lbl">{{ 'dashboard.tab_reservations' | translate }}</span>
         <span class="snav__badge" *ngIf="ownerStats.pending_orders>0">{{ ownerStats.pending_orders }}</span>
       </button>
       <button class="snav" [class.snav--on]="activeTab==='reviews'" (click)="selectTab('reviews')">
@@ -79,13 +79,13 @@
       <span>{{ 'footer.hero' | translate }}</span>
     </a>
     <button class="topbar__trigger" (click)="toggleMobileTab()">
-      <span>{{ activeTab==='overview'?('dashboard.tab_overview'|translate):activeTab==='estates'?('dashboard.tab_listings'|translate):activeTab==='orders'?('dashboard.tab_bookings'|translate):activeTab==='reviews'?('dashboard.tab_reviews'|translate):('dashboard.tab_messages'|translate) }}</span>
+      <span>{{ activeTab==='overview'?('dashboard.tab_overview'|translate):activeTab==='estates'?('dashboard.tab_listings'|translate):activeTab==='reservations'?('dashboard.tab_reservations'|translate):activeTab==='reviews'?('dashboard.tab_reviews'|translate):('dashboard.tab_messages'|translate) }}</span>
       <lucide-icon [img]="ChevronDownIcon" [style.transform]="mobileTabOpen?'rotate(180deg)':''"></lucide-icon>
     </button>
     <div class="topbar__drop" *ngIf="mobileTabOpen">
       <button (click)="selectTab('overview')"><lucide-icon [img]="BarChartIcon"></lucide-icon>{{ 'dashboard.tab_overview' | translate }}</button>
       <button (click)="selectTab('estates')"><lucide-icon [img]="HomeIcon"></lucide-icon>{{ 'dashboard.tab_listings' | translate }}</button>
-      <button (click)="selectTab('orders')"><lucide-icon [img]="PackageIcon"></lucide-icon>{{ 'dashboard.tab_bookings' | translate }}</button>
+      <button (click)="selectTab('reservations')"><lucide-icon [img]="PackageIcon"></lucide-icon>{{ 'dashboard.tab_reservations' | translate }}</button>
       <button (click)="selectTab('reviews')"><lucide-icon [img]="StarIcon"></lucide-icon>{{ 'dashboard.tab_reviews' | translate }}</button>
       <button (click)="selectTab('messages')"><lucide-icon [img]="MessageIcon"></lucide-icon>{{ 'dashboard.tab_messages' | translate }}</button>
     </div>
@@ -141,10 +141,10 @@
         <button class="btn btn--ghost btn--xs" (click)="selectTab('orders')">{{ 'dashboard.view_arrow' | translate }}</button>
       </div>
 
-      <section *ngIf="myOrders.length>0" class="overview-recent">
+      <section *ngIf="myReservations.length>0" class="overview-recent">
         <h2 class="section-h">{{ 'dashboard.recent_orders' | translate }}</h2>
         <div class="timeline">
-          <div class="tl-item" *ngFor="let o of myOrders.slice(0,4)">
+          <div class="tl-item" *ngFor="let o of myReservations.slice(0,4)">
             <div class="tl-dot tl-dot--{{(o.status||'PENDING').toLowerCase()}}"></div>
             <div class="tl-body">
               <div class="tl-row">
@@ -220,12 +220,12 @@
       <div class="load-more" *ngIf="hasMoreEstates"><button class="btn btn--ghost" (click)="showMoreEstates()">{{ 'home.view_more' | translate }}</button></div>
     </div>
 
-    <!-- ORDERS (owner) -->
-    <div class="panel" *ngIf="activeTab==='orders'">
-      <header class="panel__hd"><div><h1 class="panel__title">{{ 'dashboard.received_orders' | translate }}</h1><p class="panel__sub">{{ 'dashboard.orders_count' | translate:{count: myOrders.length, plural: myOrders.length !== 1 ? 's' : ''} }}</p></div></header>
-      <div class="empty-state" *ngIf="myOrders.length===0"><div class="empty-state__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div><h3>{{ 'dashboard.empty_orders' | translate }}</h3><p>{{ 'dashboard.orders_will_appear' | translate }}</p></div>
-      <div class="o-list" *ngIf="myOrders.length>0">
-        <div class="o-card" *ngFor="let o of myOrders">
+    <!-- RESERVATIONS (owner) -->
+    <div class="panel" *ngIf="activeTab==='reservations' && isOwner">
+      <header class="panel__hd"><div><h1 class="panel__title">{{ 'dashboard.received_orders' | translate }}</h1><p class="panel__sub">{{ 'dashboard.orders_count' | translate:{count: myReservations.length, plural: myReservations.length !== 1 ? 's' : ''} }}</p></div></header>
+      <div class="empty-state" *ngIf="myReservations.length===0"><div class="empty-state__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div><h3>{{ 'dashboard.empty_orders' | translate }}</h3><p>{{ 'dashboard.orders_will_appear' | translate }}</p></div>
+      <div class="o-list" *ngIf="myReservations.length>0">
+        <div class="o-card" *ngFor="let o of myReservations">
           <div class="o-card__av">{{ (o.client_name || 'G').charAt(0).toUpperCase() }}</div>
           <div class="o-card__body">
             <div class="o-card__top">
@@ -247,7 +247,7 @@
                 <button class="btn btn--accept btn--sm" (click)="acceptReservation(o)"><lucide-icon [img]="CheckIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.accept' | translate }}</button>
                 <button class="btn btn--reject btn--sm" (click)="rejectReservation(o)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.refuse' | translate }}</button>
               </ng-container>
-              <button *ngIf="o.status==='ACCEPTED'" class="btn btn--primary btn--sm" (click)="openBill(o)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'dashboard.download_bill' | translate }}</button>
+              <button *ngIf="o.status==='ACCEPTED'" class="btn btn--primary btn--sm" (click)="openBill(o)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'admin.col_receipt' | translate }}</button>
             </div>
           </div>
         </div>
@@ -422,8 +422,8 @@
   <!-- ── Main ─────────────────────────────────────────────── -->
   <main class="db__main">
 
-    <!-- RESERVATIONS -->
-    <div class="panel" *ngIf="activeTab==='reservations'">
+    <!-- RESERVATIONS (client) -->
+    <div class="panel" *ngIf="activeTab==='reservations' && !isOwner">
       <header class="panel__hd"><div><h1 class="panel__title">{{ 'dashboard.my_reservations' | translate }}</h1><p class="panel__sub">{{ 'dashboard.orders_count' | translate:{count: myReservations.length, plural: myReservations.length !== 1 ? 's' : ''} }}</p></div></header>
       <div class="empty-state" *ngIf="myReservations.length===0">
         <div class="empty-state__ico"><lucide-icon [img]="PackageIcon"></lucide-icon></div>
@@ -451,7 +451,7 @@
             <!-- Actions -->
             <div class="o-card__acts" style="margin-top:12px;">
               <button class="btn btn--ghost btn--sm" (click)="openReservationDetails(r)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'dashboard.view_details' | translate }}</button>
-              <button *ngIf="r.status==='ACCEPTED'" class="btn btn--primary btn--sm" (click)="openBill(r)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'dashboard.download_bill' | translate }}</button>
+              <button *ngIf="r.status==='ACCEPTED'" class="btn btn--primary btn--sm" (click)="openBill(r)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'admin.col_receipt' | translate }}</button>
               <button *ngIf="r.status==='PENDING'" class="btn btn--ghost-red btn--sm" (click)="deleteReservation(r)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.cancel_reservation' | translate }}</button>
             </div>
           </div>

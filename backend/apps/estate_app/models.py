@@ -380,10 +380,10 @@ class Reservation(models.Model):
     reservation_details_json = models.JSONField(default=dict, blank=True,
         help_text="Immutable snapshot of estate and room-category at booking time.")
 
-    # ── Optional supplements chosen by client ────────────────────────────────
     selected_supplements = models.ManyToManyField(
         Supplement, blank=True, related_name='reservations'
     )
+    note = models.TextField(blank=True, null=True, help_text="Note from the client.")
 
     status     = models.CharField(max_length=20, choices=STATUS_CHOICES, default='PENDING')
     created_at = models.DateTimeField(auto_now_add=True)

@@ -1,8 +1,8 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Calendar, Loader, Phone, Trash2, Search, CheckCircle, XCircle, Info, AlertCircle, Eye } from 'lucide-angular';
-import { EstateService, QuickOrder } from '../../services/estate.service';
+import { LucideAngularModule, Calendar, Loader, Phone, Trash2, Search, CheckCircle, XCircle, Info, AlertCircle, Eye, FileText } from 'lucide-angular';
+import { EstateService, Reservation } from '../../services/estate.service';
 import { catchError, of } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 
@@ -26,18 +26,20 @@ export class AdminBookingsComponent implements OnInit {
   readonly InfoIcon        = Info;
   readonly AlertIcon       = AlertCircle;
   readonly EyeIcon         = Eye;
+  readonly FileIcon        = FileText;
 
   isLoading    = signal(true);
-  allBookings: QuickOrder[] = [];
-  filtered:    QuickOrder[] = [];
+  allBookings: Reservation[] = [];
+  filtered:    Reservation[] = [];
   searchQuery  = '';
+  statusFilter = 'ALL';
 
   toasts: Toast[]      = [];
   private toastCounter = 0;
 
   // View Modal state
   showViewModal = false;
-  viewBooking: QuickOrder | null = null;
+  viewBooking: Reservation | null = null;
 
   constructor(
     private estateService: EstateService,
@@ -49,10 +51,9 @@ export class AdminBookingsComponent implements OnInit {
   load(): void {
     this.isLoading.set(true);
     // Uses the admin endpoint — returns ALL bookings, not just owner's
-    this.estateService.getAdminBookings()
-      .pipe(catchError(() => of([])))
+    this.estateService.getUnifiedReservations('admin')
       .subscribe(data => {
-        this.allBookings = data as QuickOrder[];
+        this.allBookings = data;
         this.applyFilter();
         this.isLoading.set(false);
       });
@@ -60,20 +61,26 @@ export class AdminBookingsComponent implements OnInit {
 
   applyFilter(): void {
     const q = this.searchQuery.trim().toLowerCase();
-    this.filtered = q
-      ? this.allBookings.filter(b =>
-          b.name.toLowerCase().includes(q) ||
-          (b.estate_name ?? '').toLowerCase().includes(q) ||
-          b.phone.includes(q))
-      : [...this.allBookings];
+    const s = this.statusFilter;
+
+    this.filtered = this.allBookings.filter(b => {
+      const matchSearch = !q || (
+        (b.client_name || '').toLowerCase().includes(q) ||
+        (b.estate_name || '').toLowerCase().includes(q) ||
+        (b.client_phone || '').includes(q)
+      );
+      const matchStatus = s === 'ALL' || b.status === s;
+      return matchSearch && matchStatus;
+    });
   }
 
-  getPendingPayments(): QuickOrder[] {
-    return this.allBookings.filter(b => b.status === 'paid');
+  getPendingPayments(): Reservation[] {
+    // For Reservations, 'PENDING' might need a receipt check if implemented, 
+    // otherwise we use the status field.
+    return this.allBookings.filter(b => b.status === 'PENDING');
   }
 
-  // ── View modal ──────────────────────────────────────────────────────────
-  openView(booking: QuickOrder): void {
+  openView(booking: Reservation): void {
     this.viewBooking = booking;
     this.showViewModal = true;
   }
@@ -83,13 +90,13 @@ export class AdminBookingsComponent implements OnInit {
     this.viewBooking = null;
   }
 
-  accept(booking: QuickOrder): void {
+  accept(booking: Reservation): void {
     if (!booking.id) return;
     this.estateService.acceptReservation(booking.id).subscribe({
       next: (updated) => {
         const idx = this.allBookings.findIndex(b => b.id === booking.id);
         if (idx !== -1) {
-          this.allBookings[idx] = { ...this.allBookings[idx], status: 'accepted' };
+          this.allBookings[idx] = updated;
           this.applyFilter();
         }
         this.showToast(this.translate.instant('dashboard.status_accepted_toast'), 'success');
@@ -98,13 +105,13 @@ export class AdminBookingsComponent implements OnInit {
     });
   }
 
-  reject(booking: QuickOrder): void {
+  reject(booking: Reservation): void {
     if (!booking.id) return;
     this.estateService.rejectReservation(booking.id).subscribe({
       next: (updated) => {
         const idx = this.allBookings.findIndex(b => b.id === booking.id);
         if (idx !== -1) {
-          this.allBookings[idx] = { ...this.allBookings[idx], status: 'rejected' };
+          this.allBookings[idx] = updated;
           this.applyFilter();
         }
         this.showToast(this.translate.instant('dashboard.status_rejected_toast'), 'warning');
@@ -113,29 +120,22 @@ export class AdminBookingsComponent implements OnInit {
     });
   }
 
-  verifyPayment(booking: QuickOrder, action: 'approve' | 'reject'): void {
+  verifyPayment(booking: Reservation, action: 'approve' | 'reject'): void {
     if (!booking.id) return;
-    this.estateService.verifyPayment(booking.id, action).subscribe({
-      next: (res) => {
-        const idx = this.allBookings.findIndex(b => b.id === booking.id);
-        if (idx !== -1) {
-          if (action === 'approve') {
-            this.allBookings[idx] = { ...this.allBookings[idx], status: 'pending', is_payment_verified: true };
-          } else {
-            this.allBookings[idx] = { ...this.allBookings[idx], status: 'payment_failed', is_payment_verified: false };
-          }
-          this.applyFilter();
-        }
-        this.showToast(action === 'approve' ? 'Paiement vérifié.' : 'Paiement rejeté.', 'info');
-      },
-      error: () => this.showToast('Erreur lors de la vérification.', 'error')
-    });
+    // For new architecture, verification might involve accepting or a separate call
+    // If there's no direct equivalent, we use accept/reject for now
+    if (action === 'approve') {
+      this.accept(booking);
+    } else {
+      this.reject(booking);
+    }
   }
 
-  delete(booking: QuickOrder): void {
-    const msg = this.translate.instant('admin.delete_confirm_booking', { name: booking.name });
-    if (!confirm(msg || `Supprimer la réservation de "${booking.name}" ?`)) return;
-    this.estateService.deleteAdminBooking(booking.id!).subscribe({
+  delete(booking: Reservation): void {
+    const msg = this.translate.instant('admin.delete_confirm_booking', { name: booking.client_name });
+    if (!confirm(msg || `Supprimer la réservation de "${booking.client_name}" ?`)) return;
+    // Use cancel or delete if service provides it
+    this.estateService.cancelReservation(booking.id).subscribe({
       next: () => {
         this.allBookings = this.allBookings.filter(b => b.id !== booking.id);
         this.applyFilter();
@@ -143,6 +143,10 @@ export class AdminBookingsComponent implements OnInit {
       },
       error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
     });
+  }
+
+  openBill(booking: Reservation): void {
+    this.estateService.openBill(booking);
   }
 
   formatDate(d: string): string {

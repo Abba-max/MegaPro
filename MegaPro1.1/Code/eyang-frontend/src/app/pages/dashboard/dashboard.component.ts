@@ -102,7 +102,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   currentUser: AuthUser | null = null;
   isOwner = false;
   isLoading = true;
-  activeTab = 'overview';
+  activeTab = 'overview'; // For Owners: overview, estates, reservations, reviews, messages. For Clients: reservations, reviews, contacts, messages.
 
   /** True only when the owner's account has been verified by an admin */
   get isOwnerVerified(): boolean { return this.currentUser?.is_verified === true; }
@@ -118,6 +118,10 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.activeTab = tab;
     this.mobileTabOpen = false;
     if (tab === 'messages' && this.isOwner) this.loadOwnerConversations();
+    if (tab === 'reservations' && this.isOwner) {
+       // Refresh owner reservations if needed
+       this.estateService.getUnifiedReservations(this.isOwner ? 'owner' : 'client').subscribe(o => this.myReservations = o);
+    }
   }
 
   @HostListener('document:click')
@@ -128,7 +132,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     total_estates: 0, occupancy_pct: 0, pending_orders: 0, avg_rating: 0
   };
   myEstates: Estate[] = [];
-  myOrders:  Reservation[] = [];
+  myReservations: Reservation[] = [];
   myInvoices: Invoice[] = [];
   myReviews: Review[] = [];
 
@@ -311,7 +315,6 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   clientStats: ClientDashboardStats = {
     total_reservations: 0, total_reviews: 0, total_messages: 0, total_contacts: 0
   };
-  myReservations:      Reservation[] = [];
   mySubmittedReviews:  Review[]     = [];
   myContacts:          ContactRequest[] = [];
   conversations:       Conversation[]  = [];
@@ -394,12 +397,19 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       filter(user => user !== null)
     ).subscribe(user => {
       this.currentUser = user;
+      if (user.role === 'Admin') {
+        this.router.navigate(['/app-admin/overview']);
+        return;
+      }
+
       this.isOwner     = user.role === 'Owner';
-      this.activeTab   = this.isOwner ? 'overview' : 'reservations';
+      this.activeTab   = 'reservations'; // Default for both for now, but Owner usually starts at overview
+      if (this.isOwner) this.activeTab = 'overview';
       this.isLoading   = true;
       if (this.isOwner) {
         this.loadOwnerData();
       } else {
+        this.activeTab = 'reservations'; // Clients don't have an 'overview' tab
         this.loadClientData();
       }
       this.refreshOnlineUsers();
@@ -492,8 +502,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       },
       error: () => { this.isLoading = false; this.cdr.detectChanges(); }
     });
-    this.estateService.getReservations().subscribe({
-      next: o => this.myOrders = o, error: () => {}
+    this.estateService.getUnifiedReservations('owner').subscribe({
+      next: o => this.myReservations = o, error: () => {}
     });
     this.estateService.getInvoices().subscribe({
       next: i => this.myInvoices = i, error: () => {}
@@ -1111,7 +1121,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   loadClientData(): void {
     this.estateService.getClientStats().subscribe({ next: s => this.clientStats = s, error: () => {} });
-    this.estateService.getReservations().subscribe({
+    this.estateService.getUnifiedReservations('client').subscribe({
       next: r => { this.myReservations = r; this.isLoading = false; },
       error: () => { this.isLoading = false; }
     });
@@ -1128,8 +1138,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     if (!order.id) return;
     this.estateService.acceptReservation(order.id).subscribe({
       next: updated => {
-        const idx = this.myOrders.findIndex(o => o.id === order.id);
-        if (idx !== -1) this.myOrders[idx] = updated;
+        const idx = this.myReservations.findIndex((o: Reservation) => o.id === order.id);
+        if (idx !== -1) this.myReservations[idx] = updated;
         this.showToast(this.translate.instant('dashboard.status_accepted'), 'success');
         this.loadOwnerData(); // Refresh to fetch newly generated invoice
       },
@@ -1142,8 +1152,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.openConfirm(this.translate.instant('admin.reject_booking_confirm', { name: order.estate_name }), () => {
       this.estateService.rejectReservation(order.id).subscribe({
         next: updated => {
-          const idx = this.myOrders.findIndex(o => o.id === order.id);
-          if (idx !== -1) this.myOrders[idx] = updated;
+          const idx = this.myReservations.findIndex((o: Reservation) => o.id === order.id);
+          if (idx !== -1) this.myReservations[idx] = updated;
           this.showToast(this.translate.instant('dashboard.status_rejected'), 'info');
         },
         error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
@@ -1158,7 +1168,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.openConfirm(this.translate.instant('dashboard.cancel_reservation_confirm', { name: order.estate_name }), () => {
       this.estateService.cancelReservation(order.id).subscribe({
         next: updated => {
-          const idx = this.myReservations.findIndex(r => r.id === order.id);
+          const idx = this.myReservations.findIndex((r: Reservation) => r.id === order.id);
           if (idx !== -1) this.myReservations[idx] = updated;
           this.showToast(this.translate.instant('dashboard.cancel_reservation'), 'success');
         },
@@ -1558,6 +1568,12 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   getStars(n: number): number[] {
     return Array(n).fill(0).map((_, i) => i + 1);
+  }
+
+  openReceipt(url: string | undefined): void {
+    if (url) {
+      window.open(url, '_blank');
+    }
   }
 
   // ── Toasts ────────────────────────────────────────────────

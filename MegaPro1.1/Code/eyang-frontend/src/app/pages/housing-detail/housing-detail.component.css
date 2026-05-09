@@ -298,6 +298,8 @@
 .form-group label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
 .input { width: 100%; padding: 10px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; color: #1e293b; outline: none; transition: border-color .15s; background: #fff; box-sizing: border-box; }
 .input:focus { border-color: #2563EB; box-shadow: 0 0 0 3px rgba(37,99,235,.1); }
+.modal-dates-row { display: flex; gap: 12px; margin-top: 1rem; }
+.flex-1 { flex: 1; }
 
 /* ══════════════════════════════════════════════
    MESSAGE MODAL — modern messenger

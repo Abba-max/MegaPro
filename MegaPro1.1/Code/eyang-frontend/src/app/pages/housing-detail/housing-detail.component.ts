@@ -90,7 +90,7 @@ readonly DropletIcon      = Droplet;
   showContactModal   = false;
   showMessageModal   = false;
 
-  contactForm = { name: '', phone: '', message: '' };
+  contactForm = { name: '', phone: '', message: '', checkIn: '', checkOut: '' };
   messageText = '';
   isSendingMessage      = false;
   isLoadingConversation = false;
@@ -153,6 +153,7 @@ get paidSupplements(): Supplement[] {
       this.loadEstate(Number(id));
       this.loadReviews(Number(id));
       this.loadSupplementsAndCharacteristics(Number(id));
+      this.initDates();
     }
   }
 
@@ -218,6 +219,14 @@ private loadSupplementsAndCharacteristics(estateId: number): void {
       next: (data) => { this.reviews = data; },
       error: () => {}
     });
+  }
+
+  private initDates(): void {
+    const today = new Date();
+    const nextMonth = new Date();
+    nextMonth.setMonth(today.getMonth() + 1);
+    this.contactForm.checkIn = today.toISOString().split('T')[0];
+    this.contactForm.checkOut = nextMonth.toISOString().split('T')[0];
   }
 
   private getEquipmentsWithIcons(h: Estate): any[] {
@@ -479,33 +488,35 @@ private loadSupplementsAndCharacteristics(estateId: number): void {
   // ── Reservation submit ────────────────────────────────────
 
   handleSendRequest(): void {
-    if (!this.contactForm.name.trim() || !this.contactForm.phone.trim() || !this.housing) {
-      this.showToast('Veuillez remplir votre nom et téléphone', 'warning');
+    if (!this.contactForm.checkIn || !this.contactForm.checkOut || !this.housing || !this.selectedRoomCategory) {
+      this.showToast('Veuillez sélectionner des dates et un type de chambre', 'warning');
       return;
     }
     this.isSubmitting  = true;
     this.submitSuccess = false;
 
-    this.estateService.createQuickOrder({
-      estate:         this.housing.id,
-      room_category:  this.selectedRoomCategory?.id ?? null,
-      name:           this.contactForm.name.trim(),
-      phone:          this.contactForm.phone.trim(),
-      note:           this.contactForm.message
+    this.estateService.createReservation({
+      room_category:  this.selectedRoomCategory.id,
+      check_in:       this.contactForm.checkIn,
+      check_out:      this.contactForm.checkOut,
+      num_rooms:      1,
+      selected_supplements: [] // Optional for now
     }).subscribe({
       next: () => {
         this.isSubmitting  = false;
         this.submitSuccess = true;
-        this.showToast('Demande envoyée ! Le propriétaire vous contactera bientôt.', 'success');
+        this.showToast('Réservation effectuée ! Votre facture sera générée après acceptation par le propriétaire.', 'success');
         setTimeout(() => {
           this.closeContact();
           this.submitSuccess = false;
-          this.contactForm   = { name: '', phone: '', message: '' };
+          // Optionally redirect to dashboard to see the reservation
+          this.router.navigate(['/dashboard']);
         }, 2200);
       },
-      error: () => {
+      error: (err) => {
         this.isSubmitting = false;
-        this.showToast('Erreur lors de l\'envoi. Veuillez réessayer.', 'error');
+        const msg = err.error?.error || 'Erreur lors de la réservation. Veuillez réessayer.';
+        this.showToast(msg, 'error');
       }
     });
   }

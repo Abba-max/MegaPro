@@ -727,23 +727,24 @@
             </span>
           </div>
           <div class="modal-divider"></div>
-          <div class="form-group">
-            <label>{{ 'form.name' | translate }}</label>
-            <input type="text" [(ngModel)]="contactForm.name" [placeholder]="'dashboard.form_name_ph' | translate"
-              class="input" [disabled]="isSubmitting">
+          <div class="modal-dates-row">
+            <div class="form-group flex-1">
+              <label>{{ 'filters.check_in' | translate }}</label>
+              <input type="date" [(ngModel)]="contactForm.checkIn" class="input" [disabled]="isSubmitting">
+            </div>
+            <div class="form-group flex-1">
+              <label>{{ 'filters.check_out' | translate }}</label>
+              <input type="date" [(ngModel)]="contactForm.checkOut" class="input" [disabled]="isSubmitting">
+            </div>
           </div>
-          <div class="form-group mt-3">
-            <label>{{ 'form.phone' | translate }}</label>
-            <input type="text" [(ngModel)]="contactForm.phone" [placeholder]="'auth.phone_placeholder' | translate"
-              class="input" [disabled]="isSubmitting">
-          </div>
+
           <div class="form-group mt-3">
             <label>{{ 'form.message_optional' | translate }}</label>
             <textarea [(ngModel)]="contactForm.message" class="input" rows="3"
               [placeholder]="'form.your_request' | translate" [disabled]="isSubmitting"></textarea>
           </div>
           <button class="action-btn btn-primary w-full mt-4" (click)="handleSendRequest()"
-            [disabled]="isSubmitting || !contactForm.name.trim() || !contactForm.phone.trim()">
+            [disabled]="isSubmitting || !contactForm.checkIn || !contactForm.checkOut">
             <ng-container *ngIf="!isSubmitting">
               <lucide-icon [img]="SendIcon" class="icon-sm"></lucide-icon>
               {{ 'form.send_request' | translate }}
