@@ -33,6 +33,7 @@ from .api_views import (
     # cinetpay_notify_view,
     # payment_status_view,
 )
+from .health_view import health_check
 
 # ── DRF Router (handles CRUD + custom @action endpoints automatically) ────────
 router = DefaultRouter()
@@ -88,4 +89,7 @@ urlpatterns = [
     # path('api/payments/initiate/<int:order_id>/',  initiate_payment_view, name='payment-initiate'),
     # path('api/payments/notify/',                   cinetpay_notify_view,  name='payment-notify'),
     # path('api/payments/status/<str:transaction_id>/', payment_status_view, name='payment-status'),
+
+    # ── Health Check ──────────────────────────────────────────────────────
+    path('api/health/', health_check, name='health-check'),
 ]

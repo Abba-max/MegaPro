@@ -12,6 +12,18 @@ DEBUG      = config('DEBUG', default=True, cast=bool)
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,eyang-estate.onrender.com,localhost,').split(',')
 
+# ── Security Settings (Production) ──────────────────────────────────────────
+if not DEBUG:
+    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = 'DENY'
+
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='https://eyang-estate.onrender.com,http://127.0.0.1:8000,http://localhost:8000').split(',')
 
 INSTALLED_APPS = [
@@ -205,3 +217,25 @@ CINETPAY_NOTIFY_URL = config(
     default='http://147.93.47.169:3006/api/payments/notify/'
 )
 BACKEND_URL = config('BACKEND_URL', default='http://147.93.47.169:3006')
+
+# ── Logging ───────────────────────────────────────────────────────────────
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
+    },
+}
