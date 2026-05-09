@@ -684,6 +684,29 @@ detail-card-title {
   flex: 1;
   min-width: 0;
 }
+.detail-text {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: #475569;
+  white-space: pre-line;
+}
+
+.desc-toggle-btn {
+  background: none;
+  border: none;
+  color: #3B82F6;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.desc-toggle-btn:hover {
+  color: #2563EB;
+  text-decoration: underline;
+}
 .rcc-name {
   font-size: 0.90rem;
   font-weight: 700;
@@ -1551,3 +1574,62 @@ detail-card-title {
 .equip-qty-group { max-width: 70px; }
 .flex-2 { flex: 2; min-width: 140px; }
 .align-end { margin-bottom: 0; align-self: flex-end; }
+
+/* ══ ROOMS PAGINATION ══ */
+.rooms-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid #F1F5F9;
+}
+
+.page-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid #E2E8F0;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748B;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.page-nav-btn:hover:not(:disabled) {
+  border-color: #3B82F6;
+  color: #3B82F6;
+  background: #F0F7FF;
+}
+
+.page-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.page-dots {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.page-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #E2E8F0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.page-dot:hover {
+  background: #CBD5E1;
+}
+
+.page-dot.active {
+  background: #3B82F6;
+  transform: scale(1.2);
+}

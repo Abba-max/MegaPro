@@ -1,7 +1,7 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { LucideAngularModule, Star, Trash2, Search, Loader, CheckCircle, XCircle, Info, AlertCircle } from 'lucide-angular';
+import { LucideAngularModule, Star, Trash2, Search, Loader, CheckCircle, XCircle, Info, AlertCircle, ChevronLeft, ChevronRight } from 'lucide-angular';
 import { EstateService, Review } from '../../services/estate.service';
 import { catchError, of } from 'rxjs';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
@@ -25,11 +25,35 @@ export class AdminReviewsComponent implements OnInit {
   readonly InfoIcon        = Info;
   readonly AlertIcon       = AlertCircle;
 
+  readonly PrevIcon        = ChevronLeft;
+  readonly NextIcon        = ChevronRight;
+
   isLoading    = signal(true);
-  allReviews:  Review[] = [];
-  filtered:    Review[] = [];
-  searchQuery  = '';
-  filterRating = '';
+  allReviews   = signal<Review[]>([]);
+  searchQuery  = signal('');
+  filterRating = signal('');
+
+  // Pagination state
+  currentPage = signal(1);
+  pageSize    = signal(10);
+
+  filtered = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    const r = this.filterRating();
+
+    return this.allReviews().filter(rv => {
+      const matchQ = !q || rv.name.toLowerCase().includes(q) || (rv.estate_name ?? '').toLowerCase().includes(q) || rv.comment.toLowerCase().includes(q);
+      const matchR = !r || rv.rating === +r;
+      return matchQ && matchR;
+    });
+  });
+
+  totalPages = computed(() => Math.ceil(this.filtered().length / this.pageSize()));
+
+  pagedReviews = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.filtered().slice(start, start + this.pageSize());
+  });
 
   toasts: Toast[]      = [];
   private toastCounter = 0;
@@ -46,28 +70,35 @@ export class AdminReviewsComponent implements OnInit {
     this.estateService.getAdminReviews()
       .pipe(catchError(() => of([])))
       .subscribe(data => {
-        this.allReviews = data as Review[];
-        this.applyFilter();
+        this.allReviews.set(data as Review[]);
         this.isLoading.set(false);
       });
   }
 
-  applyFilter(): void {
-    const q = this.searchQuery.trim().toLowerCase();
-    this.filtered = this.allReviews.filter(r => {
-      const matchQ = !q || r.name.toLowerCase().includes(q) || (r.estate_name ?? '').toLowerCase().includes(q) || r.comment.toLowerCase().includes(q);
-      const matchR = !this.filterRating || r.rating === +this.filterRating;
-      return matchQ && matchR;
-    });
+  onSearch(val: string): void {
+    this.searchQuery.set(val);
+    this.currentPage.set(1);
   }
+
+  onFilter(val: string): void {
+    this.filterRating.set(val);
+    this.currentPage.set(1);
+  }
+
+  setPage(p: number): void {
+    if (p >= 1 && p <= this.totalPages()) this.currentPage.set(p);
+  }
+
+  nextPage(): void { if (this.currentPage() < this.totalPages()) this.currentPage.update(n => n + 1); }
+  prevPage(): void { if (this.currentPage() > 1) this.currentPage.update(n => n - 1); }
+
 
   delete(review: Review): void {
     const msg = this.translate.instant('admin.delete_confirm_review', { name: review.name });
     if (!confirm(msg || `Supprimer l'avis de "${review.name}" ?`)) return;
     this.estateService.deleteAdminReview(review.id).subscribe({
       next: () => {
-        this.allReviews = this.allReviews.filter(r => r.id !== review.id);
-        this.applyFilter();
+        this.allReviews.update(list => list.filter(r => r.id !== review.id));
         this.showToast(this.translate.instant('admin.delete_success'), 'info');
       },
       error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')

@@ -1,5 +1,5 @@
 .header {
-    height: 72px;
+    height: 88px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -24,13 +24,13 @@
     display: flex; align-items: center; cursor: pointer; flex-shrink: 0;
 }
 .logo-img {
-    height: 64px;
-    width: 64px;
+    height: 80px;
+    width: 80px;
     object-fit: contain;
     display: block; transition: opacity 0.2s ease;
 }
 .logo-title {
-    font-size: 3.2rem;
+    font-size: 3.8rem;
     font-weight: 900;
     color: #111827;
     letter-spacing: -0.02em;
@@ -607,12 +607,12 @@
     background: linear-gradient(135deg, #F8FAFC 0%, #F0F4F8 100%);
 }
 .mobile-drawer-logo {
-    height: 54px;
+    height: 72px;
     width: auto;
     object-fit: contain;
 }
 .mobile-drawer-header .logo-title {
-    font-size: 2.4rem;
+    font-size: 3rem;
 }
 
 .mobile-drawer-close {

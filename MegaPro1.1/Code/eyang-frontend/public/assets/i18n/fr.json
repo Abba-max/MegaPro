@@ -17,7 +17,9 @@
     "male": "Garçons",
     "female": "Filles",
     "payment": "Paiement",
-    "estate": "Logement"
+    "estate": "Logement",
+    "show_more": "Lire plus",
+    "show_less": "Réduire"
   },
   "hero": {
     "title": "Trouvez votre logement étudiant idéal",
@@ -250,6 +252,7 @@
     "existing_photos": "Photos existantes",
     "saving": "Enregistrement...",
     "loading": "Chargement...",
+    "total_results": "{{ count }} résultat",
     "update": "Mettre à jour",
     "cancel": "Annuler",
     "playground": "Terrain de jeu",

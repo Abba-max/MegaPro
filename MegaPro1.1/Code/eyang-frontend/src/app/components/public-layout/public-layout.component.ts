@@ -163,7 +163,7 @@ import {
     /* Offset for fixed header (72px desktop → 64px tablet → 60px mobile) */
     .public-content {
       flex:       1;
-      padding-top: 72px;
+      padding-top: 88px;
     }
     @media (max-width: 768px) { .public-content { padding-top: 64px; } }
     @media (max-width: 480px) { .public-content { padding-top: 60px; } }
@@ -382,6 +382,15 @@ import {
       padding: 2.5rem 1.5rem;
       gap: 1.5rem;
       text-align: center;
+    }
+    .f-mobile-minimal .f-logo {
+      margin-bottom: 0.5rem;
+    }
+    .f-mobile-minimal .f-logo-img {
+      height: 60px;
+    }
+    .f-mobile-minimal .f-logo-text {
+      font-size: 1.4rem;
     }
     .f-mob-contact {
       display: flex;

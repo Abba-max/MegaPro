@@ -5,9 +5,52 @@
   <title>Eyang Estate</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/png" href="assets/images/logo.png" style="height: auto; width: auto;">
+  
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" href="assets/images/logo.png" sizes="32x32">
+  <link rel="apple-touch-icon" href="assets/images/logo.png">
+  
+  <style>
+    .app-loading-wrapper {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #0B1120 0%, #122040 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .splash-logo {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+      margin-bottom: 2rem;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .splash-loader {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(255,255,255,0.1);
+      border-top-color: #3B82F6;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes pulse { 
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.05); opacity: 0.9; }
+    }
+  </style>
 </head>
 <body>
-  <app-root></app-root>
+  <app-root>
+    <div class="app-loading-wrapper">
+      <img src="assets/images/logo.png" alt="Eyang Estate" class="splash-logo">
+      <div class="splash-loader"></div>
+    </div>
+  </app-root>
 </body>
 </html>

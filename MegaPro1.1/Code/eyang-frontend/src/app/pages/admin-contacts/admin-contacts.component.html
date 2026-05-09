@@ -24,10 +24,9 @@
     <div class="toolbar">
         <div class="search-input-group">
             <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
-            <input type="text" [(ngModel)]="searchQuery" (input)="applyFilter()"
-                [placeholder]="'admin.search_contacts_ph' | translate" class="search-input">
+            <input type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)" [placeholder]="'admin.search_contacts_ph' | translate" class="search-input">
         </div>
-        <span class="total-counter">{{ 'admin.total_contacts' | translate:{count: filtered.length, plural: filtered.length !== 1 ? 's' : ''} }}</span>
+        <span class="total-counter">{{ 'admin.total_results' | translate:{count: filtered().length} }}</span>
     </div>
 
     <div class="table-responsive">
@@ -42,7 +41,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr *ngFor="let c of filtered">
+            <tr *ngFor="let c of pagedContacts()" class="fade-in">
                 <td [attr.data-label]="'admin.col_client' | translate">
                     <div class="contact-name">{{ c.name }}</div>
                 </td>
@@ -68,11 +67,27 @@
                     </div>
                 </td>
             </tr>
-            <tr *ngIf="filtered.length === 0">
+            <tr *ngIf="filtered().length === 0">
                 <td colspan="5" class="empty-row">{{ 'admin.no_contacts_found' | translate }}</td>
             </tr>
         </tbody>
     </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-footer" *ngIf="totalPages() > 1">
+        <div class="page-info" [innerHTML]="'admin.page_info' | translate:{current: currentPage(), total: totalPages()}">
+        </div>
+        <div class="pagination-actions">
+            <button class="pagination-btn" [disabled]="currentPage() === 1" (click)="prevPage()">
+                <lucide-icon [img]="PrevIcon" class="icon-btn-sm"></lucide-icon>
+                {{ 'admin.prev' | translate }}
+            </button>
+            <button class="pagination-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+                {{ 'admin.next' | translate }}
+                <lucide-icon [img]="NextIcon" class="icon-btn-sm"></lucide-icon>
+            </button>
+        </div>
     </div>
 </div>
 

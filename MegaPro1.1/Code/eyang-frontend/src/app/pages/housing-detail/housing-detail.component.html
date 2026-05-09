@@ -114,7 +114,10 @@
             <!-- Description -->
             <div class="detail-card" *ngIf="housing!.description">
               <h3 class="detail-card-title">{{ 'detail.description' | translate }}</h3>
-              <p class="detail-text">{{ housing!.description }}</p>
+              <p class="detail-text">{{ displayDescription }}</p>
+              <button class="desc-toggle-btn" *ngIf="isDescriptionLong" (click)="toggleDescription()">
+                {{ (descriptionExpanded ? 'common.show_less' : 'common.show_more') | translate }}
+              </button>
             </div>
 
             <!-- ══ ROOM CATEGORIES ══ -->
@@ -124,7 +127,7 @@
                 {{ 'detail.room_types' | translate }}
               </h3>
               <div class="room-cats-grid">
-                <div class="rc-card" *ngFor="let rc of housing.room_categories" 
+                <div class="rc-card" *ngFor="let rc of pagedRoomCategories" 
                      [class.selected]="selectedRoomCategory?.id === rc.id"
                      [class.unavailable]="rc.quantity_available === 0"
                      (click)="selectRoomCategory(rc)">
@@ -270,6 +273,21 @@
                   </div>
 
                 </div>
+              </div>
+
+              <!-- Room Categories Pagination -->
+              <div class="rooms-pagination" *ngIf="totalRoomPages > 1">
+                <button class="page-nav-btn" [disabled]="roomPage === 1" (click)="setRoomPage(roomPage - 1)">
+                  <lucide-icon [img]="ChevronLeftIcon" class="icon-xs"></lucide-icon>
+                </button>
+                <div class="page-dots">
+                  <span *ngFor="let p of [].constructor(totalRoomPages); let i = index" 
+                        class="page-dot" [class.active]="i + 1 === roomPage"
+                        (click)="setRoomPage(i + 1)"></span>
+                </div>
+                <button class="page-nav-btn" [disabled]="roomPage === totalRoomPages" (click)="setRoomPage(roomPage + 1)">
+                  <lucide-icon [img]="ChevronRightIcon" class="icon-xs"></lucide-icon>
+                </button>
               </div>
 
               <div class="room-selection-hint" *ngIf="!selectedRoomCategory">

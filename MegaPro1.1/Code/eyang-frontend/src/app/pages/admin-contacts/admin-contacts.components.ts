@@ -1,9 +1,9 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import {
   LucideAngularModule, Mail, Phone, Trash2, Search,
-  Loader, CheckCircle, XCircle, Info, AlertCircle, Eye
+  Loader, CheckCircle, XCircle, Info, AlertCircle, Eye, ChevronLeft, ChevronRight
 } from 'lucide-angular';
 import { EstateService, ContactRequest } from '../../services/estate.service';
 import { catchError, of } from 'rxjs';
@@ -30,10 +30,35 @@ export class AdminContactsComponent implements OnInit {
   readonly AlertIcon       = AlertCircle;
   readonly EyeIcon         = Eye;
 
+  readonly PrevIcon        = ChevronLeft;
+  readonly NextIcon        = ChevronRight;
+
   isLoading    = signal(true);
-  allContacts: ContactRequest[] = [];
-  filtered:    ContactRequest[] = [];
-  searchQuery  = '';
+  allContacts  = signal<ContactRequest[]>([]);
+  searchQuery  = signal('');
+
+  // Pagination state
+  currentPage = signal(1);
+  pageSize    = signal(10);
+
+  filtered = computed(() => {
+    const q = this.searchQuery().trim().toLowerCase();
+    const all = this.allContacts();
+    if (!q) return all;
+    return all.filter(c =>
+      c.name.toLowerCase().includes(q) ||
+      c.email.toLowerCase().includes(q) ||
+      (c.estate_name ?? '').toLowerCase().includes(q) ||
+      c.message.toLowerCase().includes(q)
+    );
+  });
+
+  totalPages = computed(() => Math.ceil(this.filtered().length / this.pageSize()));
+
+  pagedContacts = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.filtered().slice(start, start + this.pageSize());
+  });
 
   toasts: Toast[] = [];
   private toastCounter = 0;
@@ -65,30 +90,30 @@ export class AdminContactsComponent implements OnInit {
     this.estateService.getAdminContacts()
       .pipe(catchError(() => of([])))
       .subscribe(data => {
-        this.allContacts = data as ContactRequest[];
-        this.applyFilter();
+        this.allContacts.set(data as ContactRequest[]);
         this.isLoading.set(false);
       });
   }
 
-  applyFilter(): void {
-    const q = this.searchQuery.trim().toLowerCase();
-    this.filtered = q
-      ? this.allContacts.filter(c =>
-          c.name.toLowerCase().includes(q) ||
-          c.email.toLowerCase().includes(q) ||
-          (c.estate_name ?? '').toLowerCase().includes(q) ||
-          c.message.toLowerCase().includes(q))
-      : [...this.allContacts];
+  onSearch(val: string): void {
+    this.searchQuery.set(val);
+    this.currentPage.set(1);
   }
+
+  setPage(p: number): void {
+    if (p >= 1 && p <= this.totalPages()) this.currentPage.set(p);
+  }
+
+  nextPage(): void { if (this.currentPage() < this.totalPages()) this.currentPage.update(n => n + 1); }
+  prevPage(): void { if (this.currentPage() > 1) this.currentPage.update(n => n - 1); }
+
 
   delete(contact: ContactRequest): void {
     const msg = this.translate.instant('admin.delete_confirm_contact', { name: contact.name });
     if (!confirm(msg || `Supprimer la demande de "${contact.name}" ?`)) return;
     this.estateService.deleteAdminContact(contact.id!).subscribe({
       next: () => {
-        this.allContacts = this.allContacts.filter(c => c.id !== contact.id);
-        this.applyFilter();
+        this.allContacts.update(list => list.filter(c => c.id !== contact.id));
         this.showToast(this.translate.instant('admin.delete_success'), 'info');
       },
       error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')

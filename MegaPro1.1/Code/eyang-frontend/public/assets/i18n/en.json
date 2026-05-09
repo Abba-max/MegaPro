@@ -12,7 +12,9 @@
     "loading": "Loading...",
     "error": "An error occurred.",
     "payment": "Payment",
-    "estate": "Housing"
+    "estate": "Housing",
+    "show_more": "Read more",
+    "show_less": "Show less"
   },
   "nav": {
     "listings": "Housing",
@@ -294,6 +296,7 @@
     "publish": "Publish",
     "unpublish": "Unpublish",
     "manage_rooms": "Manage rooms",
+     "total_results": "{{ count }} result",
     "sport_field": "Sport Field",
     "room_size": "Room Size",
     "size_large": "Large",

@@ -102,6 +102,29 @@ readonly DropletIcon      = Droplet;
   roomGalleryIndex = 0;
   supplements: Supplement[]           = [];
 characteristics: EstateCharacteristic[] = [];
+ 
+  // ── Description "show more" ──────────────────────────────
+  descriptionExpanded = false;
+  readonly DESC_LIMIT = 300;
+
+  // ── Room category pagination ──────────────────────────────
+  roomPage      = 1;
+  roomPageSize  = 4;
+
+  get pagedRoomCategories(): RoomCategory[] {
+    if (!this.housing) return [];
+    const start = (this.roomPage - 1) * this.roomPageSize;
+    return this.housing.room_categories.slice(start, start + this.roomPageSize);
+  }
+
+  get totalRoomPages(): number {
+    if (!this.housing) return 0;
+    return Math.ceil(this.housing.room_categories.length / this.roomPageSize);
+  }
+
+  setRoomPage(p: number): void {
+    if (p >= 1 && p <= this.totalRoomPages) this.roomPage = p;
+  }
 
   openRoomGallery(rc: RoomCategory, index: number = 0): void {
     if (!rc.images || rc.images.length === 0) return;
@@ -263,6 +286,21 @@ private loadSupplementsAndCharacteristics(estateId: number): void {
 
   clearRoomCategory(): void {
     this.selectedRoomCategory = null;
+  }
+
+  // ── Description expansion ───────────────────────────────
+  toggleDescription(): void {
+    this.descriptionExpanded = !this.descriptionExpanded;
+  }
+
+  get isDescriptionLong(): boolean {
+    return (this.housing?.description?.length || 0) > this.DESC_LIMIT;
+  }
+
+  get displayDescription(): string {
+    const desc = this.housing?.description || '';
+    if (this.descriptionExpanded || desc.length <= this.DESC_LIMIT) return desc;
+    return desc.substring(0, this.DESC_LIMIT) + '...';
   }
 
   // ── Star helpers ──────────────────────────────────────────

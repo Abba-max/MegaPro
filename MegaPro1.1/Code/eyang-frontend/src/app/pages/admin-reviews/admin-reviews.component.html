@@ -11,74 +11,91 @@
 </div>
 
 <div class="page-header">
-<h1 class="page-title">{{ 'admin.manage_reviews' | translate }}</h1>
+    <h1 class="page-title">{{ 'admin.manage_reviews' | translate }}</h1>
 </div>
 
 <div *ngIf="isLoading()" class="loader-row">
     <lucide-icon [img]="LoaderIcon" class="spin-icon"></lucide-icon>
     <span>{{ 'dashboard.loading' | translate }}</span>
 </div>
+
 <div class="card mt-8" *ngIf="!isLoading()">
     <div class="toolbar">
-        <div class="search-group">
-            <lucide-icon [img]="SearchIcon" class="search-icon-abs"></lucide-icon>
-            <input type="text" [(ngModel)]="searchQuery" (input)="applyFilter()"
-                [placeholder]="'admin.search_reviews_ph' | translate" class="search-input">
+        <div class="search-input-group">
+            <lucide-icon [img]="SearchIcon" class="search-icon"></lucide-icon>
+            <input type="text" [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)" [placeholder]="'admin.search_reviews_ph' | translate"
+                class="search-input">
         </div>
-    <select class="select-input" [(ngModel)]="filterRating" (change)="applyFilter()">
-        <option value="">{{ 'admin.all_ratings' | translate }}</option>
-        <option value="5">⭐ 5 {{ 'admin.stars' | translate }}</option>
-        <option value="4">⭐ 4 {{ 'admin.stars' | translate }}</option>
-        <option value="3">⭐ 3 {{ 'admin.stars' | translate }}</option>
-        <option value="2">⭐ 2 {{ 'admin.stars' | translate }}</option>
-        <option value="1">⭐ 1 {{ 'admin.star' | translate }}</option>
-    </select>
-    <span class="total-badge">{{ filtered.length }} {{ 'sidebar.reviews' | translate }}</span>
+        <select class="select-input" [ngModel]="filterRating()" (ngModelChange)="onFilter($event)">
+            <option value="">{{ 'admin.all_ratings' | translate }}</option>
+            <option value="5">5 {{ 'admin.stars' | translate }}</option>
+            <option value="4">4 {{ 'admin.stars' | translate }}</option>
+            <option value="3">3 {{ 'admin.stars' | translate }}</option>
+            <option value="2">2 {{ 'admin.stars' | translate }}</option>
+            <option value="1">1 {{ 'admin.star' | translate }}</option>
+        </select>
+        <span class="total-counter">{{ 'admin.total_results' | translate:{count: filtered().length} }}</span>
     </div>
-<table class="table">
-    <thead>
-        <tr>
-            <th>{{ 'admin.col_author' | translate }}</th>
-            <th>{{ 'admin.col_housing' | translate }}</th>
-            <th>{{ 'admin.col_rating' | translate }}</th>
-            <th>{{ 'admin.col_comment' | translate }}</th>
-            <th>{{ 'admin.col_date' | translate }}</th>
-            <th class="text-right">{{ 'admin.col_actions' | translate }}</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr *ngFor="let r of filtered" class="fade-in">
-            <td data-label="AUTEUR">
-                <div class="author-cell">
-                    <div class="avatar-sm">{{ r.initials }}</div>
-                    <div>
-                        <div class="booking-title">{{ r.name }}</div>
-                        <div class="meta-sub" *ngIf="r.user_email">{{ r.user_email }}</div>
-            </div>
-        </div>
-        </td>
-        <td data-label="LOGEMENT"><span class="text-sm">{{ r.estate_name }}</span></td>
-        <td data-label="NOTE">
-            <div class="stars-row">
-                <lucide-icon [img]="StarIcon" class="star-filled" *ngFor="let s of getStarArray(r.rating)"></lucide-icon>
-                <lucide-icon [img]="StarIcon" class="star-empty" *ngFor="let s of getEmptyStars(r.rating)"></lucide-icon>
-                <span class="rating-num">{{ r.rating }}/5</span>
-        </div>
-        </td>
-        <td data-label="COMMENTAIRE">
-            <span class="comment-text">{{ r.comment }}</span>
-        </td>
-        <td data-label="DATE"><span class="text-sm">{{ formatDate(r.created_at) }}</span></td>
-        <td class="text-right" data-label="ACTIONS">
-            <button class="icon-btn danger" (click)="delete(r)" title="Supprimer">
-                <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
-            </button>
-        </td>
-        </tr>
-        <tr *ngIf="filtered.length === 0">
-            <td colspan="6" class="empty-row">{{ 'admin.no_reviews_found' | translate }}</td>
-        </tr>
-        </tbody>
-        </table>
-</div>
 
+    <table class="table">
+        <thead>
+            <tr>
+                <th>{{ 'admin.col_author' | translate }}</th>
+                <th>{{ 'admin.col_housing' | translate }}</th>
+                <th>{{ 'admin.col_rating' | translate }}</th>
+                <th>{{ 'admin.col_comment' | translate }}</th>
+                <th>{{ 'admin.col_date' | translate }}</th>
+                <th class="text-right">{{ 'admin.col_actions' | translate }}</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let r of pagedReviews()" class="fade-in">
+                <td data-label="AUTEUR">
+                    <div class="author-cell">
+                        <div class="avatar-sm">{{ r.initials }}</div>
+                        <div>
+                            <div class="booking-title">{{ r.name }}</div>
+                            <div class="meta-sub" *ngIf="r.user_email">{{ r.user_email }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td data-label="LOGEMENT"><span class="text-sm">{{ r.estate_name }}</span></td>
+                <td data-label="NOTE">
+                    <div class="stars-row">
+                        <lucide-icon [img]="StarIcon" class="star-filled" *ngFor="let s of getStarArray(r.rating)"></lucide-icon>
+                        <lucide-icon [img]="StarIcon" class="star-empty" *ngFor="let s of getEmptyStars(r.rating)"></lucide-icon>
+                        <span class="rating-num">{{ r.rating }}/5</span>
+                    </div>
+                </td>
+                <td data-label="COMMENTAIRE">
+                    <span class="comment-text">{{ r.comment }}</span>
+                </td>
+                <td data-label="DATE"><span class="text-sm">{{ formatDate(r.created_at) }}</span></td>
+                <td class="text-right" data-label="ACTIONS">
+                    <button class="icon-btn danger" (click)="delete(r)" title="Supprimer">
+                        <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>
+                    </button>
+                </td>
+            </tr>
+            <tr *ngIf="filtered().length === 0">
+                <td colspan="6" class="empty-row">{{ 'admin.no_reviews_found' | translate }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination-footer" *ngIf="totalPages() > 1">
+        <div class="page-info" [innerHTML]="'admin.page_info' | translate:{current: currentPage(), total: totalPages()}">
+        </div>
+        <div class="pagination-actions">
+            <button class="pagination-btn" [disabled]="currentPage() === 1" (click)="prevPage()">
+                <lucide-icon [img]="PrevIcon" class="icon-btn-sm"></lucide-icon>
+                {{ 'admin.prev' | translate }}
+            </button>
+            <button class="pagination-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+                {{ 'admin.next' | translate }}
+                <lucide-icon [img]="NextIcon" class="icon-btn-sm"></lucide-icon>
+            </button>
+        </div>
+    </div>
+</div>
