@@ -225,7 +225,7 @@ export class AdminUsersComponent implements OnInit {
       };
       if (this.form.password) payload.password = this.form.password;
 
-      this.http.patch(`${this.API}/api/admin/users/${this.editUserId}/update/`, payload, { headers })
+      this.http.patch(`${this.API}/admin/users/${this.editUserId}/update/`, payload, { headers })
         .pipe(catchError(err => {
           this.showToast(err?.error?.detail ?? this.translate.instant('admin.error_load'), 'error');
           this.isSaving.set(false);
@@ -248,7 +248,7 @@ export class AdminUsersComponent implements OnInit {
         last_name:  this.form.lastName,
         role:       this.form.role,
       };
-      this.http.post(`${this.API}/api/auth/register/`, payload)
+      this.http.post(`${this.API}/auth/register/`, payload)
         .pipe(catchError(err => {
           const msg = err?.error?.email?.[0] ?? err?.error?.username?.[0] ?? this.translate.instant('admin.error_load');
           this.showToast(msg, 'error');
@@ -281,7 +281,7 @@ export class AdminUsersComponent implements OnInit {
     const token   = localStorage.getItem('access_token') ?? '';
     const headers = new HttpHeaders({ Authorization: `Bearer ${token}` });
 
-    this.http.delete(`${this.API}/api/admin/users/${this.userToDelete.id}/delete/`, { headers })
+    this.http.delete(`${this.API}/admin/users/${this.userToDelete.id}/delete/`, { headers })
       .pipe(catchError(err => {
         this.showToast(err?.error?.detail ?? this.translate.instant('admin.error_load'), 'error');
         return of(null);
