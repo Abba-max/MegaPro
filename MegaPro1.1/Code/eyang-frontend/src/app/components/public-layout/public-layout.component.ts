@@ -106,6 +106,23 @@ import {
           </div>
         </div>
 
+        <div class="f-mobile-minimal">
+          <div class="f-mob-contact">
+             <a href="tel:+237675193603">
+               <lucide-icon [img]="PhoneIcon" class="f-mob-icon"></lucide-icon>
+               +237 675193603
+             </a>
+             <a href="mailto:eyangestate@gmail.com">
+               <lucide-icon [img]="MailIcon" class="f-mob-icon"></lucide-icon>
+               eyangestate@gmail.com
+             </a>
+          </div>
+          <div class="f-mob-legal">
+             <a routerLink="/privacy" (click)="scrollTop()">{{ 'footer.privacy' | translate }}</a>
+             <a routerLink="/terms" (click)="scrollTop()">{{ 'footer.terms' | translate }}</a>
+          </div>
+        </div>
+
         <!-- DIVIDER -->
         <div class="f-divider"></div>
 
@@ -113,6 +130,11 @@ import {
         <div class="f-bottom">
           <div class="f-bottom-inner">
             <p class="f-rights">{{ 'footer.rights' | translate }}</p>
+            <div class="f-legal">
+              <a routerLink="/privacy" (click)="scrollTop()">{{ 'footer.privacy' | translate }}</a>
+              <span class="f-legal-sep">·</span>
+              <a routerLink="/terms" (click)="scrollTop()">{{ 'footer.terms' | translate }}</a>
+            </div>
           </div>
         </div>
 
@@ -338,9 +360,62 @@ import {
       color:     rgba(255,255,255,0.38);
       font-size: 12px;
       margin:    0;
+    }
+    .f-legal {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 12px;
+    }
+    .f-legal a {
+      color: rgba(255,255,255,0.45);
+      transition: color 0.2s;
+    }
+    .f-legal a:hover { color: #fff; }
+    .f-legal-sep { color: rgba(255,255,255,0.15); }
+
+    /* ── MOBILE MINIMAL ───────────────────────────────────────── */
+    .f-mobile-minimal {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 2.5rem 1.5rem;
+      gap: 1.5rem;
+      text-align: center;
+    }
+    .f-mob-contact {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .f-mob-contact a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 14px;
+      display: flex;
       align-items: center;
       justify-content: center;
+      gap: 0.5rem;
     }
+    .f-mob-icon {
+      width: 16px;
+      height: 16px;
+      color: #60A5FA;
+    }
+    .f-mob-legal {
+      display: flex;
+      gap: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      padding-top: 1.5rem;
+      width: 100%;
+      justify-content: center;
+    }
+    .f-mob-legal a {
+      color: rgba(255,255,255,0.5);
+      text-decoration: none;
+      font-size: 13px;
+    }
+
     .f-top-btn {
       width:           34px;
       height:          34px;
@@ -420,47 +495,20 @@ import {
       .f-lang-row { flex-direction: row; }
     }
     @media (max-width: 768px) {
-      .footer-top { padding: 3rem 1.5rem 2.5rem; }
-      .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
-      .f-brand { grid-column: 1 / -1; }
+      .footer-top { padding: 3.5rem 1.5rem 2.5rem; }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 2.5rem; }
+      .f-brand { grid-column: 1 / -1; text-align: center; }
+      .f-logo { justify-content: center; }
+      .f-tagline { margin: 0 auto 1.5rem; }
+      .f-contact { align-items: center; }
       .f-col:last-child { grid-column: unset; }
       .f-divider { margin: 0 1.5rem; }
-      .f-bottom { padding: 1.1rem 1.5rem; }
-      .f-bottom-inner { justify-content: center; text-align: center; }
-      .f-legal { justify-content: center; }
+      .f-bottom { padding: 1.5rem; }
+      .f-bottom-inner { flex-direction: column; text-align: center; gap: 1rem; }
     }
     @media (max-width: 480px) {
-      .footer-top { padding: 2rem 1.25rem 1.5rem; }
-
-      /* On mobile: show only the brand column, hide all nav/services/lang columns */
-      .footer-grid {
-        grid-template-columns: 1fr;
-        gap: 0;
-      }
-      /* Hide secondary columns entirely */
-      .f-col:not(.f-brand) { display: none; }
-
-      /* Brand column: keep logo + socials, hide tagline & contact list */
-      .f-tagline { display: none; }
-      .f-contact  { display: none; }
-
-      /* Socials always visible */
-      .f-social-title { display: none; }
-      .f-socials {
-        margin-top: 0.75rem;
-        gap: 0.75rem;
-      }
-      .f-social-btn {
-        width:  42px;
-        height: 42px;
-      }
-
-      .f-brand { padding-bottom: 1.5rem; }
-
-      .f-divider { margin: 0 1.25rem; }
-      .f-bottom  { padding: 0.875rem 1.25rem; }
-      .f-bottom-inner { justify-content: center; text-align: center; }
-      .f-lang-row { flex-direction: column; }
+      .footer-top, .f-divider, .f-bottom { display: none; }
+      .f-mobile-minimal { display: flex; }
     }
   `]
 })

@@ -1195,7 +1195,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.selectedReservation = null;
   }
   
-  openBill(res: Reservation): void {
+  openBill(res: any): void {
     this.estateService.openBill(res);
   }
 
@@ -1682,6 +1682,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   private initMap(): void {
     // Small delay to ensure container is rendered
     setTimeout(() => {
+      const container = document.getElementById('map-picker');
+      if (!container) return;
+
       const lat = this.estateForm.get('lat')?.value || 3.884041;
       const lng = this.estateForm.get('lng')?.value || 11.390736;
 
@@ -1689,7 +1692,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.map.remove();
       }
 
-      this.map = L.map('map-picker').setView([lat, lng], 15);
+      this.map = L.map(container).setView([lat, lng], 15);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
       }).addTo(this.map);

@@ -152,6 +152,8 @@ export interface Invoice {
   invoice_id: string;
   total_amount: number;
   pdf_download_url?: string;
+  estate_name?: string;
+  client_name?: string;
   status: 'UNPAID' | 'PAID';
   created_at: string;
 }

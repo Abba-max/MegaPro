@@ -478,6 +478,98 @@
   "privacy_policy":"Privacy Policy",
   "terms_of_service":"Terms of Service"
   },
+  "confirm": {
+    "cancel": "Cancel",
+    "confirm": "Confirm"
+  },
+  "footer": {
+    "tagline": "Find your ideal housing in Yaounde. Students, parents and owners All in one.",
+    "nav_title": "Navigation",
+    "hero": "Home",
+    "listings": "Housing",
+    "contact": "Contact",
+    "services_title": "Services",
+    "find_housing": "Find a housing",
+    "owner_space": "Owner space",
+    "faq": "Frequently asked questions",
+    "create_account": "Create an account",
+    "lang_title": "Language",
+    "location": "Yaounde, Cameroon",
+    "follow_us": "Follow us",
+    "rights": "© 2026 Eyang Estate. All rights reserved.",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "back_top": "Back to top"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "last_updated": "Last updated: May 2026",
+    "summary_title": "Summary",
+    "nav": {
+      "collection": "Data Collection",
+      "usage": "How we use it",
+      "protection": "Protection",
+      "rights": "Your rights"
+    },
+    "sections": {
+      "collection": {
+        "title": "1. Information We Collect",
+        "text": "At Eyang Estate, we prioritize your privacy. We collect information you provide directly to us, such as when you create an account, search for housing, or contact a landlord.",
+        "item1": "Personal Data: Name, email address, phone number, and profile picture.",
+        "item2": "Account Data: Credentials and preferences.",
+        "item3": "Interaction Data: Messages between users and search history."
+      },
+      "usage": {
+        "title": "2. How We Use Information",
+        "text": "We use the collected information to provide, maintain, and improve our services, including:",
+        "feat1_title": "Security",
+        "feat1_text": "Verifying user identity and preventing fraud.",
+        "feat2_title": "Visibility",
+        "feat2_text": "Matching students with ideal housing options."
+      },
+      "protection": {
+        "title": "3. Data Protection",
+        "text": "We implement robust security measures to protect your personal data against unauthorized access, alteration, or disclosure. This includes encryption and secure storage protocols."
+      },
+      "rights": {
+        "title": "4. Your Rights",
+        "text": "You have the right to access, correct, or delete your personal data at any time. You can manage most of these settings directly from your dashboard or by contacting our support team."
+      }
+    }
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "last_updated": "Last updated: May 2026",
+    "summary_title": "Summary",
+    "nav": {
+      "acceptance": "Acceptance",
+      "use": "Permitted Use",
+      "liability": "Liability",
+      "termination": "Termination"
+    },
+    "sections": {
+      "acceptance": {
+        "title": "1. Acceptance of Terms",
+        "text": "By accessing or using the Eyang Estate platform, you agree to be bound by these Terms of Service. If you do not agree to all of these terms, do not use our services.",
+        "alert": "Eyang Estate acts as a marketplace. We are not responsible for the actual rental agreements between students and landlords."
+      },
+      "use": {
+        "title": "2. Permitted Use",
+        "text": "You may use our services only for lawful purposes. You agree not to:",
+        "item1": "Post false or misleading information.",
+        "item2": "Harass other users or landlords.",
+        "item3": "Attempt to circumvent our security measures."
+      },
+      "liability": {
+        "title": "3. Limitation of Liability",
+        "text": "Eyang Estate provides the platform \"as is\" and \"as available\". We do not guarantee that the housing descriptions are 100% accurate, as they are provided by third-party landlords."
+      },
+      "termination": {
+        "title": "4. Termination",
+        "text": "We reserve the right to suspend or terminate your account if you violate these terms or if we suspect fraudulent activity."
+      }
+    }
+  },
   "dashboard": {
     "welcome": "Welcome",
     "my_space": "My space",
@@ -646,6 +738,13 @@
     "share_experience_desc": "Share your experience about the housings you visited.",
     "message": "Message",
     "messages": "Messages",
+    "tab_invoices": "Invoices",
+    "no_invoices": "No invoices found.",
+    "invoice_ref": "Reference",
+    "invoice_amount": "Amount",
+    "invoice_date": "Date",
+    "invoice_status": "Status",
+    "invoice_download": "Download Bill",
     "contact_requests": "Contact requests",
     "contact_requests_count": "{{ count }} request{{ plural }}",
     "empty_contact_requests": "No requests",
@@ -702,7 +801,6 @@
     "add_supplement": "Add supplement",
     "no_supplements": "No supplements added",
     "latitude": "Latitude",
-    "longitude": "Longitude",
     "longitude": "Longitude",
     "cancel_reservation_confirm":"Are you sure you want to cancel the reservation "
   },

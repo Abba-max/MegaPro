@@ -272,39 +272,61 @@ class EstateSerializer(serializers.ModelSerializer):
             # ── Admin verification ────────────────────────────────────────────
             'is_verified',
         ]
+        extra_kwargs = {
+            'location': {'required': False},
+            'distance': {'required': False},
+            'rating':   {'required': False},
+            'status':   {'required': False},
+            'lat':      {'required': False},
+            'lng':      {'required': False},
+        }
         
     characteristics = EstateCharacteristicSerializer(source='characteristics_set', many=True, read_only=True)
     supplements = SupplementSerializer(source='supplements_set', many=True, read_only=True)
 
     def to_internal_value(self, data):
-        # Handle QueryDict immutability if needed
+        # Handle QueryDict immutability
         if hasattr(data, 'dict'):
             data = data.copy()
+        elif not isinstance(data, dict):
+            data = {}
 
-        # Convert boolean fields from frontend to the '1'/'0' expected by model legacy CharFields
-        for field in ['restaurant', 'generator', 'forage']:
+        # 1. Normalize all possible boolean fields from frontend
+        legacy_char_bools = ['restaurant', 'generator', 'forage']
+        modern_bools = [
+            'wifi', 'tv', 'fridge', 'water_bills', 'electricity_bills', 'fence', 
+            'caretaker', 'security_guard', 'restaurant_on_site', 'borehole_forage', 
+            'generator_available', 'parking', 'cctv', 'cleaning_service', 
+            'Terrain_de_sport', 'playground'
+        ]
+
+        for field in (legacy_char_bools + modern_bools):
             if field in data:
                 val = data[field]
+                is_true = False
                 if isinstance(val, bool):
-                    data[field] = '1' if val else '0'
-                elif isinstance(val, str):
-                    # Handle "true"/"false" strings
-                    if val.lower() == 'true' or val == '1': data[field] = '1'
-                    elif val.lower() == 'false' or val == '0': data[field] = '0'
-        
-        # Explicitly remove read-only and method fields to prevent validation issues
+                    is_true = val
+                elif isinstance(val, (str, int)):
+                    v_str = str(val).lower()
+                    is_true = v_str in ['true', '1', 'yes', 'on']
+                
+                if field in legacy_char_bools:
+                    data[field] = '1' if is_true else '0'
+                else:
+                    data[field] = is_true
+
+        # 2. Explicitly remove read-only fields
         read_only_data_fields = [
             'price', 'capacity', 'free', 'reviews_count', 'orders_count', 
-            'average_rating', 'characteristics', 'supplements', 'owner', 'images', 'room_categories'
+            'average_rating', 'characteristics', 'supplements', 'owner', 
+            'images', 'room_categories', 'is_verified', 'publishedAt'
         ]
         for f in read_only_data_fields:
             if f in data:
-                # If it's a dict/QueryDict, we can pop it
-                if isinstance(data, dict):
-                    data.pop(f)
-                elif hasattr(data, 'pop'):
-                    try: data.pop(f)
-                    except: pass
+                try:
+                    if isinstance(data, dict): data.pop(f, None)
+                    elif hasattr(data, 'pop'): data.pop(f)
+                except: pass
 
         return super().to_internal_value(data)
 
@@ -515,11 +537,13 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 class InvoiceSerializer(serializers.ModelSerializer):
     pdf_download_url = serializers.SerializerMethodField()
+    estate_name = serializers.CharField(source='reservation.room_category.estate.name', read_only=True)
+    client_name = serializers.CharField(source='reservation.user.get_full_name', read_only=True)
 
     class Meta:
         model  = Invoice
         fields = ['id', 'reservation', 'invoice_id', 'total_amount',
-                  'status', 'created_at', 'pdf_download_url']
+                  'status', 'created_at', 'pdf_download_url', 'estate_name', 'client_name']
 
     def get_pdf_download_url(self, obj):
         request = self.context.get('request')

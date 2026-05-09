@@ -40,6 +40,14 @@ export const routes: Routes = [
       {
         path: 'forgot-password',
         loadComponent: () => import('./pages/auth/forgot-password/forgot-password.component').then(c => c.ForgotPasswordComponent)
+      },
+      {
+        path: 'privacy',
+        loadComponent: () => import('./pages/legal/privacy.component').then(c => c.PrivacyComponent)
+      },
+      {
+        path: 'terms',
+        loadComponent: () => import('./pages/legal/terms.component').then(c => c.TermsComponent)
       }
     ]
   },

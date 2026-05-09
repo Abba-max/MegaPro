@@ -100,6 +100,7 @@
   },
   "detail": {
     "unit(s)": "unité(s)",
+    "distance":"Du Campus",
     "login_to_view_desc": "Connectez-vous pour pouvoir réserver",
     "back": "Retour",
     "room_types": "Types de chambres disponibles",
@@ -249,7 +250,6 @@
     "existing_photos": "Photos existantes",
     "saving": "Enregistrement...",
     "loading": "Chargement...",
-    "create": "Créer",
     "update": "Mettre à jour",
     "cancel": "Annuler",
     "playground": "Terrain de jeu",
@@ -368,9 +368,10 @@
     "error":"Une erreur est survenue.",
     "characteristic_created": "Caractéristique créée avec succès",
     "success": "Succès",
+    "create":"Créer avec succès",
       "new_equipment": "Nouvel équipement",
       "equipment_name": "Nom de l'équipement",
-      "add_new":"Ajouer un nouvel équipement",
+      "add_new":"Ajouter un nouvel équipement",
       "total_reviews": "{{ count }} avis",
     "published_reviews": "Avis publiés",
     "avg_bookings_month": "Moy. réservations / mois",
@@ -603,12 +604,88 @@
     "terms": "Conditions d'utilisation",
     "back_top": "Retour en haut"
   },
+  "privacy": {
+    "title": "Politique de confidentialité",
+    "last_updated": "Dernière mise à jour : Mai 2026",
+    "summary_title": "Sommaire",
+    "nav": {
+      "collection": "Collecte de données",
+      "usage": "Utilisation",
+      "protection": "Protection",
+      "rights": "Vos droits"
+    },
+    "sections": {
+      "collection": {
+        "title": "1. Informations que nous collectons",
+        "text": "Chez Eyang Estate, nous accordons une priorité absolue à votre vie privée. Nous collectons les informations que vous nous fournissez directement, par exemple lorsque vous créez un compte, recherchez un logement ou contactez un bailleur.",
+        "item1": "Données personnelles : Nom, adresse e-mail, numéro de téléphone et photo de profil.",
+        "item2": "Données de compte : Identifiants et préférences.",
+        "item3": "Données d'interaction : Messages entre utilisateurs et historique de recherche."
+      },
+      "usage": {
+        "title": "2. Comment nous utilisons vos informations",
+        "text": "Nous utilisons les informations collectées pour fournir, maintenir et améliorer nos services, notamment pour :",
+        "feat1_title": "Sécurité",
+        "feat1_text": "Vérifier l'identité des utilisateurs et prévenir la fraude.",
+        "feat2_title": "Visibilité",
+        "feat2_text": "Mettre en relation les étudiants avec les options de logement idéales."
+      },
+      "protection": {
+        "title": "3. Protection des données",
+        "text": "Nous mettons en œuvre des mesures de sécurité robustes pour protéger vos données personnelles contre tout accès, altération ou divulgation non autorisés. Cela inclut le cryptage et des protocoles de stockage sécurisés."
+      },
+      "rights": {
+        "title": "4. Vos droits",
+        "text": "Vous avez le droit d'accéder, de corriger ou de supprimer vos données personnelles à tout moment. Vous pouvez gérer la plupart de ces paramètres directement depuis votre tableau de bord ou en contactant notre équipe d'assistance."
+      }
+    }
+  },
+  "terms": {
+    "title": "Conditions d'utilisation",
+    "last_updated": "Dernière mise à jour : Mai 2026",
+    "summary_title": "Sommaire",
+    "nav": {
+      "acceptance": "Acceptation",
+      "use": "Utilisation autorisée",
+      "liability": "Responsabilité",
+      "termination": "Résiliation"
+    },
+    "sections": {
+      "acceptance": {
+        "title": "1. Acceptation des conditions",
+        "text": "En accédant ou en utilisant la plateforme Eyang Estate, vous acceptez d'être lié par ces conditions d'utilisation. Si vous n'acceptez pas toutes ces conditions, n'utilisez pas nos services.",
+        "alert": "Eyang Estate agit comme une place de marché. Nous ne sommes pas responsables des contrats de location réels entre les étudiants et les bailleurs."
+      },
+      "use": {
+        "title": "2. Utilisation autorisée",
+        "text": "Vous ne pouvez utiliser nos services qu'à des fins licites. Vous acceptez de ne pas :",
+        "item1": "Publier des informations fausses ou trompeuses.",
+        "item2": "Harceler d'autres utilisateurs ou bailleurs.",
+        "item3": "Tenter de contourner nos mesures de sécurité."
+      },
+      "liability": {
+        "title": "3. Limitation de responsabilité",
+        "text": "Eyang Estate fournit la plateforme « telle quelle » et « selon disponibilité ». Nous ne garantissons pas que les descriptions de logement sont exactes à 100 %, car elles sont fournies par des bailleurs tiers."
+      },
+      "termination": {
+        "title": "4. Résiliation",
+        "text": "Nous nous réservons le droit de suspendre ou de résilier votre compte si vous violez ces conditions ou si nous soupçonnons une activité frauduleuse."
+      }
+    }
+  },
   "dashboard": {
     "tab_overview": "Aperçu",
     "tab_listings": "Mes Logements",
     "tab_reservations": "Réservations",
     "tab_reviews": "Avis",
     "tab_messages": "Messages",
+    "tab_invoices": "Factures",
+    "no_invoices": "Aucune facture trouvée.",
+    "invoice_ref": "Référence",
+    "invoice_amount": "Montant",
+    "invoice_date": "Date",
+    "invoice_status": "Statut",
+    "invoice_download": "Télécharger Reçu",
     "tab_my_reviews": "Mes Avis",
     "tab_contacts": "Contacts",
     "hello": "Bonjour",

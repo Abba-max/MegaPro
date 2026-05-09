@@ -47,6 +47,10 @@
         <span class="snav__lbl">{{ 'dashboard.tab_reservations' | translate }}</span>
         <span class="snav__badge" *ngIf="ownerStats.pending_orders>0">{{ ownerStats.pending_orders }}</span>
       </button>
+      <button class="snav" [class.snav--on]="activeTab==='invoices'" (click)="selectTab('invoices')">
+        <span class="snav__ico"><lucide-icon [img]="CreditCardIcon"></lucide-icon></span>
+        <span class="snav__lbl">{{ 'dashboard.tab_invoices' | translate }}</span>
+      </button>
       <button class="snav" [class.snav--on]="activeTab==='reviews'" (click)="selectTab('reviews')">
         <span class="snav__ico"><lucide-icon [img]="StarIcon"></lucide-icon></span>
         <span class="snav__lbl">{{ 'dashboard.tab_reviews' | translate }}</span>
@@ -86,6 +90,7 @@
       <button (click)="selectTab('overview')"><lucide-icon [img]="BarChartIcon"></lucide-icon>{{ 'dashboard.tab_overview' | translate }}</button>
       <button (click)="selectTab('estates')"><lucide-icon [img]="HomeIcon"></lucide-icon>{{ 'dashboard.tab_listings' | translate }}</button>
       <button (click)="selectTab('reservations')"><lucide-icon [img]="PackageIcon"></lucide-icon>{{ 'dashboard.tab_reservations' | translate }}</button>
+      <button (click)="selectTab('invoices')"><lucide-icon [img]="CreditCardIcon"></lucide-icon>{{ 'dashboard.tab_invoices' | translate }}</button>
       <button (click)="selectTab('reviews')"><lucide-icon [img]="StarIcon"></lucide-icon>{{ 'dashboard.tab_reviews' | translate }}</button>
       <button (click)="selectTab('messages')"><lucide-icon [img]="MessageIcon"></lucide-icon>{{ 'dashboard.tab_messages' | translate }}</button>
     </div>
@@ -280,6 +285,46 @@
       <div class="load-more" *ngIf="hasMoreReviews"><button class="btn btn--ghost" (click)="showMoreReviews()">{{ 'home.view_more' | translate }}</button></div>
     </div>
 
+    <!-- INVOICES (owner) -->
+    <div class="panel" *ngIf="activeTab==='invoices' && isOwner">
+      <header class="panel__hd">
+        <div>
+          <h1 class="panel__title">{{ 'dashboard.tab_invoices' | translate }}</h1>
+          <p class="panel__sub">{{ myInvoices.length }} factures générées</p>
+        </div>
+      </header>
+      <div class="empty-state" *ngIf="myInvoices.length===0">
+        <div class="empty-state__ico"><lucide-icon [img]="CreditCardIcon"></lucide-icon></div>
+        <h3>{{ 'dashboard.no_invoices' | translate }}</h3>
+      </div>
+      <div class="o-list" *ngIf="myInvoices.length>0">
+        <div class="o-card" *ngFor="let inv of myInvoices">
+          <div class="o-card__av" style="background: var(--indigo-l); color: var(--indigo);"><lucide-icon [img]="FileIcon"></lucide-icon></div>
+          <div class="o-card__body">
+            <div class="o-card__top">
+              <div>
+                <span class="o-card__name">{{ inv.invoice_id }}</span>
+                <span class="o-card__where">{{ inv.estate_name || 'Eyang Estate' }}</span>
+              </div>
+              <div class="status-badge-lg status-badge-lg--accepted">
+                {{ inv.status === 'PAID' ? 'PAYÉ' : 'À PAYER' }}
+              </div>
+            </div>
+            <div class="o-card__meta">
+              <span><lucide-icon [img]="UserIcon"></lucide-icon>{{ inv.client_name || 'Client' }}</span>
+              <span><lucide-icon [img]="CreditCardIcon"></lucide-icon>{{ formatPrice(inv.total_amount) }} FCFA</span>
+              <span><lucide-icon [img]="CalendarIcon"></lucide-icon>{{ formatDate(inv.created_at) }}</span>
+            </div>
+            <div class="o-card__acts">
+              <button class="btn btn--primary btn--sm" (click)="openBill({ invoice: inv })">
+                <lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'dashboard.invoice_download' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- MESSAGES (owner) -->
     <div class="msg-shell" *ngIf="activeTab==='messages'">
       <div class="msg-panel" [class.msg-panel--hide]="activeConversation">
@@ -371,6 +416,10 @@
         <span class="snav__lbl">{{ 'dashboard.tab_reservations' | translate }}</span>
         <span class="snav__badge" *ngIf="clientStats.total_reservations>0">{{ clientStats.total_reservations }}</span>
       </button>
+      <button class="snav" [class.snav--on]="activeTab==='invoices'" (click)="selectTab('invoices')">
+        <span class="snav__ico"><lucide-icon [img]="CreditCardIcon"></lucide-icon></span>
+        <span class="snav__lbl">{{ 'dashboard.tab_invoices' | translate }}</span>
+      </button>
       <button class="snav" [class.snav--on]="activeTab==='reviews'" (click)="selectTab('reviews')">
         <span class="snav__ico"><lucide-icon [img]="StarIcon"></lucide-icon></span>
         <span class="snav__lbl">{{ 'dashboard.tab_my_reviews' | translate }}</span>
@@ -413,6 +462,7 @@
     </button>
     <div class="topbar__drop" *ngIf="mobileTabOpen">
       <button (click)="selectTab('reservations')"><lucide-icon [img]="PackageIcon"></lucide-icon>{{ 'dashboard.tab_reservations' | translate }}</button>
+      <button (click)="selectTab('invoices')"><lucide-icon [img]="CreditCardIcon"></lucide-icon>{{ 'dashboard.tab_invoices' | translate }}</button>
       <button (click)="selectTab('reviews')"><lucide-icon [img]="StarIcon"></lucide-icon>{{ 'dashboard.tab_my_reviews' | translate }}</button>
       <button (click)="selectTab('contacts')"><lucide-icon [img]="PhoneIcon"></lucide-icon>{{ 'dashboard.tab_contacts' | translate }}</button>
       <button (click)="selectTab('messages')"><lucide-icon [img]="MessageIcon"></lucide-icon>{{ 'dashboard.tab_messages' | translate }}</button>
@@ -453,6 +503,45 @@
               <button class="btn btn--ghost btn--sm" (click)="openReservationDetails(r)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'dashboard.view_details' | translate }}</button>
               <button *ngIf="r.status==='ACCEPTED'" class="btn btn--primary btn--sm" (click)="openBill(r)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'admin.col_receipt' | translate }}</button>
               <button *ngIf="r.status==='PENDING'" class="btn btn--ghost-red btn--sm" (click)="deleteReservation(r)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.cancel_reservation' | translate }}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INVOICES (client) -->
+    <div class="panel" *ngIf="activeTab==='invoices' && !isOwner">
+      <header class="panel__hd">
+        <div>
+          <h1 class="panel__title">{{ 'dashboard.tab_invoices' | translate }}</h1>
+          <p class="panel__sub">{{ myInvoices.length }} factures disponibles</p>
+        </div>
+      </header>
+      <div class="empty-state" *ngIf="myInvoices.length===0">
+        <div class="empty-state__ico"><lucide-icon [img]="CreditCardIcon"></lucide-icon></div>
+        <h3>{{ 'dashboard.no_invoices' | translate }}</h3>
+      </div>
+      <div class="o-list" *ngIf="myInvoices.length>0">
+        <div class="o-card" *ngFor="let inv of myInvoices">
+          <div class="o-card__av" style="background: var(--indigo-l); color: var(--indigo);"><lucide-icon [img]="FileIcon"></lucide-icon></div>
+          <div class="o-card__body">
+            <div class="o-card__top">
+              <div>
+                <span class="o-card__name">{{ inv.invoice_id }}</span>
+                <span class="o-card__where">{{ inv.estate_name || 'Eyang Estate' }}</span>
+              </div>
+              <div class="status-badge-lg status-badge-lg--accepted">
+                {{ inv.status === 'PAID' ? 'PAYÉ' : 'À PAYER' }}
+              </div>
+            </div>
+            <div class="o-card__meta">
+              <span><lucide-icon [img]="CreditCardIcon"></lucide-icon>{{ formatPrice(inv.total_amount) }} FCFA</span>
+              <span><lucide-icon [img]="CalendarIcon"></lucide-icon>{{ formatDate(inv.created_at) }}</span>
+            </div>
+            <div class="o-card__acts">
+              <button class="btn btn--primary btn--sm" (click)="openBill({ invoice: inv })">
+                <lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'dashboard.invoice_download' | translate }}
+              </button>
             </div>
           </div>
         </div>
