@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-jt#l8zbav+z+1ens!08-6r#ko9f)%jlykv8nt@w9#kfebf5q$o')
 DEBUG      = config('DEBUG', default=True, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,eyang-estate.onrender.com,localhost,').split(',')
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,eyang-estate.onrender.com,localhost,https://eyangestate.com,http://eyangestate.com,https://www.eyangestate.com,http://www.eyangestate.com').split(',')
 
 # ── Security Settings (Production) ──────────────────────────────────────────
 if not DEBUG:
@@ -24,7 +24,7 @@ if not DEBUG:
     SECURE_BROWSER_XSS_FILTER = True
     X_FRAME_OPTIONS = 'DENY'
 
-CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='https://eyang-estate.onrender.com,http://127.0.0.1:8000,http://localhost:8000').split(',')
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='https://eyang-estate.onrender.com,http://127.0.0.1:8000,http://localhost:8000,https://eyangestate.com,http://eyangestate.com').split(',')
 
 INSTALLED_APPS = [
     'daphne',
@@ -206,7 +206,7 @@ CORS_ALLOW_CREDENTIALS = True
 FRONTEND_URL           = config('FRONTEND_URL', default='https://eyangestate.com')
 
 # ── Celery ─────────────────────────────────────────────────────────────────
-CELERY_BROKER_URL = config('REDIS_URL', default=config('CELERY_BROKER_URL', default='redis://localhost:6379/0'))
+CELERY_BROKER_URL = config('REDIS_URL', default=config('CELERY_BROKER_URL', default='redis://eyangestate.com/0'))
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
 
 # ── CinetPay ───────────────────────────────────────────────────────────────

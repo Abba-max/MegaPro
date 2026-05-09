@@ -21,10 +21,10 @@ def initiate_payment(order, request=None):
     transaction_id = generate_transaction_id()
 
     # Build return URLs
-    frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:4200')
+    frontend_url = getattr(settings, 'FRONTEND_URL', 'http://eyangestate.com:4200')
     return_url  = f"{frontend_url}/payment/return?transaction_id={transaction_id}"
     notify_url  = getattr(settings, 'CINETPAY_NOTIFY_URL',
-                          f"{getattr(settings, 'BACKEND_URL', 'http://localhost:8000')}/api/payments/notify/")
+                          f"{getattr(settings, 'BACKEND_URL', 'http://eyangestate.com:8000')}/api/payments/notify/")
 
     payload = {
         "apikey":         settings.CINETPAY_API_KEY,
