@@ -795,8 +795,9 @@
                                 <lucide-icon [img]="PlusIcon" size="14"></lucide-icon> {{ 'dashboard.add' | translate }}
                             </button>
                         </label>
-                        <select [(ngModel)]="equip.equipment" [ngModelOptions]="{standalone: true}" class="f-input">
+                        <select [(ngModel)]="equip.equipment" [ngModelOptions]="{standalone: true}" class="f-input" (change)="equip.equipment === 'new' ? openCreateEquipmentModal(equip) : null">
                             <option [value]="null">— Sélectionnez —</option>
+                            <option value="new">+ {{ 'admin.add_new' | translate }}...</option>
                             <option *ngFor="let item of globalEquipment()" [value]="item.id">{{ item.part_name }}</option>
                         </select>
                     </div>

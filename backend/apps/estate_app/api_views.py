@@ -204,6 +204,15 @@ class EstateViewSet(viewsets.ModelViewSet):
         ctx['request'] = self.request
         return ctx
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if not serializer.is_valid():
+            print(f"DEBUG: Estate creation failed. Errors: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
     def perform_create(self, serializer):
         try:
             user = self.request.user
@@ -211,9 +220,9 @@ class EstateViewSet(viewsets.ModelViewSet):
                 from rest_framework.exceptions import NotAuthenticated
                 raise NotAuthenticated("Authentification requise.")
 
-            if user.user_type == 'owner' and not user.is_verified:
-                from rest_framework.exceptions import PermissionDenied
-                raise PermissionDenied("Votre compte n'est pas encore verifie.")
+            # Owners can create estates even if not verified yet, 
+            # but the estate will stay is_verified=False until admin approval.
+            pass
 
             # Default owner to current user
             owner = user
@@ -1150,6 +1159,15 @@ class EquipmentViewSet(viewsets.ModelViewSet):
     serializer_class   = EquipmentSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+    def create(self, request, *args, **kwargs):
+        name = request.data.get('part_name')
+        if name:
+            existing = Equipment.objects.filter(part_name__iexact=name).first()
+            if existing:
+                serializer = self.get_serializer(existing)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        return super().create(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         serializer.save()
 
@@ -1189,6 +1207,15 @@ class CharacteristicViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve'):
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated(), IsVerifiedOwner()]
+
+    def create(self, request, *args, **kwargs):
+        name = request.data.get('name')
+        if name:
+            existing = Characteristic.objects.filter(name__iexact=name).first()
+            if existing:
+                serializer = self.get_serializer(existing)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+        return super().create(request, *args, **kwargs)
 
 
 # Payment APIs

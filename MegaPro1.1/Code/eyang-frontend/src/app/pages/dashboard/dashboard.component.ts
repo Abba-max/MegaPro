@@ -512,8 +512,9 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       next: r => { this.myReviews = r; this.resetReviewPage(); }, error: () => {}
     });
 
-    // Load characteristics for selection
+    // Load characteristics and equipment for selection
     this.estateService.getCharacteristicList().subscribe(c => this.globalCharacteristics.set(c));
+    this.estateService.getEquipmentList().subscribe(e => this.globalEquipment.set(e));
   }
 
   // ── Owner conversations ───────────────────────────────────
@@ -901,13 +902,15 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     return this.estateService.getRoomEquipment(categoryId).pipe(
       switchMap((existing: any[]) => {
         const toDelete = existing.map((e: any) => this.estateService.deleteRoomEquipment(e.id));
-        const toAdd = equip.map((e: any) => this.estateService.addRoomEquipment({
-          room_category: categoryId,
-          equipment: e.equipment,
-          quantity: e.quantity,
-          condition: e.condition,
-          note: e.note
-        }));
+        const toAdd = equip
+          .filter((e: any) => e.equipment) // Only sync if equipment is selected
+          .map((e: any) => this.estateService.addRoomEquipment({
+            room_category: categoryId,
+            equipment: e.equipment,
+            quantity: e.quantity,
+            condition: e.condition,
+            note: e.note
+          }));
         return [...toDelete, ...toAdd].length ? forkJoin([...toDelete, ...toAdd]) : of([]);
       })
     );

@@ -9,7 +9,7 @@ class IsVerifiedOwner(permissions.BasePermission):
             return False
         
         # Staff/Admins are always allowed
-        if request.user.is_staff or request.user.is_superuser:
+        if request.user.is_staff or request.user.is_superuser or request.user.user_type == 'admin':
             return True
             
         # Owners must be verified

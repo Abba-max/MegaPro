@@ -277,6 +277,10 @@ class EstateSerializer(serializers.ModelSerializer):
     supplements = SupplementSerializer(source='supplements_set', many=True, read_only=True)
 
     def to_internal_value(self, data):
+        # Handle QueryDict immutability if needed
+        if hasattr(data, 'dict'):
+            data = data.copy()
+
         # Convert boolean fields from frontend to the '1'/'0' expected by model legacy CharFields
         for field in ['restaurant', 'generator', 'forage']:
             if field in data:
@@ -285,8 +289,23 @@ class EstateSerializer(serializers.ModelSerializer):
                     data[field] = '1' if val else '0'
                 elif isinstance(val, str):
                     # Handle "true"/"false" strings
-                    if val.lower() == 'true': data[field] = '1'
-                    elif val.lower() == 'false': data[field] = '0'
+                    if val.lower() == 'true' or val == '1': data[field] = '1'
+                    elif val.lower() == 'false' or val == '0': data[field] = '0'
+        
+        # Explicitly remove read-only and method fields to prevent validation issues
+        read_only_data_fields = [
+            'price', 'capacity', 'free', 'reviews_count', 'orders_count', 
+            'average_rating', 'characteristics', 'supplements', 'owner', 'images', 'room_categories'
+        ]
+        for f in read_only_data_fields:
+            if f in data:
+                # If it's a dict/QueryDict, we can pop it
+                if isinstance(data, dict):
+                    data.pop(f)
+                elif hasattr(data, 'pop'):
+                    try: data.pop(f)
+                    except: pass
+
         return super().to_internal_value(data)
 
     def get_average_rating(self, obj) -> dict:
