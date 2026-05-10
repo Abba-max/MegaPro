@@ -160,9 +160,16 @@ export class SignupComponent {
       error: (err) => {
         this.isLoading.set(false);
         const errors = err.error;
-        if (typeof errors === 'object') {
+        if (errors && typeof errors === 'object') {
           const firstKey = Object.keys(errors)[0];
-          this.error = errors[firstKey][0] || errors[firstKey];
+          if (firstKey) {
+            const firstError = errors[firstKey];
+            this.error = Array.isArray(firstError) ? firstError[0] : firstError;
+          } else {
+            this.error = this.translate.instant('auth.error_signup_failed');
+          }
+        } else if (typeof errors === 'string') {
+          this.error = errors;
         } else {
           this.error = this.translate.instant('auth.error_signup_failed');
         }

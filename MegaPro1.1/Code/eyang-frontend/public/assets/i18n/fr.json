@@ -102,7 +102,7 @@
   },
   "detail": {
     "unit(s)": "unité(s)",
-    "distance":"Du Campus",
+    "distance": "Du Campus",
     "login_to_view_desc": "Connectez-vous pour pouvoir réserver",
     "back": "Retour",
     "room_types": "Types de chambres disponibles",
@@ -123,7 +123,7 @@
     "capacity": "Capacité",
     "amenities": "Équipements",
     "estate_equipment": "Équipements de la résidence",
-    "change_link":"Changer ",
+    "change_link": "Changer ",
     "reviews": "Avis",
     "no_reviews": "Aucun avis pour le moment",
     "rating": "Note",
@@ -155,7 +155,8 @@
     "owner": "Bailleur",
     "role_badge_admin": "Administrateur",
     "description": "Description",
-    "location":"Localisation"
+    "location": "Localisation",
+    "description_optional": "Description (Optionnel)"
   },
   "admin": {
     "enter_characteristic_name": "Entrez le nom de la nouvelle caractéristique :",
@@ -367,15 +368,15 @@
     "total_estates_lbl": "Total logements",
     "total_users_lbl": "Total utilisateurs",
     "received_bookings": "Réservations reçues",
-    "error_creating_characteristic":"Erreur lors de la création de la caractéristique",
-    "error":"Une erreur est survenue.",
+    "error_creating_characteristic": "Erreur lors de la création de la caractéristique",
+    "error": "Une erreur est survenue.",
     "characteristic_created": "Caractéristique créée avec succès",
     "success": "Succès",
-    "create":"Créer avec succès",
-      "new_equipment": "Nouvel équipement",
-      "equipment_name": "Nom de l'équipement",
-      "add_new":"Ajouter un nouvel équipement",
-      "total_reviews": "{{ count }} avis",
+    "create": "Créer avec succès",
+    "new_equipment": "Nouvel équipement",
+    "equipment_name": "Nom de l'équipement",
+    "add_new": "Ajouter un nouvel équipement",
+    "total_reviews": "{{ count }} avis",
     "published_reviews": "Avis publiés",
     "avg_bookings_month": "Moy. réservations / mois",
     "peak_bookings": "Pic de réservations",
@@ -415,14 +416,13 @@
     "new_photos": "Nouvelles photos",
     "gps_position": "Position GPS",
     "click_on_map": "cliquer sur la carte",
-    "pending_payments":"Paiements en attente",
+    "pending_payments": "Paiements en attente",
     "pending_payments_desc": "Gérez les paiements en attente de confirmation.",
-     "edit_housing":"Modifier le logement",
-     "generator": "Groupe électrogène",
-     "restaurant": "Restaurant",
-     "forages": "Forages",
-     "forage": "Forage"
-    
+    "edit_housing": "Modifier le logement",
+    "generator": "Groupe électrogène",
+    "restaurant": "Restaurant",
+    "forages": "Forages",
+    "forage": "Forage"
   },
   "home": {
     "interactive_location": "Localisation interactive",
@@ -521,7 +521,6 @@
     "love_it": "J'adore",
     "view_more": "Voir plus d'avis",
     "login_to_leave_desc": "Connectez-vous pour laisser un avis"
-    
   },
   "action": {
     "reserve": "Réserver",
@@ -745,7 +744,7 @@
     "gps_pos": "Position GPS",
     "gps_hint": "cliquer sur la carte",
     "lat": "Latitude",
-    "save":"Enregistrer",
+    "save": "Enregistrer",
     "form_location_ph": "Ex: Yaoundé, Biyem-Assi...",
     "form_description_ph": "Description du logement, équipements, conditions…",
     "form_name_ph": "Ex: Heaven City...",
@@ -820,7 +819,7 @@
     "no_supplements": "Aucun supplément ajouté",
     "latitude": "Latitude",
     "longitude": "Longitude",
-    "cancel_reservation_confirm":"Êtes-vous sûr de vouloir annuler cette réservation ?"
+    "cancel_reservation_confirm": "Êtes-vous sûr de vouloir annuler cette réservation ?"
   },
   "auth": {
     "go_to_dashboard": "Accéder au tableau de bord",
@@ -869,13 +868,27 @@
     "terms_of_service": "Conditions d'utilisation",
     "no_account": "Pas de compte ? ",
     "login_link": "Se connecter",
-    "back":"Retour",
+    "back": "Retour",
     "phone_placeholder": "Entrez votre numéro de téléphone",
     "address_placeholder": "Entrez votre adresse",
     "step_profile": "Profil",
     "owner_id_notice": "Pour des raisons de sécurité, les bailleurs doivent fournir un document d'identité valide pour publier des annonces.",
     "click_to_upload_id": "Cliquez pour télécharger votre pièce d'identité",
-    "step_owner": "Bailleur"
+    "step_owner": "Bailleur",
+    "success_signup": "Inscription réussie !",
+    "verifying_account": "Vérification du compte...",
+    "verifying_account_desc": "Veuillez patienter pendant la vérification de votre e-mail.",
+    "verification_success": "Vérification réussie",
+    "verification_success_desc": "Votre e-mail a été vérifié.",
+    "login_now": "Se connecter",
+    "verification_failed": "Échec de la vérification",
+    "verification_failed_desc": "Le lien de vérification est invalide ou expiré.",
+    "back_home": "Retour à l'accueil",
+    "error_id_required": "La carte d'identité est requise pour les propriétaires.",
+    "error_signup_failed": "L'inscription a échoué. Veuillez réessayer.",
+    "registration_success_login": "Inscription réussie. Vous pouvez maintenant vous connecter.",
+    "error_invalid_credentials": "Email ou mot de passe invalide.",
+    "create_account": "Créer un compte"
   },
   "why": {
     "title": "Pourquoi choisir Eyang Estate ?",
@@ -933,7 +946,8 @@
     "t3_name": "Sophie L.",
     "t3_role": "Étudiante en médecine",
     "t3_text": "J'étais stressée à l'idée de trouver un logement pour mes études, mais Eyang Estate a rendu tout ça tellement facile. Je recommande vivement !"
-},
-"housing":{
-  "currency": ""
-}}
+  },
+  "housing": {
+    "currency": ""
+  }
+}

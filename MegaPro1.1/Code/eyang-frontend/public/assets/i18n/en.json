@@ -284,8 +284,8 @@
     "col_price": "PRICE",
     "col_quantity": "QUANTITY",
     "approve": "Approve",
-    "error_creating_characteristic":"Error creating characteristic",
-    "error":"An error occurred.",
+    "error_creating_characteristic": "Error creating characteristic",
+    "error": "An error occurred.",
     "characteristic_created": "Characteristic created successfully",
     "success": "Success",
     "add_new": "Add new",
@@ -296,7 +296,7 @@
     "publish": "Publish",
     "unpublish": "Unpublish",
     "manage_rooms": "Manage rooms",
-     "total_results": "{{ count }} result",
+    "total_results": "{{ count }} result",
     "sport_field": "Sport Field",
     "room_size": "Room Size",
     "size_large": "Large",
@@ -317,8 +317,8 @@
     "main_amenities": "Main Amenities",
     "security_services": "Security & Services",
     "characteristics": "Residence Characteristics",
-    "new_characteristic"  : "New characteristic",
-     "characteristic_name": "Name of the characteristic",
+    "new_characteristic": "New characteristic",
+    "characteristic_name": "Name of the characteristic",
     "transfer_ownership": "Transfer ownership",
     "delete_title": "Confirm deletion",
     "delete_confirm_housing": "Are you sure you want to delete {{ name }}? This action is irreversible.",
@@ -366,9 +366,9 @@
     "room_name_eg": "Ex: VIP Room",
     "room_equipments": "Room equipments",
     "surface_area": "Surface area",
-    "pending_payments":"Pending Payments",
+    "pending_payments": "Pending Payments",
     "pending_payments_desc": "Manage awaiting payments",
-    "edit_housing":"Edit Housing",
+    "edit_housing": "Edit Housing",
     "forages": "Boreholes",
     "forage": "Borehole"
   },
@@ -474,12 +474,17 @@
     "confirm_password": "Confirm password",
     "error_passwords_mismatch": "Passwords do not match",
     "error_password_too_short": "Password must be at least 8 characters",
-    "login_btn":"Log in",
-    "register_link":"Sign up",
-    "i_am_a":"I am a...",
-  "no_account":"No account?",
-  "privacy_policy":"Privacy Policy",
-  "terms_of_service":"Terms of Service"
+    "login_btn": "Log in",
+    "register_link": "Sign up",
+    "i_am_a": "I am a...",
+    "no_account": "No account?",
+    "privacy_policy": "Privacy Policy",
+    "terms_of_service": "Terms of Service",
+    "success_signup": "Registration successful!",
+    "registration_success_login": "Registration successful. You can now login.",
+    "error_missing_email": "Please enter your email.",
+    "forgot_password_success": "Password reset link sent to your email.",
+    "error_generic": "An error occurred. Please try again."
   },
   "confirm": {
     "cancel": "Cancel",
@@ -805,9 +810,20 @@
     "no_supplements": "No supplements added",
     "latitude": "Latitude",
     "longitude": "Longitude",
-    "cancel_reservation_confirm":"Are you sure you want to cancel the reservation "
+    "cancel_reservation_confirm": "Are you sure you want to cancel the reservation "
   },
-  "housing":{
+  "housing": {
     "currency": ""
+  },
+  "form": {
+    "message_optional": "Message (Optional)",
+    "your_request": "Describe your request...",
+    "send_request": "Send Request",
+    "sending": "Sending...",
+    "request_sent": "Request Sent Successfully!",
+    "name": "Name",
+    "location": "Location",
+    "description": "Description",
+    "description_optional": "Description (Optional)"
   }
 }
