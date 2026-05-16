@@ -410,7 +410,61 @@ class ReviewSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
             validated_data['user'] = request.user
-        return super().create(validated_data)
+        
+        characteristics_data = self.initial_data.get('characteristics')
+        supplements_data = self.initial_data.get('supplements')
+
+        estate = super().create(validated_data)
+        
+        self._sync_characteristics_and_supplements(estate, characteristics_data, supplements_data)
+        return estate
+
+    def update(self, instance, validated_data):
+        characteristics_data = self.initial_data.get('characteristics')
+        supplements_data = self.initial_data.get('supplements')
+
+        estate = super().update(instance, validated_data)
+
+        if characteristics_data is not None or supplements_data is not None:
+            self._sync_characteristics_and_supplements(estate, characteristics_data, supplements_data)
+        return estate
+
+    def _sync_characteristics_and_supplements(self, estate, characteristics_data, supplements_data):
+        if characteristics_data is not None:
+            if isinstance(characteristics_data, str):
+                import json
+                try: characteristics_data = json.loads(characteristics_data)
+                except: characteristics_data = []
+            
+            if isinstance(characteristics_data, list):
+                from apps.estate_app.models import Characteristic, EstateCharacteristic
+                estate.characteristics_set.all().delete()
+                for char_id in characteristics_data:
+                    try:
+                        char = Characteristic.objects.get(pk=char_id)
+                        EstateCharacteristic.objects.create(estate=estate, characteristic=char)
+                    except (Characteristic.DoesNotExist, ValueError, TypeError):
+                        pass
+
+        if supplements_data is not None:
+            if isinstance(supplements_data, str):
+                import json
+                try: supplements_data = json.loads(supplements_data)
+                except: supplements_data = []
+                
+            if isinstance(supplements_data, list):
+                from apps.estate_app.models import Supplement
+                estate.supplements_set.all().delete()
+                for supp in supplements_data:
+                    if isinstance(supp, dict):
+                        Supplement.objects.create(
+                            estate=estate,
+                            name=supp.get('name', ''),
+                            price=supp.get('price', 0),
+                            description=supp.get('description', ''),
+                            is_available=supp.get('is_available', True),
+                            is_paid_service=supp.get('is_paid_service', True)
+                        )
 
 
 # ── QuickOrder Serializer ─────────────────────────────────────────────────────

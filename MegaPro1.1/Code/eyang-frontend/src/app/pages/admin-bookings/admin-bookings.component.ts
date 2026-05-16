@@ -122,13 +122,19 @@ export class AdminBookingsComponent implements OnInit {
 
   accept(booking: Reservation): void {
     if (!booking.id) return;
+    if (booking.is_legacy) {
+      this.estateService.acceptQuickOrder(booking.id).subscribe({
+        next: () => {
+          this.updateBookingInList(booking.id, 'ACCEPTED', true);
+          this.showToast(this.translate.instant('dashboard.status_accepted_toast'), 'success');
+        },
+        error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
+      });
+      return;
+    }
     this.estateService.acceptReservation(booking.id).subscribe({
       next: (updated) => {
-          this.allBookings.update(list => {
-            const idx = list.findIndex(b => b.id === booking.id);
-            if (idx !== -1) list[idx] = updated;
-            return [...list];
-          });
+        this.updateBookingInList(booking.id, updated, false);
         this.showToast(this.translate.instant('dashboard.status_accepted_toast'), 'success');
       },
       error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
@@ -137,37 +143,57 @@ export class AdminBookingsComponent implements OnInit {
 
   reject(booking: Reservation): void {
     if (!booking.id) return;
+    if (booking.is_legacy) {
+      this.estateService.rejectQuickOrder(booking.id).subscribe({
+        next: () => {
+          this.updateBookingInList(booking.id, 'REJECTED', true);
+          this.showToast(this.translate.instant('dashboard.status_rejected_toast'), 'warning');
+        },
+        error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
+      });
+      return;
+    }
     this.estateService.rejectReservation(booking.id).subscribe({
       next: (updated) => {
-          this.allBookings.update(list => {
-            const idx = list.findIndex(b => b.id === booking.id);
-            if (idx !== -1) list[idx] = updated;
-            return [...list];
-          });
+        this.updateBookingInList(booking.id, updated, false);
         this.showToast(this.translate.instant('dashboard.status_rejected_toast'), 'warning');
       },
       error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
     });
   }
 
-  verifyPayment(booking: Reservation, action: 'approve' | 'reject'): void {
-    if (!booking.id) return;
-    // For new architecture, verification might involve accepting or a separate call
-    // If there's no direct equivalent, we use accept/reject for now
-    if (action === 'approve') {
-      this.accept(booking);
-    } else {
-      this.reject(booking);
-    }
+  private updateBookingInList(id: number, data: any, isLegacy: boolean): void {
+    this.allBookings.update(list => {
+      const idx = list.findIndex(b => b.id === id && b.is_legacy === isLegacy);
+      if (idx !== -1) {
+        if (typeof data === 'string') {
+          list[idx] = { ...list[idx], status: data as any };
+        } else {
+          list[idx] = data;
+        }
+      }
+      return [...list];
+    });
   }
 
   delete(booking: Reservation): void {
     const msg = this.translate.instant('admin.delete_confirm_booking', { name: booking.client_name });
     if (!confirm(msg || `Supprimer la réservation de "${booking.client_name}" ?`)) return;
-    // Use cancel or delete if service provides it
+    
+    if (booking.is_legacy) {
+      this.estateService.deleteAdminBooking(booking.id).subscribe({
+        next: () => {
+          this.allBookings.update(list => list.filter(b => !(b.id === booking.id && b.is_legacy)));
+          this.showToast(this.translate.instant('admin.delete_success'), 'info');
+        },
+        error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
+      });
+      return;
+    }
+
     this.estateService.cancelReservation(booking.id).subscribe({
       next: () => {
-        this.allBookings.update(list => list.filter(b => b.id !== booking.id));
+        this.allBookings.update(list => list.filter(b => !(b.id === booking.id && !b.is_legacy)));
         this.showToast(this.translate.instant('admin.delete_success'), 'info');
       },
       error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')

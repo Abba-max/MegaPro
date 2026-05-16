@@ -250,8 +250,8 @@
               <button class="btn btn--ghost btn--sm" (click)="openReservationDetails(o)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'dashboard.view_details' | translate }}</button>
               <ng-container *ngIf="!o.status||o.status==='PENDING'">
                 <button class="btn btn--accept btn--sm" (click)="acceptReservation(o)"><lucide-icon [img]="CheckIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.accept' | translate }}</button>
-                <button class="btn btn--reject btn--sm" (click)="rejectReservation(o)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.refuse' | translate }}</button>
               </ng-container>
+              <button class="btn btn--reject btn--sm" *ngIf="!o.status||o.status==='PENDING'||o.status==='ACCEPTED'" (click)="rejectReservation(o)"><lucide-icon [img]="XIcon" class="btn__ico"></lucide-icon>{{ 'dashboard.refuse' | translate }}</button>
               <button *ngIf="o.status==='ACCEPTED'" class="btn btn--primary btn--sm" (click)="openBill(o)"><lucide-icon [img]="FileIcon" class="btn__ico"></lucide-icon> {{ 'admin.col_receipt' | translate }}</button>
             </div>
           </div>

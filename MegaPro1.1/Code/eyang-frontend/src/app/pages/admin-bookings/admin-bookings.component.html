@@ -81,10 +81,11 @@
                             <button class="icon-btn success" (click)="accept(b)" [title]="'admin.approve' | translate">
                                 <lucide-icon [img]="CheckCircleIcon" class="icon-xs"></lucide-icon>
                             </button>
-                            <button class="icon-btn warning" (click)="reject(b)" [title]="'admin.reject' | translate">
-                                <lucide-icon [img]="XCircleIcon" class="icon-xs"></lucide-icon>
-                            </button>
                         </ng-container>
+                        
+                        <button class="icon-btn warning" *ngIf="(b.status || 'PENDING') === 'PENDING' || (b.status || 'PENDING') === 'ACCEPTED'" (click)="reject(b)" [title]="'admin.reject' | translate">
+                            <lucide-icon [img]="XCircleIcon" class="icon-xs"></lucide-icon>
+                        </button>
 
                         <button class="icon-btn danger" (click)="delete(b)" [title]="'dashboard.delete' | translate">
                             <lucide-icon [img]="TrashIcon" class="icon-xs"></lucide-icon>

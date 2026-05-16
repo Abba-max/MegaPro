@@ -471,7 +471,11 @@ export class AdminLogementsComponent implements OnInit {
     }
 
     this.isSaving.set(true);
-    const payload = this.estateForm.value;
+    const payload = {
+      ...this.estateForm.value,
+      characteristics: this.selectedCharacteristics(),
+      supplements: this.estateSupplements()
+    };
 
     if (this.isEditMode && this.editId) {
       this.estateService.updateEstate(this.editId, payload)
@@ -482,28 +486,26 @@ export class AdminLogementsComponent implements OnInit {
         }))
         .subscribe(updated => {
           if (!updated) return;
-          this.syncEstateDetails(updated.id).subscribe(() => {
-            const finalize = () => {
-              this.isSaving.set(false); 
-              this.showModal = false; 
-              this.load();
-            };
-            const showSuccess = () => {
-              this.openActionModal(
-                'success',
-                this.translate.instant('admin.update_success', { name: updated.name }),
-                'The estate has been updated successfully.',
-                'OK',
-                finalize
-              );
-            };
+          const finalize = () => {
+            this.isSaving.set(false); 
+            this.showModal = false; 
+            this.load();
+          };
+          const showSuccess = () => {
+            this.openActionModal(
+              'success',
+              this.translate.instant('admin.update_success', { name: updated.name }),
+              'The estate has been updated successfully.',
+              'OK',
+              finalize
+            );
+          };
 
-            if (this.selectedFiles.length) {
-              this.uploadImages(this.editId!).subscribe(() => showSuccess());
-            } else {
-              showSuccess();
-            }
-          });
+          if (this.selectedFiles.length) {
+            this.uploadImages(this.editId!).subscribe(() => showSuccess());
+          } else {
+            showSuccess();
+          }
         });
     } else {
       this.estateService.createEstate(payload)
@@ -514,63 +516,31 @@ export class AdminLogementsComponent implements OnInit {
         }))
         .subscribe(created => {
           if (!created) return;
-          this.syncEstateDetails(created.id).subscribe(() => {
-            const finalize = () => {
-              this.openActionModal(
-                'success',
-                this.translate.instant('admin.create_success', { name: created.name }),
-                'Estate created successfully. Would you like to add rooms now?',
-                'Manage Rooms',
-                () => { this.isSaving.set(false); this.showModal = false; this.load(); this.openManageRooms(created); },
-                'Later',
-                () => { this.isSaving.set(false); this.showModal = false; this.load(); }
-              );
-            };
+          const finalize = () => {
+            this.openActionModal(
+              'success',
+              this.translate.instant('admin.create_success', { name: created.name }),
+              'Estate created successfully. Would you like to add rooms now?',
+              'Manage Rooms',
+              () => { this.isSaving.set(false); this.showModal = false; this.load(); this.openManageRooms(created); },
+              'Later',
+              () => { this.isSaving.set(false); this.showModal = false; this.load(); }
+            );
+          };
 
-            if (this.selectedFiles.length) {
-              this.estateService.uploadEstateImages(created.id, this.selectedFiles).subscribe({
-                next: () => finalize(),
-                error: () => { 
-                  this.openActionModal('error', 'Error', this.translate.instant('admin.upload_error'), 'OK');
-                  this.isSaving.set(false); this.showModal = false; this.load();
-                }
-              });
-            } else finalize();
-          });
+          if (this.selectedFiles.length) {
+            this.estateService.uploadEstateImages(created.id, this.selectedFiles).subscribe({
+              next: () => finalize(),
+              error: () => { 
+                this.openActionModal('error', 'Error', this.translate.instant('admin.upload_error'), 'OK');
+                this.isSaving.set(false); this.showModal = false; this.load();
+              }
+            });
+          } else finalize();
         });
     }
   }
 
-  private syncEstateDetails(estateId: number): Observable<any> {
-    const chars = this.selectedCharacteristics();
-    const supps = this.estateSupplements();
-
-    // 1. Characteristics Sync
-    const charObs = this.estateService.getEstateCharacteristics(estateId).pipe(
-      switchMap((existing: any[]) => {
-        // Use Characteristic ID for deletion, matching backend action expectations
-        const toDelete = existing.map((e: any) => this.estateService.deleteEstateCharacteristic(estateId, e.characteristic));
-        const toAdd = chars.map((c: number) => this.estateService.addEstateCharacteristic(estateId, c));
-        const all = [...toDelete, ...toAdd];
-        return all.length ? forkJoin(all) : of([]);
-      })
-    );
-
-    // 2. Supplements Sync
-    const suppObs = this.estateService.getEstateSupplements(estateId).pipe(
-      switchMap((existing: any[]) => {
-        const toDelete = existing.map((e: any) => this.estateService.deleteSupplement(e.id));
-        const toAdd = supps.map((s: any) => this.estateService.addEstateSupplement(estateId, s));
-        const all = [...toDelete, ...toAdd];
-        return all.length ? forkJoin(all) : of([]);
-      })
-    );
-
-    return forkJoin({
-      chars: charObs,
-      supps: suppObs
-    });
-  }
 
   nextStep(): void {
     if (this.currentStep === 1) {

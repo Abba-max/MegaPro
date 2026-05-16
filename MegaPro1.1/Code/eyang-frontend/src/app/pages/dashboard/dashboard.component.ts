@@ -1139,10 +1139,20 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
   acceptReservation(order: Reservation): void {
     if (!order.id) return;
+    if (order.is_legacy) {
+      this.estateService.acceptQuickOrder(order.id).subscribe({
+        next: () => {
+          this.updateBookingInDashboard(order.id, 'ACCEPTED', true);
+          this.showToast(this.translate.instant('dashboard.status_accepted'), 'success');
+          this.loadOwnerData();
+        },
+        error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
+      });
+      return;
+    }
     this.estateService.acceptReservation(order.id).subscribe({
       next: updated => {
-        const idx = this.myReservations.findIndex((o: Reservation) => o.id === order.id);
-        if (idx !== -1) this.myReservations[idx] = updated;
+        this.updateBookingInDashboard(order.id, updated, false);
         this.showToast(this.translate.instant('dashboard.status_accepted'), 'success');
         this.loadOwnerData(); // Refresh to fetch newly generated invoice
       },
@@ -1153,15 +1163,36 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   rejectReservation(order: Reservation): void {
     if (!order.id) return;
     this.openConfirm(this.translate.instant('admin.reject_booking_confirm', { name: order.estate_name }), () => {
+      if (order.is_legacy) {
+        this.estateService.rejectQuickOrder(order.id).subscribe({
+          next: () => {
+            this.updateBookingInDashboard(order.id, 'REJECTED', true);
+            this.showToast(this.translate.instant('dashboard.status_rejected'), 'info');
+          },
+          error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
+        });
+        return;
+      }
       this.estateService.rejectReservation(order.id).subscribe({
         next: updated => {
-          const idx = this.myReservations.findIndex((o: Reservation) => o.id === order.id);
-          if (idx !== -1) this.myReservations[idx] = updated;
+          this.updateBookingInDashboard(order.id, updated, false);
           this.showToast(this.translate.instant('dashboard.status_rejected'), 'info');
         },
         error: () => this.showToast(this.translate.instant('admin.error_load'), 'error')
       });
     });
+  }
+
+  private updateBookingInDashboard(id: number, data: any, isLegacy: boolean): void {
+    const idx = this.myReservations.findIndex((o: Reservation) => o.id === id && o.is_legacy === isLegacy);
+    if (idx !== -1) {
+      if (typeof data === 'string') {
+        this.myReservations[idx] = { ...this.myReservations[idx], status: data as any };
+      } else {
+        this.myReservations[idx] = data;
+      }
+      this.myReservations = [...this.myReservations];
+    }
   }
 
   // ── Client: Reservations ──────────────────────────────────

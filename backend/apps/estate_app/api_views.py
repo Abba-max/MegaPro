@@ -249,10 +249,19 @@ class EstateViewSet(viewsets.ModelViewSet):
 
     def perform_update(self, serializer):
         user = self.request.user
+        kwargs = {}
         if user.is_staff or user.is_superuser:
-            serializer.save()
+            owner_id = self.request.data.get('owner_id')
+            if owner_id:
+                try:
+                    owner = User.objects.get(pk=owner_id)
+                    kwargs['owner'] = owner
+                except (User.DoesNotExist, ValueError, TypeError):
+                    pass
         else:
-            serializer.save(is_verified=False)
+            kwargs['is_verified'] = False
+
+        serializer.save(**kwargs)
 
     @action(detail=True, methods=['post'], url_path='images',
             permission_classes=[permissions.IsAuthenticated],
@@ -496,7 +505,7 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
         estate        = serializer.validated_data.get('estate')
 
         if room_category:
-            if room_category.occupied_count >= room_category.quantity_available:
+            if room_category.available_rooms <= 0:
                 # Room is full, provide recommendations
                 recs = get_recommendations(estate, room_category)
                 recs_data = EstateSerializer(recs, many=True, context={'request': request}).data
@@ -512,9 +521,22 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
         if request.user.is_authenticated:
             serializer.validated_data['user'] = request.user
 
-        # Always start at pending_payment
-        serializer.validated_data['status'] = 'pending_payment'
-        self.perform_create(serializer)
+        # ── Direct Order: Skip payment verification ──
+        serializer.validated_data['status'] = 'accepted'
+        serializer.validated_data['is_payment_verified'] = True
+        
+        from django.db import transaction
+        with transaction.atomic():
+            instance = serializer.save()
+            if room_category:
+                # Atomic inventory decrement
+                rc = RoomCategory.objects.select_for_update().get(pk=room_category.id)
+                rc.occupied_count += 1
+                rc.available_rooms = max(0, rc.available_rooms - 1)
+                rc.available_quantity = rc.available_rooms
+                rc.quantity_available = rc.available_rooms
+                rc.save(update_fields=['occupied_count', 'available_rooms', 'available_quantity', 'quantity_available'])
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_serializer_context(self):

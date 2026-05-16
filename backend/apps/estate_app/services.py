@@ -207,15 +207,21 @@ def create_reservation_with_snapshot(validated_data: dict, user) -> Reservation:
         validated_data.setdefault('check_out', check_out)
         validated_data['end_date'] = check_out
 
-    reservation = Reservation.objects.create(
-        **{k: v for k, v in validated_data.items() if k not in ('selected_supplements',)},
-        user=user,
-        status='PENDING',
-        total_price=total_price,
-        reservation_details_json=snapshot,
-    )
-    if supplements:
-        reservation.selected_supplements.set(supplements)
+    with transaction.atomic():
+        reservation = Reservation.objects.create(
+            **{k: v for k, v in validated_data.items() if k not in ('selected_supplements',)},
+            user=user,
+            status='PENDING',
+            total_price=total_price,
+            reservation_details_json=snapshot,
+        )
+        if supplements:
+            reservation.selected_supplements.set(supplements)
+        
+        # ── Direct Order: Immediately accept and decrement inventory ──
+        # This reuses the logic in accept_reservation() which handles
+        # atomic inventory decrement and async PDF generation.
+        reservation = accept_reservation(reservation.id)
 
     return reservation
 

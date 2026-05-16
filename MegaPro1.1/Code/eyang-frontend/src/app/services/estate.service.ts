@@ -746,6 +746,14 @@ export class EstateService {
     return this.http.post(`${this.BASE}/orders/${id}/verify-payment/`, { action });
   }
 
+  acceptQuickOrder(id: number): Observable<QuickOrder> {
+    return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/accept/`, {});
+  }
+
+  rejectQuickOrder(id: number): Observable<QuickOrder> {
+    return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/reject/`, {});
+  }
+
   // ── Reviews ───────────────────────────────────────────────
   getReviews(estateId?: number): Observable<Review[]> {
     let p = new HttpParams();
