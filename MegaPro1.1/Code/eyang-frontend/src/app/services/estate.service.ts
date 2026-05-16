@@ -828,13 +828,9 @@ export class EstateService {
     return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/`, { status: orderStatus });
   }
 
-  acceptQuickOrder(id: number): Observable<QuickOrder> {
-    return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/accept/`, {});
-  }
 
-  rejectQuickOrder(id: number): Observable<QuickOrder> {
-    return this.http.patch<QuickOrder>(`${this.BASE}/orders/${id}/reject/`, {});
-  }
+
+
 
   // ── Equipment ────────────────────────────────────────────────────────
   getEquipmentList(): Observable<Equipment[]> {
