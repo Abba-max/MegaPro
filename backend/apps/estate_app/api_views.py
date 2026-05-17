@@ -28,7 +28,7 @@ from .serializers import (
     SupplementSerializer,
     CharacteristicSerializer, EstateCharacteristicSerializer,
 )
-from .permissions import IsVerifiedOwner, IsEyangAdmin
+from .permissions import IsVerifiedOwner, IsEyangAdmin, IsOwnerOrAdmin
 from django.utils import timezone
 from django.db.models import Sum, Avg
 from .utils import send_verification_email, send_welcome_email
@@ -152,12 +152,13 @@ def me_view(request):
 class EstateViewSet(viewsets.ModelViewSet):
     queryset = Estate.objects.all().prefetch_related('images')
     serializer_class = EstateSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [IsOwnerOrAdmin]
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get_queryset(self):
         qs = Estate.objects.all().select_related('owner').prefetch_related(
             'images',
+            'characteristics_set',
             'room_categories',
             'room_categories__images',
             'reviews'
@@ -194,6 +195,9 @@ class EstateViewSet(viewsets.ModelViewSet):
         # ── Nested filters ───────────────────────────────────────────────────
         if rsz := p.get('room_size'):
             qs = qs.filter(room_categories__room_size=rsz).distinct()
+            
+        if p.get('available') == 'true':
+            qs = qs.filter(room_categories__available_rooms__gte=1).distinct()
 
         if p.get('mine') == '1' and self.request.user.is_authenticated:
             qs = qs.filter(owner=self.request.user)

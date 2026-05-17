@@ -76,7 +76,7 @@
           </div>
 
           <div class="notif-empty" *ngIf="notifications.length === 0">
-            <span class="notif-empty-icon">🔔</span>
+            <span class="notif-empty-icon"></span>
             <p>{{ 'auth.no_notifications' | translate }}</p>
             <span class="notif-empty-hint">{{ 'auth.no_notifications_hint' | translate }}</span>
           </div>
@@ -197,19 +197,19 @@
       <span class="mobile-nav-section-label">{{ 'footer.nav_title' | translate }}</span>
       <nav class="mobile-nav-links">
         <a class="mobile-nav-link" (click)="scrollTo('listings'); closeMobileMenu()">
-          <span class="mobile-nav-link-icon">🏠</span>
+          <span class="mobile-nav-link-icon"></span>
           {{ 'nav.listings' | translate }}
         </a>
         <a class="mobile-nav-link" (click)="scrollTo('why'); closeMobileMenu()">
-          <span class="mobile-nav-link-icon">✨</span>
+          <span class="mobile-nav-link-icon"></span>
           {{ 'nav.why' | translate }}
         </a>
         <a class="mobile-nav-link" (click)="scrollTo('faq'); closeMobileMenu()">
-          <span class="mobile-nav-link-icon">❓</span>
+          <span class="mobile-nav-link-icon"></span>
           {{ 'nav.faq' | translate }}
         </a>
         <a class="mobile-nav-link" routerLink="/contact" (click)="closeMobileMenu()">
-          <span class="mobile-nav-link-icon">📬</span>
+          <span class="mobile-nav-link-icon"></span>
           {{ 'nav.contact' | translate }}
         </a>
       </nav>

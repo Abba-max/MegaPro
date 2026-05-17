@@ -19,7 +19,11 @@ import { RoomImage } from '../../services/estate.service';
             <lucide-icon [img]="PrevIcon"></lucide-icon>
           </button>
           
-          <img [src]="images[currentIndex].image" alt="Room image" class="main-image fade-in">
+          <img [src]="images[currentIndex].image" alt="Room image" 
+               class="main-image fade-in" 
+               loading="lazy"
+               [class.scale-150]="isZoomed"
+               (click)="toggleZoom()">
           
           <button class="nav-btn next" (click)="next()" *ngIf="images.length > 1">
             <lucide-icon [img]="NextIcon"></lucide-icon>
@@ -76,6 +80,12 @@ import { RoomImage } from '../../services/estate.service';
     }
     .main-image {
       max-width: 100%; max-height: 100%; object-fit: contain;
+      transition: transform 0.3s ease;
+      cursor: zoom-in;
+    }
+    .main-image.scale-150 {
+      transform: scale(1.5);
+      cursor: zoom-out;
     }
     .nav-btn {
       position: absolute; top: 50%; transform: translateY(-50%);
@@ -122,6 +132,8 @@ export class RoomGalleryComponent {
   @Input() currentIndex = 0;
   @Output() close = new EventEmitter<void>();
 
+  isZoomed = false;
+
   readonly XIcon = X;
   readonly PrevIcon = ChevronLeft;
   readonly NextIcon = ChevronRight;
@@ -134,11 +146,17 @@ export class RoomGalleryComponent {
   }
 
   next(): void {
+    this.isZoomed = false;
     this.currentIndex = (this.currentIndex + 1) % this.images.length;
   }
 
   prev(): void {
+    this.isZoomed = false;
     this.currentIndex = (this.currentIndex - 1 + this.images.length) % this.images.length;
+  }
+  
+  toggleZoom(): void {
+    this.isZoomed = !this.isZoomed;
   }
 }
 

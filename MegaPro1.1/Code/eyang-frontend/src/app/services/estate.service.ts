@@ -264,6 +264,7 @@ export interface EstateFilters {
   forage?: string; restaurant?: string; tv?: string; fridge?: string;
   min_price?: number; max_price?: number; room_size?: string; max_dist?: number; mine?: string;
   playground?: string; cctv?: string; cleaning?: string;
+  available?: boolean;
 }
 
 export function getAbsoluteUrl(url: string | null | undefined, width?: number): string {

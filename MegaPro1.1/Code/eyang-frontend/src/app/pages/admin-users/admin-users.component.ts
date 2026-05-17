@@ -222,8 +222,11 @@ export class AdminUsersComponent implements OnInit {
         first_name: this.form.firstName,
         last_name:  this.form.lastName,
         email:      this.form.email,
+        role:       this.form.role,
       };
-      if (this.form.password) payload.password = this.form.password;
+      if (this.form.password && this.form.password.trim() !== '') {
+        payload.password = this.form.password;
+      }
 
       this.http.patch(`${this.API}/admin/users/${this.editUserId}/update/`, payload, { headers })
         .pipe(catchError(err => {

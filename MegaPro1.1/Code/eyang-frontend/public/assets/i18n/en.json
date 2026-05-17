@@ -41,6 +41,7 @@
     "no_notifications_hint": "No notifications at the moment"
   },
   "home": {
+    "view_more": "View more",
     "explore_map_mobile": "Explore on map",
     "interactive_location": "Interactive location",
     "map_title": "Find your housing<br>on the map",
@@ -98,6 +99,7 @@
     "overview": "Overview",
     "users": "Users",
     "verification": "Verification",
+    "housing": "Housing",
     "logements": "Housing",
     "reviews": "Reviews",
     "reports": "Reports",
@@ -130,6 +132,7 @@
     "unlimited": "Unlimited"
   },
   "listings": {
+    "no_images": "No images available",
     "title": "Housing",
     "desc": "Discover our available housing near campuses",
     "per_month": "/ month",
@@ -145,6 +148,7 @@
     "verified": "Verified"
   },
   "detail": {
+    "select_room_type": "Select room type",
     "places": "places",
     "distance": "from campus",
     "back": "Back",
@@ -243,6 +247,10 @@
     "listings_btn": "View housing"
   },
   "admin": {
+    "create": "Create",
+    "detail": { "description": "Description" },
+    "wifi": "Wi-Fi",
+    "fridge": "Fridge",
     "enter_characteristic_name": "Enter new characteristic name:",
     "enter_equipment_name": "Enter new equipment name:",
     "manage_users": "User Management",
@@ -681,8 +689,8 @@
     "choose_listing": "Choose a listing…",
     "form_rating": "Rating",
     "form_comment": "Comment",
-    "form_comment_ph": "Share your experience…",
-    "form_edit_comment_ph": "Your review…",
+    "form_comment_ph": "Leave a comment...",
+    "form_edit_comment_ph": "Your review...",
     "form_required": "required",
     "form_optional": "optional",
     "cancel": "Cancel",
@@ -825,5 +833,10 @@
     "location": "Location",
     "description": "Description",
     "description_optional": "Description (Optional)"
+  },
+  "price": {
+    "caution": "Security deposit",
+    "min_duration": "Minimum stay",
+    "free_places": "Free places"
   }
 }

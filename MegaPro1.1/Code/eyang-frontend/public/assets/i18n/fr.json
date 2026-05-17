@@ -86,6 +86,7 @@
     "dates": "Dates"
   },
   "listings": {
+    "no_images": "Aucune image disponible",
     "title": "Logements",
     "desc": "Découvrez nos logements disponibles près des campus",
     "per_month": "/ mois",
@@ -138,6 +139,7 @@
     "free_places": "places libres",
     "select_first": "Veuillez sélectionner une chambre",
     "room": "chambre",
+    "select_room_type": "Sélectionner le type de chambre",
     "select_room_type_short": "Sélectionnez une chambre"
   },
   "form": {
@@ -425,6 +427,7 @@
     "forage": "Forage"
   },
   "home": {
+    "view_more": "Voir plus",
     "interactive_location": "Localisation interactive",
     "map_title": "Trouvez votre logement<br>sur la carte",
     "map_desc": "Visualisez tous les logements autour du campus UYI · Eyang. Filtrez par prix, équipements et distance directement sur la carte.",
@@ -581,7 +584,10 @@
   },
   "price": {
     "currency": "FCFA",
-    "per_month": "FCFA/mois"
+    "per_month": "FCFA/mois",
+    "caution": "Caution",
+    "min_duration": "Durée minimale",
+    "free_places": "Places libres"
   },
   "confirm": {
     "cancel": "Annuler",
@@ -731,6 +737,7 @@
     "your_rating": "Votre note",
     "comment_label": "Commentaire",
     "comment_ph": "Ambiance, équipements, proximité du campus…",
+    "form_comment_ph": "Laissez un commentaire...",
     "publish_review_btn": "Publier l'avis",
     "edit_review_title": "Modifier l'avis",
     "confirmation_title": "Confirmation",
