@@ -970,18 +970,20 @@ export class AdminLogementsComponent implements OnInit {
   private syncRoomEquipment(categoryId: number): Observable<any> {
     const equip = this.roomEquipment();
     return this.estateService.getRoomEquipment(categoryId).pipe(
-      map((existing: any[]) => {
+      switchMap((existing: any[]) => {
         const toDelete = existing.map((e: any) => this.estateService.deleteRoomEquipment(e.id));
-        const toAdd = equip.map((e: any) => this.estateService.addRoomEquipment({
-          room_category: categoryId,
-          equipment: e.equipment,
-          quantity: e.quantity,
-          condition: e.condition,
-          note: e.note
-        }));
-        return [...toDelete, ...toAdd];
+        const toAdd = equip
+          .filter((e: any) => e.equipment)
+          .map((e: any) => this.estateService.addRoomEquipment({
+            room_category: categoryId,
+            equipment: e.equipment,
+            quantity: e.quantity,
+            condition: e.condition,
+            note: e.note
+          }));
+        return [...toDelete, ...toAdd].length ? forkJoin([...toDelete, ...toAdd]) : of([]);
       }),
-      map((obs: Observable<any>[]) => obs.length ? forkJoin(obs) : of([]))
+      catchError(() => of([]))
     );
   }
 

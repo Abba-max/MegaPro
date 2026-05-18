@@ -874,6 +874,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.roomPreviewImages    = [];
     this.roomExistingImages   = [];
     this.roomRemovedImageIds  = [];
+    this.roomEquipment.set([]);
   }
 
   openEditRoom(room: RoomCategory): void {
@@ -914,7 +915,8 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
             note: e.note
           }));
         return [...toDelete, ...toAdd].length ? forkJoin([...toDelete, ...toAdd]) : of([]);
-      })
+      }),
+      catchError(() => of([]))
     );
   }
 
