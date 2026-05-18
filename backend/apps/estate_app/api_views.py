@@ -412,7 +412,11 @@ class RoomCategoryViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         """Auto-set available_rooms = total_rooms on creation."""
-        total = int(self.request.data.get('total_rooms', 1))
+        total_val = self.request.data.get('total_rooms')
+        try:
+            total = int(total_val) if total_val is not None and str(total_val).strip() != '' else 1
+        except (ValueError, TypeError):
+            total = 1
         serializer.save(available_rooms=total)
 
     @action(detail=True, methods=['post'], url_path='images',

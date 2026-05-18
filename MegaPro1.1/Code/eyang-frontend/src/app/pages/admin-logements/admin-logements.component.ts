@@ -103,7 +103,7 @@ export class AdminLogementsComponent implements OnInit {
   filterStatus = signal('');
   filterVerified = signal('');   // '' | 'verified' | 'pending'
   allUsers       = signal<AdminUser[]>([]);
-  owners         = computed(() => this.allUsers().filter(u => u.type === 'Proprietaire' || u.type === 'Admin'));
+  owners         = computed(() => this.allUsers().filter(u => u.type === 'Proprietaire' || u.type === 'Owner' || u.type === 'Admin'));
 
   currentPage = signal(1);
   pageSize    = signal(10);
@@ -878,6 +878,8 @@ export class AdminLogementsComponent implements OnInit {
   }
 
   openCreateRoom(): void {
+    this.isRoomEditMode = true;
+    this.roomEditId = null;
     this.roomFormGroup.reset({
       name: '', price: 300000, price_per_month: 0, total_rooms: 1, dimensions: '',
       occupancy: 'single', wifi: '0', tv: '0', fridge: '0', room_size: '2', description: '', surface_area: null

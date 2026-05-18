@@ -169,7 +169,14 @@ def _run_task(task_fn, *args, **kwargs):
         logger.warning("Celery task dispatch failed, executing synchronously: %s", exc)
         # Execute the task synchronously, catching exceptions so they don't crash the main flow
         try:
-            task_fn(*args, **kwargs)
+            if hasattr(task_fn, 'run'):
+                # If the task has bind=True, pass the task itself as the first argument (self)
+                if hasattr(task_fn, 'bind') and task_fn.bind:
+                    task_fn.run(task_fn, *args, **kwargs)
+                else:
+                    task_fn.run(*args, **kwargs)
+            else:
+                task_fn(*args, **kwargs)
         except Exception as task_exc:
             logger.error("Synchronous fallback execution of task failed: %s", task_exc, exc_info=True)
 
