@@ -82,6 +82,7 @@ class EstateViewSetFilterTest(TestCase):
     def test_available_rooms_filter(self):
         view = EstateViewSet()
         view.request = MagicMock()
+        view.request.method = 'GET'
         view.request.query_params = {'available': 'true'}
         view.request.user = MagicMock(is_authenticated=False)
         queryset = view.get_queryset()

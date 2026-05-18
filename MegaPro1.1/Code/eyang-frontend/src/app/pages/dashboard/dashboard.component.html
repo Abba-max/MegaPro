@@ -804,11 +804,11 @@
       <!-- STEP 5: Photos -->
       <div class="step-content" *ngIf="currentStep === 5">
         <div class="photo-manager">
-          <div class="photo-section" *ngIf="isEditMode && estateForm.get('existingImages')?.value?.length > 0">
+          <div class="photo-section" *ngIf="isEditMode && existingImages.length > 0">
             <h4 class="amen-title">{{ 'admin.existing_photos' | translate }}</h4>
             <div class="photo-grid">
-              <div class="photo-card" *ngFor="let img of estateForm.get('existingImages')?.value">
-                <img [src]="img.image" alt="Estate photo">
+              <div class="photo-card" *ngFor="let img of existingImages">
+                <img [src]="getImageUrl(img.image)" alt="Estate photo">
                 <button class="photo-card__del" (click)="removeExistingImage(img)">×</button>
               </div>
             </div>
@@ -918,7 +918,31 @@
         </div>
 
         <div class="f-group"><label class="f-label">{{ 'form.description' | translate }}</label><textarea class="f-input f-textarea" [(ngModel)]="roomForm.description" rows="2"></textarea></div>
-        <div class="f-group"><label class="f-label">{{ 'admin.photos' | translate }}</label><div class="photo-row" *ngIf="roomPreviewImages.length>0"><div class="photo-item" *ngFor="let p of roomPreviewImages;let i=index"><img [src]="p"><button class="photo-del" (click)="removeRoomPreview(i)">×</button></div></div><label class="photo-drop photo-drop--sm" for="roomImg"><lucide-icon [img]="PlusIcon" style="width:14px;height:14px"></lucide-icon>{{ 'admin.click_to_add_photos' | translate }}</label><input id="roomImg" type="file" accept="image/*" multiple style="display:none" (change)="onRoomFilesSelected($event)"></div>
+        <div class="f-group">
+          <label class="f-label">{{ 'admin.photos' | translate }}</label>
+          <div class="photo-row" *ngIf="roomPreviewImages.length>0">
+            <div class="photo-item" *ngFor="let p of roomPreviewImages;let i=index">
+              <img [src]="p">
+              <button class="photo-del" (click)="removeRoomPreview(i)">×</button>
+            </div>
+          </div>
+          <label class="photo-drop photo-drop--sm" for="roomImg">
+            <lucide-icon [img]="PlusIcon" style="width:14px;height:14px"></lucide-icon>
+            {{ 'admin.click_to_add_photos' | translate }}
+          </label>
+          <input id="roomImg" type="file" accept="image/*" multiple style="display:none" (change)="onRoomFilesSelected($event)">
+        </div>
+
+        <!-- Existing Room Images -->
+        <div class="photo-section" style="margin-top: 1rem;" *ngIf="roomEditId && roomExistingImages.length > 0">
+          <h4 class="amen-title">{{ 'admin.existing_photos' | translate }}</h4>
+          <div class="photo-grid">
+            <div class="photo-card" *ngFor="let img of roomExistingImages; let i = index">
+              <img [src]="getImageUrl(img.image)" alt="Room photo">
+              <button class="photo-card__del" (click)="removeExistingRoomImage(i)">×</button>
+            </div>
+          </div>
+        </div>
       </ng-container>
     </div>
     <div class="m-foot" *ngIf="isRoomEditMode"><button class="btn btn--ghost" (click)="isRoomEditMode=false">{{ 'dashboard.cancel' | translate }}</button><button class="btn btn--primary" (click)="saveRoom()" [disabled]="isSavingRoom">{{ isSavingRoom?('dashboard.saving'|translate):roomEditId?('dashboard.update'|translate):('dashboard.create'|translate) }}</button></div>

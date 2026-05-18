@@ -203,11 +203,15 @@ CORS_ALLOWED_ORIGINS = [
     "http://147.93.47.169",
 ]
 CORS_ALLOW_CREDENTIALS = True
+if DEBUG:
+    CORS_ALLOW_ALL_ORIGINS = True
+    CORS_ORIGIN_ALLOW_ALL = True
 FRONTEND_URL           = config('FRONTEND_URL', default='https://eyangestate.com')
 
 # ── Celery ─────────────────────────────────────────────────────────────────
 CELERY_BROKER_URL = config('REDIS_URL', default=config('CELERY_BROKER_URL', default='redis://eyangestate.com/0'))
 CELERY_RESULT_BACKEND = CELERY_BROKER_URL
+CELERY_TASK_ALWAYS_EAGER = config('CELERY_TASK_ALWAYS_EAGER', cast=bool, default=DEBUG)
 
 # ── CinetPay ───────────────────────────────────────────────────────────────
 CINETPAY_API_KEY  = config('CINETPAY_API_KEY',  default='')

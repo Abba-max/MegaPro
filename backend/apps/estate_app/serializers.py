@@ -280,6 +280,8 @@ class EstateSerializer(serializers.ModelSerializer):
     reviews_count   = serializers.SerializerMethodField()
     orders_count    = serializers.SerializerMethodField()
     average_rating  = serializers.SerializerMethodField()
+    characteristics = EstateCharacteristicSerializer(source='characteristics_set', many=True, read_only=True)
+    supplements = SupplementSerializer(source='supplements_set', many=True, read_only=True)
 
     class Meta:
         model  = Estate
@@ -311,9 +313,6 @@ class EstateSerializer(serializers.ModelSerializer):
             'lat':      {'required': False},
             'lng':      {'required': False},
         }
-        
-    characteristics = EstateCharacteristicSerializer(source='characteristics_set', many=True, read_only=True)
-    supplements = SupplementSerializer(source='supplements_set', many=True, read_only=True)
 
     def to_internal_value(self, data):
         # Handle QueryDict immutability
@@ -361,92 +360,15 @@ class EstateSerializer(serializers.ModelSerializer):
 
         return super().to_internal_value(data)
 
-    def get_average_rating(self, obj) -> dict:
-        # Uses prefetched reviews in memory
-        top_reviews = [r for r in obj.reviews.all() if r.parent_id is None]
-        count = len(top_reviews)
-        if count == 0:
-            return {'value': 0.0, 'display': "0.0", 'count': 0, 'breakdown': {i: 0 for i in range(1, 6)}}
-
-        total_rating = sum(r.rating for r in top_reviews)
-        avg = total_rating / count
-        
-        breakdown = {i: 0 for i in range(1, 6)}
-        for r in top_reviews:
-            if 1 <= r.rating <= 5:
-                breakdown[r.rating] += 1
-                
-        value = round(avg, 1)
-        return {'value': value, 'display': f"{value:.1f}", 'count': count, 'breakdown': breakdown}
-
-    def get_capacity(self, obj) -> int:
-        # Uses prefetched room_categories in memory
-        total = 0
-        for rc in obj.room_categories.all():
-            total += rc.available_rooms * {'single': 1, 'double': 2, 'shared': 4}.get(rc.occupancy, 1)
-        return total
-
-    def get_free(self, obj) -> int:
-        # Uses prefetched room_categories in memory
-        return sum(rc.available_rooms for rc in obj.room_categories.all())
-
-    def get_price(self, obj) -> int:
-        # Uses prefetched room_categories in memory
-        prices = [rc.price for rc in obj.room_categories.all()]
-        return min(prices) if prices else 0
-
-    def get_reviews_count(self, obj) -> int:
-        # Uses prefetched reviews in memory
-        return len([r for r in obj.reviews.all() if r.parent_id is None])
-
-    def get_orders_count(self, obj) -> int:
-        # Note: quick_orders is not prefetched by default in get_queryset, 
-        # but this is mostly used in detail views or admin views.
-        return obj.quick_orders.count()
-
-
-# ── Review Serializer ─────────────────────────────────────────────────────────
-
-class ReviewSerializer(serializers.ModelSerializer):
-    estate_name  = serializers.CharField(source='estate.name', read_only=True)
-    estate_image = serializers.SerializerMethodField()
-    likes_count  = serializers.SerializerMethodField()
-    liked_by_me  = serializers.SerializerMethodField()
-
-    class Meta:
-        model  = Review
-        fields = ['id', 'estate', 'estate_name', 'estate_image', 'name', 'rating',
-                  'comment', 'created_at', 'parent', 'likes_count', 'liked_by_me']
-
-    def get_estate_image(self, obj):
-        request     = self.context.get('request')
-        first_image = obj.estate.images.first()
-        if first_image:
-            url = first_image.image.url
-            if url.startswith('http'):
-                return url
-            return request.build_absolute_uri(url) if request else url
-        return None
-
-    def get_likes_count(self, obj):
-        return obj.likes.count()
-
-    def get_liked_by_me(self, obj):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return obj.likes.filter(pk=request.user.pk).exists()
-        return False
-
     def create(self, validated_data):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            validated_data['user'] = request.user
-        
         characteristics_data = self.initial_data.get('characteristics')
         supplements_data = self.initial_data.get('supplements')
 
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            validated_data['owner'] = request.user
+
         estate = super().create(validated_data)
-        
         self._sync_characteristics_and_supplements(estate, characteristics_data, supplements_data)
         return estate
 
@@ -455,7 +377,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         supplements_data = self.initial_data.get('supplements')
 
         estate = super().update(instance, validated_data)
-
         if characteristics_data is not None or supplements_data is not None:
             self._sync_characteristics_and_supplements(estate, characteristics_data, supplements_data)
         return estate
@@ -496,6 +417,84 @@ class ReviewSerializer(serializers.ModelSerializer):
                             is_available=supp.get('is_available', True),
                             is_paid_service=supp.get('is_paid_service', True)
                         )
+
+    def get_average_rating(self, obj) -> dict:
+        try:
+            val = float(obj.rating or 0.0)
+        except (ValueError, TypeError):
+            val = 0.0
+            
+        top_reviews = [r for r in obj.reviews.all() if r.parent_id is None]
+        count = len(top_reviews)
+        
+        breakdown = {i: 0 for i in range(1, 6)}
+        for r in top_reviews:
+            if 1 <= r.rating <= 5:
+                breakdown[r.rating] += 1
+                
+        return {'value': val, 'display': f"{val:.1f}", 'count': count, 'breakdown': breakdown}
+
+    def get_capacity(self, obj) -> int:
+        # Uses prefetched room_categories in memory
+        total = 0
+        for rc in obj.room_categories.all():
+            total += rc.available_rooms * {'single': 1, 'double': 2, 'shared': 4}.get(rc.occupancy, 1)
+        return total
+
+    def get_free(self, obj) -> int:
+        # Uses prefetched room_categories in memory
+        return sum(rc.available_rooms for rc in obj.room_categories.all())
+
+    def get_price(self, obj) -> int:
+        # Uses prefetched room_categories in memory
+        prices = [rc.price for rc in obj.room_categories.all()]
+        return min(prices) if prices else 0
+
+    def get_reviews_count(self, obj) -> int:
+        # Uses prefetched reviews in memory
+        return len([r for r in obj.reviews.all() if r.parent_id is None])
+
+    def get_orders_count(self, obj) -> int:
+        return len(obj.quick_orders.all())
+
+
+# ── Review Serializer ─────────────────────────────────────────────────────────
+
+class ReviewSerializer(serializers.ModelSerializer):
+    estate_name  = serializers.CharField(source='estate.name', read_only=True)
+    estate_image = serializers.SerializerMethodField()
+    likes_count  = serializers.SerializerMethodField()
+    liked_by_me  = serializers.SerializerMethodField()
+
+    class Meta:
+        model  = Review
+        fields = ['id', 'estate', 'estate_name', 'estate_image', 'name', 'rating',
+                  'comment', 'created_at', 'parent', 'likes_count', 'liked_by_me']
+
+    def get_estate_image(self, obj):
+        request     = self.context.get('request')
+        first_image = obj.estate.images.first()
+        if first_image:
+            url = first_image.image.url
+            if url.startswith('http'):
+                return url
+            return request.build_absolute_uri(url) if request else url
+        return None
+
+    def get_likes_count(self, obj):
+        return obj.likes.count()
+
+    def get_liked_by_me(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return obj.likes.filter(pk=request.user.pk).exists()
+        return False
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            validated_data['user'] = request.user
+        return super().create(validated_data)
 
 
 # ── QuickOrder Serializer ─────────────────────────────────────────────────────
@@ -581,12 +580,11 @@ class ConversationSerializer(serializers.ModelSerializer):
     estate_image = serializers.SerializerMethodField()
     last_message = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
-    messages     = MessageSerializer(many=True, read_only=True)
 
     class Meta:
         model  = Conversation
         fields = ['id', 'client', 'owner', 'estate', 'estate_name', 'estate_image',
-                  'last_message', 'unread_count', 'messages', 'created_at', 'updated_at']
+                  'last_message', 'unread_count', 'created_at', 'updated_at']
 
     def get_estate_image(self, obj):
         request     = self.context.get('request')
@@ -609,6 +607,13 @@ class ConversationSerializer(serializers.ModelSerializer):
         if request and request.user.is_authenticated:
             return obj.messages.filter(read=False).exclude(sender=request.user).count()
         return 0
+
+
+class ConversationDetailSerializer(ConversationSerializer):
+    messages = MessageSerializer(many=True, read_only=True)
+
+    class Meta(ConversationSerializer.Meta):
+        fields = ConversationSerializer.Meta.fields + ['messages']
 
 
 class NotificationSerializer(serializers.ModelSerializer):

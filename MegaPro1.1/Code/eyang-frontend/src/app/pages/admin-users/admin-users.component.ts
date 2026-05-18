@@ -171,13 +171,21 @@ export class AdminUsersComponent implements OnInit {
     this.editUserId   = user.id;
     this.showPassword = false;
     const nameParts   = user.name.split(' ');
+    
+    let roleVal: 'Student' | 'Parent' | 'Owner' | 'Admin' = 'Student';
+    const t = (user.type || '').toLowerCase();
+    if (t === 'proprietaire' || t === 'owner') roleVal = 'Owner';
+    else if (t === 'parent') roleVal = 'Parent';
+    else if (t === 'admin') roleVal = 'Admin';
+    else roleVal = 'Student';
+
     this.form = {
       username:  user.email.split('@')[0],
       email:     user.email,
       password:  '',
       firstName: nameParts[0] ?? '',
       lastName:  nameParts.slice(1).join(' ') ?? '',
-      role:      (user.type as any) ?? 'Student',
+      role:      roleVal,
     };
     this.showModal = true;
   }

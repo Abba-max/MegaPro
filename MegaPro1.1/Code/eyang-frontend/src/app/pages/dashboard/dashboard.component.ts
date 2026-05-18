@@ -281,6 +281,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   roomPreviewImages: string[] = [];
   roomExistingImages: RoomImage[] = [];
   roomRemovedImageIds: number[]   = [];
+  existingImages: any[] = [];
 
   emptyRoomForm(): Partial<RoomCategory> {
     return { 
@@ -688,6 +689,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     });
     this.newImageFiles    = [];
     this.newImagePreviews = [];
+    this.existingImages   = [];
     this.selectedCharacteristics.set([]);
     this.estateSupplements.set([]);
     this.showEstateModal  = true;
@@ -719,7 +721,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       cleaning_service: (estate as any).cleaning_service || false,
       allowed_gender: (estate as any).allowed_gender || 'all'
     });
-    this.estateForm.get('existingImages')?.setValue([...(estate.images ?? [])]);
+    this.existingImages   = [...(estate.images ?? [])];
     
     this.newImageFiles    = [];
     this.newImagePreviews = [];
@@ -955,10 +957,23 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
             this.openActionModal('success', 'Success', 'Room saved successfully', 'OK');
             this.loadRooms(this.selectedEstateForRooms!.id);
           };
-          if (this.roomSelectedFiles.length > 0) {
-            this.estateService.uploadRoomImages(saved.id, this.roomSelectedFiles).subscribe(afterSave);
+
+          const doRoomUpload = () => {
+            if (this.roomSelectedFiles.length > 0) {
+              this.estateService.uploadRoomImages(saved.id, this.roomSelectedFiles).subscribe(afterSave);
+            } else {
+              afterSave();
+            }
+          };
+
+          if (this.roomRemovedImageIds.length > 0) {
+            forkJoin(this.roomRemovedImageIds.map(id => this.estateService.deleteRoomImage(saved.id, id).pipe(catchError(() => of(null)))))
+              .subscribe({
+                next:  () => { this.roomRemovedImageIds = []; doRoomUpload(); },
+                error: () => { this.roomRemovedImageIds = []; doRoomUpload(); }
+              });
           } else {
-            afterSave();
+            doRoomUpload();
           }
         });
       },
@@ -1030,13 +1045,25 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
               if (!this.isEditMode) this.openManageRooms(savedEstate);
             };
 
-            if (this.newImageFiles.length > 0) {
-              this.estateService.uploadEstateImages(savedEstate.id, this.newImageFiles).subscribe({
-                next:  () => finalizeCreation(),
-                error: () => finalizeCreation(),
-              });
+            const doUpload = () => {
+              if (this.newImageFiles.length > 0) {
+                this.estateService.uploadEstateImages(savedEstate.id, this.newImageFiles).subscribe({
+                  next:  () => finalizeCreation(),
+                  error: () => finalizeCreation(),
+                });
+              } else {
+                finalizeCreation();
+              }
+            };
+
+            if (this.removedImageIds.length > 0) {
+              forkJoin(this.removedImageIds.map(id => this.estateService.deleteEstateImage(savedEstate.id, id).pipe(catchError(() => of(null)))))
+                .subscribe({
+                  next:  () => { this.removedImageIds = []; doUpload(); },
+                  error: () => { this.removedImageIds = []; doUpload(); }
+                });
             } else {
-              finalizeCreation();
+              doUpload();
             }
           },
           error: (err) => {
@@ -1765,9 +1792,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   removeExistingImage(img: any): void {
-    const current = this.estateForm.get('existingImages')?.value || [];
-    const updated = current.filter((i: any) => i.id !== img.id);
-    this.estateForm.get('existingImages')?.setValue(updated);
+    this.existingImages = this.existingImages.filter((i: any) => i.id !== img.id);
     this.removedImageIds.push(img.id);
   }
 }

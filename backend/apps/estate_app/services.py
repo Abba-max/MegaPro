@@ -34,6 +34,21 @@ logger = logging.getLogger(__name__)
 #  Public entry points
 # ──────────────────────────────────────────────────────────────────────────────
 
+def _sync_room_counts(category):
+    """
+    Unified inventory synchronization helper to keep legacy fields updated.
+    Checks if available_rooms or occupied_count is an F expression and saves/refreshes first.
+    """
+    if isinstance(category.available_rooms, F) or isinstance(category.occupied_count, F):
+        category.save(update_fields=['available_rooms', 'occupied_count'])
+        category.refresh_from_db(fields=['available_rooms', 'occupied_count'])
+
+    category.available_quantity = category.available_rooms
+    category.quantity_available = category.available_rooms
+    category.total_quantity = category.total_rooms
+    category.save(update_fields=['available_quantity', 'quantity_available', 'total_quantity', 'occupied_count', 'available_rooms'])
+
+
 def accept_reservation(reservation_id: int) -> Reservation:
     """
     Concurrency-safe acceptance of a reservation.
@@ -82,28 +97,18 @@ def accept_reservation(reservation_id: int) -> Reservation:
             )
 
         # ── 3. Decrement available_rooms atomically ─────────────────────────
-        # F() ensures the subtraction happens at the DB level, not in Python,
-        # so even if two transactions read the same value, only one commit wins.
         category.available_rooms = F('available_rooms') - num_rooms
-        category.save(update_fields=['available_rooms'])
-
-        # Keep legacy fields in sync (read refreshed value first)
-        category.refresh_from_db(fields=['available_rooms'])
-        category.available_quantity = category.available_rooms
-        category.quantity_available = category.available_rooms
-        category.save(update_fields=['available_quantity', 'quantity_available'])
+        category.occupied_count = F('occupied_count') + num_rooms
+        _sync_room_counts(category)
 
         # ── 4. Accept the reservation ───────────────────────────────────────
         reservation.status = 'ACCEPTED'
         reservation.save(update_fields=['status', 'updated_at'])
 
     # ── 5. Async PDF generation (outside transaction — file I/O is slow) ───
-    thread = threading.Thread(
-        target=_generate_invoice_background,
-        args=(reservation.id,),
-        daemon=True,        # daemon=True: thread won't block server shutdown
-    )
-    thread.start()
+    from .utils import _run_task
+    from .tasks import generate_invoice_task
+    _run_task(generate_invoice_task, reservation.id)
 
     return reservation
 
@@ -128,11 +133,8 @@ def reject_reservation(reservation_id: int) -> Reservation:
             category = RoomCategory.objects.select_for_update().get(pk=reservation.room_category_id)
             num_rooms = reservation.num_rooms or 1
             category.available_rooms = F('available_rooms') + num_rooms
-            category.save(update_fields=['available_rooms'])
-            category.refresh_from_db(fields=['available_rooms'])
-            category.available_quantity = category.available_rooms
-            category.quantity_available = category.available_rooms
-            category.save(update_fields=['available_quantity', 'quantity_available'])
+            category.occupied_count = F('occupied_count') - num_rooms
+            _sync_room_counts(category)
 
     return reservation
 
@@ -162,11 +164,8 @@ def cancel_reservation(reservation_id: int, requesting_user) -> Reservation:
             category = RoomCategory.objects.select_for_update().get(pk=reservation.room_category_id)
             num_rooms = reservation.num_rooms or 1
             category.available_rooms = F('available_rooms') + num_rooms
-            category.save(update_fields=['available_rooms'])
-            category.refresh_from_db(fields=['available_rooms'])
-            category.available_quantity = category.available_rooms
-            category.quantity_available = category.available_rooms
-            category.save(update_fields=['available_quantity', 'quantity_available'])
+            category.occupied_count = F('occupied_count') - num_rooms
+            _sync_room_counts(category)
 
     return reservation
 
@@ -207,21 +206,15 @@ def create_reservation_with_snapshot(validated_data: dict, user) -> Reservation:
         validated_data.setdefault('check_out', check_out)
         validated_data['end_date'] = check_out
 
-    with transaction.atomic():
-        reservation = Reservation.objects.create(
-            **{k: v for k, v in validated_data.items() if k not in ('selected_supplements',)},
-            user=user,
-            status='PENDING',
-            total_price=total_price,
-            reservation_details_json=snapshot,
-        )
-        if supplements:
-            reservation.selected_supplements.set(supplements)
-        
-        # ── Direct Order: Immediately accept and decrement inventory ──
-        # This reuses the logic in accept_reservation() which handles
-        # atomic inventory decrement and async PDF generation.
-        reservation = accept_reservation(reservation.id)
+    reservation = Reservation.objects.create(
+        **{k: v for k, v in validated_data.items() if k not in ('selected_supplements',)},
+        user=user,
+        status='PENDING',
+        total_price=total_price,
+        reservation_details_json=snapshot,
+    )
+    if supplements:
+        reservation.selected_supplements.set(supplements)
 
     return reservation
 
@@ -230,55 +223,4 @@ def create_reservation_with_snapshot(validated_data: dict, user) -> Reservation:
 #  Internal helpers
 # ──────────────────────────────────────────────────────────────────────────────
 
-def _generate_invoice_background(reservation_id: int) -> None:
-    """
-    Background thread: builds the Invoice record and generates the PDF.
-    Runs OUTSIDE the accept transaction, so the DB transaction is committed
-    before we start slow file I/O (Cloudinary upload).
-    """
-    try:
-        reservation = (
-            Reservation.objects
-            .select_related('room_category__estate', 'user')
-            .prefetch_related('room_category__equipment_set__equipment', 'room_category__estate__supplements_set')
-            .get(id=reservation_id)
-        )
-    except Reservation.DoesNotExist:
-        logger.error("Invoice generation: reservation %d not found.", reservation_id)
-        return
-
-    category = reservation.room_category
-    price_per_month = float(category.price_per_month or category.price or 0)
-
-    # Compute months
-    check_in  = reservation.start_date or reservation.check_in
-    check_out = reservation.end_date   or reservation.check_out
-    months = 1
-    if check_in and check_out:
-        months = max(1, (check_out.year - check_in.year) * 12 + (check_out.month - check_in.month))
-
-    total_amount = reservation.total_price or (price_per_month * months * (reservation.num_rooms or 1))
-
-    # Create or retrieve Invoice record
-    invoice, created = Invoice.objects.get_or_create(
-        reservation=reservation,
-        defaults={
-            'total_amount': total_amount,
-            'status': 'UNPAID',
-        }
-    )
-
-    if not created and invoice.pdf_file:
-        logger.info("Invoice %s already has a PDF — skipping regeneration.", invoice.invoice_id)
-        return
-
-    # Generate PDF and upload to Cloudinary (or local media)
-    try:
-        success = generate_invoice_pdf(invoice)
-        if success:
-            logger.info("Invoice PDF ready: %s", invoice.invoice_id)
-        else:
-            logger.warning("PDF generation failed for invoice %s. Will retry next accept.", invoice.invoice_id)
-    except Exception:
-        import traceback
-        logger.error("Invoice generation crashed:\n%s", traceback.format_exc())
+# _generate_invoice_background helper is removed; functionality is handled by generate_invoice_task Celery task.

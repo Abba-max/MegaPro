@@ -129,6 +129,7 @@ characteristics: EstateCharacteristic[] = [];
   openRoomGallery(rc: RoomCategory, index: number = 0): void {
     if (!rc.images || rc.images.length === 0) return;
     this.roomGalleryImages = rc.images.map(img => ({
+      image: img.image,
       url: img.image,
       caption: img.caption || rc.name
     }));

@@ -808,6 +808,10 @@ export class EstateService {
     return this.http.post<RoomImage[]>(`${this.BASE}/room-categories/${categoryId}/images/`, fd);
   }
 
+  deleteRoomImage(categoryId: number, imageId: number): Observable<void> {
+    return this.http.delete<void>(`${this.BASE}/room-categories/${categoryId}/images/${imageId}/`);
+  }
+
   getOnlineUsers(): Observable<{ online_user_ids: number[] }> {
     return this.http.get<{ online_user_ids: number[] }>(`${this.BASE}/online-users/`);
   }

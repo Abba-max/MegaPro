@@ -125,6 +125,42 @@ import { RoomImage } from '../../services/estate.service';
 
     .fade-in { animation: fadeIn 0.4s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+    @media (max-width: 768px) {
+      .gallery-overlay {
+        padding: 0.5rem;
+      }
+      .gallery-content {
+        gap: 0.75rem;
+      }
+      .main-image-container {
+        aspect-ratio: 4 / 3;
+        border-radius: 8px;
+      }
+      .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 50;
+      }
+      .nav-btn {
+        width: 36px;
+        height: 36px;
+      }
+      .nav-btn.prev { left: 0.5rem; }
+      .nav-btn.next { right: 0.5rem; }
+      .thumb {
+        width: 48px;
+        height: 48px;
+      }
+    }
   `]
 })
 export class RoomGalleryComponent {

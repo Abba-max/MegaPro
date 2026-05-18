@@ -123,8 +123,18 @@ class RoomCategory(models.Model):
 
     def save(self, *args, **kwargs):
         """On creation, initialise available_rooms from total_rooms if not set."""
-        if self.pk is None and self.available_rooms == 1 and self.total_rooms > 1:
-            self.available_rooms = self.total_rooms
+        if self.pk is None:
+            if self.available_rooms is None or (self.available_rooms == 1 and self.total_rooms != 1):
+                self.available_rooms = self.total_rooms
+        else:
+            orig = RoomCategory.objects.get(pk=self.pk)
+            if self.total_rooms != orig.total_rooms:
+                booked_count = orig.total_rooms - orig.available_rooms
+                if self.total_rooms < booked_count:
+                    from django.core.exceptions import ValidationError
+                    raise ValidationError("Cannot reduce total_rooms below already booked count.")
+                self.available_rooms = self.total_rooms - booked_count
+
         # Keep legacy fields in sync
         self.total_quantity = self.total_rooms
         self.available_quantity = self.available_rooms
@@ -399,6 +409,10 @@ class Reservation(models.Model):
             self.check_in = self.start_date
         if self.end_date and not self.check_out:
             self.check_out = self.end_date
+            
+        if self.check_in is None or self.check_out is None:
+            raise ValueError("check_in and check_out are required.")
+            
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -414,12 +428,11 @@ class Invoice(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        is_new = self.pk is None
+        if not self.invoice_id:
+            import uuid
+            from django.utils import timezone
+            self.invoice_id = f"INV-{uuid.uuid4().hex[:8].upper()}-{timezone.now().year}"
         super().save(*args, **kwargs)
-        if is_new and not self.invoice_id:
-            self.invoice_id = f"INV-{self.id}-{self.created_at.year}"
-            # Use update_fields to only save the invoice_id and avoid recursion or integrity issues
-            super().save(update_fields=['invoice_id'])
 
     def __str__(self):
         return f"Invoice {self.invoice_id}"

@@ -12,11 +12,11 @@ class RecommendationAndPaymentTests(APITestCase):
         
         # Create Estate 1 (Target)
         self.estate1 = Estate.objects.create(name="Estate 1", owner=self.owner, location="Eyang", status='published', is_verified=True)
-        self.room1 = RoomCategory.objects.create(estate=self.estate1, name="Room 1", quantity_available=0) # FULL
+        self.room1 = RoomCategory.objects.create(estate=self.estate1, name="Room 1", total_rooms=0, available_rooms=0, quantity_available=0) # FULL
         
         # Create Estate 2 (Recommendation)
         self.estate2 = Estate.objects.create(name="Estate 2", owner=self.owner, location="Eyang", status='published', is_verified=True)
-        self.room2 = RoomCategory.objects.create(estate=self.estate2, name="Room 2", quantity_available=5) # AVAILABLE
+        self.room2 = RoomCategory.objects.create(estate=self.estate2, name="Room 2", total_rooms=5, available_rooms=5, quantity_available=5) # AVAILABLE
         
         # Create Users
         self.student = User.objects.create_user(username='student', password='password', user_type='visitor')
@@ -46,6 +46,8 @@ class RecommendationAndPaymentTests(APITestCase):
         self.client.force_authenticate(user=self.student)
         # Create order (will be status pending_payment by default)
         # We need a room that is NOT full for this test
+        self.room1.total_rooms = 10
+        self.room1.available_rooms = 10
         self.room1.quantity_available = 10
         self.room1.save()
 
@@ -86,8 +88,12 @@ class RecommendationAndPaymentTests(APITestCase):
     def test_no_recommendations_available(self):
         """Test that empty recommendations are returned if no other estates fit"""
         # Make the only other estate full too
+        self.room1.total_rooms = 0
+        self.room1.available_rooms = 0
         self.room1.quantity_available = 0
         self.room1.save()
+        self.room2.total_rooms = 0
+        self.room2.available_rooms = 0
         self.room2.quantity_available = 0
         self.room2.save()
         

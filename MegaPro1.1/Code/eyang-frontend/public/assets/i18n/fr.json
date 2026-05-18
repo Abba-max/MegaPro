@@ -19,7 +19,10 @@
     "payment": "Paiement",
     "estate": "Logement",
     "show_more": "Lire plus",
-    "show_less": "Réduire"
+    "show_less": "Réduire",
+    "by": "par",
+    "or": "ou",
+    "view": "Voir"
   },
   "hero": {
     "title": "Trouvez votre logement étudiant idéal",
@@ -59,7 +62,8 @@
     "reviews": "Avis",
     "reports": "Rapports",
     "settings": "Paramètres",
-    "back_to_site": "Retour au site"
+    "back_to_site": "Retour au site",
+    "housings": "Logements"
   },
   "filters": {
     "check_in": "Arrivée",
@@ -83,7 +87,8 @@
     "apply": "Appliquer",
     "all_types": "Tous les types",
     "unlimited": "Illimité",
-    "dates": "Dates"
+    "dates": "Dates",
+    "open_advanced": "Filtres avancés"
   },
   "listings": {
     "no_images": "Aucune image disponible",
@@ -140,7 +145,11 @@
     "select_first": "Veuillez sélectionner une chambre",
     "room": "chambre",
     "select_room_type": "Sélectionner le type de chambre",
-    "select_room_type_short": "Sélectionnez une chambre"
+    "select_room_type_short": "Sélectionnez une chambre",
+    "studio": "Studio",
+    "unit": "unité",
+    "description": "Description",
+    "places": "lieux"
   },
   "form": {
     "name": "Noms ",
@@ -424,7 +433,8 @@
     "generator": "Groupe électrogène",
     "restaurant": "Restaurant",
     "forages": "Forages",
-    "forage": "Forage"
+    "forage": "Forage",
+    "no_results_for": "Aucun résultat pour"
   },
   "home": {
     "view_more": "Voir plus",
@@ -523,7 +533,9 @@
     "liked": "Aimé",
     "love_it": "J'adore",
     "view_more": "Voir plus d'avis",
-    "login_to_leave_desc": "Connectez-vous pour laisser un avis"
+    "login_to_leave_desc": "Connectez-vous pour laisser un avis",
+    "like_hint": "Aimer cet avis",
+    "unlike_hint": "Ne plus aimer cet avis"
   },
   "action": {
     "reserve": "Réserver",
@@ -556,7 +568,9 @@
     "geolocation_not_supported": "Géolocalisation non supportée",
     "location_error": "Erreur de localisation",
     "read_at": "Lu à {{time}}",
-    "your_messages": "Vos messages"
+    "your_messages": "Vos messages",
+    "about_estate": "À propos du logement",
+    "realtime_active": "Messagerie instantanée active"
   },
   "map": {
     "title": "Carte",
@@ -584,10 +598,12 @@
   },
   "price": {
     "currency": "FCFA",
-    "per_month": "FCFA/mois",
+    "per_month": "/ mois",
     "caution": "Caution",
-    "min_duration": "Durée minimale",
-    "free_places": "Places libres"
+    "min_duration": "Durée min.",
+    "free_places": "Places libres",
+    "from": "À partir de",
+    "months": "mois"
   },
   "confirm": {
     "cancel": "Annuler",
@@ -826,7 +842,11 @@
     "no_supplements": "Aucun supplément ajouté",
     "latitude": "Latitude",
     "longitude": "Longitude",
-    "cancel_reservation_confirm": "Êtes-vous sûr de vouloir annuler cette réservation ?"
+    "cancel_reservation_confirm": "Êtes-vous sûr de vouloir annuler cette réservation ?",
+    "reply": "Répondre",
+    "delete": "Supprimer",
+    "no_conversations_client": "Aucune conversation. Contactez un propriétaire à partir d'une annonce de logement.",
+    "room_form_name_ph": "Ex : Salon VIP"
   },
   "auth": {
     "go_to_dashboard": "Accéder au tableau de bord",

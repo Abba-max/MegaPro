@@ -83,31 +83,53 @@ def send_bill_email(reservation, invoice):
     """
     Sends the bill (invoice) as a PDF attachment to both the client and the owner.
     """
+    try:
+        # Pre-fetch all fields in main thread to avoid lazy-loading SQLite locks in background thread
+        client_email = reservation.user.email
+        owner_email = reservation.room_category.estate.owner.email
+        estate_name = reservation.room_category.estate.name
+        room_name = reservation.room_category.name
+        
+        start_date = reservation.start_date or reservation.check_in
+        start_date_str = start_date.strftime('%d/%m/%Y') if start_date else ''
+        
+        end_date = reservation.end_date or reservation.check_out
+        end_date_str = end_date.strftime('%d/%m/%Y') if end_date else ''
+        
+        invoice_id = invoice.invoice_id
+        total_amount_str = f"{invoice.total_amount:,.0f}".replace(',', ' ')
+        
+        pdf_content = None
+        if invoice.pdf_file:
+            try:
+                pdf_content = invoice.pdf_file.read()
+            except Exception as e:
+                logger.error(f"Could not read PDF for invoice {invoice_id}: {e}")
+    except Exception as prefetch_err:
+        logger.error(f"Error prefetching bill email data: {prefetch_err}")
+        return
+
     def _send():
         try:
-            client = reservation.user
-            owner = reservation.room_category.estate.owner
-            estate_name = reservation.room_category.estate.name
-            
             # Context for the email template
             context = {
                 'estate_name': estate_name,
-                'invoice_id': invoice.invoice_id,
-                'room_name': reservation.room_category.name,
-                'start_date': reservation.start_date.strftime('%d/%m/%Y') if reservation.start_date else reservation.check_in.strftime('%d/%m/%Y'),
-                'end_date': reservation.end_date.strftime('%d/%m/%Y') if reservation.end_date else reservation.check_out.strftime('%d/%m/%Y'),
-                'total_amount': f"{invoice.total_amount:,.0f}".replace(',', ' '),
+                'invoice_id': invoice_id,
+                'room_name': room_name,
+                'start_date': start_date_str,
+                'end_date': end_date_str,
+                'total_amount': total_amount_str,
                 'dashboard_url': getattr(settings, 'FRONTEND_URL', 'https://www.eyangestate.com') + '/dashboard'
             }
             
-            subject = f"Facture Eyang Estate - {invoice.invoice_id} - {estate_name}"
+            subject = f"Facture Eyang Estate - {invoice_id} - {estate_name}"
             html_content = render_to_string('emails/bill_notification.html', context)
             text_content = strip_tags(html_content)
             
             # Recipients: client and owner
-            recipients = [client.email]
-            if owner.email and owner.email != client.email:
-                recipients.append(owner.email)
+            recipients = [client_email]
+            if owner_email and owner_email != client_email:
+                recipients.append(owner_email)
             
             msg = EmailMultiAlternatives(
                 subject,
@@ -118,17 +140,11 @@ def send_bill_email(reservation, invoice):
             msg.attach_alternative(html_content, "text/html")
             
             # Attach the PDF file
-            if invoice.pdf_file:
-                # Read the file content. If it's on Cloudinary, we need to handle it.
-                # Usually .file.read() works even with remote storages.
-                try:
-                    pdf_content = invoice.pdf_file.read()
-                    msg.attach(f"Facture_{invoice.invoice_id}.pdf", pdf_content, "application/pdf")
-                except Exception as e:
-                    logger.error(f"Could not attach PDF for invoice {invoice.invoice_id}: {e}")
+            if pdf_content:
+                msg.attach(f"Facture_{invoice_id}.pdf", pdf_content, "application/pdf")
             
             msg.send()
-            logger.info(f"Bill email sent to {recipients} for invoice {invoice.invoice_id}")
+            logger.info(f"Bill email sent to {recipients} for invoice {invoice_id}")
             
         except Exception as e:
             logger.error(f"Error sending bill email: {e}")
@@ -137,5 +153,25 @@ def send_bill_email(reservation, invoice):
     thread = threading.Thread(target=_send)
     thread.daemon = True
     thread.start()
+
+
+def _run_task(task_fn, *args, **kwargs):
+    """
+    Attempts to run the task asynchronously via Celery (task_fn.delay).
+    Falls back to executing the task synchronously inline if Celery is unavailable
+    or raises any exception.
+    """
+    try:
+        task_fn.delay(*args, **kwargs)
+    except Exception as exc:
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.warning("Celery task dispatch failed, executing synchronously: %s", exc)
+        # Execute the task synchronously, catching exceptions so they don't crash the main flow
+        try:
+            task_fn(*args, **kwargs)
+        except Exception as task_exc:
+            logger.error("Synchronous fallback execution of task failed: %s", task_exc, exc_info=True)
+
 
 

@@ -501,10 +501,25 @@ export class AdminLogementsComponent implements OnInit {
             );
           };
 
-          if (this.selectedFiles.length) {
-            this.uploadImages(this.editId!).subscribe(() => showSuccess());
+          const doUpload = () => {
+            if (this.selectedFiles.length) {
+              this.uploadImages(this.editId!).subscribe({
+                next: () => showSuccess(),
+                error: () => showSuccess()
+              });
+            } else {
+              showSuccess();
+            }
+          };
+
+          if (this.removedImageIds.length > 0) {
+            forkJoin(this.removedImageIds.map(id => this.estateService.deleteEstateImage(this.editId!, id).pipe(catchError(() => of(null)))))
+              .subscribe({
+                next: () => doUpload(),
+                error: () => doUpload()
+              });
           } else {
-            showSuccess();
+            doUpload();
           }
         });
     } else {
@@ -925,9 +940,21 @@ export class AdminLogementsComponent implements OnInit {
             this.openActionModal('success', 'Success', this.translate.instant(msg), 'OK');
             this.loadRooms(this.selectedEstateForRooms!.id);
           };
-          if (this.roomSelectedFiles.length > 0) {
-            this.estateService.uploadRoomImages(saved.id, this.roomSelectedFiles).subscribe(afterSave);
-          } else afterSave();
+          const doRoomUpload = () => {
+            if (this.roomSelectedFiles.length > 0) {
+              this.estateService.uploadRoomImages(saved.id, this.roomSelectedFiles).subscribe(afterSave);
+            } else afterSave();
+          };
+
+          if (this.roomRemovedImageIds.length > 0) {
+            forkJoin(this.roomRemovedImageIds.map(id => this.estateService.deleteRoomImage(saved.id, id).pipe(catchError(() => of(null)))))
+              .subscribe({
+                next: () => doRoomUpload(),
+                error: () => doRoomUpload()
+              });
+          } else {
+            doRoomUpload();
+          }
         });
       },
       error: () => { 

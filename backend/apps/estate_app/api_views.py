@@ -21,7 +21,7 @@ from .serializers import (
     EstateSerializer, EstateImageSerializer, ReviewSerializer, QuickOrderSerializer,
     ContactRequestSerializer, RegisterSerializer,
     MyTokenObtainPairSerializer, UserSerializer,
-    ConversationSerializer, MessageSerializer,
+    ConversationSerializer, ConversationDetailSerializer, MessageSerializer,
     RoomCategorySerializer, RoomImageSerializer,
     ReservationSerializer, InvoiceSerializer,
     EquipmentSerializer, RoomEquipmentWriteSerializer, RoomEquipmentReadSerializer,
@@ -163,44 +163,45 @@ class EstateViewSet(viewsets.ModelViewSet):
             'room_categories__images',
             'reviews'
         )
-        p = self.request.query_params
-        if loc := p.get('location'): qs = qs.filter(location__icontains=loc)
-        if st  := p.get('status'):   qs = qs.filter(status=st)
-        
-        # ── Boolean / Char features ──────────────────────────────────────────
-        if gen := p.get('generator'):
-            val = (gen.lower() == 'true' or gen == '1')
-            qs = qs.filter(generator=('1' if val else '0'))
-        if fog := p.get('forage'):
-            val = (fog.lower() == 'true' or fog == '1')
-            qs = qs.filter(forage=('1' if val else '0'))
-        if rst := p.get('restaurant'):
-            val = (rst.lower() == 'true' or rst == '1')
-            qs = qs.filter(restaurant=('1' if val else '0'))
-        
-        if wifi := p.get('wifi'):      qs = qs.filter(wifi=(wifi.lower() == 'true' or wifi == '1'))
-        if tv   := p.get('tv'):        qs = qs.filter(tv=(tv.lower() == 'true' or tv == '1'))
-        if frid := p.get('fridge'):    qs = qs.filter(fridge=(frid.lower() == 'true' or frid == '1'))
-        if ply  := p.get('playground'): qs = qs.filter(playground=(ply.lower() == 'true' or ply == '1'))
-        if park := p.get('parking'):    qs = qs.filter(parking=(park.lower() == 'true' or park == '1'))
-        if cctv := p.get('cctv'):       qs = qs.filter(cctv=(cctv.lower() == 'true' or cctv == '1'))
-        if cln  := p.get('cleaning'):   qs = qs.filter(cleaning_service=(cln.lower() == 'true' or cln == '1'))
-        if sport := p.get('sport'):     qs = qs.filter(Terrain_de_sport=(sport.lower() == 'true' or sport == '1'))
-        
-        # ── Numeric filters ──────────────────────────────────────────────────
-        if mxd := p.get('max_dist'):   qs = qs.filter(distance__lte=mxd)
-        if minp := p.get('min_price'): qs = qs.filter(price__gte=minp)
-        if maxp := p.get('max_price'): qs = qs.filter(price__lte=maxp)
-        
-        # ── Nested filters ───────────────────────────────────────────────────
-        if rsz := p.get('room_size'):
-            qs = qs.filter(room_categories__room_size=rsz).distinct()
+        if self.request.method in permissions.SAFE_METHODS:
+            p = self.request.query_params
+            if loc := p.get('location'): qs = qs.filter(location__icontains=loc)
+            if st  := p.get('status'):   qs = qs.filter(status=st)
             
-        if p.get('available') == 'true':
-            qs = qs.filter(room_categories__available_rooms__gte=1).distinct()
+            # ── Boolean / Char features ──────────────────────────────────────────
+            if gen := p.get('generator'):
+                val = (gen.lower() == 'true' or gen == '1')
+                qs = qs.filter(generator=('1' if val else '0'))
+            if fog := p.get('forage'):
+                val = (fog.lower() == 'true' or fog == '1')
+                qs = qs.filter(forage=('1' if val else '0'))
+            if rst := p.get('restaurant'):
+                val = (rst.lower() == 'true' or rst == '1')
+                qs = qs.filter(restaurant=('1' if val else '0'))
+            
+            if wifi := p.get('wifi'):      qs = qs.filter(wifi=(wifi.lower() == 'true' or wifi == '1'))
+            if tv   := p.get('tv'):        qs = qs.filter(tv=(tv.lower() == 'true' or tv == '1'))
+            if frid := p.get('fridge'):    qs = qs.filter(fridge=(frid.lower() == 'true' or frid == '1'))
+            if ply  := p.get('playground'): qs = qs.filter(playground=(ply.lower() == 'true' or ply == '1'))
+            if park := p.get('parking'):    qs = qs.filter(parking=(park.lower() == 'true' or park == '1'))
+            if cctv := p.get('cctv'):       qs = qs.filter(cctv=(cctv.lower() == 'true' or cctv == '1'))
+            if cln  := p.get('cleaning'):   qs = qs.filter(cleaning_service=(cln.lower() == 'true' or cln == '1'))
+            if sport := p.get('sport'):     qs = qs.filter(Terrain_de_sport=(sport.lower() == 'true' or sport == '1'))
+            
+            # ── Numeric filters ──────────────────────────────────────────────────
+            if mxd := p.get('max_dist'):   qs = qs.filter(distance__lte=mxd)
+            if minp := p.get('min_price'): qs = qs.filter(price__gte=minp)
+            if maxp := p.get('max_price'): qs = qs.filter(price__lte=maxp)
+            
+            # ── Nested filters ───────────────────────────────────────────────────
+            if rsz := p.get('room_size'):
+                qs = qs.filter(room_categories__room_size=rsz).distinct()
+                
+            if p.get('available') == 'true':
+                qs = qs.filter(room_categories__available_rooms__gte=1).distinct()
 
-        if p.get('mine') == '1' and self.request.user.is_authenticated:
-            qs = qs.filter(owner=self.request.user)
+            if p.get('mine') == '1' and self.request.user.is_authenticated:
+                qs = qs.filter(owner=self.request.user)
         return qs
 
     def get_serializer_context(self):
@@ -224,28 +225,25 @@ class EstateViewSet(viewsets.ModelViewSet):
                 from rest_framework.exceptions import NotAuthenticated
                 raise NotAuthenticated("Authentification requise.")
 
-            # Owners can create estates even if not verified yet, 
-            # but the estate will stay is_verified=False until admin approval.
-            pass
-
             # Default owner to current user
             owner = user
+            is_verified = False
 
-            # Staff can override owner
-            if user.is_staff or user.is_superuser:
+            # Staff can override owner and auto-verify
+            if user.is_staff or user.is_superuser or user.user_type == 'admin':
+                is_verified = True
                 owner_id = self.request.data.get('owner_id')
                 if owner_id:
                     try:
                         owner = User.objects.get(pk=owner_id)
                     except (User.DoesNotExist, ValueError, TypeError):
-                        # If invalid owner_id, fallback to current user or error
                         pass
 
             if not owner:
                 from rest_framework.exceptions import ValidationError
                 raise ValidationError({"owner": "Un propriétaire est requis."})
 
-            serializer.save(owner=owner, is_verified=False)
+            serializer.save(owner=owner, is_verified=is_verified)
         except Exception as e:
             import traceback
             print(traceback.format_exc())
@@ -277,11 +275,21 @@ class EstateViewSet(viewsets.ModelViewSet):
         files = request.FILES.getlist('images')
         if not files:
             return Response({'error': 'Aucune image fournie.'}, status=400)
-        created = []
+        
+        import base64
+        files_data = []
         for f in files:
-            img = EstateImage.objects.create(estate=estate, image=f)
-            created.append(EstateImageSerializer(img, context={'request': request}).data)
-        return Response(created, status=201)
+            content = f.read()
+            encoded = base64.b64encode(content).decode('utf-8')
+            files_data.append({
+                'name': f.name,
+                'content': encoded
+            })
+        
+        from .utils import _run_task
+        from .tasks import upload_estate_images_task
+        _run_task(upload_estate_images_task, estate.id, files_data)
+        return Response({'message': 'Images en cours de traitement en arrière-plan.'}, status=202)
 
     @action(detail=True, methods=['delete'], url_path=r'images/(?P<image_id>\d+)',
             permission_classes=[permissions.IsAuthenticated])
@@ -412,11 +420,38 @@ class RoomCategoryViewSet(viewsets.ModelViewSet):
     def upload_images(self, request, pk=None):
         room_cat = self.get_object()
         files = request.FILES.getlist('images')
-        created = []
+        if not files:
+            return Response({'error': 'Aucune image fournie.'}, status=400)
+            
+        import base64
+        files_data = []
         for f in files:
-            img = RoomImage.objects.create(room_category=room_cat, image=f)
-            created.append(RoomImageSerializer(img, context={'request': request}).data)
-        return Response(created, status=201)
+            content = f.read()
+            encoded = base64.b64encode(content).decode('utf-8')
+            files_data.append({
+                'name': f.name,
+                'content': encoded
+            })
+            
+        from .utils import _run_task
+        from .tasks import upload_room_images_task
+        _run_task(upload_room_images_task, room_cat.id, files_data)
+        return Response({'message': 'Images en cours de traitement en arrière-plan.'}, status=202)
+
+    @action(detail=True, methods=['delete'], url_path=r'images/(?P<image_id>\d+)',
+            permission_classes=[permissions.IsAuthenticated])
+    def delete_image(self, request, pk=None, image_id=None):
+        room_cat = self.get_object()
+        if room_cat.estate.owner != request.user and not request.user.is_staff:
+            return Response({'error': 'Non autorisé.'}, status=403)
+        try:
+            img = RoomImage.objects.get(pk=image_id, room_category=room_cat)
+        except RoomImage.DoesNotExist:
+            return Response({'error': 'Image introuvable.'}, status=404)
+        img.image.delete(save=False)
+        img.delete()
+        return Response(status=204)
+
 
     @action(detail=True, methods=['get', 'post'], url_path='equipment',
             permission_classes=[permissions.IsAuthenticatedOrReadOnly])
@@ -508,38 +543,37 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
         room_category = serializer.validated_data.get('room_category')
         estate        = serializer.validated_data.get('estate')
 
-        if room_category:
-            if room_category.available_rooms <= 0:
-                # Room is full, provide recommendations
-                recs = get_recommendations(estate, room_category)
-                recs_data = EstateSerializer(recs, many=True, context={'request': request}).data
-                return Response(
-                    {
-                        "error": "FULL",
-                        "detail": "Plus de chambres disponibles dans cette catégorie.",
-                        "recommendations": recs_data
-                    },
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-        if request.user.is_authenticated:
-            serializer.validated_data['user'] = request.user
-
-        # ── Direct Order: Skip payment verification ──
-        serializer.validated_data['status'] = 'accepted'
-        serializer.validated_data['is_payment_verified'] = True
-        
         from django.db import transaction
         with transaction.atomic():
-            instance = serializer.save()
             if room_category:
-                # Atomic inventory decrement
+                # Concurrency Row Lock
                 rc = RoomCategory.objects.select_for_update().get(pk=room_category.id)
+                if rc.available_rooms <= 0:
+                    recs = get_recommendations(estate, room_category)
+                    recs_data = EstateSerializer(recs, many=True, context={'request': request}).data
+                    return Response(
+                        {
+                            "error": "FULL",
+                            "detail": "Plus de chambres disponibles dans cette catégorie.",
+                            "recommendations": recs_data
+                        },
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                # Atomic inventory decrement safely inside lock
                 rc.occupied_count += 1
                 rc.available_rooms = max(0, rc.available_rooms - 1)
                 rc.available_quantity = rc.available_rooms
                 rc.quantity_available = rc.available_rooms
                 rc.save(update_fields=['occupied_count', 'available_rooms', 'available_quantity', 'quantity_available'])
+
+            if request.user.is_authenticated:
+                serializer.validated_data['user'] = request.user
+
+            # ── Direct Order: Skip payment verification ──
+            serializer.validated_data['status'] = 'accepted'
+            serializer.validated_data['is_payment_verified'] = True
+            
+            instance = serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -633,7 +667,7 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
             order.save(update_fields=['is_payment_verified', 'status'])
             
             # Notify Student
-            from .utils import notify_user
+            from .notifications_utils import notify_user
             try:
                 notify_user(
                     user=order.user,
@@ -662,7 +696,7 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
         elif action_type == 'reject':
             order.is_payment_verified = False
             order.status = 'payment_failed'
-            order.save(update_fields=['is_payment_verified', status])
+            order.save(update_fields=['is_payment_verified', 'status'])
             return Response({'message': 'Paiement rejeté.'})
             
         return Response({'error': 'Action invalide.'}, status=400)
@@ -696,6 +730,11 @@ class ContactRequestViewSet(viewsets.ModelViewSet):
 class ConversationViewSet(viewsets.ModelViewSet):
     serializer_class = ConversationSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return ConversationDetailSerializer
+        return ConversationSerializer
 
     def get_serializer_context(self):
         ctx = super().get_serializer_context()
@@ -805,7 +844,7 @@ def online_users_view(request):
     try:
         from .consumers import ONLINE_USERS
         return Response({'online_user_ids': list(ONLINE_USERS)})
-    except ImportError:
+    except Exception:
         return Response({'online_user_ids': []})
 
 
@@ -943,16 +982,16 @@ def admin_users_view(request):
     users = User.objects.all().order_by('-date_joined')
     if request.query_params.get('pending_only') == '1':
         users = users.filter(user_type='owner', is_verified=False).exclude(id_card='')
-    color_map = {'Etudiant': '#3B82F6', 'Parent': '#8B5CF6', 'Proprietaire': '#10B981', 'Admin': '#EF4444'}
+    color_map = {'Student': '#3B82F6', 'Parent': '#8B5CF6', 'Owner': '#10B981', 'Admin': '#EF4444', 'Resident': '#64748B', 'Visitor': '#64748B'}
     result = []
     for u in users:
-        if u.is_staff or u.is_superuser:
+        if u.is_staff or u.is_superuser or u.user_type == 'admin':
             role = 'Admin'
         elif u.user_type == 'owner':
-            role = 'Proprietaire'
+            role = 'Owner'
         else:
-            role_map = {'1': 'Etudiant', '2': 'Parent', '3': 'Resident', '4': 'Visiteur'}
-            role = role_map.get(u.visitor_category, 'Etudiant')
+            role_map = {'1': 'Student', '2': 'Parent', '3': 'Resident', '4': 'Visitor'}
+            role = role_map.get(u.visitor_category, 'Student')
         name = f"{u.first_name} {u.last_name}".strip() or u.username
         initials = ''.join(w[0].upper() for w in name.split()[:2]) or '??'
         result.append({'id': u.id, 'name': name, 'email': u.email or u.username,
@@ -1011,9 +1050,42 @@ def admin_update_user_view(request, user_id):
     if 'email' in request.data: user.email = request.data['email']
     if 'password' in request.data and request.data['password']:
         user.password = make_password(request.data['password'])
+    
+    if 'role' in request.data:
+        role = request.data['role']
+        if role in ('Admin', 'admin'):
+            user.is_staff = True
+            user.is_superuser = True
+            user.user_type = 'admin'
+        elif role in ('Owner', 'owner', 'Proprietaire'):
+            user.is_staff = False
+            user.is_superuser = False
+            user.user_type = 'owner'
+        elif role in ('Student', 'student', 'Etudiant'):
+            user.is_staff = False
+            user.is_superuser = False
+            user.user_type = 'visitor'
+            user.visitor_category = '1'
+        elif role in ('Parent', 'parent'):
+            user.is_staff = False
+            user.is_superuser = False
+            user.user_type = 'visitor'
+            user.visitor_category = '2'
+        elif role in ('Resident', 'resident'):
+            user.is_staff = False
+            user.is_superuser = False
+            user.user_type = 'visitor'
+            user.visitor_category = '3'
+        elif role in ('Visiteur', 'visiteur', 'Visitor', 'visitor'):
+            user.is_staff = False
+            user.is_superuser = False
+            user.user_type = 'visitor'
+            user.visitor_category = '4'
+
     user.save()
     return Response({'id': user.id, 'name': f"{user.first_name} {user.last_name}".strip() or user.username,
                      'email': user.email, 'is_active': user.is_active})
+
 
 
 @api_view(['DELETE'])
@@ -1277,7 +1349,7 @@ def cinetpay_notify_view(request):
         if order and order.status == 'pending_payment':
             order.status = 'pending'
             order.save(update_fields=['status'])
-            from .utils import notify_user
+            from .notifications_utils import notify_user
             try:
                 notify_user(
                     user=order.estate.owner,
