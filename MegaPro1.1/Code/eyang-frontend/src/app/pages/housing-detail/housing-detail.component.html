@@ -255,7 +255,7 @@
                     <div class="rcc-avail" [class.rcc-avail-full]="rc.quantity_available === 0">
                       <lucide-icon [img]="UsersIcon" class="rcc-avail-ico"></lucide-icon>
                       <span *ngIf="rc.quantity_available > 0">
-                        {{ rc.quantity_available }} {{ rc.quantity_available > 1 ? ('detail.places_available' | translate) : ('detail.place_available' | translate) }}
+                        {{ rc.quantity_available }} / {{ rc.total_rooms }} {{ 'admin.available_rooms' | translate | lowercase }}
                       </span>
                       <span *ngIf="rc.quantity_available === 0">{{ 'detail.full' | translate }}</span>
                     </div>
@@ -733,7 +733,7 @@
               <lucide-icon [img]="UsersIcon" class="mdi-icon blue"></lucide-icon>
               <div>
                 <div class="mdi-label">{{ 'detail.places' | translate }}</div>
-                <div class="mdi-val">{{ selectedRoomCategory ? selectedRoomCategory.quantity_available : housing!.free }}</div>
+                <div class="mdi-val">{{ selectedRoomCategory ? (selectedRoomCategory.quantity_available + ' / ' + selectedRoomCategory.total_rooms) : (housing!.free + ' / ' + housing!.capacity) }}</div>
               </div>
             </div>
           </div>

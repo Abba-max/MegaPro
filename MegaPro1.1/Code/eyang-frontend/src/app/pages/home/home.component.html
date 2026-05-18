@@ -206,11 +206,30 @@
           <span class="meta-text">{{ h.distance < 1000 ? h.distance + ' m' : ((h.distance / 1000) | number:'1.1-1') + ' km' }} 
               {{ 'detail.distance' | translate }}</span>
         </div>
+        <!-- Estate Capacity -->
+        <div class="card-meta-row" *ngIf="getTotalEstateRooms(h) > 0">
+            <lucide-icon [img]="BuildingIcon" class="meta-icon" style="color: #3B82F6;"></lucide-icon>
+            <span class="meta-text"><strong>{{ getAvailableEstateRooms(h) }}</strong> / <strong>{{ getTotalEstateRooms(h) }}</strong> {{ 'admin.available_rooms' | translate | lowercase }}</span>
+        </div>
+        <div class="card-meta-row">
+            <lucide-icon [img]="UsersIcon" class="meta-icon" style="color: #F59E0B;"></lucide-icon>
+            <span class="meta-text"><strong>{{ h.free }}</strong> / <strong>{{ h.capacity }}</strong> {{ 'detail.free_places' | translate }}</span>
+        </div>
         <!-- Published -->
         <div class="card-meta-row" *ngIf="h.publishedAt">
-            <lucide-icon [img]="CheckIcon" class="meta-icon meta-green"></lucide-icon>
+            <lucide-icon [img]="CheckIcon" class="meta-icon" meta-green></lucide-icon>
             <span class="meta-text">{{ getTimeAgo(h.publishedAt) }}</span>
         </div>
+    </div>
+
+    <!-- Room Categories list with capacity details -->
+    <div class="card-rooms-summary mt-2" *ngIf="h.room_categories && h.room_categories.length > 0" style="display: flex; flex-wrap: wrap; gap: 0.4rem; padding-top: 0.4rem; border-top: 1px dashed var(--border-color); margin-bottom: 0.4rem;">
+        <span *ngFor="let rc of h.room_categories" class="feat-pill" style="font-size: 0.72rem; background: var(--bg-100); border: 1px solid var(--border-color); color: var(--text-primary); display: inline-flex; align-items: center; gap: 0.2rem; padding: 0.15rem 0.4rem; border-radius: 4px;">
+            <lucide-icon *ngIf="rc.occupancy === 'single'" [img]="BedIcon" class="feat-pill-ico" style="color: var(--primary-color); width: 12px; height: 12px;"></lucide-icon>
+            <lucide-icon *ngIf="rc.occupancy === 'double'" [img]="BedDoubleIcon" class="feat-pill-ico" style="color: var(--primary-color); width: 12px; height: 12px;"></lucide-icon>
+            <lucide-icon *ngIf="rc.occupancy === 'shared'" [img]="UsersIcon" class="feat-pill-ico" style="color: var(--primary-color); width: 12px; height: 12px;"></lucide-icon>
+            <strong>{{ rc.name }}</strong>: <span>{{ rc.available_rooms }} / {{ rc.total_rooms }} {{ 'admin.available_rooms' | translate | lowercase }}</span>
+        </span>
     </div>
 
     <!-- Description snippet -->

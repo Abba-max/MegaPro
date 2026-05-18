@@ -860,11 +860,15 @@
         <div class="f-row"><div class="f-group"><label class="f-label">{{ 'form.name' | translate }} *</label><input class="f-input" [(ngModel)]="roomForm.name"></div><div class="f-group"><label class="f-label">{{ 'admin.col_price' | translate }} ({{ 'price.currency' | translate }}) *</label><input class="f-input" type="number" [(ngModel)]="roomForm.price" min="0"></div></div>
         <div class="f-row">
             <div class="f-group"><label class="f-label">{{ 'detail.capacity' | translate }}</label><select class="f-input" [(ngModel)]="roomForm.occupancy"><option value="single">{{ 'detail.1_person' | translate }}</option><option value="double">{{ 'detail.2_people' | translate }}</option><option value="shared">{{ 'detail.shared' | translate }}</option></select></div>
-            <div class="f-group"><label class="f-label">{{ 'admin.col_quantity' | translate }}</label><input class="f-input" type="number" [(ngModel)]="roomForm.total_rooms" min="1" (change)="roomForm.quantity_available = roomForm.total_rooms"></div>
+            <div class="f-group"><label class="f-label">{{ 'admin.col_quantity' | translate }} (Total) *</label><input class="f-input" type="number" [(ngModel)]="roomForm.total_rooms" min="1" (change)="!roomEditId ? roomForm.available_rooms = roomForm.total_rooms : null"></div>
         </div>
         <div class="f-row">
+            <div class="f-group"><label class="f-label">{{ 'admin.available_rooms' | translate }} *</label><input class="f-input" type="number" [(ngModel)]="roomForm.available_rooms" min="0"></div>
             <div class="f-group"><label class="f-label">{{ 'admin.surface_area' | translate }} (m²)</label><input class="f-input" type="number" [(ngModel)]="roomForm.surface_area" min="0"></div>
+        </div>
+        <div class="f-row">
             <div class="f-group"><label class="f-label">{{ 'admin.room_size' | translate }}</label><select class="f-input" [(ngModel)]="roomForm.room_size"><option value="1">{{ 'admin.size_large' | translate }}</option><option value="2">{{ 'admin.size_medium' | translate }}</option><option value="3">{{ 'admin.size_small' | translate }}</option></select></div>
+            <div class="f-group" style="visibility: hidden;"></div>
         </div>
         <div class="f-group"><label class="f-label">{{ 'filters.equipment' | translate }}</label><div class="equip-chips"><label class="equip-chip" [class.equip-chip--on]="roomForm.wifi"><input type="checkbox" [checked]="roomForm.wifi" (change)="roomForm.wifi=$any($event.target).checked" style="display:none"><lucide-icon [img]="WifiIcon" style="width:14px;height:14px"></lucide-icon>WiFi</label><label class="equip-chip" [class.equip-chip--on]="roomForm.tv"><input type="checkbox" [checked]="roomForm.tv" (change)="roomForm.tv=$any($event.target).checked" style="display:none"><lucide-icon [img]="TvIcon" style="width:14px;height:14px"></lucide-icon>{{ 'filters.tv_label' | translate }}</label><label class="equip-chip" [class.equip-chip--on]="roomForm.fridge"><input type="checkbox" [checked]="roomForm.fridge" (change)="roomForm.fridge=$any($event.target).checked" style="display:none"><lucide-icon [img]="FridgeIcon" style="width:14px;height:14px"></lucide-icon>{{ 'filters.fridge_label' | translate }}</label></div></div>
         

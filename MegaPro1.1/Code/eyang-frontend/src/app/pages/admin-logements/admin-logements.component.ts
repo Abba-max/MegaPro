@@ -295,6 +295,7 @@ export class AdminLogementsComponent implements OnInit {
       price: [300000, [Validators.required, Validators.min(0)]],
       price_per_month: [0, [Validators.required, Validators.min(0)]],
       total_rooms: [1, [Validators.required, Validators.min(1)]],
+      available_rooms: [1, [Validators.required, Validators.min(0)]],
       dimensions: [''],
       occupancy: ['single'],
       wifi: [false],
@@ -881,7 +882,7 @@ export class AdminLogementsComponent implements OnInit {
     this.isRoomEditMode = true;
     this.roomEditId = null;
     this.roomFormGroup.reset({
-      name: '', price: 300000, price_per_month: 0, total_rooms: 1, dimensions: '',
+      name: '', price: 300000, price_per_month: 0, total_rooms: 1, available_rooms: 1, dimensions: '',
       occupancy: 'single', wifi: '0', tv: '0', fridge: '0', room_size: '2', description: '', surface_area: null
     });
     this.roomSelectedFiles = []; this.roomPreviewImages = [];
@@ -892,6 +893,7 @@ export class AdminLogementsComponent implements OnInit {
   openEditRoom(room: RoomCategory): void {
     this.isRoomEditMode = true; this.roomEditId = room.id;
     this.roomFormGroup.patchValue({ ...room });
+    this.roomFormGroup.get('available_rooms')?.markAsPristine();
     this.roomExistingImages = [...(room.images || [])];
     this.roomSelectedFiles = []; this.roomPreviewImages = []; this.roomRemovedImageIds = [];
     
@@ -931,6 +933,13 @@ export class AdminLogementsComponent implements OnInit {
     }
     this.isSavingRoom.set(true);
     const payload = { ...this.roomFormGroup.value, estate: this.selectedEstateForRooms.id };
+
+    // Concurrency protection: only send available_rooms if it has been touched/changed by the user
+    if (this.roomEditId && !this.roomFormGroup.get('available_rooms')?.dirty) {
+      delete payload.available_rooms;
+      delete payload.quantity_available;
+    }
+
     const req = this.roomEditId
       ? this.estateService.updateRoomCategory(this.roomEditId, payload)
       : this.estateService.createRoomCategory(payload);

@@ -617,10 +617,6 @@
             </div>
             <div class="form-row-modal">
                 <div class="form-group">
-                    <label>{{ 'admin.surface_area' | translate }} (m²)</label>
-                    <input type="number" formControlName="surface_area" class="input" min="0" placeholder="Ex: 20">
-                </div>
-                <div class="form-group">
                     <label>{{ 'detail.capacity' | translate }}</label>
                     <select formControlName="occupancy" class="select-input full-width">
                         <option value="single">{{ 'detail.1_person' | translate }}</option>
@@ -628,12 +624,22 @@
                         <option value="shared">{{ 'detail.shared' | translate }}</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label>{{ 'admin.col_quantity' | translate }} (Total) <span class="required">*</span></label>
+                    <input type="number" formControlName="total_rooms" class="input" min="1" (change)="!roomEditId ? roomFormGroup.patchValue({available_rooms: roomFormGroup.get('total_rooms')?.value}) : null">
+                </div>
             </div>
             <div class="form-row-modal">
                 <div class="form-group">
-                    <label>{{ 'admin.col_quantity' | translate }} (Total)</label>
-                    <input type="number" formControlName="total_rooms" class="input" min="1" (change)="roomFormGroup.patchValue({quantity_available: roomFormGroup.get('total_rooms')?.value})">
+                    <label>{{ 'admin.available_rooms' | translate }} <span class="required">*</span></label>
+                    <input type="number" formControlName="available_rooms" class="input" min="0">
                 </div>
+                <div class="form-group">
+                    <label>{{ 'admin.surface_area' | translate }} (m²)</label>
+                    <input type="number" formControlName="surface_area" class="input" min="0" placeholder="Ex: 20">
+                </div>
+            </div>
+            <div class="form-row-modal">
                 <div class="form-group">
                     <label>{{ 'admin.room_size' | translate }}</label>
                     <select formControlName="room_size" class="select-input full-width">
@@ -642,6 +648,7 @@
                         <option value="3">{{ 'detail.small' | translate }}</option>
                     </select>
                 </div>
+                <div class="form-group" style="visibility: hidden;"></div>
             </div>
 
             <!-- Room Basic Amenities -->

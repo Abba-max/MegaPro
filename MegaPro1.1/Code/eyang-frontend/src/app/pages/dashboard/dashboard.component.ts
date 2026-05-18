@@ -274,6 +274,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   isRoomEditMode  = false;
   isSavingRoom    = false;
   roomEditId: number | null = null;
+  originalAvailableRooms: number | null = null;
   roomForm: Partial<RoomCategory> = this.emptyRoomForm();
   roomEquipment = signal<any[]>([]);
 
@@ -870,6 +871,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.isRoomEditMode       = true;
     this.roomEditId           = null;
     this.roomForm             = this.emptyRoomForm();
+    this.originalAvailableRooms = null;
     this.roomSelectedFiles    = [];
     this.roomPreviewImages    = [];
     this.roomExistingImages   = [];
@@ -881,6 +883,7 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
     this.isRoomEditMode       = true;
     this.roomEditId           = room.id;
     this.roomForm             = { ...room };
+    this.originalAvailableRooms = room.available_rooms;
     this.roomExistingImages   = [...(room.images || [])];
     this.roomSelectedFiles    = [];
     this.roomPreviewImages    = [];
@@ -945,6 +948,13 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     this.isSavingRoom = true;
     const payload = { ...this.roomForm, estate: this.selectedEstateForRooms.id };
+
+    // Concurrency protection: only send available_rooms if it has actually changed
+    if (this.roomEditId && payload.available_rooms === this.originalAvailableRooms) {
+      delete payload.available_rooms;
+      delete (payload as any).available_quantity;
+      delete (payload as any).quantity_available;
+    }
 
     const req = this.roomEditId
       ? this.estateService.updateRoomCategory(this.roomEditId, payload)

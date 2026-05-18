@@ -394,6 +394,16 @@ export class HomeComponent implements OnInit, OnDestroy {
   onSearch(): void { this.applyFilters(); }
 
   // ── Helpers ───────────────────────────────────────────────
+  getTotalEstateRooms(h: Estate): number {
+    if (!h.room_categories) return 0;
+    return h.room_categories.reduce((acc, rc) => acc + (rc.total_rooms || 0), 0);
+  }
+
+  getAvailableEstateRooms(h: Estate): number {
+    if (!h.room_categories) return 0;
+    return h.room_categories.reduce((acc, rc) => acc + (rc.available_rooms || 0), 0);
+  }
+
   getFirstImage(estate: Estate): string {
     if (estate.images?.length > 0 && estate.images[0].image) {
       return getAbsoluteUrl(estate.images[0].image, 400);

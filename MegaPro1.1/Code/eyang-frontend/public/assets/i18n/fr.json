@@ -210,6 +210,7 @@
     "col_actions": "ACTIONS",
     "col_price": "PRIX",
     "col_quantity": "QUANTITÉ",
+    "available_rooms": "Chambres disponibles",
     "approve": "Approuver",
     "reject": "Rejeter",
     "edit": "Modifier",

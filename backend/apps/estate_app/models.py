@@ -124,22 +124,39 @@ class RoomCategory(models.Model):
     def save(self, *args, **kwargs):
         """On creation, initialise available_rooms from total_rooms if not set."""
         if self.pk is None:
-            if self.available_rooms is None or (self.available_rooms == 1 and self.total_rooms != 1):
-                self.available_rooms = self.total_rooms
+            try:
+                self_avail = int(self.available_rooms) if self.available_rooms is not None else None
+                self_total = int(self.total_rooms) if self.total_rooms is not None else 1
+            except (ValueError, TypeError):
+                self_avail = None
+                self_total = 1
+
+            if self_avail is None or (self_avail == 1 and self_total != 1):
+                self.available_rooms = self_total
         else:
             orig = RoomCategory.objects.get(pk=self.pk)
-            if self.total_rooms != orig.total_rooms:
-                booked_count = orig.total_rooms - orig.available_rooms
-                if self.total_rooms < booked_count:
-                    from django.core.exceptions import ValidationError
-                    raise ValidationError("Cannot reduce total_rooms below already booked count.")
-                self.available_rooms = self.total_rooms - booked_count
+            try:
+                self_total = int(self.total_rooms)
+                orig_total = int(orig.total_rooms)
+                orig_avail = int(orig.available_rooms)
+                
+                if self_total != orig_total:
+                    booked_count = orig_total - orig_avail
+                    if self_total < booked_count:
+                        from django.core.exceptions import ValidationError
+                        raise ValidationError("Cannot reduce total_rooms below already booked count.")
+                    self.available_rooms = self_total - booked_count
+            except (ValueError, TypeError):
+                pass
 
         # Keep legacy fields in sync
         self.total_quantity = self.total_rooms
         self.available_quantity = self.available_rooms
         self.quantity_available = self.available_rooms
         super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        super().delete(*args, **kwargs)
 
 
 class RoomImage(models.Model):

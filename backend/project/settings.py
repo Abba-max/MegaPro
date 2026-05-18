@@ -95,28 +95,35 @@ TEMPLATES = [{
     ]},
 }]
 
-DATABASES = {
-    'default': {
-        'ENGINE':   'django.db.backends.postgresql',
-        'NAME':     config('DB_NAME', default='eyang'),
-        'USER':     config('DB_USER', default='prisma'),
-        'PASSWORD': config('DB_PASSWORD', default='prisma'),
-        'HOST':     config('DB_HOST', default='db'),
-        'PORT':     config('DB_PORT', default='5432'),
-    }
-}
-
 database_url = config('DATABASE_URL', default=None)
-if database_url and '://' in database_url and not database_url.startswith('://'):
-    database_url = database_url.replace('postgres://', 'postgresql://', 1)
-    try:
-        db_config = dj_database_url.parse(database_url)
-        if db_config.get('ENGINE'):
-            if config('REQUIRE_DB_SSL', default=False, cast=bool):
-                db_config.setdefault('OPTIONS', {})['sslmode'] = 'require'
-            DATABASES['default'] = db_config
-    except Exception:
-        pass  # Fall back to the individual DB_* settings above
+if database_url and database_url.startswith('sqlite://'):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / database_url.replace('sqlite:///', '').replace('sqlite://', ''),
+        }
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE':   'django.db.backends.postgresql',
+            'NAME':     config('DB_NAME', default='eyang'),
+            'USER':     config('DB_USER', default='prisma'),
+            'PASSWORD': config('DB_PASSWORD', default='prisma'),
+            'HOST':     config('DB_HOST', default='db'),
+            'PORT':     config('DB_PORT', default='5432'),
+        }
+    }
+    if database_url and '://' in database_url and not database_url.startswith('://'):
+        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+        try:
+            db_config = dj_database_url.parse(database_url)
+            if db_config.get('ENGINE'):
+                if config('REQUIRE_DB_SSL', default=False, cast=bool):
+                    db_config.setdefault('OPTIONS', {})['sslmode'] = 'require'
+                DATABASES['default'] = db_config
+        except Exception:
+            pass  # Fall back to the individual DB_* settings above
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

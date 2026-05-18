@@ -316,6 +316,7 @@
     "col_actions": "ACTIONS",
     "col_price": "PRICE",
     "col_quantity": "QUANTITY",
+    "available_rooms": "Available Rooms",
     "approve": "Approve",
     "error_creating_characteristic": "Error creating characteristic",
     "error": "An error occurred.",

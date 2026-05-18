@@ -267,6 +267,50 @@ class RoomCategorySerializer(serializers.ModelSerializer):
             'room_size', 'description', 'images', 'equipment',
         ]
 
+    def validate(self, attrs):
+        total_rooms = attrs.get('total_rooms')
+        available_rooms = attrs.get('available_rooms')
+        
+        if self.instance:
+            if total_rooms is None:
+                total_rooms = self.instance.total_rooms
+            if available_rooms is None:
+                available_rooms = self.instance.available_rooms
+        else:
+            if total_rooms is None:
+                total_rooms = 1
+            if available_rooms is None:
+                available_rooms = total_rooms
+
+        if available_rooms > total_rooms:
+            raise serializers.ValidationError({
+                "available_rooms": "Available rooms cannot exceed total rooms."
+            })
+
+        # Validate against estate.max_capacity if set
+        estate = attrs.get('estate')
+        if not estate and self.instance:
+            estate = self.instance.estate
+            
+        if estate and estate.max_capacity is not None and estate.max_capacity > 0:
+            other_cats = estate.room_categories.all()
+            if self.instance:
+                other_cats = other_cats.exclude(pk=self.instance.pk)
+                
+            other_rooms_sum = sum(rc.total_rooms for rc in other_cats)
+            if (other_rooms_sum + total_rooms) > estate.max_capacity:
+                raise serializers.ValidationError({
+                    "total_rooms": f"La somme des chambres de toutes les catégories ({other_rooms_sum + total_rooms}) dépasse la capacité maximale de chambres définie pour cet établissement ({estate.max_capacity})."
+                })
+
+            other_avail_sum = sum(rc.available_rooms for rc in other_cats)
+            if (other_avail_sum + available_rooms) > estate.max_capacity:
+                raise serializers.ValidationError({
+                    "available_rooms": f"La somme des chambres disponibles de toutes les catégories ({other_avail_sum + available_rooms}) dépasse la capacité maximale de chambres de l'établissement ({estate.max_capacity})."
+                })
+
+        return attrs
+
 
 # ── Estate Serializer ─────────────────────────────────────────────────────────
 
@@ -360,6 +404,19 @@ class EstateSerializer(serializers.ModelSerializer):
 
         return super().to_internal_value(data)
 
+    def validate_max_capacity(self, value):
+        if value is not None and value > 0:
+            if self.instance:
+                # Sum of existing room total rooms (physical capacity)
+                other_rooms_sum = sum(
+                    rc.total_rooms for rc in self.instance.room_categories.all()
+                )
+                if value < other_rooms_sum:
+                    raise serializers.ValidationError(
+                        f"La capacité maximale de l'établissement ({value}) ne peut pas être inférieure à la somme des chambres actuelles ({other_rooms_sum})."
+                    )
+        return value
+
     def create(self, validated_data):
         characteristics_data = self.initial_data.get('characteristics')
         supplements_data = self.initial_data.get('supplements')
@@ -435,14 +492,14 @@ class EstateSerializer(serializers.ModelSerializer):
         return {'value': val, 'display': f"{val:.1f}", 'count': count, 'breakdown': breakdown}
 
     def get_capacity(self, obj) -> int:
-        # Uses prefetched room_categories in memory
-        total = 0
-        for rc in obj.room_categories.all():
-            total += rc.available_rooms * {'single': 1, 'double': 2, 'shared': 4}.get(rc.occupancy, 1)
-        return total
+        if obj.max_capacity is not None and obj.max_capacity > 0:
+            return obj.max_capacity
+        return sum(rc.total_rooms for rc in obj.room_categories.all())
 
     def get_free(self, obj) -> int:
-        # Uses prefetched room_categories in memory
+        occupied = sum(rc.total_rooms - rc.available_rooms for rc in obj.room_categories.all())
+        if obj.max_capacity is not None and obj.max_capacity > 0:
+            return max(0, obj.max_capacity - occupied)
         return sum(rc.available_rooms for rc in obj.room_categories.all())
 
     def get_price(self, obj) -> int:

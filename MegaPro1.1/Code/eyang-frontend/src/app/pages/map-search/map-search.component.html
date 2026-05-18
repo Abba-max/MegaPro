@@ -367,7 +367,7 @@
               ★ {{ e.average_rating.value.toFixed(1) }}
             </div>
             <div class="ms__card-free" *ngIf="e.free > 0">
-              {{ e.free }} {{ e.free > 1 ? ('detail.places_available' | translate) : ('detail.place_available' | translate) }}
+              {{ e.free }} / {{ e.capacity }} {{ 'admin.available_rooms' | translate | lowercase }}
             </div>
           </div>
 
