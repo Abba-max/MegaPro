@@ -380,6 +380,8 @@
     "saving": "Saving...",
     "loading": "Loading...",
     "update": "Update",
+    "update_success": "{{ name }} updated successfully",
+    "create_success": "{{ name }} created successfully",
     "cancel": "Cancel",
     "step1_invalid": "Please fill in general information correctly",
     "location_required": "GPS position is required",

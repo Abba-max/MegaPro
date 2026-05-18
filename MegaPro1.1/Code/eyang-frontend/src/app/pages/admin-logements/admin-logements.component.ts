@@ -492,6 +492,7 @@ export class AdminLogementsComponent implements OnInit {
             this.load();
           };
           const showSuccess = () => {
+            this.isSaving.set(false);
             this.openActionModal(
               'success',
               this.translate.instant('admin.update_success', { name: updated.name }),

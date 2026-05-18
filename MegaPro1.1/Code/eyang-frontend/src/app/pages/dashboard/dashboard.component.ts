@@ -1037,22 +1037,52 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
       next: savedEstate => {
         this.syncEstateDetails(savedEstate.id).subscribe({
           next: () => {
-            const finalizeCreation = () => {
+            const showSuccess = () => {
               this.isSavingEstate.set(false);
-              this.showToast(this.isEditMode ? 'admin.update' : 'admin.create', 'success');
-              this.closeEstateModal();
-              this.loadOwnerData();
-              if (!this.isEditMode) this.openManageRooms(savedEstate);
+              if (this.isEditMode) {
+                this.openActionModal(
+                  'success',
+                  this.translate.instant('admin.update_success', { name: savedEstate.name }),
+                  'The estate has been updated successfully.',
+                  'OK',
+                  () => {
+                    this.closeEstateModal();
+                    this.loadOwnerData();
+                  }
+                );
+              } else {
+                this.openActionModal(
+                  'success',
+                  this.translate.instant('admin.create_success', { name: savedEstate.name }),
+                  'Estate created successfully. Would you like to add rooms now?',
+                  'Manage Rooms',
+                  () => {
+                    this.closeEstateModal();
+                    this.loadOwnerData();
+                    this.openManageRooms(savedEstate);
+                  },
+                  'Later',
+                  () => {
+                    this.closeEstateModal();
+                    this.loadOwnerData();
+                  }
+                );
+              }
             };
 
             const doUpload = () => {
               if (this.newImageFiles.length > 0) {
                 this.estateService.uploadEstateImages(savedEstate.id, this.newImageFiles).subscribe({
-                  next:  () => finalizeCreation(),
-                  error: () => finalizeCreation(),
+                  next:  () => showSuccess(),
+                  error: () => {
+                    this.openActionModal('error', 'Error', this.translate.instant('admin.upload_error'), 'OK');
+                    this.isSavingEstate.set(false);
+                    this.closeEstateModal();
+                    this.loadOwnerData();
+                  },
                 });
               } else {
-                finalizeCreation();
+                showSuccess();
               }
             };
 
@@ -1068,14 +1098,14 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
           },
           error: (err) => {
             this.isSavingEstate.set(false);
-            this.showToast(this.translate.instant('admin.error_sync_details'), 'error');
+            this.openActionModal('error', 'Error', this.translate.instant('admin.error_sync_details'), 'OK');
             console.error('Sync details error:', err);
           }
         });
       },
       error: (err) => {
         this.isSavingEstate.set(false);
-        this.showToast(err?.error?.detail || this.translate.instant('admin.error_load'), 'error');
+        this.openActionModal('error', 'Error', err?.error?.detail || this.translate.instant('admin.error_load'), 'OK');
       }
     });
   }
