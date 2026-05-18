@@ -23,6 +23,7 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_BROWSER_XSS_FILTER = True
     X_FRAME_OPTIONS = 'DENY'
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='http://147.93.47.169:3006,http://147.93.47.169,https://eyang-estate.onrender.com,http://127.0.0.1:8000,http://localhost:8000,https://eyangestate.com,http://eyangestate.com').split(',')
 
