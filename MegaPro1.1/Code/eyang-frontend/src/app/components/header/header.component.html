@@ -99,7 +99,8 @@
       <div class="user-profile-container desktop-only">
         <div class="user-profile" (click)="toggleMenu()">
           <div class="avatar" [class.blue-bg]="currentUser.role === 'Student'">
-            {{ currentUser.initials }}
+            <img *ngIf="currentUser.profile?.avatar" [src]="currentUser.profile?.avatar" alt="Avatar" class="avatar-img-round">
+            <span *ngIf="!currentUser.profile?.avatar">{{ currentUser.initials }}</span>
           </div>
           <lucide-icon [img]="ChevronDownIcon" class="chevron-icon"></lucide-icon>
         </div>
@@ -121,6 +122,12 @@
               <a routerLink="/dashboard" (click)="showMenu = false">
                 <lucide-icon [img]="DashboardIcon" class="menu-icon"></lucide-icon>
                 <span>{{ 'nav.dashboard' | translate }}</span>
+              </a>
+            </li>
+            <li>
+              <a routerLink="/profile" (click)="showMenu = false">
+                <lucide-icon [img]="UserIcon" class="menu-icon"></lucide-icon>
+                <span>Mon Profil</span>
               </a>
             </li>
             <li *ngIf="currentUser.role === 'Admin'">
@@ -173,10 +180,10 @@
     <button class="mobile-drawer-close" (click)="closeMobileMenu()" [attr.aria-label]="'nav.close_menu' | translate">✕</button>
   </div>
 
-  <!-- ── LOGGED IN USER profile summary ── -->
   <div class="mobile-user-banner" *ngIf="currentUser">
     <div class="mobile-user-avatar" [class.blue-bg]="currentUser.role === 'Student'">
-      {{ currentUser.initials }}
+      <img *ngIf="currentUser.profile?.avatar" [src]="currentUser.profile?.avatar" alt="Avatar" class="avatar-img-round">
+      <span *ngIf="!currentUser.profile?.avatar">{{ currentUser.initials }}</span>
     </div>
     <div class="mobile-user-info">
       <span class="mobile-user-name">{{ currentUser.name }}</span>
@@ -235,6 +242,10 @@
         <a class="mobile-nav-link" routerLink="/dashboard" (click)="closeMobileMenu()">
           <lucide-icon [img]="DashboardIcon" class="mobile-nav-lucide-icon"></lucide-icon>
           {{ 'nav.dashboard' | translate }}
+        </a>
+        <a class="mobile-nav-link" routerLink="/profile" (click)="closeMobileMenu()">
+          <lucide-icon [img]="UserIcon" class="mobile-nav-lucide-icon"></lucide-icon>
+          Mon Profil
         </a>
         <a class="mobile-nav-link" routerLink="/messages" (click)="closeMobileMenu()">
           <lucide-icon [img]="MessageIcon" class="mobile-nav-lucide-icon"></lucide-icon>

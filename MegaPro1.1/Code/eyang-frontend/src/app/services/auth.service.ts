@@ -5,6 +5,13 @@ import { BehaviorSubject, Observable, Subject, tap, throwError, catchError, swit
 import { Router } from '@angular/router';
 import { environment } from '../../environments/environment';
 
+export interface UserProfile {
+  bio?: string;
+  avatar?: string;
+  birth_date?: string;
+  gender?: 'M' | 'F' | 'O';
+}
+
 export interface User {
   id?: number;
   name: string;
@@ -17,9 +24,11 @@ export interface User {
   initials: string;
   phone?: string;
   address?: string;
+  profile?: UserProfile;
 }
 
 export type CurrentUser = User;
+
 export type UserRole = 'Admin' | 'Student' | 'Owner' | 'Parent';
 
 const ACCESS_KEY  = 'access_token';
@@ -175,6 +184,21 @@ export class AuthService {
             : `${environment.apiUrl.replace('/api', '')}${data.id_card.startsWith('/') ? '' : '/'}${data.id_card}`
           : undefined;
 
+        let profile = undefined;
+        if (data.profile) {
+          const avatar = data.profile.avatar
+            ? (data.profile.avatar.startsWith('http')
+              ? data.profile.avatar
+              : `${environment.apiUrl.replace('/api', '')}${data.profile.avatar.startsWith('/') ? '' : '/'}${data.profile.avatar}`)
+            : undefined;
+          profile = {
+            bio: data.profile.bio,
+            birth_date: data.profile.birth_date,
+            gender: data.profile.gender,
+            avatar: avatar
+          };
+        }
+
         const user: User = {
           id: data.id,
           name,
@@ -187,6 +211,7 @@ export class AuthService {
           id_card,
           phone:   data.phone   || '',
           address: data.address || '',
+          profile,
         };
 
         this.currentUserSubject.next(user);
@@ -199,6 +224,13 @@ export class AuthService {
       })
     );
   }
+
+  updateProfile(formData: FormData): Observable<any> {
+    return this.http.patch<any>(`${this.BASE}/auth/me/`, formData).pipe(
+      switchMap(() => this.fetchMe())
+    );
+  }
+
 
   logout(): void {
     this.clearTokens();

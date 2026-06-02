@@ -1,67 +1,89 @@
 <div class="banned-page">
 
-  <!-- Toasts -->
-  @for (toast of toasts; track toast.id) {
-    <div class="toast" [class.toast-success]="toast.type === 'success'" [class.toast-error]="toast.type === 'error'">
-      {{ toast.message }}
+  <!-- Toast notifications -->
+  <div class="toast-container">
+    <div *ngFor="let toast of toasts" class="toast" [class]="toast.type">
+      <span>{{ toast.message }}</span>
     </div>
-  }
+  </div>
 
   <div class="page-header">
-    <div>
+    <div class="header-left">
       <h1 class="page-title">
         <lucide-icon [img]="BanIcon" class="title-icon"></lucide-icon>
-        Mots Interdits
+        Modération des Mots Interdits
       </h1>
-      <p class="page-subtitle">Gérez les mots bloqués dans la messagerie. {{ words().length }} mot(s) configuré(s).</p>
+      <p class="page-subtitle">Configurez les termes et expressions automatiquement bloqués dans le chat de messagerie</p>
     </div>
-    <button class="refresh-btn" (click)="load()">
-      <lucide-icon [img]="RefreshIcon" class="btn-icon"></lucide-icon> Actualiser
-    </button>
-  </div>
-
-  <!-- Add word form -->
-  <div class="add-card">
-    <div class="add-form">
-      <input
-        type="text"
-        [(ngModel)]="newWord"
-        (keyup.enter)="add()"
-        placeholder="Ajouter un mot interdit…"
-        class="word-input"
-        [disabled]="isSaving"
-      />
-      <button class="add-btn" (click)="add()" [disabled]="!newWord.trim() || isSaving">
-        <lucide-icon [img]="PlusIcon" class="btn-icon"></lucide-icon>
-        {{ isSaving ? 'Ajout…' : 'Ajouter' }}
+    <div class="header-right">
+      <button class="refresh-btn" (click)="load()" [disabled]="isLoading()">
+        <lucide-icon [img]="RefreshIcon" class="btn-icon" [class.spinning]="isLoading()"></lucide-icon>
+        Actualiser
       </button>
     </div>
-    <p class="add-hint">
-      ⚠️ Les messages contenant ces mots seront automatiquement bloqués et un avertissement sera envoyé à l'expéditeur.
-    </p>
   </div>
 
-  <!-- Words list -->
+  <!-- Add Card Form -->
+  <div class="add-card">
+    <h3 class="card-section-title">Ajouter un nouveau mot interdit</h3>
+    <div class="add-form">
+      <div class="input-wrapper">
+        <input
+          type="text"
+          [(ngModel)]="newWord"
+          (keyup.enter)="add()"
+          placeholder="Saisissez un mot ou expression (ex: insulte, arnaque...)"
+          class="word-input"
+          [disabled]="isSaving"
+        />
+      </div>
+      <button class="add-btn" (click)="add()" [disabled]="!newWord.trim() || isSaving">
+        <lucide-icon [img]="PlusIcon" class="btn-icon"></lucide-icon>
+        <span>{{ isSaving ? 'Ajout...' : 'Ajouter' }}</span>
+      </button>
+    </div>
+    
+    <div class="info-alert-box">
+      <span class="info-badge">⚠️ Modération active</span>
+      <p class="info-text">
+        Les messages envoyés par les utilisateurs contenant l'un de ces mots seront immédiatement interceptés. Le message ne sera pas transmis et un avertissement automatique sera envoyé à l'expéditeur.
+      </p>
+    </div>
+  </div>
+
+  <!-- Words List -->
+  <h3 class="card-section-title list-header-title">Mots actuellement bannis ({{ words().length }})</h3>
+
   @if (isLoading()) {
-    <div class="loading">Chargement des mots interdits…</div>
+    <div class="loading-state">
+      <div class="custom-spinner"></div>
+      <p>Chargement du dictionnaire de modération...</p>
+    </div>
   } @else if (words().length === 0) {
     <div class="empty-state">
       <lucide-icon [img]="BanIcon" class="empty-icon"></lucide-icon>
-      <p>Aucun mot interdit configuré.</p>
-      <p class="empty-sub">Ajoutez des mots ci-dessus pour activer la modération automatique.</p>
+      <h4>Aucun mot interdit configuré</h4>
+      <p>Le filtre de modération automatique est actuellement inactif. Ajoutez des mots ci-dessus pour le configurer.</p>
     </div>
   } @else {
     <div class="words-grid">
       @for (word of words(); track word.id) {
         <div class="word-card">
-          <div class="word-text">⛔ {{ word.word }}</div>
-          <div class="word-date">Ajouté le {{ fmt(word.created_at) }}</div>
-          <button class="delete-btn" (click)="delete(word)" title="Supprimer">
-            <lucide-icon [img]="TrashIcon" class="delete-icon"></lucide-icon>
-          </button>
+          <div class="word-card-glow"></div>
+          <div class="word-info">
+            <span class="word-badge">Banni</span>
+            <span class="word-text">{{ word.word }}</span>
+          </div>
+          <div class="word-meta">
+            <span class="word-date">Ajouté le {{ fmt(word.created_at) }}</span>
+            <button class="delete-btn" (click)="delete(word)" title="Supprimer de la liste">
+              <lucide-icon [img]="TrashIcon" class="delete-icon"></lucide-icon>
+            </button>
+          </div>
         </div>
       }
     </div>
   }
+
 
 </div>

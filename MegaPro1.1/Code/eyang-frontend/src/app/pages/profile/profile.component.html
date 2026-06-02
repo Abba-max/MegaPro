@@ -1,0 +1,131 @@
+<div class="profile-page">
+  <div class="profile-header">
+    <div class="header-left">
+      <a routerLink="/dashboard" class="back-link">
+        <lucide-icon [img]="ArrowLeftIcon" class="back-icon"></lucide-icon>
+        <span>Retour au Tableau de Bord</span>
+      </a>
+      <h1 class="page-title">
+        <lucide-icon [img]="UserIcon" class="title-icon"></lucide-icon>
+        Mon Profil
+      </h1>
+      <p class="page-subtitle">Gérez vos informations personnelles et votre profil public</p>
+    </div>
+  </div>
+
+  <div class="profile-container" *ngIf="currentUser">
+    <div class="profile-grid">
+      <!-- Left side: Avatar & Bio Quickview -->
+      <div class="profile-card avatar-card">
+        <div class="avatar-wrapper">
+          <div class="avatar-image-container">
+            <img [src]="avatarPreview || '/assets/images/default-avatar.png'" alt="Avatar" class="profile-avatar-img">
+            <label for="avatar-upload" class="avatar-upload-label">
+              <lucide-icon [img]="CameraIcon" class="camera-icon"></lucide-icon>
+              <span>Changer</span>
+            </label>
+            <input type="file" id="avatar-upload" accept="image/*" (change)="onAvatarChange($event)" style="display: none;">
+          </div>
+        </div>
+
+        <div class="user-meta-info">
+          <h2>{{ currentUser.name }}</h2>
+          <span class="user-role-badge" [class.student]="currentUser.role === 'Student'" [class.owner]="currentUser.role === 'Owner'">
+            {{ currentUser.role }}
+          </span>
+          <p class="user-email-text">{{ currentUser.email }}</p>
+        </div>
+
+        <div class="quick-status-divider"></div>
+
+        <div class="bio-preview-container">
+          <label class="input-label">Aperçu de la biographie</label>
+          <p class="bio-placeholder-text" *ngIf="!bio">Aucune biographie rédigée. Ajoutez-en une pour vous présenter.</p>
+          <p class="bio-text-content" *ngIf="bio">{{ bio }}</p>
+        </div>
+      </div>
+
+      <!-- Right side: Edit form -->
+      <div class="profile-card form-card">
+        <form (ngSubmit)="saveProfile()" #profileForm="ngForm" class="edit-profile-form">
+          <h3 class="form-section-title">Informations Personnelles</h3>
+          
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName" class="input-label">Prénom</label>
+              <div class="input-wrapper">
+                <input type="text" id="firstName" name="firstName" [(ngModel)]="firstName" required class="form-input">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="lastName" class="input-label">Nom</label>
+              <div class="input-wrapper">
+                <input type="text" id="lastName" name="lastName" [(ngModel)]="lastName" required class="form-input">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="phone" class="input-label">Numéro de Téléphone</label>
+              <div class="input-wrapper">
+                <lucide-icon [img]="PhoneIcon" class="field-icon"></lucide-icon>
+                <input type="tel" id="phone" name="phone" [(ngModel)]="phone" class="form-input icon-padding">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="address" class="input-label">Adresse</label>
+              <div class="input-wrapper">
+                <lucide-icon [img]="MapPinIcon" class="field-icon"></lucide-icon>
+                <input type="text" id="address" name="address" [(ngModel)]="address" class="form-input icon-padding">
+              </div>
+            </div>
+          </div>
+
+          <h3 class="form-section-title">Détails du Profil</h3>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="birthDate" class="input-label">Date de Naissance</label>
+              <div class="input-wrapper">
+                <lucide-icon [img]="CalendarIcon" class="field-icon"></lucide-icon>
+                <input type="date" id="birthDate" name="birthDate" [(ngModel)]="birthDate" class="form-input icon-padding">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="gender" class="input-label">Genre</label>
+              <div class="input-wrapper">
+                <select id="gender" name="gender" [(ngModel)]="gender" class="form-input">
+                  <option value="">Sélectionner...</option>
+                  <option value="M">Masculin</option>
+                  <option value="F">Féminin</option>
+                  <option value="O">Autre</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group full-width">
+            <label for="bio" class="input-label">Biographie</label>
+            <textarea id="bio" name="bio" [(ngModel)]="bio" rows="4" placeholder="Racontez-nous en un peu plus sur vous..." class="form-input textarea-field"></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="submit-btn" [disabled]="isSaving() || !profileForm.form.valid">
+              <lucide-icon [img]="isSaving() ? LoaderIcon : SaveIcon" class="btn-icon" [class.spinning]="isSaving()"></lucide-icon>
+              <span>{{ isSaving() ? 'Enregistrement...' : 'Enregistrer le Profil' }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast notifications -->
+  <div class="toast-container">
+    <div *ngFor="let t of toasts" class="toast" [class]="t.type">
+      <span>{{ t.message }}</span>
+      <button class="toast-close" (click)="dismissToast(t.id)">✕</button>
+    </div>
+  </div>
+</div>

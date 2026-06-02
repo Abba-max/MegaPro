@@ -1,85 +1,161 @@
-<div class="page-header">
-  <h1 class="page-title">{{ 'sidebar.overview' | translate }}</h1>
-  <!-- Can add date picker or refresh button here in the future -->
-</div>
+<div class="overview-page">
 
-<!-- Loading -->
-<div *ngIf="isLoading()" class="loader-center fade-in">
-  <lucide-icon [img]="TrendIcon" class="spin-icon"></lucide-icon>
-  <span>{{ 'dashboard.loading' | translate }}</span>
-</div>
-
-<!-- Error -->
-<div *ngIf="!isLoading() && hasError()" class="error-banner fade-in">
-  <span>{{ 'admin.error_load' | translate }}</span>
-  <button class="btn-retry" (click)="load()">{{ 'admin.retry' | translate }}</button>
-</div>
-
-<!-- Stats Cards -->
-<div class="stats-cards-grid fade-in" *ngIf="!isLoading() && !hasError()">
-  <div class="stat-card" *ngFor="let stat of stats">
-    <div class="stat-card-header">
-      <div class="stat-title">{{ stat.title | translate }}</div>
-      <div class="stat-icon" [style.background]="stat.iconColor + '15'" [style.color]="stat.iconColor">
-        <lucide-icon [img]="stat.icon"></lucide-icon>
-      </div>
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">
+        <lucide-icon [img]="TrendIcon" class="title-icon"></lucide-icon>
+        {{ 'sidebar.overview' | translate }}
+      </h1>
+      <p class="page-subtitle">Tableau de bord et statistiques globales de la plateforme Eyang Estate</p>
     </div>
-    <div class="stat-value">{{ stat.value }}</div>
-    <div class="stat-footer">
-      <span class="stat-change" [ngClass]="stat.changeType">
-        <lucide-icon [img]="TrendIcon" *ngIf="stat.changeType === 'positive'" class="icon-xs"></lucide-icon>
-        {{ stat.change | translate }}
-      </span>
-      <span style="color: #94A3B8; font-weight: 400;">{{ 'common.this_month' | translate }}</span>
+    <div class="header-right">
+      <button class="refresh-btn" (click)="load()" [disabled]="isLoading()">
+        <lucide-icon [img]="TrendIcon" class="btn-icon" [class.spinning]="isLoading()"></lucide-icon>
+        {{ 'admin.retry' | translate }}
+      </button>
     </div>
   </div>
-</div>
 
-<!-- Bottom Section -->
-<div class="bottom-section fade-in" *ngIf="!isLoading() && !hasError()">
+  <!-- Loading -->
+  <div *ngIf="isLoading()" class="loader-center fade-in">
+    <div class="custom-spinner"></div>
+    <span>{{ 'dashboard.loading' | translate }}</span>
+  </div>
 
-  <!-- Monthly Reservations Chart -->
-  <div class="chart-card card">
-    <div class="card-header">
-      <h3 class="card-title">{{ 'admin.manage_bookings' | translate }}</h3>
-      <!-- Filter/Select placeholder -->
+  <!-- Error -->
+  <div *ngIf="!isLoading() && hasError()" class="error-banner fade-in">
+    <lucide-icon [img]="TrendIcon" class="error-icon"></lucide-icon>
+    <div class="error-content">
+      <span>{{ 'admin.error_load' | translate }}</span>
+      <p>Impossible de joindre l'API d'administration. Veuillez vérifier la connexion du serveur.</p>
     </div>
-    <div class="chart-container" *ngIf="monthlyReservations.length > 0; else noChart">
-      <div class="chart-area">
-        <div class="chart-bars">
-          <div class="chart-bar-item" *ngFor="let month of monthlyReservations">
-            <span class="bar-val">{{ month.value }}</span>
-            <div class="chart-bar" [style.height.%]="barHeightPct(month.value)"></div>
-            <span class="chart-label">{{ month.month }}</span>
+    <button class="btn-retry" (click)="load()">{{ 'admin.retry' | translate }}</button>
+  </div>
+
+  <!-- Main Dashboard Content -->
+  <div *ngIf="!isLoading() && !hasError()" class="dashboard-content fade-in">
+    
+    <!-- Action Alerts (Pro feature: highlights items requiring action) -->
+    <div class="alerts-banner" *ngIf="pendingPaymentsCount > 0 || pendingVerificationsCount > 0">
+      <div class="alert-item payment-alert" *ngIf="pendingPaymentsCount > 0" routerLink="/app-admin/bookings">
+        <span class="alert-badge">Action Requise</span>
+        <span class="alert-text">Il y a <strong>{{ pendingPaymentsCount }}</strong> paiement(s) en attente de vérification manuelle.</span>
+        <span class="alert-link">Vérifier →</span>
+      </div>
+      <div class="alert-item verification-alert" *ngIf="pendingVerificationsCount > 0" routerLink="/app-admin/verification">
+        <span class="alert-badge warning">Validation</span>
+        <span class="alert-text">Il y a <strong>{{ pendingVerificationsCount }}</strong> établissement(s) en attente de modération.</span>
+        <span class="alert-link">Valider →</span>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="stats-cards-grid">
+      <div class="stat-card cursor-pointer" *ngFor="let stat of stats" [routerLink]="stat.link">
+        <div class="stat-card-glow" [style.background]="'radial-gradient(circle at top right, ' + stat.iconColor + '1b, transparent)'"></div>
+        <div class="stat-card-header">
+          <span class="stat-title">{{ stat.title | translate }}</span>
+          <div class="stat-icon" [style.background]="stat.iconColor + '18'" [style.color]="stat.iconColor">
+            <lucide-icon [img]="stat.icon"></lucide-icon>
           </div>
         </div>
-      </div>
-    </div>
-    <ng-template #noChart>
-      <p class="no-data">{{ 'dashboard.no_activity' | translate }}</p>
-    </ng-template>
-  </div>
-
-  <!-- Recent Activity -->
-  <div class="activity-card card">
-    <div class="card-header">
-      <h3 class="card-title">{{ 'dashboard.recent_activity' | translate }}</h3>
-    </div>
-    <div class="activity-list" *ngIf="recentActivities.length > 0; else noActivity">
-      <div class="activity-item" *ngFor="let activity of recentActivities">
-        <div class="activity-icon" [style.background]="activity.iconColor + '15'" [style.color]="activity.iconColor">
-          <lucide-icon [img]="activity.icon" class="icon-sm"></lucide-icon>
-        </div>
-        <div class="activity-content">
-          <div class="activity-title">{{ activity.title }}</div>
-          <div class="activity-date">{{ activity.date }}</div>
+        <div class="stat-value">{{ stat.value }}</div>
+        <div class="stat-footer">
+          <span class="stat-change" [ngClass]="stat.changeType">
+            {{ stat.change | translate }}
+          </span>
+          <span class="footer-hint">Total plateforme</span>
         </div>
       </div>
     </div>
-    <ng-template #noActivity>
-      <p class="no-data">{{ 'dashboard.no_activity' | translate }}</p>
-    </ng-template>
-  </div>
 
+    <!-- Quick Shortcuts Grid -->
+    <h2 class="section-title-inline">Raccourcis Administrateur</h2>
+    <div class="shortcuts-grid">
+      <a class="shortcut-card" routerLink="/app-admin/monitoring">
+        <div class="shortcut-icon icon-blue">📋</div>
+        <div class="shortcut-info">
+          <h4>État du Système</h4>
+          <p>Supervisez l'état de la BDD et de la plateforme</p>
+        </div>
+      </a>
+      <a class="shortcut-card" routerLink="/app-admin/logs">
+        <div class="shortcut-icon icon-purple">📝</div>
+        <div class="shortcut-info">
+          <h4>Journaux d'Audit</h4>
+          <p>Consultez les logs de connexion et de sécurité</p>
+        </div>
+      </a>
+      <a class="shortcut-card" routerLink="/app-admin/banned-words">
+        <div class="shortcut-icon icon-red">⛔</div>
+        <div class="shortcut-info">
+          <h4>Modération de Mots</h4>
+          <p>Ajoutez et modifiez les termes interdits</p>
+        </div>
+      </a>
+      <a class="shortcut-card" routerLink="/app-admin/users">
+        <div class="shortcut-icon icon-green">👥</div>
+        <div class="shortcut-info">
+          <h4>Utilisateurs</h4>
+          <p>Gérez les comptes bailleurs, étudiants et admins</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Bottom Section (Charts & Activities) -->
+    <div class="bottom-section">
+      <!-- Chart Card -->
+      <div class="chart-card card">
+        <div class="card-header-custom">
+          <h3 class="card-title">Volume des Réservations</h3>
+          <span class="chart-subtitle">Historique des 6 derniers mois</span>
+        </div>
+        <div class="chart-container" *ngIf="monthlyReservations.length > 0; else noChart">
+          <div class="chart-area">
+            <div class="chart-bars">
+              <div class="chart-bar-item" *ngFor="let month of monthlyReservations">
+                <span class="bar-val">{{ month.value }}</span>
+                <div class="chart-bar-outer">
+                  <div class="chart-bar-inner" [style.height.%]="barHeightPct(month.value)"></div>
+                </div>
+                <span class="chart-label">{{ month.month }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noChart>
+          <div class="no-chart-state">
+            <p class="no-data">Aucune réservation enregistrée sur les 6 derniers mois.</p>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Recent Activities -->
+      <div class="activity-card card">
+        <div class="card-header-custom">
+          <h3 class="card-title">Dernières Activités</h3>
+        </div>
+        <div class="activity-list" *ngIf="recentActivities.length > 0; else noActivity">
+          <div class="activity-item" *ngFor="let activity of recentActivities">
+            <div class="activity-icon" [style.background]="activity.iconColor + '12'" [style.color]="activity.iconColor">
+              <lucide-icon [img]="activity.icon" class="icon-sm"></lucide-icon>
+            </div>
+            <div class="activity-content">
+              <div class="activity-title">{{ activity.title }}</div>
+              <div class="activity-details">
+                <span class="activity-subtitle">{{ activity.subtitle }}</span>
+                <span class="activity-dot">•</span>
+                <span class="activity-date">{{ activity.date }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <ng-template #noActivity>
+          <p class="no-data">Aucune activité récente sur la plateforme.</p>
+        </ng-template>
+      </div>
+    </div>
+
+  </div>
 </div>
-
