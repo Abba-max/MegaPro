@@ -1,0 +1,92 @@
+<div class="verify-page">
+
+  <!-- Brand header -->
+  <div class="verify-header">
+    <div class="brand">Eyang<span>Estate</span></div>
+    <a routerLink="/" class="home-link">
+      <lucide-icon [img]="HomeIcon" class="home-icon"></lucide-icon>
+      Retour au site
+    </a>
+  </div>
+
+  <div class="verify-container">
+
+    @if (isLoading()) {
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Vérification en cours…</p>
+        <p class="loading-id">Facture : {{ invoiceId }}</p>
+      </div>
+    }
+
+    @if (!isLoading() && notFound) {
+      <div class="result-card not-found">
+        <lucide-icon [img]="WarnIcon" class="result-icon warn-icon"></lucide-icon>
+        <h2 class="result-title">Facture introuvable</h2>
+        <p class="result-desc">
+          La facture <strong>{{ invoiceId }}</strong> n'existe pas dans notre système ou a été supprimée.
+          Ce document pourrait être un faux.
+        </p>
+        <div class="warn-box">
+          ⚠️ Si vous avez reçu ce document, nous vous recommandons de contacter l'administration Eyang Estate.
+        </div>
+        <a routerLink="/" class="home-btn">Retour à l'accueil</a>
+      </div>
+    }
+
+    @if (!isLoading() && invoice) {
+      <div class="result-card found">
+        <div class="verified-badge">
+          <lucide-icon [img]="OkIcon" class="result-icon ok-icon"></lucide-icon>
+          <div>
+            <h2 class="result-title">Facture authentique ✓</h2>
+            <p class="result-sub">Ce document a été émis par la plateforme Eyang Estate</p>
+          </div>
+        </div>
+
+        <div class="invoice-details">
+          <div class="detail-row">
+            <span class="detail-label">N° de facture</span>
+            <span class="detail-value mono">{{ invoice.invoice_id }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Locataire</span>
+            <span class="detail-value">{{ invoice.client_name ?? '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Résidence</span>
+            <span class="detail-value">{{ invoice.estate_name ?? '—' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Montant total</span>
+            <span class="detail-value amount">{{ formatAmount(invoice.total_amount) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Statut</span>
+            <span class="detail-value">
+              <span class="status-badge" [class.paid]="invoice.status === 'PAID'" [class.unpaid]="invoice.status !== 'PAID'">
+                {{ invoice.status === 'PAID' ? 'Payée' : 'Non payée' }}
+              </span>
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Date d'émission</span>
+            <span class="detail-value">{{ fmt(invoice.created_at) }}</span>
+          </div>
+        </div>
+
+        <div class="ok-box">
+          🔒 Ce document a été authentifié par les serveurs Eyang Estate. Il est valide et officiel.
+        </div>
+
+        <a routerLink="/" class="home-btn secondary">Retour à l'accueil</a>
+      </div>
+    }
+
+  </div>
+
+  <div class="verify-footer">
+    © {{ year }} Eyang Estate · Yaoundé, Cameroun · eyangestate@gmail.com
+  </div>
+
+</div>

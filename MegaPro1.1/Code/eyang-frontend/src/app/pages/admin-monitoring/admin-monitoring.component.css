@@ -1,0 +1,60 @@
+.monitoring-page { padding: 2rem; max-width: 1200px; }
+.page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+.header-left {}
+.page-title { font-size: 1.5rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+.title-icon { width: 24px; height: 24px; color: #3b82f6; }
+.page-subtitle { color: #64748b; font-size: 0.9rem; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.last-refresh { font-size: 0.8rem; color: #94a3b8; }
+.refresh-btn { display: flex; align-items: center; gap: 8px; padding: 0.5rem 1rem; background: #3b82f6; color: #fff; border: none; border-radius: 8px; font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.refresh-btn:hover:not(:disabled) { background: #2563eb; }
+.refresh-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-icon { width: 16px; height: 16px; }
+.spinning { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+.loading-state { text-align: center; padding: 4rem; color: #94a3b8; }
+.loading-icon { width: 48px; height: 48px; margin-bottom: 1rem; color: #3b82f6; }
+
+.status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+
+.status-card { display: flex; align-items: center; gap: 1rem; padding: 1.25rem; border-radius: 12px; border: 1px solid #e2e8f0; background: #fff; transition: all 0.2s; }
+.status-card.ok    { border-color: #bbf7d0; background: #f0fdf4; }
+.status-card.warning { border-color: #fde68a; background: #fffbeb; }
+.status-card.error { border-color: #fecaca; background: #fef2f2; }
+
+.status-card-icon { width: 44px; height: 44px; border-radius: 10px; background: rgba(59,130,246,0.1); display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #3b82f6; }
+.status-card.ok .status-card-icon { background: rgba(16,185,129,0.1); color: #10b981; }
+.status-card.warning .status-card-icon { background: rgba(245,158,11,0.1); color: #f59e0b; }
+.status-card.error .status-card-icon { background: rgba(239,68,68,0.1); color: #ef4444; }
+
+.status-label { font-size: 0.78rem; color: #64748b; font-weight: 500; margin-bottom: 4px; }
+.status-value { font-size: 1rem; font-weight: 700; color: #0f172a; display: flex; align-items: center; gap: 6px; }
+
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.dot-ok    { background: #10b981; }
+.dot-error { background: #ef4444; }
+
+.logs-section { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+.section-title { font-size: 1rem; font-weight: 700; color: #0f172a; padding: 1.25rem 1.5rem; border-bottom: 1px solid #f1f5f9; margin: 0; }
+
+.empty-state { text-align: center; padding: 3rem; color: #94a3b8; }
+.empty-icon { width: 40px; height: 40px; margin-bottom: 0.75rem; }
+.ok-icon { color: #10b981; }
+
+.logs-table-wrap { overflow-x: auto; }
+.logs-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.logs-table th { background: #f8fafc; padding: 0.75rem 1rem; text-align: left; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #475569; border-bottom: 1px solid #e2e8f0; }
+.logs-table td { padding: 0.75rem 1rem; border-bottom: 1px solid #f1f5f9; vertical-align: top; }
+.logs-table tr:last-child td { border-bottom: none; }
+.logs-table tr:hover td { background: #f8fafc; }
+
+.log-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; }
+.log-error    { background: #fee2e2; color: #991b1b; }
+.log-warning  { background: #fef3c7; color: #92400e; }
+.log-info     { background: #dbeafe; color: #1e40af; }
+.log-critical { background: #fce7f3; color: #9d174d; }
+
+.log-category { color: #3b82f6; font-weight: 600; font-size: 0.8rem; white-space: nowrap; }
+.log-message  { color: #374151; max-width: 400px; }
+.log-date     { color: #94a3b8; font-size: 0.78rem; white-space: nowrap; }

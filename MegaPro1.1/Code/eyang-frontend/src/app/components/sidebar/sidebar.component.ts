@@ -4,17 +4,9 @@ import { RouterModule, Router } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import {
   LucideAngularModule,
-  LayoutDashboard,
-  Users,
-  Home,
-  Calendar,
-  Star,
-  BarChart2,
-  Settings,
-  LogOut,
-  Globe,
-  ShieldCheck,
-  X
+  LayoutDashboard, Users, Home, Calendar, Star,
+  BarChart2, Settings, LogOut, Globe, ShieldCheck, X,
+  Mail, Activity, FileText, ShieldAlert
 } from 'lucide-angular';
 import { AuthService } from '../../services/auth.service';
 
@@ -27,24 +19,26 @@ import { AuthService } from '../../services/auth.service';
 })
 export class SidebarComponent {
   @Input()  isOpen = false;
-  /** Emits when a nav link is clicked on mobile so the layout can close the sidebar */
   @Output() closeRequest = new EventEmitter<void>();
 
-  readonly DashboardIcon = LayoutDashboard;
-  readonly UsersIcon     = Users;
-  readonly HomeIcon      = Home;
-  readonly CalendarIcon  = Calendar;
-  readonly StarIcon      = Star;
-  readonly ReportsIcon   = BarChart2;
-  readonly SettingsIcon  = Settings;
-  readonly LogOutIcon    = LogOut;
-  readonly GlobeIcon     = Globe;
-  readonly ShieldIcon    = ShieldCheck;
-  readonly XIcon         = X;
+  readonly DashboardIcon  = LayoutDashboard;
+  readonly UsersIcon      = Users;
+  readonly HomeIcon       = Home;
+  readonly CalendarIcon   = Calendar;
+  readonly StarIcon       = Star;
+  readonly ReportsIcon    = BarChart2;
+  readonly SettingsIcon   = Settings;
+  readonly LogOutIcon     = LogOut;
+  readonly GlobeIcon      = Globe;
+  readonly ShieldIcon     = ShieldCheck;
+  readonly XIcon          = X;
+  readonly MailIcon       = Mail;
+  readonly MonitoringIcon = Activity;
+  readonly LogsIcon       = FileText;
+  readonly BanIcon        = ShieldAlert;
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  /** Call after every navigation link click on mobile */
   navClick(): void { this.closeRequest.emit(); }
 
   onLogout(): void {
@@ -53,7 +47,3 @@ export class SidebarComponent {
     this.router.navigate(['/']);
   }
 }
-
-
-
-

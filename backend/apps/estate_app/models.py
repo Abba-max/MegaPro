@@ -453,3 +453,47 @@ class Invoice(models.Model):
 
     def __str__(self):
         return f"Invoice {self.invoice_id}"
+
+
+class SystemLog(models.Model):
+    LOG_LEVEL_CHOICES = (
+        ('INFO', 'Info'),
+        ('WARNING', 'Warning'),
+        ('ERROR', 'Error'),
+        ('CRITICAL', 'Critical'),
+    )
+    level = models.CharField(max_length=10, choices=LOG_LEVEL_CHOICES, default='ERROR')
+    category = models.CharField(max_length=50)  # 'server', 'websocket', 'email', 'database'
+    message = models.TextField()
+    traceback = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"[{self.level}] {self.category} - {self.message[:50]}"
+
+
+class AuditLog(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='audit_logs')
+    action = models.CharField(max_length=255)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    result = models.CharField(max_length=50, default='SUCCESS')  # SUCCESS or FAILURE
+    details = models.TextField(blank=True, default='')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user} - {self.action} ({self.result})"
+
+
+class BannedWord(models.Model):
+    word = models.CharField(max_length=100, unique=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.word
+

@@ -181,4 +181,47 @@ def _run_task(task_fn, *args, **kwargs):
             logger.error("Synchronous fallback execution of task failed: %s", task_exc, exc_info=True)
 
 
+def log_audit(user, action, request=None, result='SUCCESS', details=''):
+    """
+    Creates an AuditLog entry.
+    Extracts IP address from request if provided.
+    """
+    from .models import AuditLog
+    ip = None
+    if request:
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR')
+
+    try:
+        AuditLog.objects.create(
+            user=user if user and user.is_authenticated else None,
+            action=action,
+            ip_address=ip,
+            result=result,
+            details=details
+        )
+    except Exception as e:
+        logger.error(f"Failed to write audit log: {e}")
+
+
+def log_system(level, category, message, traceback_str=''):
+    """
+    Creates a SystemLog entry.
+    """
+    from .models import SystemLog
+    try:
+        SystemLog.objects.create(
+            level=level,
+            category=category,
+            message=message,
+            traceback=traceback_str
+        )
+    except Exception as e:
+        logger.error(f"Failed to write system log: {e}")
+
+
+
 

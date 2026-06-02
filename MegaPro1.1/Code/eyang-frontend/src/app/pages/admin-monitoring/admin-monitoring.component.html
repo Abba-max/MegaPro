@@ -1,0 +1,113 @@
+<div class="monitoring-page">
+
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">
+        <lucide-icon [img]="ActivityIcon" class="title-icon"></lucide-icon>
+        Monitoring Système
+      </h1>
+      <p class="page-subtitle">État en temps réel de la plateforme</p>
+    </div>
+    <div class="header-right">
+      @if (lastRefresh) {
+        <span class="last-refresh">Mis à jour : {{ lastRefresh | date:'HH:mm:ss' }}</span>
+      }
+      <button class="refresh-btn" (click)="load()" [disabled]="isLoading()">
+        <lucide-icon [img]="RefreshIcon" class="btn-icon" [class.spinning]="isLoading()"></lucide-icon>
+        Actualiser
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading() && !data) {
+    <div class="loading-state">
+      <lucide-icon [img]="ActivityIcon" class="loading-icon spinning"></lucide-icon>
+      <p>Chargement des données système…</p>
+    </div>
+  }
+
+  @if (data) {
+    <!-- Status Cards -->
+    <div class="status-grid">
+
+      <div class="status-card" [class.ok]="data.db?.status === 'ok'" [class.error]="data.db?.status !== 'ok'">
+        <div class="status-card-icon">
+          <lucide-icon [img]="DbIcon"></lucide-icon>
+        </div>
+        <div class="status-card-body">
+          <div class="status-label">Base de données</div>
+          <div class="status-value">
+            <span class="status-dot" [class.dot-ok]="data.db?.status === 'ok'" [class.dot-error]="data.db?.status !== 'ok'"></span>
+            {{ data.db?.status === 'ok' ? 'Opérationnelle' : 'Erreur détectée' }}
+          </div>
+        </div>
+      </div>
+
+      <div class="status-card ok">
+        <div class="status-card-icon">
+          <lucide-icon [img]="UsersIcon"></lucide-icon>
+        </div>
+        <div class="status-card-body">
+          <div class="status-label">Utilisateurs en ligne</div>
+          <div class="status-value">{{ data.online_users ?? 0 }} connectés</div>
+        </div>
+      </div>
+
+      <div class="status-card" [class.ok]="data.errors?.last_1h === 0" [class.warning]="data.errors?.last_1h > 0 && data.errors?.last_1h < 5" [class.error]="data.errors?.last_1h >= 5">
+        <div class="status-card-icon">
+          <lucide-icon [img]="WarningIcon"></lucide-icon>
+        </div>
+        <div class="status-card-body">
+          <div class="status-label">Erreurs (dernière heure)</div>
+          <div class="status-value">{{ data.errors?.last_1h ?? 0 }} erreur(s)</div>
+        </div>
+      </div>
+
+      <div class="status-card" [class.ok]="data.errors?.last_24h === 0" [class.warning]="data.errors?.last_24h > 0 && data.errors?.last_24h < 10" [class.error]="data.errors?.last_24h >= 10">
+        <div class="status-card-icon">
+          <lucide-icon [img]="ActivityIcon"></lucide-icon>
+        </div>
+        <div class="status-card-body">
+          <div class="status-label">Erreurs (24h)</div>
+          <div class="status-value">{{ data.errors?.last_24h ?? 0 }} erreur(s)</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Recent Logs -->
+    <div class="logs-section">
+      <h2 class="section-title">Journaux récents</h2>
+      @if (data.recent_logs?.length === 0) {
+        <div class="empty-state">
+          <lucide-icon [img]="OkIcon" class="empty-icon ok-icon"></lucide-icon>
+          <p>Aucun événement récent. Le système fonctionne normalement.</p>
+        </div>
+      } @else {
+        <div class="logs-table-wrap">
+          <table class="logs-table">
+            <thead>
+              <tr>
+                <th>Niveau</th>
+                <th>Catégorie</th>
+                <th>Message</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (log of data.recent_logs; track log.id) {
+                <tr>
+                  <td><span class="log-badge" [ngClass]="getLevelClass(log.level)">{{ log.level }}</span></td>
+                  <td class="log-category">{{ log.category }}</td>
+                  <td class="log-message">{{ log.message }}</td>
+                  <td class="log-date">{{ formatTime(log.created_at) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+</div>

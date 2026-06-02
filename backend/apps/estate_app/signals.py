@@ -144,3 +144,15 @@ def quick_order_post_save(sender, instance, created, **kwargs):
                 )
     except Exception as e:
         print(f"[signals] quick_order_post_save error: {e}")
+
+
+from django.contrib.auth.signals import user_logged_in, user_logged_out
+from .utils import log_audit
+
+@receiver(user_logged_in)
+def log_user_login(sender, request, user, **kwargs):
+    log_audit(user=user, action="CONNEXION", request=request, result="SUCCESS", details=f"Utilisateur {user.username} s'est connecté.")
+
+@receiver(user_logged_out)
+def log_user_logout(sender, request, user, **kwargs):
+    log_audit(user=user, action="DÉCONNEXION", request=request, result="SUCCESS", details=f"Utilisateur {user.username} s'est déconnecté.")

@@ -18,6 +18,19 @@ def custom_exception_handler(exc, context):
         # Log the actual exception for internal debugging (server logs)
         logger.error(f"Unhandled Exception: {exc}", exc_info=True)
         
+        import traceback
+        from .models import SystemLog
+        try:
+            tb_str = traceback.format_exc()
+            SystemLog.objects.create(
+                level='ERROR',
+                category='server',
+                message=str(exc),
+                traceback=tb_str
+            )
+        except Exception as log_err:
+            logger.error(f"Failed to log exception to DB: {log_err}")
+
         return Response(
             {
                 'error': 'internal_server_error',

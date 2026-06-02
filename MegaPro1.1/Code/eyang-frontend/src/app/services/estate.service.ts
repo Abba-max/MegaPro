@@ -567,7 +567,47 @@ export class EstateService {
     return this.http.post(`${this.BASE}/admin/users/${userId}/verify/`, { action });
   }
 
+  // ── Admin Monitoring & Logs ────────────────────────────
+  getAdminMonitoring(): Observable<any> {
+    return this.http.get<any>(`${this.BASE}/admin/monitoring/`);
+  }
+
+  getSystemLogs(params?: { level?: string; category?: string; limit?: number }): Observable<any[]> {
+    let p = new HttpParams();
+    if (params?.level)    p = p.set('level', params.level);
+    if (params?.category) p = p.set('category', params.category);
+    if (params?.limit)    p = p.set('limit', String(params.limit));
+    return this.http.get<any[]>(`${this.BASE}/admin/logs/system/`, { params: p });
+  }
+
+  getAuditLogs(params?: { action?: string; result?: string; limit?: number }): Observable<any[]> {
+    let p = new HttpParams();
+    if (params?.action) p = p.set('action', params.action);
+    if (params?.result) p = p.set('result', params.result);
+    if (params?.limit)  p = p.set('limit', String(params.limit));
+    return this.http.get<any[]>(`${this.BASE}/admin/logs/audit/`, { params: p });
+  }
+
+  // ── Admin Banned Words ─────────────────────────────────
+  getBannedWords(): Observable<{ id: number; word: string; created_at: string }[]> {
+    return this.http.get<any[]>(`${this.BASE}/admin/banned-words/`);
+  }
+
+  addBannedWord(word: string): Observable<any> {
+    return this.http.post<any>(`${this.BASE}/admin/banned-words/`, { word });
+  }
+
+  deleteBannedWord(id: number): Observable<any> {
+    return this.http.delete<any>(`${this.BASE}/admin/banned-words/?id=${id}`);
+  }
+
+  // ── Invoice Verification (public) ─────────────────────
+  verifyInvoice(invoiceId: string): Observable<any> {
+    return this.http.get<any>(`${this.BASE}/invoices/?invoice_id=${invoiceId}`);
+  }
+
   // ── CRUD estates ──────────────────────────────────────────
+
   createEstate(data: Partial<EstateRaw>): Observable<Estate> {
     return this.http.post<EstateRaw>(`${this.BASE}/estates/`, data).pipe(map(enrichEstate));
   }

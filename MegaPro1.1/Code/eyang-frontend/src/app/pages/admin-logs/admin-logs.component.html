@@ -1,0 +1,118 @@
+<div class="logs-page">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title"><lucide-icon [img]="FileIcon" class="title-icon"></lucide-icon>Journaux d'activité</h1>
+      <p class="page-subtitle">Logs système et piste d'audit de la plateforme</p>
+    </div>
+    <button class="refresh-btn" (click)="load()">
+      <lucide-icon [img]="RefreshIcon" class="btn-icon"></lucide-icon> Actualiser
+    </button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn" [class.active]="activeTab() === 'system'" (click)="setTab('system')">
+      Logs Système ({{ filteredSystem().length }})
+    </button>
+    <button class="tab-btn" [class.active]="activeTab() === 'audit'" (click)="setTab('audit')">
+      Logs d'Audit ({{ filteredAudit().length }})
+    </button>
+  </div>
+
+  <!-- SYSTEM LOGS TAB -->
+  @if (activeTab() === 'system') {
+    <div class="filters-bar">
+      <select [(ngModel)]="$any(sysLevelFilter)" (ngModelChange)="sysLevelFilter.set($event); page.set(1)" class="filter-select">
+        <option value="">Tous les niveaux</option>
+        <option value="ERROR">Erreur</option>
+        <option value="WARNING">Avertissement</option>
+        <option value="INFO">Info</option>
+        <option value="CRITICAL">Critique</option>
+      </select>
+      <input type="text" [value]="sysCatFilter()" (input)="sysCatFilter.set($any($event.target).value); page.set(1)"
+             placeholder="Filtrer par catégorie…" class="filter-input" />
+    </div>
+
+    @if (isLoadingSys()) {
+      <div class="loading">Chargement des logs système…</div>
+    } @else if (pagedSystem().length === 0) {
+      <div class="empty">Aucun log correspondant.</div>
+    } @else {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Niveau</th><th>Catégorie</th><th>Message</th><th>Traceback</th><th>Date</th></tr></thead>
+          <tbody>
+            @for (log of pagedSystem(); track log.id) {
+              <tr>
+                <td><span class="badge" [ngClass]="getLevelClass(log.level)">{{ log.level }}</span></td>
+                <td class="cat-cell">{{ log.category }}</td>
+                <td class="msg-cell">{{ log.message }}</td>
+                <td class="trace-cell">{{ log.traceback ? log.traceback.slice(0, 120) + '…' : '—' }}</td>
+                <td class="date-cell">{{ fmt(log.created_at) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button class="pg-btn" (click)="prevPage()" [disabled]="page() === 1">
+          <lucide-icon [img]="PrevIcon"></lucide-icon>
+        </button>
+        <span class="pg-info">Page {{ page() }} / {{ totalPagesSys() }}</span>
+        <button class="pg-btn" (click)="nextPage(totalPagesSys())" [disabled]="page() === totalPagesSys()">
+          <lucide-icon [img]="NextIcon"></lucide-icon>
+        </button>
+      </div>
+    }
+  }
+
+  <!-- AUDIT LOGS TAB -->
+  @if (activeTab() === 'audit') {
+    <div class="filters-bar">
+      <input type="text" [value]="auditAction()" (input)="auditAction.set($any($event.target).value); page.set(1)"
+             placeholder="Filtrer par action…" class="filter-input" />
+      <select [(ngModel)]="$any(auditResult)" (ngModelChange)="auditResult.set($event); page.set(1)" class="filter-select">
+        <option value="">Tous les résultats</option>
+        <option value="SUCCESS">Succès</option>
+        <option value="FAILURE">Échec</option>
+      </select>
+    </div>
+
+    @if (isLoadingAudit()) {
+      <div class="loading">Chargement des logs d'audit…</div>
+    } @else if (pagedAudit().length === 0) {
+      <div class="empty">Aucun log d'audit correspondant.</div>
+    } @else {
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead><tr><th>Utilisateur</th><th>Action</th><th>Résultat</th><th>IP</th><th>Détails</th><th>Date</th></tr></thead>
+          <tbody>
+            @for (log of pagedAudit(); track log.id) {
+              <tr>
+                <td class="user-cell">
+                  <div class="user-name">{{ log.user }}</div>
+                  <div class="user-email">{{ log.user_email }}</div>
+                </td>
+                <td class="act-cell">{{ log.action }}</td>
+                <td><span class="badge" [ngClass]="getResultClass(log.result)">{{ log.result }}</span></td>
+                <td class="ip-cell">{{ log.ip_address ?? '—' }}</td>
+                <td class="msg-cell">{{ log.details ?? '—' }}</td>
+                <td class="date-cell">{{ fmt(log.created_at) }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button class="pg-btn" (click)="prevPage()" [disabled]="page() === 1">
+          <lucide-icon [img]="PrevIcon"></lucide-icon>
+        </button>
+        <span class="pg-info">Page {{ page() }} / {{ totalPagesAudit() }}</span>
+        <button class="pg-btn" (click)="nextPage(totalPagesAudit())" [disabled]="page() === totalPagesAudit()">
+          <lucide-icon [img]="NextIcon"></lucide-icon>
+        </button>
+      </div>
+    }
+  }
+
+</div>

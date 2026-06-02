@@ -16,6 +16,7 @@ from .models import (
     Conversation, Message, User, RoomCategory, RoomImage,
     Reservation, Invoice, Equipment, RoomEquipment, Supplement,
     Characteristic, EstateCharacteristic,
+    BannedWord, SystemLog, AuditLog,
 )
 from .serializers import (
     EstateSerializer, EstateImageSerializer, ReviewSerializer, QuickOrderSerializer,
@@ -46,6 +47,19 @@ except Exception:
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
 
+    def post(self, request, *args, **kwargs):
+        response = super().post(request, *args, **kwargs)
+        if response.status_code == 200:
+            username = request.data.get('username')
+            if username:
+                try:
+                    user = User.objects.get(username=username)
+                    from django.contrib.auth.signals import user_logged_in
+                    user_logged_in.send(sender=user.__class__, request=request, user=user)
+                except User.DoesNotExist:
+                    pass
+        return response
+
 
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
@@ -57,6 +71,8 @@ def register_view(request):
     try:
         user = serializer.save()
         print(f"Registration successful: Created user {user.username} (ID: {user.id})")
+        from .utils import log_audit
+        log_audit(user=user, action="INSCRIPTION", request=request, result="SUCCESS", details=f"Inscription de l'utilisateur : {user.username} (Rôle: {user.user_type})")
     except Exception as e:
         print(f"Registration FAILED during save: {e}")
         return Response({'detail': f"Registration persistence error: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -244,6 +260,8 @@ class EstateViewSet(viewsets.ModelViewSet):
                 raise ValidationError({"owner": "Un propriétaire est requis."})
 
             serializer.save(owner=owner, is_verified=is_verified)
+            from .utils import log_audit
+            log_audit(user=user, action="CRÉATION_RÉSIDENCE", request=self.request, result="SUCCESS", details=f"Résidence créée : {serializer.instance.name} (ID: {serializer.instance.id})")
         except Exception as e:
             import traceback
             print(traceback.format_exc())
@@ -264,6 +282,8 @@ class EstateViewSet(viewsets.ModelViewSet):
             kwargs['is_verified'] = False
 
         serializer.save(**kwargs)
+        from .utils import log_audit
+        log_audit(user=user, action="MODIFICATION_RÉSIDENCE", request=self.request, result="SUCCESS", details=f"Résidence modifiée : {serializer.instance.name} (ID: {serializer.instance.id})")
 
     @action(detail=True, methods=['post'], url_path='images',
             permission_classes=[permissions.IsAuthenticated],
@@ -418,6 +438,29 @@ class RoomCategoryViewSet(viewsets.ModelViewSet):
         except (ValueError, TypeError):
             total = 1
         serializer.save(available_rooms=total)
+        from .utils import log_audit
+        log_audit(
+            user=self.request.user,
+            action="CRÉATION_CHAMBRE",
+            request=self.request,
+            result="SUCCESS",
+            details=f"Création de la catégorie de chambre {serializer.instance.name} à {serializer.instance.estate.name} (Prix: {serializer.instance.price} FCFA)"
+        )
+
+    def perform_update(self, serializer):
+        old_instance = self.get_object()
+        old_price = old_instance.price
+        serializer.save()
+        new_instance = serializer.instance
+        if old_price != new_instance.price:
+            from .utils import log_audit
+            log_audit(
+                user=self.request.user,
+                action="MODIFICATION_PRIX",
+                request=self.request,
+                result="SUCCESS",
+                details=f"Changement de prix pour la catégorie {new_instance.name} à {new_instance.estate.name} : {old_price} -> {new_instance.price} FCFA"
+            )
 
     @action(detail=True, methods=['post'], url_path='images',
             parser_classes=[MultiPartParser, FormParser])
@@ -774,6 +817,23 @@ class ConversationViewSet(viewsets.ModelViewSet):
         text = request.data.get('text', '').strip()
         if not text:
             return Response({'error': 'Message text is required.'}, status=400)
+
+        # ── Banned word filter ──────────────────────────────────────────────
+        text_lower = text.lower()
+        banned_words = BannedWord.objects.values_list('word', flat=True)
+        for word in banned_words:
+            if word.lower() in text_lower:
+                return Response(
+                    {
+                        'error': 'BANNED_WORD',
+                        'message': (
+                            '⛔ Votre message a été bloqué car il contient un terme interdit. '
+                            'Le message n\'a pas été envoyé. C\'est interdit ici.'
+                        ),
+                    },
+                    status=400,
+                )
+
         msg = Message.objects.create(conversation=conv, sender=request.user, text=text)
         conv.save()
         conv.messages.filter(read=False).exclude(sender=request.user).update(read=True)
@@ -1390,3 +1450,152 @@ def payment_status_view(request, transaction_id):
         'payment_method': payment.payment_method,
         'created_at':     payment.created_at.isoformat(),
     })
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# ADMIN — MONITORING, LOGS, MOTS BANNIS
+# ══════════════════════════════════════════════════════════════════════════════
+
+@api_view(['GET'])
+@permission_classes([IsEyangAdmin])
+def admin_monitoring_view(request):
+    """
+    État en temps réel du système :
+    - Base de données (nombre d'erreurs récentes)
+    - Utilisateurs en ligne
+    - Erreurs des dernières 24h
+    - WebSocket (via présence)
+    """
+    from django.db import connection
+    from datetime import timedelta
+
+    now = timezone.now()
+    last_24h = now - timedelta(hours=24)
+    last_1h  = now - timedelta(hours=1)
+
+    # DB health check
+    db_ok = True
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT 1')
+    except Exception:
+        db_ok = False
+
+    # System logs stats
+    errors_24h = SystemLog.objects.filter(created_at__gte=last_24h, level='ERROR').count()
+    errors_1h  = SystemLog.objects.filter(created_at__gte=last_1h,  level='ERROR').count()
+    warnings_24h = SystemLog.objects.filter(created_at__gte=last_24h, level='WARNING').count()
+
+    # Online users
+    try:
+        from .consumers import ONLINE_USERS
+        online_count = len(ONLINE_USERS)
+    except Exception:
+        online_count = 0
+
+    # Recent system logs
+    recent_logs = SystemLog.objects.order_by('-created_at')[:20]
+    logs_data = [
+        {
+            'id': l.id,
+            'level': l.level,
+            'category': l.category,
+            'message': l.message[:200],
+            'created_at': l.created_at.isoformat(),
+        }
+        for l in recent_logs
+    ]
+
+    return Response({
+        'db': {'status': 'ok' if db_ok else 'error'},
+        'online_users': online_count,
+        'errors': {'last_24h': errors_24h, 'last_1h': errors_1h},
+        'warnings_24h': warnings_24h,
+        'recent_logs': logs_data,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsEyangAdmin])
+def admin_system_logs_view(request):
+    """Liste paginée des logs système (erreurs, warnings, infos)."""
+    level    = request.query_params.get('level', '')       # ERROR, WARNING, INFO…
+    category = request.query_params.get('category', '')    # server, websocket, email…
+    limit    = int(request.query_params.get('limit', 50))
+
+    qs = SystemLog.objects.order_by('-created_at')
+    if level:
+        qs = qs.filter(level=level.upper())
+    if category:
+        qs = qs.filter(category__icontains=category)
+    qs = qs[:limit]
+
+    data = [
+        {
+            'id': l.id, 'level': l.level, 'category': l.category,
+            'message': l.message, 'traceback': l.traceback,
+            'created_at': l.created_at.isoformat(),
+        }
+        for l in qs
+    ]
+    return Response(data)
+
+
+@api_view(['GET'])
+@permission_classes([IsEyangAdmin])
+def admin_audit_logs_view(request):
+    """Liste paginée des logs d'audit (connexions, actions utilisateurs)."""
+    action_filter = request.query_params.get('action', '')
+    result_filter = request.query_params.get('result', '')  # SUCCESS ou FAILURE
+    limit         = int(request.query_params.get('limit', 50))
+
+    qs = AuditLog.objects.select_related('user').order_by('-created_at')
+    if action_filter:
+        qs = qs.filter(action__icontains=action_filter)
+    if result_filter:
+        qs = qs.filter(result=result_filter.upper())
+    qs = qs[:limit]
+
+    data = [
+        {
+            'id': l.id,
+            'user': l.user.username if l.user else 'anonyme',
+            'user_email': l.user.email if l.user else None,
+            'action': l.action, 'result': l.result,
+            'ip_address': l.ip_address, 'details': l.details,
+            'created_at': l.created_at.isoformat(),
+        }
+        for l in qs
+    ]
+    return Response(data)
+
+
+@api_view(['GET', 'POST', 'DELETE'])
+@permission_classes([IsEyangAdmin])
+def admin_banned_words_view(request):
+    """CRUD pour les mots bannis."""
+    if request.method == 'GET':
+        words = BannedWord.objects.order_by('word')
+        return Response([
+            {'id': w.id, 'word': w.word, 'created_at': w.created_at.isoformat()}
+            for w in words
+        ])
+
+    if request.method == 'POST':
+        word = (request.data.get('word') or '').strip().lower()
+        if not word:
+            return Response({'error': 'Le mot est requis.'}, status=400)
+        obj, created = BannedWord.objects.get_or_create(word=word)
+        return Response(
+            {'id': obj.id, 'word': obj.word, 'created': created},
+            status=201 if created else 200,
+        )
+
+    if request.method == 'DELETE':
+        wid = request.query_params.get('id')
+        try:
+            BannedWord.objects.get(pk=wid).delete()
+            return Response({'deleted': True})
+        except BannedWord.DoesNotExist:
+            return Response({'error': 'Mot introuvable.'}, status=404)
+

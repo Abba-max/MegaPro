@@ -1,6 +1,6 @@
 <aside class="sidebar" [class.open]="isOpen">
 
-  <!-- Mobile close button (×) inside sidebar top-right -->
+  <!-- Mobile close button -->
   <button class="sidebar-close-btn" (click)="navClick()" aria-label="Fermer le menu">
     <lucide-icon [img]="XIcon" class="sidebar-close-ico"></lucide-icon>
   </button>
@@ -14,6 +14,8 @@
 
   <nav class="sidebar-nav">
     <ul class="nav-links">
+      <!-- PRINCIPAL -->
+      <li class="nav-section-label">Principal</li>
       <li>
         <a routerLink="/app-admin/overview" routerLinkActive="active" class="nav-link" (click)="navClick()">
           <lucide-icon [img]="DashboardIcon" class="nav-icon"></lucide-icon>
@@ -32,6 +34,9 @@
           <span>{{ 'sidebar.verification' | translate }}</span>
         </a>
       </li>
+
+      <!-- CONTENU -->
+      <li class="nav-section-label">Contenu</li>
       <li>
         <a routerLink="/app-admin/logements" routerLinkActive="active" class="nav-link" (click)="navClick()">
           <lucide-icon [img]="HomeIcon" class="nav-icon"></lucide-icon>
@@ -48,6 +53,33 @@
         <a routerLink="/app-admin/reviews" routerLinkActive="active" class="nav-link" (click)="navClick()">
           <lucide-icon [img]="StarIcon" class="nav-icon"></lucide-icon>
           <span>{{ 'sidebar.reviews' | translate }}</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/app-admin/contacts" routerLinkActive="active" class="nav-link" (click)="navClick()">
+          <lucide-icon [img]="MailIcon" class="nav-icon"></lucide-icon>
+          <span>{{ 'sidebar.contacts' | translate }}</span>
+        </a>
+      </li>
+
+      <!-- SYSTÈME -->
+      <li class="nav-section-label">Système</li>
+      <li>
+        <a routerLink="/app-admin/monitoring" routerLinkActive="active" class="nav-link" (click)="navClick()">
+          <lucide-icon [img]="MonitoringIcon" class="nav-icon"></lucide-icon>
+          <span>{{ 'sidebar.monitoring' | translate }}</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/app-admin/logs" routerLinkActive="active" class="nav-link" (click)="navClick()">
+          <lucide-icon [img]="LogsIcon" class="nav-icon"></lucide-icon>
+          <span>{{ 'sidebar.logs' | translate }}</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/app-admin/banned-words" routerLinkActive="active" class="nav-link" (click)="navClick()">
+          <lucide-icon [img]="BanIcon" class="nav-icon"></lucide-icon>
+          <span>{{ 'sidebar.banned_words' | translate }}</span>
         </a>
       </li>
       <li>
@@ -78,4 +110,3 @@
   </div>
 
 </aside>
-

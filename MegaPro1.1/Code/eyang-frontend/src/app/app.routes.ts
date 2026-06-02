@@ -48,6 +48,10 @@ export const routes: Routes = [
       {
         path: 'terms',
         loadComponent: () => import('./pages/legal/terms.component').then(c => c.TermsComponent)
+      },
+      {
+        path: 'verify-invoice/:id',
+        loadComponent: () => import('./pages/verify-invoice/verify-invoice.component').then(c => c.VerifyInvoiceComponent)
       }
     ]
   },
@@ -111,6 +115,22 @@ export const routes: Routes = [
       {
         path: 'reviews',
         loadComponent: () => import('./pages/admin-reviews/admin-reviews.component').then(c => c.AdminReviewsComponent)
+      },
+      {
+        path: 'contacts',
+        loadComponent: () => import('./pages/admin-contacts/admin-contacts.components').then(c => c.AdminContactsComponent)
+      },
+      {
+        path: 'monitoring',
+        loadComponent: () => import('./pages/admin-monitoring/admin-monitoring.component').then(c => c.AdminMonitoringComponent)
+      },
+      {
+        path: 'logs',
+        loadComponent: () => import('./pages/admin-logs/admin-logs.component').then(c => c.AdminLogsComponent)
+      },
+      {
+        path: 'banned-words',
+        loadComponent: () => import('./pages/admin-banned-words/admin-banned-words.component').then(c => c.AdminBannedWordsComponent)
       }
     ]
   },
