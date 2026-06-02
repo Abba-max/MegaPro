@@ -497,3 +497,22 @@ class BannedWord(models.Model):
     def __str__(self):
         return self.word
 
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
+    bio = models.TextField(blank=True, default='')
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    gender = models.CharField(
+        max_length=10,
+        choices=(('M', 'Male'), ('F', 'Female'), ('O', 'Other')),
+        null=True,
+        blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Profile of {self.user.username}"
+
+

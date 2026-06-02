@@ -145,10 +145,19 @@ def password_reset_request_view(request):
 
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT', 'PATCH'])
 @permission_classes([permissions.IsAuthenticated])
+@parser_classes([MultiPartParser, FormParser, JSONParser])
 def me_view(request):
     user = request.user
+    if request.method in ['PUT', 'PATCH']:
+        partial = (request.method == 'PATCH')
+        serializer = UserSerializer(user, data=request.data, partial=partial, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
     data = UserSerializer(user, context={'request': request}).data
     if user.is_staff or user.is_superuser:
         data['role'] = 'Admin'
@@ -163,6 +172,7 @@ def me_view(request):
     data['name'] = full_name
     data['initials'] = ''.join(w[0].upper() for w in full_name.split()[:2]) or '??'
     return Response(data)
+
 
 
 class EstateViewSet(viewsets.ModelViewSet):

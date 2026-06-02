@@ -155,4 +155,18 @@ def log_user_login(sender, request, user, **kwargs):
 
 @receiver(user_logged_out)
 def log_user_logout(sender, request, user, **kwargs):
-    log_audit(user=user, action="DÉCONNEXION", request=request, result="SUCCESS", details=f"Utilisateur {user.username} s'est déconnecté.")
+    log_audit(user=user, action="DÉCONNEXION", request=request, result="SUCCESS", details=f"Utilisateur {user.username} s'est déconnecté.")
+
+
+@receiver(post_save, sender=User)
+def manage_user_profile(sender, instance, created, **kwargs):
+    from .models import UserProfile
+    try:
+        if created:
+            UserProfile.objects.get_or_create(user=instance)
+        else:
+            if not hasattr(instance, 'profile'):
+                UserProfile.objects.get_or_create(user=instance)
+    except Exception as e:
+        print(f"[signals] manage_user_profile error: {e}")
+

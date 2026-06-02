@@ -6,8 +6,9 @@ from .models import (
     Conversation, Message, Notification,
     RoomCategory, RoomImage,
     Reservation, Invoice, Room, Equipment, RoomEquipment, Supplement,
-    Characteristic, EstateCharacteristic,
+    Characteristic, EstateCharacteristic, UserProfile,
 )
+
 
 
 def _resolve_role(user) -> str:
@@ -90,17 +91,35 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+
+    class Meta:
+        model = UserProfile
+        fields = ['bio', 'avatar', 'birth_date', 'gender']
+
+    def get_avatar(self, obj):
+        request = self.context.get('request')
+        if obj.avatar:
+            url = obj.avatar.url
+            if url.startswith('http'):
+                return url
+            return request.build_absolute_uri(url) if request else url
+        return None
+
+
 class UserSerializer(serializers.ModelSerializer):
     id_card = serializers.SerializerMethodField()
     password = serializers.CharField(write_only=True, required=False, allow_blank=True)
     role = serializers.ChoiceField(
         choices=['Student', 'Parent', 'Owner', 'Admin'], write_only=True, required=False
     )
+    profile = UserProfileSerializer(read_only=True)
 
     class Meta:
         model  = User
         fields = ['id', 'username', 'email', 'password', 'first_name', 'last_name',
-                  'user_type', 'contact', 'address', 'is_verified', 'id_card', 'role']
+                  'user_type', 'contact', 'address', 'is_verified', 'id_card', 'role', 'profile']
 
     def get_id_card(self, obj):
         request = self.context.get('request')
@@ -136,7 +155,32 @@ class UserSerializer(serializers.ModelSerializer):
             instance.set_password(password)
             
         instance.save()
+
+        # Update or create user profile nestedly
+        request = self.context.get('request')
+        if request:
+            profile_data = request.data.copy() if hasattr(request.data, 'copy') else request.data
+            bio = profile_data.get('bio')
+            birth_date = profile_data.get('birth_date')
+            gender = profile_data.get('gender')
+            avatar = request.FILES.get('avatar')
+
+            profile, _ = UserProfile.objects.get_or_create(user=instance)
+            if bio is not None:
+                profile.bio = bio
+            if birth_date is not None:
+                if birth_date == '' or birth_date == 'null' or birth_date == 'None':
+                    profile.birth_date = None
+                else:
+                    profile.birth_date = birth_date
+            if gender is not None:
+                profile.gender = gender
+            if avatar is not None:
+                profile.avatar = avatar
+            profile.save()
+
         return instance
+
 
 
 class EstateImageSerializer(serializers.ModelSerializer):
