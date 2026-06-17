@@ -174,6 +174,23 @@ def me_view(request):
     return Response(data)
 
 
+@api_view(['POST'])
+@permission_classes([permissions.IsAuthenticated])
+def change_password_view(request):
+    user = request.user
+    old_password = request.data.get('old_password', '')
+    new_password = request.data.get('new_password', '')
+    if not old_password or not new_password:
+        return Response({'detail': 'Les deux champs sont requis.'}, status=status.HTTP_400_BAD_REQUEST)
+    if not user.check_password(old_password):
+        return Response({'detail': 'Mot de passe actuel incorrect.'}, status=status.HTTP_400_BAD_REQUEST)
+    if len(new_password) < 8:
+        return Response({'detail': 'Le nouveau mot de passe doit contenir au moins 8 caractères.'}, status=status.HTTP_400_BAD_REQUEST)
+    user.set_password(new_password)
+    user.save()
+    return Response({'detail': 'Mot de passe modifié avec succès.'})
+
+
 
 class EstateViewSet(viewsets.ModelViewSet):
     queryset = Estate.objects.all().prefetch_related('images')
@@ -865,7 +882,7 @@ def stats_view(request):
         'students': User.objects.filter(user_type='visitor', visitor_category='1').count(),
         'reviews': Review.objects.count(),
         'campuses': Estate.objects.filter(status='published').values('location').distinct().count(),
-        'orders': QuickOrder.objects.count(),
+        'orders': QuickOrder.objects.count() + Reservation.objects.count(),
     })
 
 

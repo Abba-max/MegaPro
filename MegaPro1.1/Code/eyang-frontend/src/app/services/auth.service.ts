@@ -231,6 +231,13 @@ export class AuthService {
     );
   }
 
+  changePassword(oldPassword: string, newPassword: string): Observable<any> {
+    return this.http.post<any>(`${this.BASE}/auth/change-password/`, {
+      old_password: oldPassword,
+      new_password: newPassword
+    });
+  }
+
 
   logout(): void {
     this.clearTokens();

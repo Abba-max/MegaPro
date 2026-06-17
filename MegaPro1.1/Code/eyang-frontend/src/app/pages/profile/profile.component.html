@@ -1,101 +1,135 @@
 <div class="profile-page">
+
+  <!-- ── Page Header ─────────────────────────────────────── -->
   <div class="profile-header">
-    <div class="header-left">
-      <a routerLink="/dashboard" class="back-link">
-        <lucide-icon [img]="ArrowLeftIcon" class="back-icon"></lucide-icon>
-        <span>Retour au Tableau de Bord</span>
-      </a>
-      <h1 class="page-title">
-        <lucide-icon [img]="UserIcon" class="title-icon"></lucide-icon>
-        Mon Profil
-      </h1>
-      <p class="page-subtitle">Gérez vos informations personnelles et votre profil public</p>
+    <a routerLink="/dashboard" class="back-link">
+      <lucide-icon [img]="ArrowLeftIcon" class="back-icon"></lucide-icon>
+      <span>Tableau de Bord</span>
+    </a>
+    <div class="header-title-row">
+      <div class="header-icon-wrap">
+        <lucide-icon [img]="UserCogIcon" class="header-icon"></lucide-icon>
+      </div>
+      <div>
+        <h1 class="page-title">Mon Profil</h1>
+        <p class="page-subtitle">Gérez vos informations personnelles et votre sécurité</p>
+      </div>
     </div>
   </div>
 
-  <div class="profile-container" *ngIf="currentUser">
-    <div class="profile-grid">
-      <!-- Left side: Avatar & Bio Quickview -->
-      <div class="profile-card avatar-card">
-        <div class="avatar-wrapper">
+  <div class="profile-layout" *ngIf="currentUser">
+
+    <!-- ── Left Sidebar ──────────────────────────────────── -->
+    <aside class="profile-sidebar">
+      <div class="sidebar-avatar-section">
+        <div class="avatar-ring">
           <div class="avatar-image-container">
             <img [src]="avatarPreview || '/assets/images/default-avatar.png'" alt="Avatar" class="profile-avatar-img">
-            <label for="avatar-upload" class="avatar-upload-label">
+            <label for="avatar-upload" class="avatar-overlay">
               <lucide-icon [img]="CameraIcon" class="camera-icon"></lucide-icon>
               <span>Changer</span>
             </label>
-            <input type="file" id="avatar-upload" accept="image/*" (change)="onAvatarChange($event)" style="display: none;">
+            <input type="file" id="avatar-upload" accept="image/*" (change)="onAvatarChange($event)" style="display:none;">
           </div>
         </div>
-
-        <div class="user-meta-info">
-          <h2>{{ currentUser.name }}</h2>
-          <span class="user-role-badge" [class.student]="currentUser.role === 'Student'" [class.owner]="currentUser.role === 'Owner'">
-            {{ currentUser.role }}
-          </span>
-          <p class="user-email-text">{{ currentUser.email }}</p>
-        </div>
-
-        <div class="quick-status-divider"></div>
-
-        <div class="bio-preview-container">
-          <label class="input-label">Aperçu de la biographie</label>
-          <p class="bio-placeholder-text" *ngIf="!bio">Aucune biographie rédigée. Ajoutez-en une pour vous présenter.</p>
-          <p class="bio-text-content" *ngIf="bio">{{ bio }}</p>
-        </div>
+        <h2 class="sidebar-name">{{ currentUser.name }}</h2>
+        <span class="role-badge" [class.role-student]="currentUser.role==='Student'"
+              [class.role-owner]="currentUser.role==='Owner'"
+              [class.role-admin]="currentUser.role==='Admin'">
+          {{ currentUser.role }}
+        </span>
+        <p class="sidebar-email">{{ currentUser.email }}</p>
       </div>
 
-      <!-- Right side: Edit form -->
-      <div class="profile-card form-card">
-        <form (ngSubmit)="saveProfile()" #profileForm="ngForm" class="edit-profile-form">
-          <h3 class="form-section-title">Informations Personnelles</h3>
-          
-          <div class="form-row">
-            <div class="form-group">
-              <label for="firstName" class="input-label">Prénom</label>
-              <div class="input-wrapper">
-                <input type="text" id="firstName" name="firstName" [(ngModel)]="firstName" required class="form-input">
+      <div class="sidebar-divider"></div>
+
+      <!-- Tab Navigation -->
+      <nav class="sidebar-nav">
+        <button class="nav-item" [class.active]="activeTab==='profile'" (click)="setTab('profile')">
+          <lucide-icon [img]="UserIcon" class="nav-icon"></lucide-icon>
+          <span>Informations</span>
+        </button>
+        <button class="nav-item" [class.active]="activeTab==='security'" (click)="setTab('security')">
+          <lucide-icon [img]="ShieldCheckIcon" class="nav-icon"></lucide-icon>
+          <span>Sécurité</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- Bio preview -->
+      <div class="bio-preview">
+        <span class="bio-label">Biographie</span>
+        <p class="bio-text" *ngIf="bio">{{ bio }}</p>
+        <p class="bio-placeholder" *ngIf="!bio">Aucune biographie rédigée.</p>
+      </div>
+    </aside>
+
+    <!-- ── Main Content ──────────────────────────────────── -->
+    <main class="profile-main">
+
+      <!-- ═══ PROFILE TAB ════════════════════════════════ -->
+      <div class="tab-panel" *ngIf="activeTab==='profile'">
+        <div class="panel-header">
+          <lucide-icon [img]="UserIcon" class="panel-header-icon"></lucide-icon>
+          <div>
+            <h3 class="panel-title">Informations Personnelles</h3>
+            <p class="panel-sub">Mettez à jour vos coordonnées et votre présentation</p>
+          </div>
+        </div>
+
+        <form (ngSubmit)="saveProfile()" #profileForm="ngForm" class="edit-form">
+
+          <!-- Section: Identity -->
+          <div class="form-section">
+            <h4 class="section-label">Identité</h4>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="firstName" class="input-label">Prénom</label>
+                <input type="text" id="firstName" name="firstName" [(ngModel)]="firstName" required class="form-input" placeholder="Jean">
               </div>
-            </div>
-            <div class="form-group">
-              <label for="lastName" class="input-label">Nom</label>
-              <div class="input-wrapper">
-                <input type="text" id="lastName" name="lastName" [(ngModel)]="lastName" required class="form-input">
+              <div class="form-group">
+                <label for="lastName" class="input-label">Nom</label>
+                <input type="text" id="lastName" name="lastName" [(ngModel)]="lastName" required class="form-input" placeholder="Dupont">
               </div>
             </div>
           </div>
 
-          <div class="form-row">
-            <div class="form-group">
-              <label for="phone" class="input-label">Numéro de Téléphone</label>
-              <div class="input-wrapper">
-                <lucide-icon [img]="PhoneIcon" class="field-icon"></lucide-icon>
-                <input type="tel" id="phone" name="phone" [(ngModel)]="phone" class="form-input icon-padding">
+          <!-- Section: Contact -->
+          <div class="form-section">
+            <h4 class="section-label">Contact</h4>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="phone" class="input-label">Numéro de Téléphone</label>
+                <div class="input-wrapper">
+                  <lucide-icon [img]="PhoneIcon" class="field-icon"></lucide-icon>
+                  <input type="tel" id="phone" name="phone" [(ngModel)]="phone" class="form-input has-icon" placeholder="+237 6XX XXX XXX">
+                </div>
               </div>
-            </div>
-            <div class="form-group">
-              <label for="address" class="input-label">Adresse</label>
-              <div class="input-wrapper">
-                <lucide-icon [img]="MapPinIcon" class="field-icon"></lucide-icon>
-                <input type="text" id="address" name="address" [(ngModel)]="address" class="form-input icon-padding">
+              <div class="form-group">
+                <label for="address" class="input-label">Adresse</label>
+                <div class="input-wrapper">
+                  <lucide-icon [img]="MapPinIcon" class="field-icon"></lucide-icon>
+                  <input type="text" id="address" name="address" [(ngModel)]="address" class="form-input has-icon" placeholder="Votre ville...">
+                </div>
               </div>
             </div>
           </div>
 
-          <h3 class="form-section-title">Détails du Profil</h3>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="birthDate" class="input-label">Date de Naissance</label>
-              <div class="input-wrapper">
-                <lucide-icon [img]="CalendarIcon" class="field-icon"></lucide-icon>
-                <input type="date" id="birthDate" name="birthDate" [(ngModel)]="birthDate" class="form-input icon-padding">
+          <!-- Section: Profile Details -->
+          <div class="form-section">
+            <h4 class="section-label">Détails du Profil</h4>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="birthDate" class="input-label">Date de Naissance</label>
+                <div class="input-wrapper">
+                  <lucide-icon [img]="CalendarIcon" class="field-icon"></lucide-icon>
+                  <input type="date" id="birthDate" name="birthDate" [(ngModel)]="birthDate" class="form-input has-icon">
+                </div>
               </div>
-            </div>
-            <div class="form-group">
-              <label for="gender" class="input-label">Genre</label>
-              <div class="input-wrapper">
-                <select id="gender" name="gender" [(ngModel)]="gender" class="form-input">
+              <div class="form-group">
+                <label for="gender" class="input-label">Genre</label>
+                <select id="gender" name="gender" [(ngModel)]="gender" class="form-input form-select">
                   <option value="">Sélectionner...</option>
                   <option value="M">Masculin</option>
                   <option value="F">Féminin</option>
@@ -103,27 +137,124 @@
                 </select>
               </div>
             </div>
-          </div>
-
-          <div class="form-group full-width">
-            <label for="bio" class="input-label">Biographie</label>
-            <textarea id="bio" name="bio" [(ngModel)]="bio" rows="4" placeholder="Racontez-nous en un peu plus sur vous..." class="form-input textarea-field"></textarea>
+            <div class="form-group full-width">
+              <label for="bio" class="input-label">Biographie</label>
+              <textarea id="bio" name="bio" [(ngModel)]="bio" rows="4"
+                        placeholder="Parlez-nous un peu de vous..."
+                        class="form-input textarea-field"></textarea>
+            </div>
           </div>
 
           <div class="form-actions">
-            <button type="submit" class="submit-btn" [disabled]="isSaving() || !profileForm.form.valid">
+            <button type="submit" class="btn-primary" [disabled]="isSaving() || !profileForm.form.valid">
               <lucide-icon [img]="isSaving() ? LoaderIcon : SaveIcon" class="btn-icon" [class.spinning]="isSaving()"></lucide-icon>
-              <span>{{ isSaving() ? 'Enregistrement...' : 'Enregistrer le Profil' }}</span>
+              <span>{{ isSaving() ? 'Enregistrement...' : 'Sauvegarder le Profil' }}</span>
             </button>
           </div>
         </form>
       </div>
-    </div>
+
+      <!-- ═══ SECURITY TAB ════════════════════════════════ -->
+      <div class="tab-panel" *ngIf="activeTab==='security'">
+        <div class="panel-header">
+          <lucide-icon [img]="ShieldCheckIcon" class="panel-header-icon panel-header-icon--security"></lucide-icon>
+          <div>
+            <h3 class="panel-title">Sécurité du Compte</h3>
+            <p class="panel-sub">Modifiez votre mot de passe pour sécuriser votre compte</p>
+          </div>
+        </div>
+
+        <!-- Security tips -->
+        <div class="security-tips">
+          <lucide-icon [img]="KeyIcon" class="tip-icon"></lucide-icon>
+          <div class="tip-text">
+            <strong>Conseils de sécurité :</strong> Utilisez au moins 8 caractères, mélangez lettres, chiffres et symboles, évitez les mots communs.
+          </div>
+        </div>
+
+        <form class="edit-form" (ngSubmit)="changePassword()">
+
+          <!-- Current password -->
+          <div class="form-section">
+            <h4 class="section-label">Mot de passe actuel</h4>
+            <div class="form-group">
+              <label for="oldPassword" class="input-label">Entrez votre mot de passe actuel</label>
+              <div class="input-wrapper">
+                <lucide-icon [img]="LockIcon" class="field-icon"></lucide-icon>
+                <input [type]="showOldPassword ? 'text' : 'password'" id="oldPassword" name="oldPassword"
+                       [(ngModel)]="oldPassword" required class="form-input has-icon has-toggle"
+                       placeholder="••••••••">
+                <button type="button" class="toggle-visibility" (click)="showOldPassword = !showOldPassword">
+                  <lucide-icon [img]="showOldPassword ? EyeOffIcon : EyeIcon" class="toggle-icon"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- New password -->
+          <div class="form-section">
+            <h4 class="section-label">Nouveau mot de passe</h4>
+            <div class="form-group">
+              <label for="newPassword" class="input-label">Nouveau mot de passe</label>
+              <div class="input-wrapper">
+                <lucide-icon [img]="LockIcon" class="field-icon"></lucide-icon>
+                <input [type]="showNewPassword ? 'text' : 'password'" id="newPassword" name="newPassword"
+                       [(ngModel)]="newPassword" required class="form-input has-icon has-toggle"
+                       placeholder="••••••••">
+                <button type="button" class="toggle-visibility" (click)="showNewPassword = !showNewPassword">
+                  <lucide-icon [img]="showNewPassword ? EyeOffIcon : EyeIcon" class="toggle-icon"></lucide-icon>
+                </button>
+              </div>
+              <!-- Strength meter -->
+              <div class="strength-meter" *ngIf="newPassword.length > 0">
+                <div class="strength-bars">
+                  <div class="strength-bar" [class.active]="passwordStrength.level >= 1"
+                       [style.background]="passwordStrength.level >= 1 ? passwordStrength.color : ''"></div>
+                  <div class="strength-bar" [class.active]="passwordStrength.level >= 2"
+                       [style.background]="passwordStrength.level >= 2 ? passwordStrength.color : ''"></div>
+                  <div class="strength-bar" [class.active]="passwordStrength.level >= 3"
+                       [style.background]="passwordStrength.level >= 3 ? passwordStrength.color : ''"></div>
+                </div>
+                <span class="strength-label" [style.color]="passwordStrength.color">
+                  {{ passwordStrength.label }}
+                </span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword" class="input-label">Confirmer le nouveau mot de passe</label>
+              <div class="input-wrapper">
+                <lucide-icon [img]="LockIcon" class="field-icon"></lucide-icon>
+                <input [type]="showConfirmPassword ? 'text' : 'password'" id="confirmPassword" name="confirmPassword"
+                       [(ngModel)]="confirmPassword" required class="form-input has-icon has-toggle"
+                       [class.input-error]="confirmPassword && confirmPassword !== newPassword"
+                       [class.input-ok]="confirmPassword && confirmPassword === newPassword"
+                       placeholder="••••••••">
+                <button type="button" class="toggle-visibility" (click)="showConfirmPassword = !showConfirmPassword">
+                  <lucide-icon [img]="showConfirmPassword ? EyeOffIcon : EyeIcon" class="toggle-icon"></lucide-icon>
+                </button>
+              </div>
+              <span class="match-hint" *ngIf="confirmPassword && confirmPassword !== newPassword">
+                Les mots de passe ne correspondent pas
+              </span>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-security" [disabled]="isChangingPassword() || !oldPassword || !newPassword || newPassword !== confirmPassword">
+              <lucide-icon [img]="isChangingPassword() ? LoaderIcon : ShieldCheckIcon" class="btn-icon" [class.spinning]="isChangingPassword()"></lucide-icon>
+              <span>{{ isChangingPassword() ? 'Modification...' : 'Modifier le Mot de Passe' }}</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+    </main>
   </div>
 
   <!-- Toast notifications -->
   <div class="toast-container">
-    <div *ngFor="let t of toasts" class="toast" [class]="t.type">
+    <div *ngFor="let t of toasts" class="toast" [class.toast-success]="t.type==='success'" [class.toast-error]="t.type==='error'">
       <span>{{ t.message }}</span>
       <button class="toast-close" (click)="dismissToast(t.id)">✕</button>
     </div>

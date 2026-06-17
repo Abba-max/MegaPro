@@ -4,7 +4,7 @@ from rest_framework.routers import DefaultRouter
 
 from .api_views import (
     # Auth
-    register_view, verify_email_view, me_view,
+    register_view, verify_email_view, me_view, change_password_view,
     password_reset_request_view,
 
     # Viewsets
@@ -63,6 +63,7 @@ urlpatterns = [
     path('api/auth/verify/',    verify_email_view,  name='verify-email'),
     path('api/auth/me/',        me_view,            name='me'),
     path('api/auth/password-reset/', password_reset_request_view, name='password-reset-request'),
+    path('api/auth/change-password/', change_password_view, name='change-password'),
 
     # ── ViewSet routes (CRUD + @action extras like verify, accept, reject) ─
     path('api/', include(router.urls)),

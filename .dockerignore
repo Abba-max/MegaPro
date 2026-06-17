@@ -31,3 +31,40 @@ postgres_data/
 docker-compose.yml
 .vscode/
 .idea/
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+env/
+
+# Django
+db.sqlite3
+media/
+static_cdn/
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+
+# Docker
+.dockerignore
+docker-compose.yml
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

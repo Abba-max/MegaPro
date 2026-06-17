@@ -35,6 +35,8 @@ services:
       - ALLOWED_HOSTS=*
       - REQUIRE_DB_SSL=False
       - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgres://prisma:prisma@db:5432/eyang
+      - SECURE_SSL_REDIRECT=False
     env_file:
       - path: ./backend/project/.env
         required: false
@@ -57,6 +59,8 @@ services:
       - ALLOWED_HOSTS=*
       - REQUIRE_DB_SSL=False
       - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=postgres://prisma:prisma@db:5432/eyang
+      - SECURE_SSL_REDIRECT=False
     env_file:
       - path: ./backend/project/.env
         required: false

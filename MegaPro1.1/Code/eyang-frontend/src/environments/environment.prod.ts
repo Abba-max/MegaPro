@@ -1,5 +1,6 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://eyangestate.com/api',
-  wsUrl: 'wss://eyangestate.com/ws'
+  apiUrl: '/api',
+  wsUrl: (typeof window !== 'undefined' ? (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host : '') + '/ws'
 };
+
