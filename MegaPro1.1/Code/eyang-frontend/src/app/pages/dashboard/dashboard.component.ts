@@ -1634,10 +1634,14 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.shouldScroll = true;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
         removeOptimistic();
         this.newMessage = text;
-        this.showToast(this.translate.instant('messages.send_error'), 'error');
+        if (err.error && err.error.message) {
+           this.showToast(err.error.message, 'error');
+        } else {
+           this.showToast(this.translate.instant('messages.send_error'), 'error');
+        }
         this.cdr.detectChanges();
       }
     });
