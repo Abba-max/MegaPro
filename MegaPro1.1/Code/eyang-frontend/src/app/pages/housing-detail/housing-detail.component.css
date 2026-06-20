@@ -418,6 +418,7 @@
   background-size: 20px 20px;
   min-height: 0;
   scroll-behavior: smooth;
+  overscroll-behavior: none;
 }
 .msg-viewport::-webkit-scrollbar { width: 4px; }
 .msg-viewport::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
@@ -523,7 +524,7 @@
   border: none;
   background: transparent;
   outline: none;
-  font-size: 14px;
+  font-size: 16px;
   color: #1e293b;
   padding: 6px 0;
   font-family: inherit;
