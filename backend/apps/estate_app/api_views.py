@@ -845,6 +845,30 @@ class ConversationViewSet(viewsets.ModelViewSet):
         if not text:
             return Response({'error': 'Message text is required.'}, status=400)
 
+        import re
+        
+        # Regex to detect emails
+        email_pattern = r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+'
+        if re.search(email_pattern, text):
+            return Response(
+                {
+                    'error': 'BANNED_CONTENT',
+                    'message': '⛔ L\'envoi d\'adresses email est strictement interdit pour des raisons de sécurité.'
+                },
+                status=400
+            )
+            
+        # Regex to detect phone numbers (at least 8 consecutive digits, allowing spaces, dashes, dots, plus)
+        phone_pattern = r'(\+?\d[\s\-\.]*){8,}'
+        if re.search(phone_pattern, text):
+            return Response(
+                {
+                    'error': 'BANNED_CONTENT',
+                    'message': '⛔ L\'envoi de numéros de téléphone est strictement interdit pour des raisons de sécurité.'
+                },
+                status=400
+            )
+
         # ── Banned word filter ──────────────────────────────────────────────
         text_lower = text.lower()
         banned_words = BannedWord.objects.values_list('word', flat=True)
