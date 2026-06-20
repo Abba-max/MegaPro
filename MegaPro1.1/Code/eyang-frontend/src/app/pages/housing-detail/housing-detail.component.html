@@ -845,7 +845,7 @@
 
           <div class="msg-footer" *ngIf="!isLoadingConversation && activeConversation">
             <div class="msg-input-row" [class.focused]="messageText.length > 0">
-              <input type="text" class="msg-input" [(ngModel)]="messageText"
+              <input type="text" class="msg-input" name="messageText" [(ngModel)]="messageText"
                 [placeholder]="'dashboard.message_placeholder' | translate" [disabled]="isSendingMessage"
                 (keydown.enter)="$event.preventDefault(); sendMessage()">
               <button class="msg-send-btn"
