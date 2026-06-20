@@ -485,6 +485,7 @@ private loadSupplementsAndCharacteristics(estateId: number): void {
 
     this.estateService.sendMessage(this.activeConversation.id, text).subscribe({
       next: (msg) => {
+        if (!this.activeConversation!.messages) this.activeConversation!.messages = [];
         this.activeConversation!.messages.push(msg);
         this.isSendingMessage = false;
         setTimeout(() => this.scrollMessages(), 50);

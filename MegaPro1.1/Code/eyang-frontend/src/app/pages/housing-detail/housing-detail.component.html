@@ -809,11 +809,11 @@
               {{ 'messages.discuss' | translate }}
             </div>
 
-            <div *ngIf="activeConversation.messages.length === 0" class="msg-start-hint">
+            <div *ngIf="!activeConversation.messages || activeConversation.messages.length === 0" class="msg-start-hint">
               {{ 'messages.start' | translate }}
             </div>
 
-            <div *ngFor="let msg of activeConversation.messages"
+            <div *ngFor="let msg of activeConversation.messages || []"
                  class="msg-row" [class.msg-sent]="msg.sender === currentUser?.id"
                  [class.msg-received]="msg.sender !== currentUser?.id">
               <div *ngIf="msg.sender !== currentUser?.id" class="msg-av-sm">
