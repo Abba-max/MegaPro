@@ -71,9 +71,21 @@ export class SignupComponent {
     // Validation for Step 1
     if (this.currentStep === 1) {
       if (!this.signupForm.email || !this.signupForm.username || !this.signupForm.password) {
-        this.error = this.translate.instant('auth.error_missing_fields');
+        this.error = this.translate.instant('auth.error_missing_fields') || 'Veuillez remplir tous les champs obligatoires.';
         return;
       }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(this.signupForm.email)) {
+        this.error = 'Veuillez entrer une adresse email valide.';
+        return;
+      }
+
+      if (this.signupForm.password.length < 8) {
+        this.error = this.translate.instant('auth.error_password_too_short') || 'Le mot de passe doit comporter au moins 8 caractères.';
+        return;
+      }
+
       this.currentStep = 2;
       return;
     }
@@ -81,7 +93,12 @@ export class SignupComponent {
     // Validation for Step 2
     if (this.currentStep === 2) {
       if (!this.signupForm.firstName || !this.signupForm.lastName) {
-        this.error = this.translate.instant('auth.error_missing_fields');
+        this.error = this.translate.instant('auth.error_missing_fields') || 'Le prénom et le nom sont requis.';
+        return;
+      }
+
+      if (this.signupForm.phone && this.signupForm.phone.length < 8) {
+        this.error = 'Veuillez entrer un numéro de téléphone valide.';
         return;
       }
       
@@ -98,7 +115,7 @@ export class SignupComponent {
     // Validation for Step 3 (Owner only)
     if (this.currentStep === 3) {
       if (!this.signupForm.idCardFile) {
-        this.error = this.translate.instant('auth.error_id_required');
+        this.error = this.translate.instant('auth.error_id_required') || 'La pièce d\'identité est requise pour les propriétaires.';
         return;
       }
       this.handleSignup();
@@ -160,19 +177,30 @@ export class SignupComponent {
       error: (err) => {
         this.isLoading.set(false);
         const errors = err.error;
+        let friendlyMessage = this.translate.instant('auth.error_signup_failed') || 'Une erreur est survenue lors de l\'inscription.';
+        
         if (errors && typeof errors === 'object') {
           const firstKey = Object.keys(errors)[0];
           if (firstKey) {
             const firstError = errors[firstKey];
-            this.error = Array.isArray(firstError) ? firstError[0] : firstError;
-          } else {
-            this.error = this.translate.instant('auth.error_signup_failed');
+            const rawError = Array.isArray(firstError) ? firstError[0] : firstError;
+            
+            // Map common backend technical errors to user-friendly messages
+            if (rawError.includes('already exists') || rawError.includes('unique')) {
+              if (firstKey === 'email') friendlyMessage = 'Cette adresse email est déjà utilisée.';
+              else if (firstKey === 'username') friendlyMessage = 'Ce nom d\'utilisateur est déjà pris.';
+              else friendlyMessage = 'Ces informations sont déjà utilisées par un autre compte.';
+            } else if (rawError.includes('password')) {
+              friendlyMessage = 'Le mot de passe ne respecte pas les critères de sécurité.';
+            } else {
+               friendlyMessage = `Veuillez vérifier le champ: ${firstKey}.`;
+            }
           }
-        } else if (typeof errors === 'string') {
-          this.error = errors;
-        } else {
-          this.error = this.translate.instant('auth.error_signup_failed');
+        } else if (err.status === 0 || err.status >= 500) {
+           friendlyMessage = 'Erreur de connexion au serveur. Veuillez réessayer plus tard.';
         }
+        
+        this.error = friendlyMessage;
       }
     });
   }
