@@ -1459,6 +1459,18 @@ export class DashboardComponent implements OnInit, OnDestroy, AfterViewChecked {
   }
 
   handleRealtimeMessage(msg: any): void {
+    if (msg.type === 'error') {
+      this.showToast(msg.message || 'Erreur lors de l\'envoi du message', 'error');
+      // If it's a websocket error, we also need to remove the optimistic message
+      if (this.activeConversation && this.activeConversation.messages) {
+         this.activeConversation.messages = this.activeConversation.messages.filter(
+            (m: ChatMessage) => (m.id as unknown as number) >= 0
+         );
+         this.cdr.detectChanges();
+      }
+      return;
+    }
+
     if (!msg.id || msg.sender === undefined || !msg.created_at) return;
 
     // ── A. Background conversation — sidebar update only ─────────────────

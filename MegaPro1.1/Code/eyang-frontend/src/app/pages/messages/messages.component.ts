@@ -175,6 +175,17 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
   // ══════════════════════════════════════════════════════════════════════
 
   private handleIncomingWsMessage(data: any): void {
+    if (data.type === 'error') {
+      this.notifService.error(data.message || 'Erreur lors de l\'envoi', 'Erreur');
+      if (this.activeConversation && this.activeConversation.messages) {
+         this.activeConversation.messages = this.activeConversation.messages.filter(
+            (m: ChatMessage) => (m.id as unknown as number) >= 0
+         );
+         this.cdr.detectChanges();
+      }
+      return;
+    }
+
     // Drop malformed frames early
     if (!data.id || data.sender === undefined || !data.created_at) return;
 
@@ -330,14 +341,18 @@ export class MessagesComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.shouldScroll = true;
         this.cdr.detectChanges();
       },
-      error: () => {
+      error: (err) => {
         removeOptimistic();
         this.newMessage = text; // restore so user can retry
         this.isSending  = false;
-        this.notifService.error(
-          this.translate.instant('messages.send_error'),
-          this.translate.instant('messages.retry_send')
-        );
+        if (err.error && err.error.message) {
+           this.notifService.error(err.error.message, 'Erreur');
+        } else {
+           this.notifService.error(
+             this.translate.instant('messages.send_error'),
+             this.translate.instant('messages.retry_send')
+           );
+        }
         this.cdr.detectChanges();
       },
     });
