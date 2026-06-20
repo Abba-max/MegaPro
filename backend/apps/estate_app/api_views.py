@@ -649,6 +649,16 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
             
             instance = serializer.save()
 
+        # SMS + Email notifications — non-blocking, never raises
+        try:
+            from .utils import _run_task
+            from .tasks import send_quickorder_sms_task, send_quickorder_created_email_task
+            _run_task(send_quickorder_sms_task, instance.id)
+            _run_task(send_quickorder_created_email_task, instance.id)
+        except Exception as _notif_exc:
+            import logging as _log
+            _log.getLogger(__name__).warning("Notification dispatch failed: %s", _notif_exc)
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_serializer_context(self):
@@ -690,6 +700,14 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
             order.status = 'accepted'
             order.save(update_fields=['status'])
 
+        try:
+            from .utils import _run_task
+            from .tasks import send_quickorder_accepted_email_task
+            _run_task(send_quickorder_accepted_email_task, order.id)
+        except Exception as _notif_exc:
+            import logging as _log
+            _log.getLogger(__name__).warning("Email dispatch failed: %s", _notif_exc)
+
         return Response(QuickOrderSerializer(order, context={'request': request}).data)
 
     @action(detail=True, methods=['patch'], url_path='reject',
@@ -709,6 +727,15 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
 
         order.status = 'rejected'
         order.save(update_fields=['status'])
+
+        try:
+            from .utils import _run_task
+            from .tasks import send_quickorder_rejected_email_task
+            _run_task(send_quickorder_rejected_email_task, order.id)
+        except Exception as _notif_exc:
+            import logging as _log
+            _log.getLogger(__name__).warning("Email dispatch failed: %s", _notif_exc)
+
         return Response(QuickOrderSerializer(order, context={'request': request}).data)
 
     @action(detail=True, methods=['post'], url_path='upload-receipt',

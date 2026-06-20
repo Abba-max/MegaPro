@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Mise à jour de votre réservation – Eyang Estate</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: Arial, sans-serif; color: #334155;">
+  <div style="max-width: 600px; margin: 40px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+    <div style="background-color: #0f172a; padding: 24px; text-align: center;">
+      <h1 style="color: #ffffff; margin: 0; font-size: 24px;">Eyang <span style="color: #f59e0b;">Estate</span></h1>
+    </div>
+    <div style="padding: 32px;">
+      <h2 style="color: #0f172a; margin-top: 0;">Bonjour {{ client_name|default:"client" }},</h2>
+      <p style="line-height: 1.6;">Nous sommes désolés de vous informer que votre demande de réservation pour <strong>{{ estate_name|default:"—" }}</strong> n'a pas pu être acceptée par le propriétaire pour la période demandée (du {{ check_in|default:"—" }} au {{ check_out|default:"—" }}).</p>
+      <p style="line-height: 1.6;">Ne vous découragez pas ! Nous avons de nombreuses autres résidences disponibles sur notre plateforme qui pourraient correspondre à vos critères.</p>
+      <div style="text-align: center; margin-top: 32px;">
+        <a href="{{ site_url|default:'#' }}/listings" style="background-color: #f59e0b; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 4px; font-weight: bold; display: inline-block;">Parcourir les résidences</a>
+      </div>
+    </div>
+    <div style="background-color: #f8fafc; padding: 24px; text-align: center; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 14px;">
+      <p style="margin: 0;">Besoin d'aide ? N'hésitez pas à nous contacter.</p>
+      <p style="margin: 8px 0 0 0;"><a href="{{ site_url|default:'#' }}" style="color: #f59e0b; text-decoration: none;">Visiter notre site web</a></p>
+    </div>
+  </div>
+</body>
+</html>

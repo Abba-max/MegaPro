@@ -179,6 +179,11 @@ EMAIL_HOST_USER     = config('EMAIL_HOST_USER', default='eyangestate@gmail.com')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL', default='Eyang Estate <eyangestate@gmail.com>')
 
+# ── Africa's Talking ───────────────────────────────────────────────────────
+AT_USERNAME  = config('AT_USERNAME',  default='sandbox')
+AT_API_KEY   = config('AT_API_KEY',   default='')
+AT_SENDER_ID = config('AT_SENDER_ID', default=None)
+
 # ── DRF ────────────────────────────────────────────────────────────────────
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
