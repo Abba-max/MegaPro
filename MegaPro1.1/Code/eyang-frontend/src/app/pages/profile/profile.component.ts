@@ -41,6 +41,7 @@ export class ProfileComponent implements OnInit {
 
   isSaving = signal(false);
   isChangingPassword = signal(false);
+  isResettingPassword = signal(false);
   avatarPreview: string | null = null;
   avatarFile: File | null = null;
 
@@ -154,6 +155,21 @@ export class ProfileComponent implements OnInit {
         this.isChangingPassword.set(false);
         const msg = err?.error?.detail || 'Erreur lors du changement de mot de passe.';
         this.showToast(msg, 'error');
+      }
+    });
+  }
+
+  requestPasswordReset(): void {
+    if (!this.currentUser?.email) return;
+    this.isResettingPassword.set(true);
+    this.authService.forgotPassword(this.currentUser.email).subscribe({
+      next: (res) => {
+        this.isResettingPassword.set(false);
+        this.showToast(res.message || 'Un lien de réinitialisation a été envoyé à votre e-mail.', 'success');
+      },
+      error: (err) => {
+        this.isResettingPassword.set(false);
+        this.showToast(err?.error?.error || 'Erreur lors de l\'envoi du lien.', 'error');
       }
     });
   }

@@ -32,7 +32,7 @@ from .serializers import (
 from .permissions import IsVerifiedOwner, IsEyangAdmin, IsOwnerOrAdmin
 from django.utils import timezone
 from django.db.models import Sum, Avg
-from .utils import send_verification_email, send_welcome_email
+from .utils import send_verification_email, send_welcome_email, send_password_reset_email
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
@@ -129,19 +129,42 @@ def password_reset_request_view(request):
 
     try:
         user = User.objects.get(email=email)
-        # Create a ContactRequest for the admin
-        ContactRequest.objects.create(
-            user=user,
-            name="Password Reset Request",
-            email=user.email,
-            phone=user.contact or "N/A",
-            message=f"L'utilisateur {user.username} ({user.email}) a demandé la réinitialisation de son mot de passe. Veuillez le contacter ou modifier son mot de passe depuis la gestion des utilisateurs."
-        )
+        send_password_reset_email(user)
     except User.DoesNotExist:
         # Don't reveal that the user does not exist
         pass
 
-    return Response({'message': 'Demande envoyée. Un administrateur vous contactera.'})
+    return Response({'message': 'Si un compte existe avec cet e-mail, un lien de réinitialisation a été envoyé.'})
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def password_reset_confirm_view(request):
+    from django.utils.http import urlsafe_base64_decode
+    from django.contrib.auth.tokens import default_token_generator
+    
+    uidb64 = request.data.get('uid')
+    token = request.data.get('token')
+    new_password = request.data.get('new_password')
+
+    if not uidb64 or not token or not new_password:
+        return Response({'error': 'Données manquantes.'}, status=400)
+        
+    if len(new_password) < 8:
+        return Response({'error': 'Le nouveau mot de passe doit contenir au moins 8 caractères.'}, status=400)
+
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Votre mot de passe a été réinitialisé avec succès.'})
+    else:
+        return Response({'error': 'Le lien de réinitialisation est invalide ou a expiré.'}, status=400)
 
 
 
