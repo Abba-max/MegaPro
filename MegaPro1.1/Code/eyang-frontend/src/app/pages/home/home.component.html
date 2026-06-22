@@ -305,15 +305,6 @@
     <div class="map-teaser-right">
       <!-- Decorative mini Eyang map — accurate geography -->
       <div class="map-teaser-preview">
-        <!--
-          Geographic layout (viewBox 340×220, North=top):
-          - Autoroute Yaoundé-Douala: diagonal band SW→NE (bottom-left → top-right)
-          - Saint Jean Ingénieur campus: center-left, just NE of autoroute
-          - Eyang village: north of campus
-          - Okola direction: top-right
-          - Ayène: bottom along autoroute
-          - Nkolbisson: far left (west)
-        -->
         <svg class="map-teaser-svg" viewBox="0 0 340 220" xmlns="http://www.w3.org/2000/svg">
           <!-- Base terrain -->
           <rect width="340" height="220" fill="#E8F0E2" rx="16"/>
@@ -457,7 +448,7 @@
     <div class="stats-container">
         <div class="stat-item">
     <span class="stat-number"><ng-container *ngIf="!statsLoading">{{ platformStats.estates }}</ng-container><span
-            *ngIf="statsLoading">…</span></span>
+            *ngIf="sta                                            tsLoading">…</span></span>
     <span class="stat-label">{{ 'stats.housings' | translate }}</span>
     </div>
     <div class="stat-divider"></div>
