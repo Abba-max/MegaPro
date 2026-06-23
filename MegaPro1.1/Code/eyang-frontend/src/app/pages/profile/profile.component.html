@@ -188,6 +188,11 @@
                   <lucide-icon [img]="showOldPassword ? EyeOffIcon : EyeIcon" class="toggle-icon"></lucide-icon>
                 </button>
               </div>
+              <div style="text-align: right; margin-top: 8px;">
+                <button type="button" class="forgot-password-link" (click)="requestPasswordReset()" [disabled]="isResettingPassword()" style="background: none; border: none; color: #2563eb; font-size: 14px; cursor: pointer; text-decoration: underline; padding: 0;">
+                  {{ isResettingPassword() ? 'Envoi en cours...' : 'Mot de passe oublié ?' }}
+                </button>
+              </div>
             </div>
           </div>
 

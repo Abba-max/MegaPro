@@ -809,11 +809,11 @@
               {{ 'messages.discuss' | translate }}
             </div>
 
-            <div *ngIf="activeConversation.messages.length === 0" class="msg-start-hint">
+            <div *ngIf="!activeConversation.messages || activeConversation.messages.length === 0" class="msg-start-hint">
               {{ 'messages.start' | translate }}
             </div>
 
-            <div *ngFor="let msg of activeConversation.messages"
+            <div *ngFor="let msg of activeConversation.messages || []"
                  class="msg-row" [class.msg-sent]="msg.sender === currentUser?.id"
                  [class.msg-received]="msg.sender !== currentUser?.id">
               <div *ngIf="msg.sender !== currentUser?.id" class="msg-av-sm">
@@ -845,7 +845,7 @@
 
           <div class="msg-footer" *ngIf="!isLoadingConversation && activeConversation">
             <div class="msg-input-row" [class.focused]="messageText.length > 0">
-              <input type="text" class="msg-input" [(ngModel)]="messageText"
+              <input type="text" class="msg-input" name="messageText" [(ngModel)]="messageText"
                 [placeholder]="'dashboard.message_placeholder' | translate" [disabled]="isSendingMessage"
                 (keydown.enter)="$event.preventDefault(); sendMessage()">
               <button class="msg-send-btn"

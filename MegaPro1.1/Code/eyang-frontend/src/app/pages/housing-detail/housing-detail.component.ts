@@ -485,14 +485,19 @@ private loadSupplementsAndCharacteristics(estateId: number): void {
 
     this.estateService.sendMessage(this.activeConversation.id, text).subscribe({
       next: (msg) => {
+        if (!this.activeConversation!.messages) this.activeConversation!.messages = [];
         this.activeConversation!.messages.push(msg);
         this.isSendingMessage = false;
         setTimeout(() => this.scrollMessages(), 50);
       },
-      error: () => {
+      error: (err) => {
         this.isSendingMessage = false;
         this.messageText = text;
-        this.showToast('Erreur lors de l\'envoi', 'error');
+        if (err.error && err.error.message) {
+          this.showToast(err.error.message, 'error');
+        } else {
+          this.showToast('Erreur lors de l\'envoi', 'error');
+        }
       }
     });
   }

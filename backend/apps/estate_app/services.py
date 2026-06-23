@@ -105,6 +105,14 @@ def accept_reservation(reservation_id: int) -> Reservation:
         reservation.status = 'ACCEPTED'
         reservation.save(update_fields=['status', 'updated_at'])
 
+        # Email notification — non-blocking
+        try:
+            from .utils import _run_task
+            from .tasks import send_reservation_accepted_email_task
+            _run_task(send_reservation_accepted_email_task, reservation.id)
+        except Exception as _notif_exc:
+            logger.warning("Email dispatch failed (non-critical): %s", _notif_exc)
+
     # ── 5. Async PDF generation (outside transaction — file I/O is slow) ───
     from .utils import _run_task
     from .tasks import generate_invoice_task
@@ -127,6 +135,13 @@ def reject_reservation(reservation_id: int) -> Reservation:
         was_accepted = reservation.status == 'ACCEPTED'
         reservation.status = 'REJECTED'
         reservation.save(update_fields=['status', 'updated_at'])
+
+        try:
+            from .utils import _run_task
+            from .tasks import send_reservation_rejected_email_task
+            _run_task(send_reservation_rejected_email_task, reservation.id)
+        except Exception as _notif_exc:
+            logger.warning("Email dispatch failed (non-critical): %s", _notif_exc)
 
         if was_accepted:
             # Restore the rooms — lock the category row first
@@ -159,6 +174,13 @@ def cancel_reservation(reservation_id: int, requesting_user) -> Reservation:
         was_accepted = reservation.status == 'ACCEPTED'
         reservation.status = 'CANCELLED'
         reservation.save(update_fields=['status', 'updated_at'])
+
+        try:
+            from .utils import _run_task
+            from .tasks import send_reservation_cancelled_email_task
+            _run_task(send_reservation_cancelled_email_task, reservation.id)
+        except Exception as _notif_exc:
+            logger.warning("Email dispatch failed (non-critical): %s", _notif_exc)
 
         if was_accepted:
             category = RoomCategory.objects.select_for_update().get(pk=reservation.room_category_id)
@@ -215,6 +237,15 @@ def create_reservation_with_snapshot(validated_data: dict, user) -> Reservation:
     )
     if supplements:
         reservation.selected_supplements.set(supplements)
+
+    # Notifications — SMS + Email — non-blocking, never raises
+    try:
+        from .utils import _run_task
+        from .tasks import send_reservation_sms_task, send_reservation_created_email_task
+        _run_task(send_reservation_sms_task, reservation.id)
+        _run_task(send_reservation_created_email_task, reservation.id)
+    except Exception as _notif_exc:
+        logger.warning("Notification dispatch failed (non-critical): %s", _notif_exc)
 
     return reservation
 

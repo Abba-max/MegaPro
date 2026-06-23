@@ -143,6 +143,10 @@ export class AuthService {
     return this.http.post<any>(`${this.BASE}/auth/password-reset/`, { email });
   }
 
+  resetPassword(uid: string, token: string, new_password: string): Observable<any> {
+    return this.http.post<any>(`${this.BASE}/auth/password-reset-confirm/`, { uid, token, new_password });
+  }
+
   refreshToken(): Observable<{ access: string; refresh?: string }> {
     return this.http
       .post<{ access: string; refresh?: string }>(

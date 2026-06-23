@@ -108,3 +108,145 @@ def generate_invoice_task(self, reservation_id):
     except Exception as exc:
         raise self.retry(exc=exc)
 
+
+# ── SMS Tasks ──────────────────────────────────────────────────────────────────
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=120)
+def send_reservation_sms_task(self, reservation_id):
+    """Send SMS confirmation after a Reservation is created."""
+    try:
+        from .models import Reservation
+        from .sms_utils import _format_phone_cm, _build_reservation_sms, send_sms
+        reservation = Reservation.objects.select_related(
+            'user', 'room_category__estate'
+        ).get(id=reservation_id)
+        phone = _format_phone_cm(getattr(reservation.user, 'contact', '') or '')
+        if not phone:
+            return
+        message = _build_reservation_sms(reservation)
+        if not send_sms(phone, message):
+            raise Exception("send_sms returned False")
+    except Exception as exc:
+        raise self.retry(exc=exc)
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=120)
+def send_quickorder_sms_task(self, order_id):
+    """Send SMS confirmation after a QuickOrder is created."""
+    try:
+        from .models import QuickOrder
+        from .sms_utils import _format_phone_cm, _build_quickorder_sms, send_sms
+        order = QuickOrder.objects.select_related(
+            'estate', 'room_category', 'user'
+        ).get(id=order_id)
+        raw_phone = order.phone or (
+            getattr(order.user, 'contact', '') if order.user else ''
+        )
+        phone = _format_phone_cm(raw_phone)
+        if not phone:
+            return
+        message = _build_quickorder_sms(order)
+        if not send_sms(phone, message):
+            raise Exception("send_sms returned False")
+    except Exception as exc:
+        raise self.retry(exc=exc)
+
+
+# ── Email Tasks ─────────────────────────────────────────────────────────────────
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_reservation_created_email_task(self, reservation_id):
+    """Email client after Reservation creation."""
+    try:
+        from .models import Reservation
+        from .email_utils import send_reservation_created_email
+        reservation = Reservation.objects.select_related(
+            'user', 'room_category__estate__owner'
+        ).get(id=reservation_id)
+        send_reservation_created_email(reservation)
+    except Exception as exc:
+        raise self.retry(exc=exc)
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_reservation_accepted_email_task(self, reservation_id):
+    """Email client after Reservation is accepted."""
+    try:
+        from .models import Reservation
+        from .email_utils import send_reservation_accepted_email
+        reservation = Reservation.objects.select_related(
+            'user', 'room_category__estate__owner'
+        ).get(id=reservation_id)
+        send_reservation_accepted_email(reservation)
+    except Exception as exc:
+        raise self.retry(exc=exc)
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_reservation_rejected_email_task(self, reservation_id):
+    """Email client after Reservation is rejected."""
+    try:
+        from .models import Reservation
+        from .email_utils import send_reservation_rejected_email
+        reservation = Reservation.objects.select_related(
+            'user', 'room_category__estate__owner'
+        ).get(id=reservation_id)
+        send_reservation_rejected_email(reservation)
+    except Exception as exc:
+        raise self.retry(exc=exc)
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_reservation_cancelled_email_task(self, reservation_id):
+    """Email client after Reservation is cancelled."""
+    try:
+        from .models import Reservation
+        from .email_utils import send_reservation_cancelled_email
+        reservation = Reservation.objects.select_related(
+            'user', 'room_category__estate__owner'
+        ).get(id=reservation_id)
+        send_reservation_cancelled_email(reservation)
+    except Exception as exc:
+        raise self.retry(exc=exc)
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_quickorder_created_email_task(self, order_id):
+    """Email client and owner after QuickOrder creation."""
+    try:
+        from .models import QuickOrder
+        from .email_utils import send_quickorder_created_email
+        order = QuickOrder.objects.select_related(
+            'estate__owner', 'room_category', 'user'
+        ).get(id=order_id)
+        send_quickorder_created_email(order)
+    except Exception as exc:
+        raise self.retry(exc=exc)
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_quickorder_accepted_email_task(self, order_id):
+    """Email client after QuickOrder is accepted."""
+    try:
+        from .models import QuickOrder
+        from .email_utils import send_quickorder_accepted_email
+        order = QuickOrder.objects.select_related(
+            'estate__owner', 'room_category', 'user'
+        ).get(id=order_id)
+        send_quickorder_accepted_email(order)
+    except Exception as exc:
+        raise self.retry(exc=exc)
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_quickorder_rejected_email_task(self, order_id):
+    """Email client after QuickOrder is rejected."""
+    try:
+        from .models import QuickOrder
+        from .email_utils import send_quickorder_rejected_email
+        order = QuickOrder.objects.select_related(
+            'estate__owner', 'room_category', 'user'
+        ).get(id=order_id)
+        send_quickorder_rejected_email(order)
+    except Exception as exc:
+        raise self.retry(exc=exc)

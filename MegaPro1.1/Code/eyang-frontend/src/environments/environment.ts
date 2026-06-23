@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: '/api',
-  wsUrl: (typeof window !== 'undefined' ? (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host : '') + '/ws'
+  apiUrl: 'http://127.0.0.1:8000/api',
+  wsUrl: 'ws://127.0.0.1:8000/ws'
 };
 

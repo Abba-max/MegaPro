@@ -32,7 +32,7 @@ from .serializers import (
 from .permissions import IsVerifiedOwner, IsEyangAdmin, IsOwnerOrAdmin
 from django.utils import timezone
 from django.db.models import Sum, Avg
-from .utils import send_verification_email, send_welcome_email
+from .utils import send_verification_email, send_welcome_email, send_password_reset_email
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode
 from django.utils.encoding import force_str
@@ -129,19 +129,42 @@ def password_reset_request_view(request):
 
     try:
         user = User.objects.get(email=email)
-        # Create a ContactRequest for the admin
-        ContactRequest.objects.create(
-            user=user,
-            name="Password Reset Request",
-            email=user.email,
-            phone=user.contact or "N/A",
-            message=f"L'utilisateur {user.username} ({user.email}) a demandé la réinitialisation de son mot de passe. Veuillez le contacter ou modifier son mot de passe depuis la gestion des utilisateurs."
-        )
+        send_password_reset_email(user)
     except User.DoesNotExist:
         # Don't reveal that the user does not exist
         pass
 
-    return Response({'message': 'Demande envoyée. Un administrateur vous contactera.'})
+    return Response({'message': 'Si un compte existe avec cet e-mail, un lien de réinitialisation a été envoyé.'})
+
+
+@api_view(['POST'])
+@permission_classes([permissions.AllowAny])
+def password_reset_confirm_view(request):
+    from django.utils.http import urlsafe_base64_decode
+    from django.contrib.auth.tokens import default_token_generator
+    
+    uidb64 = request.data.get('uid')
+    token = request.data.get('token')
+    new_password = request.data.get('new_password')
+
+    if not uidb64 or not token or not new_password:
+        return Response({'error': 'Données manquantes.'}, status=400)
+        
+    if len(new_password) < 8:
+        return Response({'error': 'Le nouveau mot de passe doit contenir au moins 8 caractères.'}, status=400)
+
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Votre mot de passe a été réinitialisé avec succès.'})
+    else:
+        return Response({'error': 'Le lien de réinitialisation est invalide ou a expiré.'}, status=400)
 
 
 
@@ -649,6 +672,16 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
             
             instance = serializer.save()
 
+        # SMS + Email notifications — non-blocking, never raises
+        try:
+            from .utils import _run_task
+            from .tasks import send_quickorder_sms_task, send_quickorder_created_email_task
+            _run_task(send_quickorder_sms_task, instance.id)
+            _run_task(send_quickorder_created_email_task, instance.id)
+        except Exception as _notif_exc:
+            import logging as _log
+            _log.getLogger(__name__).warning("Notification dispatch failed: %s", _notif_exc)
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def get_serializer_context(self):
@@ -690,6 +723,14 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
             order.status = 'accepted'
             order.save(update_fields=['status'])
 
+        try:
+            from .utils import _run_task
+            from .tasks import send_quickorder_accepted_email_task
+            _run_task(send_quickorder_accepted_email_task, order.id)
+        except Exception as _notif_exc:
+            import logging as _log
+            _log.getLogger(__name__).warning("Email dispatch failed: %s", _notif_exc)
+
         return Response(QuickOrderSerializer(order, context={'request': request}).data)
 
     @action(detail=True, methods=['patch'], url_path='reject',
@@ -709,6 +750,15 @@ class QuickOrderViewSet(viewsets.ModelViewSet):
 
         order.status = 'rejected'
         order.save(update_fields=['status'])
+
+        try:
+            from .utils import _run_task
+            from .tasks import send_quickorder_rejected_email_task
+            _run_task(send_quickorder_rejected_email_task, order.id)
+        except Exception as _notif_exc:
+            import logging as _log
+            _log.getLogger(__name__).warning("Email dispatch failed: %s", _notif_exc)
+
         return Response(QuickOrderSerializer(order, context={'request': request}).data)
 
     @action(detail=True, methods=['post'], url_path='upload-receipt',
@@ -844,6 +894,30 @@ class ConversationViewSet(viewsets.ModelViewSet):
         text = request.data.get('text', '').strip()
         if not text:
             return Response({'error': 'Message text is required.'}, status=400)
+
+        import re
+        
+        # Regex to detect emails
+        email_pattern = r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+'
+        if re.search(email_pattern, text):
+            return Response(
+                {
+                    'error': 'BANNED_CONTENT',
+                    'message': '⛔ L\'envoi d\'adresses email est strictement interdit pour des raisons de sécurité.'
+                },
+                status=400
+            )
+            
+        # Regex to detect phone numbers (at least 8 consecutive digits, allowing spaces, dashes, dots, plus)
+        phone_pattern = r'(\+?\d[\s\-\.]*){8,}'
+        if re.search(phone_pattern, text):
+            return Response(
+                {
+                    'error': 'BANNED_CONTENT',
+                    'message': '⛔ L\'envoi de numéros de téléphone est strictement interdit pour des raisons de sécurité.'
+                },
+                status=400
+            )
 
         # ── Banned word filter ──────────────────────────────────────────────
         text_lower = text.lower()

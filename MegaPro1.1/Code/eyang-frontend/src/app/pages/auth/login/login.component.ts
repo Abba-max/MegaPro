@@ -61,8 +61,15 @@ export class LoginComponent {
       },
       error: (err) => {
         this.isLoading.set(false);
-        const detail = err.error?.detail || err.error?.message;
-        this.error = detail || this.translate.instant('auth.error_invalid_credentials');
+        let detail = err.error?.detail || err.error?.message;
+        
+        if (err.status === 401 || (detail && typeof detail === 'string' && detail.toLowerCase().includes('credential'))) {
+          detail = this.translate.instant('auth.error_invalid_credentials') || 'Email ou mot de passe incorrect.';
+        } else if (err.status === 0 || err.status >= 500) {
+          detail = 'Erreur de connexion au serveur. Veuillez réessayer plus tard.';
+        }
+        
+        this.error = detail || this.translate.instant('auth.error_invalid_credentials') || 'Une erreur s\'est produite.';
       }
     });
   }

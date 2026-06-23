@@ -184,6 +184,24 @@ class ChatConsumer(AsyncWebsocketConsumer):
         if not text:
             return
 
+        # ── Content Validation (Email/Phone) ───────────────────────────────
+        import re
+        if re.search(r'[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+', text):
+            await self.send(text_data=json.dumps({
+                "type": "error",
+                "code": "BANNED_CONTENT",
+                "message": "⛔ L'envoi d'adresses email est strictement interdit pour des raisons de sécurité."
+            }))
+            return
+
+        if re.search(r'(\+?\d[\s\-\.]*){8,}', text):
+            await self.send(text_data=json.dumps({
+                "type": "error",
+                "code": "BANNED_CONTENT",
+                "message": "⛔ L'envoi de numéros de téléphone est strictement interdit pour des raisons de sécurité."
+            }))
+            return
+
         # ── Banned word filter ─────────────────────────────────────────────
         is_banned, matched_word = await _check_banned_words(text)
         if is_banned:

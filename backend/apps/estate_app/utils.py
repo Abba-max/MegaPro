@@ -61,6 +61,29 @@ def send_verification_email(user, request=None):
         user.email
     )
 
+def send_password_reset_email(user):
+    """
+    Generates a password reset token and sends the password reset email.
+    """
+    token = default_token_generator.make_token(user)
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    
+    frontend_url = getattr(settings, 'FRONTEND_URL', 'https://eyangestate.com')
+    reset_url = f"{frontend_url}/reset-password?uid={uid}&token={token}"
+    
+    context = {
+        'name': f"{user.first_name} {user.last_name}".strip() or user.username,
+        'reset_url': reset_url,
+        'site_url': frontend_url
+    }
+    
+    send_styled_email(
+        "Réinitialisation de votre mot de passe – Eyang Estate",
+        "password_reset.html",
+        context,
+        user.email
+    )
+
 def send_welcome_email(user):
     """
     Sends a welcome email after successful verification.
